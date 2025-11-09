@@ -2,7 +2,7 @@ import Image from 'next/image';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 export default function AboutPage() {
-  const aboutImage = PlaceHolderImages.find((img) => img.id === 'about-portrait');
+  const aboutImage = PlaceHolderImages.find((img) => img.id === 'about-wanjiku');
 
   return (
     <div className="relative overflow-hidden bg-background py-16 sm:py-24">
@@ -31,17 +31,19 @@ export default function AboutPage() {
           </div>
           <div className="text-lg text-foreground/80 space-y-6">
             <h2 className="font-headline text-4xl sm:text-5xl font-bold text-primary">
-              I'm a writer, observer, and lifelong learner.
+              This is WANJIKU
             </h2>
-            <p>
-              Welcome to my little corner of the internet. My name is Watkins, and I find solace in the rustle of leaves, the quiet wisdom of ancient trees, and the stories they whisper. Writing has always been my way of making sense of the world and my place within it.
-            </p>
-            <p>
-              This blog is an extension of my personal journal—a place where I explore the intersection of nature's rhythms and the journey of personal growth. I believe that by paying closer attention to the world around us, we can learn to better understand the world within us.
-            </p>
-            <p>
-              Through my posts, I hope to share observations, reflections, and moments of clarity that might inspire you to find your own connection with nature and self. Thank you for being here and sharing in this journey.
-            </p>
+             <div className="space-y-4 text-foreground/70">
+                <p>
+                  Wanjiku is more than a writer—she's a storyteller of the unseen. Through her words, she paints vivid landscapes of nature's beauty, channels the quiet strength of universal energy, and captures the soulful rhythms that connect us all. Her writing is a gentle invitation to pause, breathe, and rediscover the magic woven into everyday life.
+                </p>
+                <p>
+                  Beyond the page, Wanjiku carries an effortless sense of style that mirrors her artistry—elegant, bold, and deeply authentic. Whether she is exploring the whisper of the wind through trees, reflecting on the mysteries of the soul, or curating her own timeless fashion, Wanjiku embodies creativity in every form.
+                </p>
+                <p>
+                  Her work is not just read—it is felt.
+                </p>
+              </div>
           </div>
         </div>
       </div>

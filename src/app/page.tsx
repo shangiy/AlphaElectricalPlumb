@@ -3,15 +3,52 @@ import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
+import { blogPosts, type BlogPost } from '@/lib/blog-data';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel"
+
+
+function BlogPostCard({ post }: { post: BlogPost }) {
+  const image = PlaceHolderImages.find((img) => img.id === post.imageId);
+
+  return (
+    <article className="group relative w-full h-full">
+      {image && (
+          <Image
+            src={image.imageUrl}
+            alt={post.title}
+            fill
+            className="object-cover rounded-lg"
+            data-ai-hint={image.imageHint}
+          />
+      )}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent rounded-lg"></div>
+      <div className="absolute bottom-0 left-0 p-6 text-white">
+        <h2 className="font-headline text-2xl font-bold mb-2">
+          <Link href={`#`} className="hover:underline">
+            {post.title}
+          </Link>
+        </h2>
+        <p className="text-sm opacity-90">{post.excerpt}</p>
+      </div>
+    </article>
+  );
+}
+
 
 export default function Home() {
   const heroImage = PlaceHolderImages.find((img) => img.id === 'home-hero');
-  const aboutImage = PlaceHolderImages.find((img) => img.id === 'about-portrait');
+  const aboutImage = PlaceHolderImages.find((img) => img.id === 'about-wanjiku');
 
   return (
-    <div>
+    <div className='overflow-x-hidden'>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col md:flex-row items-center min-h-[calc(100vh-4rem)] gap-8 py-12">
+        <div className="flex flex-col md:flex-row items-center min-h-screen md:min-h-[calc(100vh-4rem)] gap-8 py-12">
           <div className="md:w-1/2 text-center md:text-left">
             <h1 className="text-6xl md:text-8xl font-bold font-headline text-primary tracking-tighter leading-tight">
               WATKINS
@@ -50,38 +87,70 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="bg-primary/5 py-16 sm:py-24">
+      <div className="bg-background py-16 sm:py-24">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-center">
-            <div className="relative aspect-[4/3] w-full max-w-md mx-auto lg:max-w-none lg:w-full rounded-lg overflow-hidden shadow-xl lg:order-last">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+             <div className="lg:order-last">
               {aboutImage && (
-                <Image
-                  src={aboutImage.imageUrl}
-                  alt={aboutImage.description}
-                  fill
-                  className="object-cover"
-                  data-ai-hint={aboutImage.imageHint}
-                />
+                <div className="relative aspect-[4/3] w-full rounded-lg overflow-hidden shadow-xl">
+                  <Image
+                    src={aboutImage.imageUrl}
+                    alt={aboutImage.description}
+                    fill
+                    className="object-cover"
+                    data-ai-hint={aboutImage.imageHint}
+                  />
+                </div>
               )}
             </div>
-            <div className="text-lg text-foreground/80 space-y-6 lg:order-first">
+            <div className="text-lg text-foreground/80 space-y-6">
               <h2 className="font-headline text-4xl sm:text-5xl font-bold text-primary">
-                A Glimpse Into My World
+                This Is WANJIKU
               </h2>
-              <p>
-                Hello, I'm Watkins. This space is a reflection of my journey—a tapestry woven with threads of quiet observation, a deep love for the natural world, and the perpetual quest for personal growth.
-              </p>
-              <p>
-                Writing is how I connect the dots, finding meaning in the silent conversations between the wind and the trees, and between my inner world and the outer one.
-              </p>
-              <Button asChild variant="link" className="px-0 font-bold text-primary text-lg">
+              <div className="space-y-4 text-foreground/70">
+                <p>
+                  Wanjiku is more than a writer—she's a storyteller of the unseen. Through her words, she paints vivid landscapes of nature's beauty, channels the quiet strength of universal energy, and captures the soulful rhythms that connect us all. Her writing is a gentle invitation to pause, breathe, and rediscover the magic woven into everyday life.
+                </p>
+                <p>
+                  Beyond the page, Wanjiku carries an effortless sense of style that mirrors her artistry—elegant, bold, and deeply authentic. Whether she is exploring the whisper of the wind through trees, reflecting on the mysteries of the soul, or curating her own timeless fashion, Wanjiku embodies creativity in every form.
+                </p>
+                <p>
+                  Her work is not just read—it is felt.
+                </p>
+              </div>
+               <Button asChild size="lg" className="bg-[#415443] hover:bg-[#354536] text-primary-foreground font-bold tracking-wider px-8 py-6 text-base">
                 <Link href="/about">
-                  Read More About Me <ArrowRight className="ml-2 h-5 w-5" />
+                  Read More
                 </Link>
               </Button>
             </div>
           </div>
         </div>
+      </div>
+
+      <div className="bg-[#002A1E] text-white py-16 sm:py-24">
+         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 className="font-headline text-4xl sm:text-5xl font-bold mb-12">FROM MY BLOG</h2>
+             <Carousel
+              opts={{
+                align: "start",
+                loop: true,
+              }}
+              className="w-full"
+            >
+              <CarouselContent className="-ml-4">
+                {blogPosts.map((post) => (
+                  <CarouselItem key={post.id} className="md:basis-1/2 lg:basis-1/3 pl-4">
+                    <div className="p-1 h-[450px]">
+                      <BlogPostCard post={post} />
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious className="absolute left-[-20px] top-1/2 -translate-y-1/2 text-white bg-black bg-opacity-50 hover:bg-opacity-75" />
+              <CarouselNext className="absolute right-[-20px] top-1/2 -translate-y-1/2 text-white bg-black bg-opacity-50 hover:bg-opacity-75" />
+            </Carousel>
+         </div>
       </div>
     </div>
   );

@@ -7,10 +7,10 @@
       "imageHint": "forest path"
     },
     {
-      "id": "about-portrait",
-      "description": "A portrait of the author in a natural setting.",
-      "imageUrl": "https://images.unsplash.com/photo-1722371131066-e37037ecf109?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHx3cml0ZXIlMjBwb3J0cmFpdHxlbnwwfHx8fDE3NjI2MTg3ODR8MA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "writer portrait"
+      "id": "about-wanjiku",
+      "description": "A portrait of Wanjiku smiling and sitting under a tree.",
+      "imageUrl": "https://images.unsplash.com/photo-1589156280899-76839c0f9a20?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "imageHint": "woman smiling"
     },
     {
       "id": "blog-post-1",
