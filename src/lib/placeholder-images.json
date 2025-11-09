@@ -1,3 +1,40 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "home-hero",
+      "description": "A serene forest path with sunlight filtering through the trees.",
+      "imageUrl": "https://images.unsplash.com/photo-1592859600972-1b0834d83747?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxmb3Jlc3QlMjBwYXRofGVufDB8fHx8MTc2MjU4ODU2Mnww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "forest path"
+    },
+    {
+      "id": "about-portrait",
+      "description": "A portrait of the author in a natural setting.",
+      "imageUrl": "https://images.unsplash.com/photo-1722371131066-e37037ecf109?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHx3cml0ZXIlMjBwb3J0cmFpdHxlbnwwfHx8fDE3NjI2MTg3ODR8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "writer portrait"
+    },
+    {
+      "id": "blog-post-1",
+      "description": "A close-up of a dew-covered leaf.",
+      "imageUrl": "https://images.unsplash.com/photo-1730367110678-2eca1385ae66?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxkZXclMjBsZWFmfGVufDB8fHx8MTc2MjY1Mjk0OHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "dew leaf"
+    },
+    {
+      "id": "blog-post-2",
+      "description": "A tranquil lake at sunrise.",
+      "imageUrl": "https://images.unsplash.com/photo-1673685494538-2c8e0a4da198?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxsYWtlJTIwc3VucmlzZXxlbnwwfHx8fDE3NjI2NjM3Njd8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "lake sunrise"
+    },
+    {
+      "id": "blog-post-3",
+      "description": "An open journal on a rustic wooden table.",
+      "imageUrl": "https://images.unsplash.com/photo-1483546363825-7ebf25fb7513?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxvcGVuJTIwam91cm5hbHxlbnwwfHx8fDE3NjI1OTcxNzB8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "open journal"
+    },
+    {
+      "id": "blog-post-4",
+      "description": "A winding mountain road.",
+      "imageUrl": "https://images.unsplash.com/photo-1494822493217-c9840aba840c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxtb3VudGFpbiUyMHJvYWR8ZW58MHx8fHwxNzYyNjkwNDg2fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "mountain road"
+    }
+  ]
 }
