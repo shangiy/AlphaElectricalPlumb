@@ -9,23 +9,23 @@ export interface BlogPost {
 export const blogPosts: BlogPost[] = [
   {
     id: '1',
-    title: 'Whispers of the Woods: A Morning Walk',
+    title: 'Dancing with Universal Energy',
     date: 'October 26, 2023',
-    excerpt: 'The forest floor was a tapestry of fallen leaves, each one a story of the season past. As I walked, the crisp morning air filled my lungs...',
+    excerpt: "What if the universe isn't distant, but alive within us—guiding, shaping, and flowing through our everyday choices? Step into a journey of alignment and inner awakening.",
     imageId: 'blog-post-1',
   },
   {
     id: '2',
-    title: 'Reflections on the Water: Finding Clarity',
+    title: 'The Language of Trees',
     date: 'September 15, 2023',
-    excerpt: 'There is a certain magic to the stillness of a lake at dawn. The water, a perfect mirror, reflects not just the sky but also the state of one\'s soul...',
+    excerpt: 'Every tree holds a story—rooted in silence, whispered through leaves, and carried by the wind. Discover how nature speaks when we slow down enough to listen.',
     imageId: 'blog-post-2',
   },
   {
     id: '3',
-    title: 'The Unwritten Page: Embracing the Blank Slate',
+    title: 'The Soul of Style',
     date: 'August 02, 2023',
-    excerpt: 'Every writer knows the fear and the thrill of a blank page. It is a promise of potential, a canvas for thoughts yet to be born...',
+    excerpt: "Style isn't just fashion—it's the poetry of self-expression. Explore how what we wear becomes an extension of the soul, carrying stories beyond words.",
     imageId: 'blog-post-3',
   },
   {
