@@ -1,3 +1,6 @@
+
+'use client'
+
 import Image from 'next/image';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Button } from '@/components/ui/button';
@@ -11,6 +14,8 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel"
+import Autoplay from "embla-carousel-autoplay"
+import React from 'react';
 
 
 function BlogPostCard({ post }: { post: BlogPost }) {
@@ -44,6 +49,10 @@ function BlogPostCard({ post }: { post: BlogPost }) {
 export default function Home() {
   const heroImage = PlaceHolderImages.find((img) => img.id === 'home-hero');
   const aboutImage = PlaceHolderImages.find((img) => img.id === 'about-wanjiku');
+
+  const autoplayPlugin = React.useRef(
+    Autoplay({ delay: 2000, stopOnInteraction: false, stopOnMouseEnter: true })
+  )
 
   return (
     <div className='overflow-x-hidden'>
@@ -136,6 +145,7 @@ export default function Home() {
                 align: "start",
                 loop: true,
               }}
+              plugins={[autoplayPlugin.current]}
               className="w-full"
             >
               <CarouselContent className="-ml-4">
@@ -147,8 +157,6 @@ export default function Home() {
                   </CarouselItem>
                 ))}
               </CarouselContent>
-              <CarouselPrevious className="absolute left-[-20px] top-1/2 -translate-y-1/2 text-white bg-black bg-opacity-50 hover:bg-opacity-75" />
-              <CarouselNext className="absolute right-[-20px] top-1/2 -translate-y-1/2 text-white bg-black bg-opacity-50 hover:bg-opacity-75" />
             </Carousel>
          </div>
       </div>
