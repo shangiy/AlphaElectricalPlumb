@@ -1,0 +1,24 @@
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Products can be read by anyone, but only written by admins/staff.
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if request.auth != null && (request.auth.token.role == 'admin' || request.auth.token.role == 'staff');
+    }
+
+    match /products/{document=**} {
+      allow read: if true;
+    }
+
+    // User Selfies: Anyone can create (for visual search), but only admins can read.
+    match /userSelfies/{selfieId} {
+      allow create: if true;
+      allow read: if request.auth != null && (request.auth.token.role == 'admin' || request.auth.token.role == 'staff');
+      allow delete: if request.auth != null && request.auth.token.role == 'admin';
+    }
+  }
+}

@@ -1,0 +1,20 @@
+
+{
+    "hosting": {
+      "source": ".",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ],
+      "framework": "nextjs",
+      "site": "alpha-plumbing-electrical"
+    },
+    "firestore": {
+      "rules": "firestore.rules"
+    },
+    "storage": {
+      "rules": "storage.rules"
+    }
+  }
+  

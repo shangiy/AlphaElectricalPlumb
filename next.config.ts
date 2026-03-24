@@ -18,18 +18,14 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'images.unsplash.com',
-        port: '',
-        pathname: '/**',
-      },
-      {
-        protocol: 'https',
         hostname: 'picsum.photos',
         port: '',
         pathname: '/**',
       },
     ],
   },
+  // Required for some hosting environments to correctly handle standalone builds
+  output: 'standalone',
 };
 
 export default nextConfig;

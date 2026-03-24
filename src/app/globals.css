@@ -4,57 +4,26 @@
 
 @layer base {
   :root {
-    --background: 120 50% 97%;
-    --foreground: 240 10% 3.9%;
+    --background: 0 0% 100%;
+    --foreground: 160 30% 10%;
     --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
+    --card-foreground: 160 30% 10%;
     --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 120 60% 34%;
-    --primary-foreground: 60 90% 98%;
-    --secondary: 120 10% 90%;
-    --secondary-foreground: 240 10% 3.9%;
-    --muted: 120 10% 90%;
-    --muted-foreground: 240 5% 45%;
-    --accent: 60 100% 25%;
-    --accent-foreground: 60 90% 98%;
+    --popover-foreground: 160 30% 10%;
+    --primary: 160 40% 15%; /* Dark Green */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 160 20% 95%;
+    --secondary-foreground: 160 40% 15%;
+    --muted: 160 10% 96%;
+    --muted-foreground: 160 5% 45%;
+    --accent: 160 40% 25%;
+    --accent-foreground: 0 0% 100%;
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 60 90% 98%;
-    --border: 120 20% 85%;
-    --input: 120 20% 90%;
-    --ring: 120 60% 34%;
-    --chart-1: 120 60% 34%;
-    --chart-2: 60 100% 25%;
-    --chart-3: 120 40% 50%;
-    --chart-4: 60 80% 40%;
-    --chart-5: 120 30% 65%;
-    --radius: 0.5rem;
-  }
-  .dark {
-    --background: 240 10% 3.9%;
-    --foreground: 60 90% 98%;
-    --card: 240 10% 3.9%;
-    --card-foreground: 60 90% 98%;
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 60 90% 98%;
-    --primary: 120 60% 34%;
-    --primary-foreground: 60 90% 98%;
-    --secondary: 240 5% 15%;
-    --secondary-foreground: 60 90% 98%;
-    --muted: 240 5% 15%;
-    --muted-foreground: 240 5% 65%;
-    --accent: 60 100% 25%;
-    --accent-foreground: 60 90% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 60 90% 98%;
-    --border: 240 5% 15%;
-    --input: 240 5% 15%;
-    --ring: 120 60% 34%;
-    --chart-1: 120 60% 34%;
-    --chart-2: 60 100% 25%;
-    --chart-3: 120 40% 50%;
-    --chart-4: 60 80% 40%;
-    --chart-5: 120 30% 65%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 160 10% 90%;
+    --input: 160 10% 90%;
+    --ring: 160 40% 15%;
+    --radius: 1rem;
   }
 }
 
@@ -63,6 +32,24 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground overflow-x-hidden;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-headline tracking-tight;
+  }
+}
+
+@layer utilities {
+  .bg-wanjiku-green {
+    background-color: #1a3a32;
+  }
+  
+  @keyframes scroll-endless {
+    from { transform: translateX(0); }
+    to { transform: translateX(-100%); }
+  }
+  
+  .animate-scroll-endless {
+    animation: scroll-endless 40s linear infinite;
   }
 }

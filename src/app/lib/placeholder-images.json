@@ -1,0 +1,26 @@
+{
+  "wanjiku_portrait": {
+    "url": "https://picsum.photos/seed/wanjiku/800/1000",
+    "width": 800,
+    "height": 1000,
+    "alt": "Wanjiku Portrait"
+  },
+  "blog_post_1": {
+    "url": "https://picsum.photos/seed/blog1/600/400",
+    "width": 600,
+    "height": 400,
+    "alt": "Nature writing"
+  },
+  "blog_post_2": {
+    "url": "https://picsum.photos/seed/blog2/600/400",
+    "width": 600,
+    "height": 400,
+    "alt": "Personal growth"
+  },
+  "blog_post_3": {
+    "url": "https://picsum.photos/seed/blog3/600/400",
+    "width": 600,
+    "height": 400,
+    "alt": "Quiet moments"
+  }
+}

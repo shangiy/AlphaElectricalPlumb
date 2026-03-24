@@ -1,0 +1,13 @@
+
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /product-images/{allPaths=**} {
+      // Allow anyone to upload images (needed for visual search selfies)
+      allow write: if true;
+      // Allow read access for public product images and admin viewing
+      allow read: if true;
+    }
+  }
+}

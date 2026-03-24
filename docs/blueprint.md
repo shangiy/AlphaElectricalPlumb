@@ -1,20 +1,21 @@
-# **App Name**: Watkins Writer's Nook
+# **App Name**: Alpha Plumbing n Electrical ltd 
 
 ## Core Features:
 
-- Homepage Display: Display a landing page with a featured image and a brief introduction to the writer, exactly as the Figma prototype dictates.
-- About Page: Create an 'About' page with biographical information and a personal statement. Mirror the Figma design.
-- Blog Page: Design a blog page layout identical to the Figma prototype, showcasing blog posts with images and excerpts.
-- Contact Page: Implement a contact page as shown in the Figma design, possibly with a contact form.
-- Menu Navigation: Implement main menu to navigate on all pages (home, about, my blog, contact).
-- Inspiration Prompt: Generate a creative prompt tailored to the author's writing style and blog content, aimed at helping with writer's block. The LLM will reason and decide whether the user may require the suggested content for the day.
+- Product Browsing: Browse products by category or search.
+- Product Details: Display product details, including images, descriptions, and pricing.
+- Product Filtering & Sorting: Allow users to filter and sort products based on different criteria.
+- Seller profile creation: Enable registered users to create a profile page for seller verification. This may contain fields for business information.
+- AI Powered Product Recommendations: Use a tool to analyze product descriptions and user search queries to provide relevant product recommendations.
+- Contact seller: Contact seller with built-in form using email service
+- Responsive Layout: Responsive design for seamless experience on all devices.
 
 ## Style Guidelines:
 
-- Primary color: Deep forest green (#228B22), mirroring the natural, serene aesthetic of the Figma design.
-- Background color: Light, desaturated green (#F0FAF0) for a calming, unobtrusive backdrop.
-- Accent color: Muted olive green (#808000) for subtle highlights and interactive elements.
-- Headline font: 'Literata', a serif, will provide an elegant, vintage feel for headlines and titles.
-- Body font: 'Literata', a serif, to offer the same pleasant vintage feel throughout body copy.
-- Use minimalist icons related to writing and nature. For example, use feather, leaves, open book, etc.
-- The layout will replicate the two-column layout visible in the Figma image, splitting content between textual and image-based elements
+- Primary color: HSL(210, 60%, 50%) -> Hex #3399FF, a vibrant blue to convey trust and reliability.
+- Background color: HSL(210, 20%, 95%) -> Hex #F0F8FF, a very light tint of blue to provide a clean and calming backdrop.
+- Accent color: HSL(180, 70%, 40%) -> Hex #33BDBD, a contrasting teal to highlight key actions and elements.
+- Headline font: 'Poppins' sans-serif for a geometric and contemporary feel.
+- Body font: 'PT Sans' sans-serif for readability and modern touch.
+- Use clear and consistent icons to represent product categories and actions.
+- Employ a grid-based layout with ample white space to avoid clutter and improve user experience.

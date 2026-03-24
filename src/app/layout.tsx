@@ -1,12 +1,30 @@
 import type { Metadata } from 'next';
+import { Poppins, PT_Sans } from 'next/font/google';
 import './globals.css';
 import { cn } from '@/lib/utils';
-import Header from '@/components/common/Header';
-import { Toaster } from '@/components/ui/toaster';
+import { ClientLayout } from '@/components/layout/ClientLayout';
+import Script from 'next/script';
+
+const poppins = Poppins({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-poppins',
+  weight: ['400', '600', '700'],
+});
+
+const ptSans = PT_Sans({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-pt-sans',
+  weight: ['400', '700'],
+});
 
 export const metadata: Metadata = {
-  title: "Watkins Writer's Nook",
-  description: 'A serene space for the modern writer.',
+  title: 'Alpha Electricals & Plumbing Ltd',
+  description: 'Premium plumbing, electrical, lighting, and home décor solutions in Eldoret, Kenya.',
+  icons: {
+    icon: '/favicon.ico',
+  },
 };
 
 export default function RootLayout({
@@ -16,15 +34,17 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,700;1,7..72,400;1,7..72,700&display=swap" rel="stylesheet" />
-      </head>
-      <body className={cn('min-h-screen bg-background font-body antialiased')}>
-        <Header />
-        <main className="flex-1">{children}</main>
-        <Toaster />
+      <body
+        className={cn(
+          'min-h-screen bg-background font-body antialiased',
+          poppins.variable,
+          ptSans.variable
+        )}
+      >
+        <ClientLayout>
+          {children}
+        </ClientLayout>
+        <Script src="https://js.paystack.co/v1/inline.js" strategy="beforeInteractive" />
       </body>
     </html>
   );
