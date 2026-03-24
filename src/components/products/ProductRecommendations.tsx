@@ -94,7 +94,7 @@ export default function ProductRecommendations({ productTitle, productId, catego
                     </CardHeader>
                     <CardContent className="p-2 flex-grow text-center">
                       <Link href={`/products/${product.id}`}>
-                        <p className="text-xs font-bold font-headline leading-tight hover:text-primary line-clamp-2 min-h-[2.5rem]">{product.name}</p>
+                        <p className="text-xs font-bold font-headline leading-tight hover:text-blue active:text-blue transition-colors line-clamp-2 min-h-[2.5rem]">{product.name}</p>
                       </Link>
                       <p className="text-sm font-black text-primary mt-1">{formatPrice(product.price)}</p>
                     </CardContent>

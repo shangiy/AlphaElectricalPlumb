@@ -1,3 +1,4 @@
+
 'use client';
 
 import Image from 'next/image';
@@ -89,7 +90,7 @@ export default function ProductCard({ product }: ProductCardProps) {
       </CardHeader>
       <CardContent className="flex-grow p-4">
         <Link href={`/products/${product.id}`} className="block">
-          <CardTitle className="mb-2 text-base font-semibold leading-tight hover:text-primary">
+          <CardTitle className="mb-2 text-base font-semibold leading-tight hover:text-blue active:text-blue transition-colors">
             {product.name}
           </CardTitle>
         </Link>
