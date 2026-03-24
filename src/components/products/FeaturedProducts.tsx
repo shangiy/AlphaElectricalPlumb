@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useProducts } from '@/context/ProductProvider';
@@ -6,6 +5,8 @@ import type { Product } from '@/lib/types';
 import ProductCard from './ProductCard';
 import { Skeleton } from '../ui/skeleton';
 import { useMemo } from 'react';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 export default function FeaturedProducts() {
   const { products, loading } = useProducts();
@@ -81,6 +82,12 @@ export default function FeaturedProducts() {
           {featuredProducts.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
+        </div>
+        
+        <div className="mt-12 flex justify-center">
+          <Button asChild size="lg" className="w-full sm:w-auto min-w-[280px] bg-[#28235f] hover:bg-[#28235f]/90 text-white font-bold py-6 text-lg rounded-full transition-all shadow-md hover:shadow-lg">
+            <Link href="/search">View All Products</Link>
+          </Button>
         </div>
       </div>
     </section>
