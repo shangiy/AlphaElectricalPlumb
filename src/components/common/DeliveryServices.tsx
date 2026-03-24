@@ -41,6 +41,7 @@ export default function DeliveryServices() {
                          label="Good User Experience" 
                          size={150} 
                          strokeWidth={9} 
+                         progressColor="hsl(var(--primary))"
                      />
                  </div>
                  <div className="absolute top-[55%] left-1/2 transform -translate-x-1/2">
@@ -49,6 +50,7 @@ export default function DeliveryServices() {
                          label="Satisfactory Service Delivery" 
                          size={180} 
                          strokeWidth={11} 
+                         progressColor="hsl(var(--primary))"
                      />
                  </div>
             </div>

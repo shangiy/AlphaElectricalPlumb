@@ -5,24 +5,24 @@
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 160 30% 10%;
+    --foreground: 180 30% 10%;
     --card: 0 0% 100%;
-    --card-foreground: 160 30% 10%;
+    --card-foreground: 180 30% 10%;
     --popover: 0 0% 100%;
-    --popover-foreground: 160 30% 10%;
-    --primary: 160 40% 15%; /* Dark Green */
+    --popover-foreground: 180 30% 10%;
+    --primary: 180 70% 40%; /* Teal/Cyan */
     --primary-foreground: 0 0% 100%;
-    --secondary: 160 20% 95%;
-    --secondary-foreground: 160 40% 15%;
-    --muted: 160 10% 96%;
-    --muted-foreground: 160 5% 45%;
-    --accent: 160 40% 25%;
+    --secondary: 180 20% 95%; /* Light teal tint */
+    --secondary-foreground: 180 70% 40%;
+    --muted: 180 10% 96%;
+    --muted-foreground: 180 5% 45%;
+    --accent: 180 70% 40%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 160 10% 90%;
-    --input: 160 10% 90%;
-    --ring: 160 40% 15%;
+    --border: 180 10% 90%;
+    --input: 180 10% 90%;
+    --ring: 180 70% 40%;
     --radius: 1rem;
     --blue: 210 60% 50%;
     --blue-foreground: 0 0% 100%;

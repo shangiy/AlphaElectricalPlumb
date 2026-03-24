@@ -90,15 +90,21 @@ export default function Header() {
   );
   
   const navAndIconClasses = cn(
-    "font-semibold text-base",
+    "font-semibold text-base transition-all duration-300",
     dynamicColorClasses,
-    "hover:text-[#8a0b0d]"
+    "hover:text-primary hover:bg-primary/10 rounded-md"
+  );
+
+  const iconClasses = cn(
+    "rounded-full p-2 transition-all duration-300",
+    dynamicColorClasses,
+    "hover:bg-primary/10 hover:text-primary"
   );
 
   const logoTextClasses = cn(
     "hidden sm:flex flex-col",
     dynamicColorClasses,
-    "group-hover:text-[#8a0b0d]"
+    "group-hover:text-primary"
   );
   
   const handleProductsMenuEnter = () => {
@@ -210,11 +216,11 @@ export default function Header() {
                         </Link>
                     ))}
                 </nav>
-                <div className="flex items-center">
-                    <ShoppingCart triggerClassName={cn(navAndIconClasses, '[&_svg]:h-7 [&_svg]:w-7')} />
+                <div className="flex items-center ml-2">
+                    <ShoppingCart triggerClassName={cn(iconClasses, '[&_svg]:h-7 [&_svg]:w-7')} />
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className={cn("w-auto px-3 gap-2 rounded-md", navAndIconClasses)}>
+                        <Button variant="ghost" className={cn("w-auto px-3 gap-2 rounded-full", iconClasses)}>
                             <User className="h-7 w-7" />
                             <span className="hidden xl:inline">{user ? user.username : 'Log in'}</span>
                         </Button>
@@ -269,10 +275,10 @@ export default function Header() {
                 </div>
 
                 <div className="flex items-center flex-shrink-0">
-                    <ShoppingCart triggerClassName={cn(navAndIconClasses, '[&_svg]:h-6 [&_svg]:w-6')} />
+                    <ShoppingCart triggerClassName={cn(iconClasses, '[&_svg]:h-6 [&_svg]:w-6')} />
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className={cn("rounded-full", navAndIconClasses, '[&_svg]:h-6 [&_svg]:w-6')}>
+                            <Button variant="ghost" size="icon" className={cn(iconClasses, '[&_svg]:h-6 [&_svg]:w-6')}>
                                 <User />
                                 <span className="sr-only">Account</span>
                             </Button>
@@ -302,7 +308,7 @@ export default function Header() {
                     </DropdownMenu>
                     <Sheet>
                         <SheetTrigger asChild>
-                            <Button variant="ghost" size="icon" className={cn("rounded-full", navAndIconClasses, '[&_svg]:h-6 [&_svg]:w-6')}>
+                            <Button variant="ghost" size="icon" className={cn(iconClasses, '[&_svg]:h-6 [&_svg]:w-6')}>
                                 <Menu />
                                 <span className="sr-only">Toggle menu</span>
                             </Button>

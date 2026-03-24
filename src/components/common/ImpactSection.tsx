@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Award, Smile, Users } from 'lucide-react';
@@ -66,7 +65,7 @@ function Counter({ target, duration = 5000 }: CounterProps) {
 
 // Individual stat box component
 const ImpactStat = ({ icon, target, label }: { icon: React.ReactNode, target: number | string, label: string }) => (
-  <div className="relative h-full text-center text-white border-2 border-green-400/50 rounded-lg">
+  <div className="relative h-full text-center text-white border-2 border-primary/50 rounded-lg">
     {/* Icon with background matching the section overlay to "erase" the border */}
     <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-gray-900/70 px-2">
       {icon}
@@ -88,9 +87,9 @@ const ImpactStat = ({ icon, target, label }: { icon: React.ReactNode, target: nu
 export default function ImpactSection() {
   const impactStats = [
     { icon: <span className="text-4xl">🌍</span>, target: 35200, label: "Daily Average Reach" },
-    { icon: <Users className="h-10 w-10 text-green-400" />, target: 42324, label: "Subscribers" },
-    { icon: <Smile className="h-10 w-10 text-green-400" />, target: 28255, label: "Benefitted Customers" },
-    { icon: <Award className="h-10 w-10 text-green-400" />, target: "Coming Soon", label: "Awards" },
+    { icon: <Users className="h-10 w-10 text-primary" />, target: 42324, label: "Subscribers" },
+    { icon: <Smile className="h-10 w-10 text-primary" />, target: 28255, label: "Benefitted Customers" },
+    { icon: <Award className="h-10 w-10 text-primary" />, target: "Coming Soon", label: "Awards" },
   ];
 
   return (

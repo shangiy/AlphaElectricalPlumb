@@ -15,7 +15,7 @@ export function CircularProgress({
   progress = 0,
   size = 120,
   strokeWidth = 10,
-  progressColor = '#00c389',
+  progressColor = 'hsl(var(--primary))',
   trackColor = 'rgba(255, 255, 255, 0.2)',
   label,
 }: CircularProgressProps) {
