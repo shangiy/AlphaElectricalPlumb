@@ -96,7 +96,9 @@ function LoginFormContent() {
     });
     
     const handleTabChange = (tab: string) => {
-        router.push(`/auth/login?tab=${tab}`, { scroll: false });
+        const params = new URLSearchParams(searchParams.toString());
+        params.set('tab', tab);
+        router.push(`/auth/login?${params.toString()}`, { scroll: false });
     };
 
     async function onLogin(data: LoginFormValues) {
@@ -149,6 +151,8 @@ function LoginFormContent() {
             setSocialLoading(null);
         }
     }
+
+    const redirectQuery = redirectUrl !== '/' ? `&redirect=${encodeURIComponent(redirectUrl)}` : '';
 
   return (
     <div className="container mx-auto flex min-h-[80vh] items-center justify-center px-4 py-12">
@@ -225,7 +229,7 @@ function LoginFormContent() {
                                 <p className="text-center text-sm text-muted-foreground">
                                     Don&apos;t have an account?{' '}
                                     <Link
-                                      href="/auth/login?tab=signup"
+                                      href={`/auth/login?tab=signup${redirectQuery}`}
                                       scroll={false}
                                       className="font-medium text-primary hover:underline"
                                     >
@@ -356,7 +360,7 @@ function LoginFormContent() {
                                  <p className="text-center text-sm text-muted-foreground">
                                     Already have an account?{' '}
                                     <Link
-                                      href="/auth/login?tab=login"
+                                      href={`/auth/login?tab=login${redirectQuery}`}
                                       scroll={false}
                                       className="font-medium text-primary hover:underline"
                                     >
