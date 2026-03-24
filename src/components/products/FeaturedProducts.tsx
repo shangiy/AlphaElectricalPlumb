@@ -72,7 +72,7 @@ export default function FeaturedProducts() {
     <section className="bg-background py-16">
       <div className="container mx-auto px-4">
         <div className="text-center">
-            <h2 className="text-3xl font-bold font-headline mb-4 text-primary">Featured Products</h2>
+            <h2 className="text-3xl font-bold font-headline mb-4 text-[#28235f]">Featured Products</h2>
             <p className="text-muted-foreground mb-10 max-w-2xl mx-auto">
                 Check out our hand-picked selection of top-quality products.
             </p>
