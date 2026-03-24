@@ -5,6 +5,7 @@ import FeaturedProducts from '@/components/products/FeaturedProducts';
 import ConnectWithUs from '@/components/common/ConnectWithUs';
 import ImpactSection from '@/components/common/ImpactSection';
 import CategoryCarousel from '@/components/common/CategoryCarousel';
+import HomepageAbout from '@/components/common/HomepageAbout';
 
 export default function Home() {
   return (
@@ -13,6 +14,7 @@ export default function Home() {
       <CategoryCarousel />
       <FeaturedProducts />
       <ImpactSection />
+      <HomepageAbout />
       <ConnectWithUs />
     </div>
   );
