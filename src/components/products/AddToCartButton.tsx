@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useCart } from '@/context/CartProvider';
@@ -19,7 +18,7 @@ export default function AddToCartButton({ product, quantity = 1 }: AddToCartButt
   };
 
   return (
-    <Button size="lg" variant="outline" className="flex-1" onClick={handleAddToCart}>
+    <Button size="lg" variant="blue" className="flex-1" onClick={handleAddToCart}>
       <ShoppingCart className="mr-2 h-5 w-5" /> Add to Cart
     </Button>
   );

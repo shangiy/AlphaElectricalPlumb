@@ -1,4 +1,3 @@
-
 'use client';
 
 import Image from 'next/image';
@@ -114,7 +113,7 @@ export default function ProductCard({ product }: ProductCardProps) {
             <Button size="sm" variant="outline" className="flex-1" asChild>
                 <Link href={`/products/${product.id}`}>View More</Link>
             </Button>
-            <Button size="sm" className="flex-1" onClick={() => addToCart(product)}>Add to Cart</Button>
+            <Button size="sm" variant="blue" className="flex-1" onClick={() => addToCart(product)}>Add to Cart</Button>
         </div>
       </CardFooter>
     </Card>
