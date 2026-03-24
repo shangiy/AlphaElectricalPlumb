@@ -85,7 +85,7 @@ export default function FeaturedProducts() {
         </div>
         
         <div className="mt-12 flex justify-center">
-          <Button asChild size="lg" className="w-full sm:w-auto min-w-[280px] bg-[#28235f] hover:bg-[#28235f]/90 text-white font-bold py-6 text-lg rounded-full transition-all shadow-md hover:shadow-lg">
+          <Button asChild size="lg" className="w-full sm:w-auto min-w-[280px] bg-[#28235f] hover:bg-[#28235f]/90 text-white font-bold py-6 text-lg rounded-full transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105 active:scale-95">
             <Link href="/search">View All Products</Link>
           </Button>
         </div>
