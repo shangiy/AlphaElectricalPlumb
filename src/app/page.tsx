@@ -1,7 +1,6 @@
 'use client';
 
 import Hero from '@/components/common/Hero';
-import HomeBlogSection from '@/components/products/HomeBlogSection';
 import FeaturedProducts from '@/components/products/FeaturedProducts';
 import ConnectWithUs from '@/components/common/ConnectWithUs';
 import ImpactSection from '@/components/common/ImpactSection';
@@ -11,7 +10,6 @@ export default function Home() {
   return (
     <div className="relative w-full">
       <Hero />
-      <HomeBlogSection />
       <CategoryCarousel />
       <FeaturedProducts />
       <ImpactSection />
