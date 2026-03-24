@@ -111,7 +111,7 @@ export default function ProductCard({ product }: ProductCardProps) {
          </div>
           
         <div className="flex w-full gap-2 mt-2">
-            <Button size="sm" variant="outline" className="flex-1" asChild>
+            <Button size="sm" variant="outline" className="flex-1 hover:bg-[#28235f] hover:text-white border-muted transition-colors" asChild>
                 <Link href={`/products/${product.id}`}>View More</Link>
             </Button>
             <Button size="sm" variant="blue" className="flex-1" onClick={() => addToCart(product)}>Add to Cart</Button>
