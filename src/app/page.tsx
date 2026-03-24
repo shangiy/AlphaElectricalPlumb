@@ -1,7 +1,6 @@
 'use client';
 
 import Hero from '@/components/common/Hero';
-import WanjikuSection from '@/components/common/WanjikuSection';
 import HomeBlogSection from '@/components/products/HomeBlogSection';
 import FeaturedProducts from '@/components/products/FeaturedProducts';
 import ConnectWithUs from '@/components/common/ConnectWithUs';
@@ -12,7 +11,6 @@ export default function Home() {
   return (
     <div className="relative w-full">
       <Hero />
-      <WanjikuSection />
       <HomeBlogSection />
       <CategoryCarousel />
       <FeaturedProducts />
