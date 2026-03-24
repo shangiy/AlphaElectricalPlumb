@@ -6,6 +6,7 @@ import ConnectWithUs from '@/components/common/ConnectWithUs';
 import ImpactSection from '@/components/common/ImpactSection';
 import CategoryCarousel from '@/components/common/CategoryCarousel';
 import HomepageAbout from '@/components/common/HomepageAbout';
+import DeliveryServices from '@/components/common/DeliveryServices';
 
 export default function Home() {
   return (
@@ -13,6 +14,7 @@ export default function Home() {
       <Hero />
       <CategoryCarousel />
       <FeaturedProducts />
+      <DeliveryServices />
       <ImpactSection />
       <HomepageAbout />
       <ConnectWithUs />
