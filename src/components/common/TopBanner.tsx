@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Mail, Clock } from 'lucide-react';
@@ -7,8 +6,8 @@ import Image from 'next/image';
 
 export default function TopBanner() {
   const offerTexts = [
-    "OFFERS! OFFERS! Mazingira Day OFFERS!",
-    "Feel welcomed to shop with us @ best prices",
+    "OFFER! OFFER! OFFER! Easter Holiday OFFER",
+    "Feel welcomed to Shop with us @best prices",
   ];
 
   // Duplicate the array to ensure seamless looping
