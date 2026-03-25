@@ -1,0 +1,365 @@
+{
+  "entities": {
+    "AuthorProfile": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "AuthorProfile",
+      "type": "object",
+      "description": "Represents the primary author's profile, including biographical information, personal statements, and contact details for the 'Watkins Writer's Nook' website.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the AuthorProfile entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "The full name of the author (e.g., 'Watkins')."
+        },
+        "introduction": {
+          "type": "string",
+          "description": "A brief introductory text about the author, typically displayed on the homepage as per the Figma prototype."
+        },
+        "biography": {
+          "type": "string",
+          "description": "Detailed biographical information about the author, intended for the 'About' page."
+        },
+        "personalStatement": {
+          "type": "string",
+          "description": "A personal statement or motto from the author, displayed on the 'About' page."
+        },
+        "profileImageUrl": {
+          "type": "string",
+          "description": "URL to the author's profile picture, if one is used.",
+          "format": "uri"
+        },
+        "socialMediaLinks": {
+          "type": "array",
+          "description": "An array of URLs to the author's social media profiles.",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "introduction",
+        "biography",
+        "personalStatement"
+      ]
+    },
+    "BlogPost": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "BlogPost",
+      "type": "object",
+      "description": "Represents an individual blog post published by the author, displayed on the 'My Blog' page.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the BlogPost entity."
+        },
+        "title": {
+          "type": "string",
+          "description": "The title of the blog post."
+        },
+        "slug": {
+          "type": "string",
+          "description": "A URL-friendly version of the blog post title, used for permalinks."
+        },
+        "content": {
+          "type": "string",
+          "description": "The full content of the blog post, supporting rich text or markdown."
+        },
+        "excerpt": {
+          "type": "string",
+          "description": "A short summary or preview of the blog post, used in blog listings as per the Figma prototype."
+        },
+        "featureImageUrl": {
+          "type": "string",
+          "description": "URL to the main image associated with the blog post, displayed prominently with the post.",
+          "format": "uri"
+        },
+        "publicationDate": {
+          "type": "string",
+          "description": "The date and time when the blog post was originally published.",
+          "format": "date-time"
+        },
+        "lastUpdatedDate": {
+          "type": "string",
+          "description": "The date and time when the blog post was last updated.",
+          "format": "date-time"
+        },
+        "authorId": {
+          "type": "string",
+          "description": "Reference to AuthorProfile. (Relationship: AuthorProfile 1:N BlogPost)"
+        },
+        "tagIds": {
+          "type": "array",
+          "description": "References to Tags that categorize this blog post. (Relationship: Tag N:N BlogPost)",
+          "items": {
+            "type": "string"
+          }
+        },
+        "isPublished": {
+          "type": "boolean",
+          "description": "A flag indicating whether the blog post is published and visible to the public."
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "slug",
+        "content",
+        "excerpt",
+        "featureImageUrl",
+        "publicationDate",
+        "authorId",
+        "isPublished"
+      ]
+    },
+    "Tag": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Tag",
+      "type": "object",
+      "description": "Represents a category or keyword used to organize and filter blog posts.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Tag entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "The human-readable name of the tag (e.g., 'Poetry', 'Fiction', 'Writing Tips')."
+        },
+        "slug": {
+          "type": "string",
+          "description": "A URL-friendly version of the tag name."
+        },
+        "description": {
+          "type": "string",
+          "description": "An optional short description explaining what the tag represents."
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "slug"
+      ]
+    },
+    "ContactSubmission": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "ContactSubmission",
+      "type": "object",
+      "description": "Stores messages submitted by visitors through the website's 'Contact' page form.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the ContactSubmission entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the person who submitted the contact form."
+        },
+        "email": {
+          "type": "string",
+          "description": "The email address of the sender for replies.",
+          "format": "email"
+        },
+        "subject": {
+          "type": "string",
+          "description": "The subject line of the submitted message."
+        },
+        "message": {
+          "type": "string",
+          "description": "The full content of the message submitted through the contact form."
+        },
+        "submissionDate": {
+          "type": "string",
+          "description": "The date and time when the message was submitted.",
+          "format": "date-time"
+        },
+        "isRead": {
+          "type": "boolean",
+          "description": "A flag indicating whether the submitted message has been marked as read by the author/admin."
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "email",
+        "subject",
+        "message",
+        "submissionDate"
+      ]
+    },
+    "InspirationPrompt": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "InspirationPrompt",
+      "type": "object",
+      "description": "Stores creative writing prompts generated by the AI, tailored to the author's writing style and blog content, to help overcome writer's block.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the InspirationPrompt entity."
+        },
+        "promptText": {
+          "type": "string",
+          "description": "The text of the generated creative writing prompt."
+        },
+        "generationDate": {
+          "type": "string",
+          "description": "The date and time when the prompt was generated.",
+          "format": "date-time"
+        },
+        "authorId": {
+          "type": "string",
+          "description": "Reference to AuthorProfile, indicating for which author this prompt was generated. (Relationship: AuthorProfile 1:N InspirationPrompt)"
+        },
+        "relevanceScore": {
+          "type": "number",
+          "description": "An optional numerical score indicating the perceived relevance or quality of the prompt, as determined by the AI."
+        },
+        "isUsed": {
+          "type": "boolean",
+          "description": "A flag indicating whether the author has marked this prompt as 'used' or 'acted upon'."
+        }
+      },
+      "required": [
+        "id",
+        "promptText",
+        "generationDate",
+        "authorId"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/authorProfiles/{authorUid}",
+        "definition": {
+          "entityName": "AuthorProfile",
+          "schema": {
+            "$ref": "#/backend/entities/AuthorProfile"
+          },
+          "description": "Stores the primary author's profile, uniquely identified by their Firebase User ID (UID). This document is publicly readable. Write access is restricted to the specific `authorUid` owner or a global administrator. The `id` field within the document should match `authorUid`. Includes `authorUid` for authorization independence and ownership.",
+          "params": [
+            {
+              "name": "authorUid",
+              "description": "The Firebase User ID (UID) of the author who owns this profile."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/blogPosts/{blogPostId}",
+        "definition": {
+          "entityName": "BlogPost",
+          "schema": {
+            "$ref": "#/backend/entities/BlogPost"
+          },
+          "description": "Stores *published* blog posts. This collection has a homogeneous security posture, meaning all documents are publicly readable. Write access is restricted to authenticated administrators. The `isPublished` field for these documents MUST be `true`. Includes denormalized `authorId` (the author's UID) for direct ownership checks and authorization independence.",
+          "params": [
+            {
+              "name": "blogPostId",
+              "description": "The unique identifier for a published blog post."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{authorUid}/draftBlogPosts/{draftBlogPostId}",
+        "definition": {
+          "entityName": "BlogPost",
+          "schema": {
+            "$ref": "#/backend/entities/BlogPost"
+          },
+          "description": "Stores *unpublished* blog post drafts. This is a subcollection under the user's private data, enforcing strict path-based ownership. Only the `authorUid` associated with the path can read, create, or update their own drafts. The `isPublished` field for these documents MUST be `false`. The `authorId` in the document MUST match the `authorUid` in the path, ensuring authorization independence.",
+          "params": [
+            {
+              "name": "authorUid",
+              "description": "The Firebase User ID (UID) of the author who owns these draft blog posts."
+            },
+            {
+              "name": "draftBlogPostId",
+              "description": "The unique identifier for a draft blog post."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/tags/{tagId}",
+        "definition": {
+          "entityName": "Tag",
+          "schema": {
+            "$ref": "#/backend/entities/Tag"
+          },
+          "description": "Stores categories or keywords (tags) for blog posts. This collection is publicly readable for display and filtering purposes. Write access (create, update, delete) is restricted to authenticated administrators.",
+          "params": [
+            {
+              "name": "tagId",
+              "description": "The unique identifier for a tag."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/contactSubmissions/{submissionId}",
+        "definition": {
+          "entityName": "ContactSubmission",
+          "schema": {
+            "$ref": "#/backend/entities/ContactSubmission"
+          },
+          "description": "Stores messages submitted by visitors through the website's contact form. This collection allows public write access (any unauthenticated user can create a document). Read and update access (e.g., marking as read) is restricted to authenticated administrators.",
+          "params": [
+            {
+              "name": "submissionId",
+              "description": "The unique identifier for a contact form submission."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{authorUid}/inspirationPrompts/{promptId}",
+        "definition": {
+          "entityName": "InspirationPrompt",
+          "schema": {
+            "$ref": "#/backend/entities/InspirationPrompt"
+          },
+          "description": "Stores AI-generated creative writing prompts, privately owned by a specific author. This is a subcollection under the user's private data. Only the `authorUid` associated with the path can read, create, or update their own prompts. The `authorId` field in the document MUST match the `authorUid` in the path, ensuring authorization independence.",
+          "params": [
+            {
+              "name": "authorUid",
+              "description": "The Firebase User ID (UID) of the author who owns these inspiration prompts."
+            },
+            {
+              "name": "promptId",
+              "description": "The unique identifier for an inspiration prompt."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/roles_admin/{userId}",
+        "definition": {
+          "entityName": "AdminRole",
+          "schema": {
+            "$ref": "#/backend/entities/AdminRole"
+          },
+          "description": "A conceptual collection used for Database-Backed Access Control (DBAC). The existence of a document at `/roles_admin/{userId}` indicates that the `userId` possesses administrative privileges. This collection is only writable by existing administrators, and readable only by authenticated users (to verify their own role) or administrators (to manage roles). The entity 'AdminRole' is a conceptual marker for authorization, typically just an empty document with an 'id' field matching the 'userId'.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The Firebase User ID (UID) of a user granted administrative privileges."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore data structure for the 'Watkins Writer's Nook' backend is designed to be secure, scalable, and debuggable, adhering strictly to the provided core design principles and strategy mandates. \n\n**Authorization Independence (CRITICAL):** This structure eliminates hierarchical authorization dependencies (`get()`) by extensively using denormalization and path-based ownership. For entities like `BlogPost` and `InspirationPrompt`, the `authorId` (which corresponds to the Firebase `uid` of the author) is explicitly stored within each document. This means security rules can directly check `request.auth.uid == resource.data.authorId` or `request.auth.uid == userId` from the path, without needing to `get()` a parent document. Administrative roles are managed through a dedicated `/roles_admin/{userId}` collection, allowing for direct existence checks (`exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid))`). This approach ensures atomic operations and simplified rule logic.\n\n**Structural Segregation & QAPs (Rules are not Filters):** A key design decision is the structural segregation of `BlogPost` entities based on their publication status. Published blog posts reside in `/blogPosts/{blogPostId}`, ensuring that `list` operations on this collection only return publicly visible, published content. This inherently supports Query-Ability and Predictable Security (QAPs) because the security posture of the entire collection is homogeneous (public read). Draft blog posts are isolated to `/users/{authorUid}/draftBlogPosts/{draftBlogPostId}`, making them privately accessible only to the owning author. Similarly, `InspirationPrompt` documents are stored at `/users/{authorUid}/inspirationPrompts/{promptId}`, guaranteeing that `list` operations only retrieve prompts relevant to the authenticated `authorUid`. Publicly accessible entities like `Tags` and the main `AuthorProfile` are placed in top-level collections, while `ContactSubmission` allows public write but restricted admin read, further enhancing clarity and QAPs.\n\n**DBAC (Database-Backed Access Control):** All role-based authorization relies on data stored directly in Firestore, specifically the `/roles_admin/{userId}` collection. The presence of a document for a user's `uid` in this collection grants administrative privileges, making authorization explicit and auditable without relying on Firebase Custom Claims.\n\n**Access Modeling & Data Clarity:**\n*   **Private Data:** User-specific entities like `draftBlogPosts` and `InspirationPrompts` are secured using path-based ownership (`/users/{authorUid}/...`). This is a highly secure and efficient pattern for user-owned `1:N` relationships.\n*   **Collaborative/Shared Data:** Not explicitly required by current entities, but the model can extend using membership maps if needed.\n*   **Global Roles:** Implemented via `/roles_admin/{userId}` for administrators.\n*   **Explicit State:** The `isPublished` field in `BlogPost` clearly defines the state, rather than inferring it.\n*   **Predictable Schema & Consistency:** Consistent naming conventions (e.g., `authorUid`, `blogPostId`) and descriptive wildcards are used throughout, making the structure intuitive and rules easier to write and debug.\n\nOverall, this design provides a robust, maintainable, and highly secure foundation for the 'Watkins Writer's Nook' application, with clear authorization boundaries and efficient data retrieval patterns. For the 'alphaelectricalplumb-backend' context mentioned in the user request, this structure serves as a template for a well-designed Firebase backend."
+  }
+}
