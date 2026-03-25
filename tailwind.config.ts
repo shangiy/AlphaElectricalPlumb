@@ -129,6 +129,10 @@ export default {
             'background-position': '100% 50%',
           },
         },
+        'scroll': {
+          from: { transform: 'translateX(0)' },
+          to: { transform: 'translateX(-100%)' },
+        },
         'float-up-fade': {
           '0%': { transform: 'translateY(0) scale(0.8)', opacity: '0' },
           '20%': { opacity: '1' },
