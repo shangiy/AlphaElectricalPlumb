@@ -1,4 +1,3 @@
-
 'use client';
 
 import React from 'react';
@@ -32,7 +31,7 @@ export default function AdminLayout({
           <Sidebar className="flex flex-col">
             <SidebarHeader>
               <Link href="/admin" className="flex items-center gap-2">
-                  <Image src="/alpha plumb logo (2).png" alt="AlphaElectricalPlumb Logo" width={40} height={40}/>
+                  <Image src="/logo Alpha.png" alt="AlphaElectricalPlumb Logo" width={40} height={40}/>
                   <span className="text-lg font-semibold">Admin Panel</span>
               </Link>
             </SidebarHeader>

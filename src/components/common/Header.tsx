@@ -147,7 +147,7 @@ export default function Header() {
             {/* Left: Logo */}
             <Link href="/" className="flex flex-shrink-0 items-center gap-3 group">
                 <Image
-                    src="/alpha plumb logo (2).png"
+                    src="/logo Alpha.png"
                     alt="AlphaElectricalPlumb Logo"
                     width={isHeaderOpaque ? 70 : 90}
                     height={isHeaderOpaque ? 70 : 90}
@@ -259,7 +259,7 @@ export default function Header() {
             <div className="flex w-full items-center justify-between gap-2">
                  <Link href="/" className="flex-shrink-0 transition-all duration-500">
                     <Image
-                        src="/alpha plumb logo (2).png"
+                        src="/logo Alpha.png"
                         alt="AlphaElectricalPlumb Logo"
                         width={isHeaderOpaque ? 50 : 70}
                         height={isHeaderOpaque ? 50 : 70}
@@ -318,7 +318,7 @@ export default function Header() {
                                 <SheetTitle>
                                     <SheetClose asChild>
                                         <Link href="/" className="flex items-center gap-2">
-                                            <Image src="/alpha plumb logo (2).png" alt="Logo" width={70} height={70}/>
+                                            <Image src="/logo Alpha.png" alt="Logo" width={70} height={70}/>
                                             <div className="flex flex-col text-[#2b235f]">
                                                 <span className="font-bold text-[18px] leading-tight">Alpha</span>
                                                 <div className="w-full h-px bg-[#2b235f]" />

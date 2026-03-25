@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   title: 'AlphaElectricalPlumb',
   description: 'Premium plumbing, electrical, lighting, and home décor solutions in Eldoret, Kenya.',
   icons: {
-    icon: '/alpha plumb logo (2).png',
+    icon: '/logo Alpha.png',
   },
 };
 

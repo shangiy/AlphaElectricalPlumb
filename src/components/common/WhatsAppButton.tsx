@@ -35,7 +35,7 @@ const WhatsAppButton = () => {
         <Card className="flex flex-col h-full bg-secondary">
           <CardHeader className="flex flex-row items-center justify-between p-3 bg-green-600 text-white rounded-t-lg">
             <div className="flex items-center gap-3">
-              <Image src="/alpha plumb logo (2).png" alt="AlphaElectricalPlumb Logo" width={32} height={32} />
+              <Image src="/logo Alpha.png" alt="AlphaElectricalPlumb Logo" width={32} height={32} />
               <div>
                 <h3 className="font-semibold">Alpha Electricals</h3>
                 <p className="text-xs">Chat with us on WhatsApp</p>

@@ -45,7 +45,7 @@ export default function Footer() {
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
           <div className="flex flex-col gap-4">
             <Link href="/" className="flex items-center gap-2">
-              <Image src="/alpha plumb logo (2).png" alt="AlphaElectricalPlumb Logo" width={72} height={72} />
+              <Image src="/logo Alpha.png" alt="AlphaElectricalPlumb Logo" width={72} height={72} />
               <span className="text-xl font-bold font-headline text-primary">Alpha Electricals & Plumbing Ltd</span>
             </Link>
             <p className="text-sm text-muted-foreground">Your partner for electrical and plumbing supplies.</p>
