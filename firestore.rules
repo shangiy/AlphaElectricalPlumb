@@ -5,11 +5,8 @@ rules_version = '2';
  * Alpha Electricals & Plumbing Ltd - Security Rules
  * 
  * CORE PHILOSOPHY:
- * - Products: Publicly readable for the shop catalog. 
- *   - Creation is allowed for anyone to support initial prototype seeding.
- *   - Updates and deletes are restricted to admins.
- * - User Selfies: Publicly writable (to allow visual search uploads). Readable only by admins.
- * - Roles: Database-backed access control for administrative privileges.
+ * - Products: Publicly readable. Creation is allowed for seeding and testing.
+ * - User Selfies: Publicly writable. Readable only by admins.
  */
 
 service cloud.firestore {
@@ -17,48 +14,33 @@ service cloud.firestore {
 
     // --- Helper Functions ---
 
-    /** Checks if the user is authenticated. */
     function isSignedIn() {
       return request.auth != null;
     }
 
-    /** Checks if the authenticated user has an entry in the admin roles collection. */
     function isAdmin() {
+      // For the prototype phase, we can use a metadata check or a specific collection
       return isSignedIn() && exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
     }
 
     // --- Collection Rules ---
 
-    /**
-     * Rules for the Product Catalog.
-     * Publicly readable. Anyone can create (to support initial database seeding).
-     * Admin-only updates/deletes.
-     */
     match /products/{productId} {
       allow read, list: if true;
+      // Allow creation for seeding the prototype database
       allow create: if true;
+      // Restrict updates and deletes to admins
       allow update, delete: if isAdmin();
     }
 
-    /**
-     * Rules for User Selfies (Visual Search uploads).
-     * Any user can upload (create) a selfie for search.
-     * Only admins can list or read individual selfies.
-     */
     match /userSelfies/{selfieId} {
       allow create: if true;
       allow read, list: if isAdmin();
     }
 
-    /**
-     * Rules for Administrative Roles.
-     * Authenticated users can check their own role status.
-     * Only existing admins can manage the roles collection.
-     */
     match /roles_admin/{userId} {
       allow get: if isSignedIn() && (request.auth.uid == userId || isAdmin());
       allow list, create, update, delete: if isAdmin();
     }
-
   }
 }

@@ -1,5 +1,7 @@
+
 'use client';
 
+import React from 'react';
 import {
   SidebarProvider,
   Sidebar,
@@ -58,7 +60,7 @@ export default function AdminLayout({
                       <Camera />
                       <span>Selfies</span>
                     </Link>
-                  </SidebarMenuItem>
+                  </SidebarMenuButton>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild tooltip="Analytics">
