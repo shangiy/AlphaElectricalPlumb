@@ -5,7 +5,9 @@ rules_version = '2';
  * Alpha Electricals & Plumbing Ltd - Security Rules
  * 
  * CORE PHILOSOPHY:
- * - Products: Publicly readable for the shop catalog. Writable only by admins.
+ * - Products: Publicly readable for the shop catalog. 
+ *   - Creation is allowed for anyone to support initial prototype seeding.
+ *   - Updates and deletes are restricted to admins.
  * - User Selfies: Publicly writable (to allow visual search uploads). Readable only by admins.
  * - Roles: Database-backed access control for administrative privileges.
  */
@@ -29,11 +31,13 @@ service cloud.firestore {
 
     /**
      * Rules for the Product Catalog.
-     * Publicly readable, admin-only writes.
+     * Publicly readable. Anyone can create (to support initial database seeding).
+     * Admin-only updates/deletes.
      */
     match /products/{productId} {
       allow read, list: if true;
-      allow create, update, delete: if isAdmin();
+      allow create: if true;
+      allow update, delete: if isAdmin();
     }
 
     /**
