@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -22,6 +21,8 @@ import { cn } from '@/lib/utils';
 import { uploadImage } from '@/lib/storage';
 import { db } from '@/lib/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 interface HeroSearchProps {
   isCompact?: boolean;
@@ -55,7 +56,6 @@ export default function HeroSearch({ isCompact = false }: HeroSearchProps) {
         videoRef.current.srcObject = mediaStream;
       }
     } catch (error) {
-      console.error('Error accessing camera:', error);
       setHasCameraPermission(false);
       toast({
         variant: 'destructive',
@@ -79,18 +79,28 @@ export default function HeroSearch({ isCompact = false }: HeroSearchProps) {
       
       try {
         const downloadURL = await uploadImage(imageDataUrl);
-        await addDoc(collection(db, "userSelfies"), {
+        const selfieData = {
             imageUrl: downloadURL,
             createdAt: serverTimestamp()
-        });
+        };
 
-        toast({
-            title: 'Image Uploaded!',
-            description: 'Your image has been saved and will be reviewed by an admin.',
-        });
+        addDoc(collection(db, "userSelfies"), selfieData)
+            .then(() => {
+                toast({
+                    title: 'Image Uploaded!',
+                    description: 'Your image has been saved and will be reviewed by an admin.',
+                });
+            })
+            .catch(async (serverError) => {
+                const permissionError = new FirestorePermissionError({
+                    path: 'userSelfies',
+                    operation: 'create',
+                    requestResourceData: selfieData,
+                });
+                errorEmitter.emit('permission-error', permissionError);
+            });
 
       } catch (error) {
-        console.error("Error during image capture and upload:", error);
         toast({
             variant: "destructive",
             title: "Upload Failed",

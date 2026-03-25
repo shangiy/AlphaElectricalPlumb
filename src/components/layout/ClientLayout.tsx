@@ -15,6 +15,7 @@ import WhatsAppButton from '@/components/common/WhatsAppButton';
 import ScrollToTopButton from '@/components/common/ScrollToTopButton';
 import TopBanner from '@/components/common/TopBanner';
 import { Analytics } from '@vercel/analytics/react';
+import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
 
 export function ClientLayout({ children }: { children: React.ReactNode }) {
   const [isChatbotOpen, setIsChatbotOpen] = useState(false);
@@ -25,6 +26,7 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
     <AuthProvider>
       <ProductProvider>
         <CartProvider>
+          <FirebaseErrorListener />
           <div className="relative flex flex-col min-h-screen">
             <TopBanner />
             <Header />
