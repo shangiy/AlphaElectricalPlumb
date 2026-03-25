@@ -32,6 +32,7 @@ export default function ConnectWithUs() {
                   className="tiktok-embed"
                   cite="https://www.tiktok.com/@alphaelectricalsandplumb/video/7506475821771640070"
                   data-video-id="7506475821771640070"
+                  data-autoplay="true"
                   style={{ width: '325px', minWidth: '325px' }}
                 >
                   <section>
@@ -60,6 +61,7 @@ export default function ConnectWithUs() {
                   className="tiktok-embed"
                   cite="https://www.tiktok.com/@alphaelectricalsandplumb/video/7496094826002222342"
                   data-video-id="7496094826002222342"
+                  data-autoplay="true"
                   style={{ width: '325px', minWidth: '325px' }}
                 >
                   <section>
