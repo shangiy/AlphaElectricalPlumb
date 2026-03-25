@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useForm } from 'react-hook-form';
@@ -18,11 +19,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useAuth } from '@/context/AuthProvider';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
-import { Checkbox } from '@/components/ui/checkbox';
 import Link from 'next/link';
 import { getUserByEmail } from '@/lib/data';
-import { useState, useEffect, Suspense } from 'react';
+import { useState, Suspense } from 'react';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
+import ReCAPTCHA from 'react-google-recaptcha';
 
 // Force dynamic rendering to bypass static generation requirements for useSearchParams
 export const dynamic = 'force-dynamic';
@@ -38,9 +39,7 @@ const signUpSchema = z.object({
   email: z.string().email('Please enter a valid email.'),
   password: z.string().min(8, 'Password must be at least 8 characters.'),
   confirmPassword: z.string(),
-  recaptcha: z.boolean().refine((val) => val === true, {
-    message: 'Please confirm you are not a robot.',
-  }),
+  recaptcha: z.string().min(1, 'Please confirm you are not a robot.'),
 }).refine(data => data.password === data.confirmPassword, {
   message: "Passwords don't match",
   path: ["confirmPassword"],
@@ -92,7 +91,7 @@ function LoginFormContent() {
 
     const signUpForm = useForm<SignUpFormValues>({
         resolver: zodResolver(signUpSchema),
-        defaultValues: { name: "", username: "", email: "", password: "", confirmPassword: "", recaptcha: false },
+        defaultValues: { name: "", username: "", email: "", password: "", confirmPassword: "", recaptcha: "" },
     });
     
     const handleTabChange = (tab: string) => {
@@ -321,17 +320,14 @@ function LoginFormContent() {
                                     control={signUpForm.control}
                                     name="recaptcha"
                                     render={({ field }) => (
-                                        <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                                        <FormControl>
-                                            <Checkbox
-                                                checked={field.value}
-                                                onCheckedChange={field.onChange}
-                                            />
-                                        </FormControl>
-                                        <div className="space-y-1 leading-none">
-                                            <FormLabel>I am not a robot</FormLabel>
+                                        <FormItem className="flex flex-col items-center justify-center p-2">
+                                            <FormControl>
+                                                <ReCAPTCHA
+                                                    sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"
+                                                    onChange={(value) => field.onChange(value || "")}
+                                                />
+                                            </FormControl>
                                             <FormMessage />
-                                        </div>
                                         </FormItem>
                                     )}
                                 />
