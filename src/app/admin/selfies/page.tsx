@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -8,6 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import Image from 'next/image';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Camera } from 'lucide-react';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 
 interface UserSelfie {
     id: string;
@@ -20,7 +21,11 @@ export default function AdminSelfiesPage() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const q = query(collection(db, "userSelfies"), orderBy("createdAt", "desc"));
+        if (!db) return;
+
+        const selfiesCollection = collection(db, "userSelfies");
+        const q = query(selfiesCollection, orderBy("createdAt", "desc"));
+        
         const unsubscribe = onSnapshot(q, 
             (snapshot) => {
                 const selfieList = snapshot.docs.map(doc => ({
@@ -30,8 +35,14 @@ export default function AdminSelfiesPage() {
                 setSelfies(selfieList);
                 setLoading(false);
             },
-            (error) => {
-                console.error("Error fetching selfies:", error);
+            async (error) => {
+                // Implement contextual error handling for the listener
+                const permissionError = new FirestorePermissionError({
+                    path: selfiesCollection.path,
+                    operation: 'list',
+                } satisfies SecurityRuleContext);
+                
+                errorEmitter.emit('permission-error', permissionError);
                 setLoading(false);
             }
         );

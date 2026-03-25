@@ -2,11 +2,11 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import type { Product } from '@/lib/types';
-import { allProductsData as initialProductsData, seedProducts } from '@/lib/data';
+import { allProductsData as initialProductsData } from '@/lib/data';
 import { db } from '@/lib/firebase';
-import { collection, addDoc, doc, updateDoc, onSnapshot } from 'firebase/firestore';
+import { collection, addDoc, doc, updateDoc, onSnapshot, getDocs, writeBatch } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
+import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 
 
 export interface ProductFormData {
@@ -50,10 +50,36 @@ export function ProductProvider({ children }: { children: ReactNode }) {
         return;
     }
 
-    seedProducts();
-
     const productsCollection = collection(db, "products");
-    
+
+    // Internal seeding logic with contextual error handling
+    const seed = async () => {
+        try {
+            const snapshot = await getDocs(productsCollection);
+            if (snapshot.empty) {
+                const batch = writeBatch(db);
+                initialProductsData.forEach((product) => {
+                    const docRef = doc(productsCollection);
+                    batch.set(docRef, product);
+                });
+                
+                batch.commit().catch(async (error) => {
+                    errorEmitter.emit('permission-error', new FirestorePermissionError({
+                        path: 'products',
+                        operation: 'write',
+                    } satisfies SecurityRuleContext));
+                });
+            }
+        } catch (error) {
+            errorEmitter.emit('permission-error', new FirestorePermissionError({
+                path: 'products',
+                operation: 'list',
+            } satisfies SecurityRuleContext));
+        }
+    };
+
+    seed();
+
     const unsubscribe = onSnapshot(productsCollection, 
         (snapshot) => {
             if (!snapshot.empty) {
@@ -66,7 +92,7 @@ export function ProductProvider({ children }: { children: ReactNode }) {
             const permissionError = new FirestorePermissionError({
                 path: productsCollection.path,
                 operation: 'list',
-            });
+            } satisfies SecurityRuleContext);
             errorEmitter.emit('permission-error', permissionError);
             setLoading(false);
         }
@@ -94,7 +120,7 @@ export function ProductProvider({ children }: { children: ReactNode }) {
                 path: 'products',
                 operation: 'create',
                 requestResourceData: newProductDocument,
-            });
+            } satisfies SecurityRuleContext);
             errorEmitter.emit('permission-error', permissionError);
         })
         .finally(() => {
@@ -121,7 +147,7 @@ export function ProductProvider({ children }: { children: ReactNode }) {
                 path: productRef.path,
                 operation: 'update',
                 requestResourceData: updateData,
-            });
+            } satisfies SecurityRuleContext);
             errorEmitter.emit('permission-error', permissionError);
         })
         .finally(() => {
