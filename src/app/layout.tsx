@@ -20,10 +20,10 @@ const ptSans = PT_Sans({
 });
 
 export const metadata: Metadata = {
-  title: 'Alpha Electricals & Plumbing Ltd',
+  title: 'AlphaElectricalPlumb',
   description: 'Premium plumbing, electrical, lighting, and home décor solutions in Eldoret, Kenya.',
   icons: {
-    icon: '/favicon.ico',
+    icon: '/alpha plumb logo (2).png',
   },
 };
 

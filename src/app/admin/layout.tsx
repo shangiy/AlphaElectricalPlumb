@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -31,7 +30,7 @@ export default function AdminLayout({
           <Sidebar className="flex flex-col">
             <SidebarHeader>
               <Link href="/admin" className="flex items-center gap-2">
-                  <Image src="/logo Alpha.png" alt="Logo" width={40} height={40}/>
+                  <Image src="/alpha plumb logo (2).png" alt="AlphaElectricalPlumb Logo" width={40} height={40}/>
                   <span className="text-lg font-semibold">Admin Panel</span>
               </Link>
             </SidebarHeader>
@@ -53,13 +52,13 @@ export default function AdminLayout({
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
-                 <SidebarMenuItem>
+                <SidebarMenuItem>
                   <SidebarMenuButton asChild tooltip="Selfies">
                     <Link href="/admin/selfies">
                       <Camera />
                       <span>Selfies</span>
                     </Link>
-                  </SidebarMenuButton>
+                  </SidebarMenuItem>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild tooltip="Analytics">

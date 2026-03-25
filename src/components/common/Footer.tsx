@@ -45,7 +45,7 @@ export default function Footer() {
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
           <div className="flex flex-col gap-4">
             <Link href="/" className="flex items-center gap-2">
-              <Image src="/logo Alpha.png" alt="Alpha Electricals & Plumbing Ltd Logo" width={72} height={72} />
+              <Image src="/alpha plumb logo (2).png" alt="AlphaElectricalPlumb Logo" width={72} height={72} />
               <span className="text-xl font-bold font-headline text-primary">Alpha Electricals & Plumbing Ltd</span>
             </Link>
             <p className="text-sm text-muted-foreground">Your partner for electrical and plumbing supplies.</p>
@@ -134,7 +134,7 @@ export default function Footer() {
                     <span className="font-bold text-sky-400">Coder+</span>.
                     
                     {/* Animated Hover Particles */}
-                    <div className="absolute -top-12 left-0 w-full h-12 pointer-events-none overflow-visible opacity-0 group-hover/credit:opacity-100 transition-opacity">
+                    <div className="absolute -top-12 left-0 w-full h-12 pointer-none overflow-visible opacity-0 group-hover/credit:opacity-100 transition-opacity">
                       <span className="absolute animate-float-up-fade left-[5%] text-lg" style={{ animationDelay: '0s' }}>🎈</span>
                       <span className="absolute animate-float-up-fade left-[25%]" style={{ animationDelay: '0.3s' }}>
                         <CheckCircle className="w-4 h-4 text-green-500" />
