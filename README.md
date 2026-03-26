@@ -19,13 +19,13 @@ This is a professional Next.js 15 e-commerce application for Alpha Electricals &
 Alpha Electricals & Plumbing Ltd is a comprehensive e-commerce platform for home infrastructure and utility supplies. Key features include:
 
 - **Product Catalog**: Multi-category browsing (Tanks, Plumbing, Lighting, Decor, Roofing) with detailed product specifications and image carousels.
+- **UI Components**:
+  - **Seamless Infinite Loop Carousel**: High-end category browser with gradient masking and linear constant-speed animation.
+  - **Dynamic Reviews**: Real-time customer feedback section on the homepage where users can read and post reviews directly to Firestore.
 - **AI Integration**: 
   - **Alpha AI Chatbot**: Conversational assistant for product queries and order support.
   - **Visual Search**: Users can capture photos to search for matching products.
   - **AI Description Generator**: Admin tool to create compelling product copy.
-- **Customer Engagement**:
-  - **Dynamic Reviews**: Real-time customer feedback section on the homepage where users can read and post reviews.
-  - **Newsletter**: Automated subscription flow.
 - **E-commerce Workflow**: Persistent shopping cart, location-based shipping calculation, and secure checkout via Paystack.
 - **Order Management**: Real-time order tracking with status updates and map integration.
 - **Admin Suite**: A full-featured dashboard with analytics, inventory management (add/edit products with AI assistance), and user moderation.
@@ -40,7 +40,7 @@ To update your live site on Firebase App Hosting, run these commands in your **G
    ```
 2. **Commit**: 
    ```bash
-   git commit -m "feat: add sitemap.xml and update project docs"
+   git commit -m "feat: apply infinite loop carousel and catalog sync logic"
    ```
 3. **Push**: 
    ```bash
