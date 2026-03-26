@@ -15,8 +15,8 @@ export default function Home() {
       <CategoryCarousel />
       <FeaturedProducts />
       <DeliveryServices />
-      <ImpactSection />
       <HomepageAbout />
+      <ImpactSection />
       <ConnectWithUs />
     </div>
   );
