@@ -59,9 +59,18 @@ Your build will fail or features will break unless you provide the following con
 - `NEXT_PUBLIC_FIREBASE_APP_ID`
 
 ### Security & Payments
-- `NEXT_PUBLIC_RECAPTCHA_SITE_KEY`: Your Google reCAPTCHA v2 Site Key.
-- `RECAPTCHA_SECRET_KEY`: Your Google reCAPTCHA v2 Secret Key (Server-side).
+- `NEXT_PUBLIC_RECAPTCHA_SITE_KEY`: 6LcON5ksAAAAAI8sbfZbqmU6SWie1ZbA3JgRhidF
+- `RECAPTCHA_SECRET_KEY`: 6LcON5ksAAAAAOegjV1gynR2gxhAWQ2gbqwlQ7Mv
 - `NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY`: Your Paystack Public Key.
+
+### ⚠️ IMPORTANT: Fix "Invalid domain for site key"
+If you see this error in your browser:
+1. Go to [Google reCAPTCHA Console](https://www.google.com/recaptcha/admin/).
+2. Select your key.
+3. Click **Settings** (top right).
+4. **UNCHECK** the box "Verify the origin of reCAPTCHA solutions".
+5. Click **Save**.
+6. Refresh your app preview.
 
 ## Local Development
 
