@@ -4,7 +4,7 @@ import { createContext, useContext, useState, useEffect, ReactNode, useCallback 
 import type { Product } from '@/lib/types';
 import { allProductsData as initialProductsData } from '@/lib/data';
 import { db } from '@/lib/firebase';
-import { collection, addDoc, doc, updateDoc, onSnapshot, getDocs, writeBatch } from 'firebase/firestore';
+import { collection, addDoc, doc, updateDoc, onSnapshot, getDocs, writeBatch, deleteDoc, setDoc } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 
@@ -52,21 +52,49 @@ export function ProductProvider({ children }: { children: ReactNode }) {
 
     const productsCollection = collection(db, "products");
 
-    // Internal seeding logic with contextual error handling
-    const seed = async () => {
+    // Seeding and Cleanup logic
+    const syncDatabase = async () => {
         try {
             const snapshot = await getDocs(productsCollection);
-            // If the database has fewer than 20 items, we seed it to ensure the 89 items are available
-            if (snapshot.size < 20) {
-                const batch = writeBatch(db);
-                // To avoid duplicates if some exist, we could clear or just append
-                // Here we append the initial data set
-                initialProductsData.forEach((product) => {
-                    const docRef = doc(productsCollection);
-                    batch.set(docRef, product);
-                });
+            const currentDocs = snapshot.docs;
+            
+            // 1. CLEANUP: Find and remove documents that are duplicates or auto-generated "Item #"
+            const batch = writeBatch(db);
+            let hasCleanup = false;
+            const seenNames = new Set<string>();
+
+            currentDocs.forEach((d) => {
+                const data = d.data();
+                const name = data.name || '';
                 
-                batch.commit().catch(async (error) => {
+                // Pattern for auto-generated items ending in "#" then digits
+                const isGenerated = /#\s*\d+$/.test(name);
+                const isDuplicate = seenNames.has(name);
+
+                if (isGenerated || isDuplicate) {
+                    batch.delete(d.ref);
+                    hasCleanup = true;
+                } else {
+                    seenNames.add(name);
+                }
+            });
+
+            // 2. SEEDING: Add high-quality unique items if they don't exist
+            // We use fixed IDs derived from barcodes or slugified names to prevent future duplication
+            initialProductsData.forEach((product) => {
+                const uniqueId = product.barcode || product.name.toLowerCase().replace(/[^a-z0-9]/g, '-');
+                const docRef = doc(productsCollection, uniqueId);
+                
+                // Only seed if this specific unique ID isn't already in the current set
+                const alreadyExists = currentDocs.some(d => d.id === uniqueId);
+                if (!alreadyExists) {
+                    batch.set(docRef, product);
+                    hasCleanup = true;
+                }
+            });
+
+            if (hasCleanup) {
+                await batch.commit().catch(async (error) => {
                     errorEmitter.emit('permission-error', new FirestorePermissionError({
                         path: 'products',
                         operation: 'write',
@@ -81,17 +109,17 @@ export function ProductProvider({ children }: { children: ReactNode }) {
         }
     };
 
-    seed();
+    syncDatabase();
 
     const unsubscribe = onSnapshot(productsCollection, 
         (snapshot) => {
             const productList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
-            // Use local mock data as fallback if remote is still empty
-            if (productList.length === 0) {
-                setProducts(initialProductsData.map((p, i) => ({...p, id: `local-${i}`})));
-            } else {
-                setProducts(productList);
-            }
+            // Filter out any duplicates that might have slipped through in memory
+            const uniqueProducts = productList.filter((p, index, self) => 
+                index === self.findIndex((t) => t.name === p.name)
+            );
+            
+            setProducts(uniqueProducts);
             setLoading(false);
         }, 
         async (serverError) => {
@@ -120,7 +148,11 @@ export function ProductProvider({ children }: { children: ReactNode }) {
         isFeatured: productData.isFeatured || false,
     };
 
-    addDoc(collection(db, "products"), newProductDocument)
+    // Use barcode or generated slug as ID to maintain uniqueness
+    const uniqueId = productData.barcode || productData.name.toLowerCase().replace(/[^a-z0-9]/g, '-');
+    const docRef = doc(db, "products", uniqueId);
+
+    setDoc(docRef, newProductDocument)
         .catch(async (serverError) => {
             const permissionError = new FirestorePermissionError({
                 path: 'products',
@@ -136,9 +168,6 @@ export function ProductProvider({ children }: { children: ReactNode }) {
 
   const updateProduct = useCallback(async (productId: string, productData: Partial<ProductFormData>) => {
     if (!db) throw new Error("Database not initialized.");
-    if (productId.startsWith('local-')) {
-        throw new Error("This product is from local data and cannot be updated.");
-    }
     setSubmitting(true);
     
     const productRef = doc(db, "products", productId);
