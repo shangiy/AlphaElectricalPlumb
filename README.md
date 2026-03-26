@@ -39,7 +39,7 @@ To update your live site on Firebase App Hosting, run these commands in your **G
    ```
 2. **Commit**: 
    ```bash
-   git commit -m "feat: finalize recaptcha integration"
+   git commit -m "feat: finalize recaptcha integration and disable origin validation"
    ```
 3. **Push**: 
    ```bash
