@@ -6,17 +6,16 @@ import { getStorage } from "firebase/storage";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "AIzaSyDZxNGOFmxyGXFi7qz0PnUy-tulDlzkCPY",
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || "alpha-plumbing-electrical.firebaseapp.com",
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "alpha-plumbing-electrical",
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "alpha-plumbing-electrical.appspot.com",
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "388140139017",
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "1:388140139017:web:8ae3562718181e55fceed8"
 };
 
 // Safety check: Prevents hard crashes during Next.js build/prerendering phase 
-// if environment variables are not yet provided to the build environment.
-const isConfigAvailable = !!process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
+const isConfigAvailable = !!(process.env.NEXT_PUBLIC_FIREBASE_API_KEY || firebaseConfig.apiKey);
 
 const app = isConfigAvailable 
   ? (getApps().length === 0 ? initializeApp(firebaseConfig) : getApp())
