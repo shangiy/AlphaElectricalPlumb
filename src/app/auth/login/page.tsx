@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useForm } from 'react-hook-form';
@@ -20,8 +21,10 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import { getUserByEmail } from '@/lib/data';
-import { useState, Suspense, useEffect } from 'react';
+import { useState, Suspense, useRef } from 'react';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
+import ReCAPTCHA from 'react-google-recaptcha';
+import { verifyRecaptcha } from '@/app/actions/verify-recaptcha';
 
 // Force dynamic rendering to bypass static generation requirements for useSearchParams
 export const dynamic = 'force-dynamic';
@@ -78,6 +81,8 @@ function LoginFormContent() {
     const { toast } = useToast();
     const redirectUrl = searchParams.get('redirect') || '/';
     const [socialLoading, setSocialLoading] = useState<null | 'google' | 'facebook'>(null);
+    const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
+    const recaptchaRef = useRef<ReCAPTCHA>(null);
     
     const activeTab = searchParams.get('tab') || 'login';
 
@@ -95,6 +100,10 @@ function LoginFormContent() {
         const params = new URLSearchParams(searchParams.toString());
         params.set('tab', tab);
         router.push(`/auth/login?${params.toString()}`, { scroll: false });
+    };
+
+    const handleRecaptchaChange = (token: string | null) => {
+        setRecaptchaToken(token);
     };
 
     async function onLogin(data: LoginFormValues) {
@@ -115,7 +124,30 @@ function LoginFormContent() {
     }
 
     async function onSignUp(data: SignUpFormValues) {
+        if (!recaptchaToken) {
+            toast({
+                variant: "destructive",
+                title: "Verification Required",
+                description: "Please complete the reCAPTCHA verification.",
+            });
+            return;
+        }
+
         try {
+            // Verify reCAPTCHA on the server
+            const verification = await verifyRecaptcha(recaptchaToken);
+            
+            if (!verification.success) {
+                toast({
+                    variant: "destructive",
+                    title: "Verification Failed",
+                    description: verification.message,
+                });
+                recaptchaRef.current?.reset();
+                setRecaptchaToken(null);
+                return;
+            }
+
             await signUp(data);
             toast({ title: "Account Created!", description: "Welcome! You are now logged in." });
             router.push(redirectUrl);
@@ -313,6 +345,15 @@ function LoginFormContent() {
                                         </FormItem>
                                     )}
                                 />
+
+                                <FormItem className="flex flex-col items-center justify-center p-2">
+                                    <ReCAPTCHA
+                                        ref={recaptchaRef}
+                                        sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || "6LcON5ksAAAAAI8sbfZbqmU6SWie1ZbA3JgRhidF"}
+                                        onChange={handleRecaptchaChange}
+                                    />
+                                </FormItem>
+
                                 <Button type="submit" className="w-full" disabled={signUpForm.formState.isSubmitting}>Create Account</Button>
                                 
                                 <div className="relative">
