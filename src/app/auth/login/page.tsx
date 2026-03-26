@@ -20,7 +20,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import { getUserByEmail } from '@/lib/data';
-import { useState, Suspense } from 'react';
+import { useState, Suspense, useEffect, useRef } from 'react';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import ReCAPTCHA from 'react-google-recaptcha';
 import { verifyRecaptcha } from '@/app/actions/verify-recaptcha';
@@ -81,8 +81,14 @@ function LoginFormContent() {
     const { toast } = useToast();
     const redirectUrl = searchParams.get('redirect') || '/';
     const [socialLoading, setSocialLoading] = useState<null | 'google' | 'facebook'>(null);
+    const [isMounted, setIsMounted] = useState(false);
+    const recaptchaRef = useRef<ReCAPTCHA>(null);
     
     const activeTab = searchParams.get('tab') || 'login';
+
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
 
     const loginForm = useForm<LoginFormValues>({
         resolver: zodResolver(loginSchema),
@@ -127,6 +133,9 @@ function LoginFormContent() {
                     title: "Security Check Failed",
                     description: verification.message,
                 });
+                // Reset the widget so user can try again
+                recaptchaRef.current?.reset();
+                signUpForm.setValue('recaptcha', '');
                 return;
             }
 
@@ -139,6 +148,8 @@ function LoginFormContent() {
                 title: "Sign-Up Failed",
                 description: error.message || "An error occurred. Please try again.",
             });
+            recaptchaRef.current?.reset();
+            signUpForm.setValue('recaptcha', '');
         }
     }
 
@@ -327,21 +338,24 @@ function LoginFormContent() {
                                         </FormItem>
                                     )}
                                 />
-                                <FormField
-                                    control={signUpForm.control}
-                                    name="recaptcha"
-                                    render={({ field }) => (
-                                        <FormItem className="flex flex-col items-center justify-center p-2">
-                                            <FormControl>
-                                                <ReCAPTCHA
-                                                    sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || "6LdFm5gsAAAAALfceOcW6y-68tEYEzNySihKjEzq"}
-                                                    onChange={(value) => field.onChange(value || "")}
-                                                />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
+                                {isMounted && (
+                                    <FormField
+                                        control={signUpForm.control}
+                                        name="recaptcha"
+                                        render={({ field }) => (
+                                            <FormItem className="flex flex-col items-center justify-center p-2">
+                                                <FormControl>
+                                                    <ReCAPTCHA
+                                                        ref={recaptchaRef}
+                                                        sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || "6LdFm5gsAAAAALfceOcW6y-68tEYEzNySihKjEzq"}
+                                                        onChange={(value) => field.onChange(value || "")}
+                                                    />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                )}
                                 <Button type="submit" className="w-full" disabled={signUpForm.formState.isSubmitting}>Create Account</Button>
                                 
                                 <div className="relative">
