@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useForm } from 'react-hook-form';
@@ -24,6 +23,7 @@ import { getUserByEmail } from '@/lib/data';
 import { useState, Suspense } from 'react';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import ReCAPTCHA from 'react-google-recaptcha';
+import { verifyRecaptcha } from '@/app/actions/verify-recaptcha';
 
 // Force dynamic rendering to bypass static generation requirements for useSearchParams
 export const dynamic = 'force-dynamic';
@@ -119,6 +119,17 @@ function LoginFormContent() {
 
     async function onSignUp(data: SignUpFormValues) {
         try {
+            // Verify reCAPTCHA token on the server
+            const verification = await verifyRecaptcha(data.recaptcha);
+            if (verification.status === "error") {
+                toast({
+                    variant: "destructive",
+                    title: "Security Check Failed",
+                    description: verification.message,
+                });
+                return;
+            }
+
             await signUp(data);
             toast({ title: "Account Created!", description: "Welcome! You are now logged in." });
             router.push(redirectUrl);
@@ -172,6 +183,7 @@ function LoginFormContent() {
                        <Form {...loginForm}>
                             <form onSubmit={loginForm.handleSubmit(onLogin)} className="space-y-6">
                                 <FormField
+                                     staffers
                                     control={loginForm.control}
                                     name="email"
                                     render={({ field }) => (

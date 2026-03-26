@@ -48,6 +48,7 @@ Add the following keys to your deployment platform (Vercel/Firebase Console):
 - `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID`
 - `NEXT_PUBLIC_FIREBASE_APP_ID`
 - `NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY`
+- `RECAPTCHA_SECRET_KEY` (Get this from Google reCAPTCHA Admin Console)
 
 ## Local Development
 
