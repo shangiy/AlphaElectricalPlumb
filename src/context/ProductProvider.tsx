@@ -52,48 +52,46 @@ export function ProductProvider({ children }: { children: ReactNode }) {
 
     const productsCollection = collection(db, "products");
 
-    // Seeding and Cleanup logic
+    // Hard Reset and Seeding logic
     const syncDatabase = async () => {
         try {
             const snapshot = await getDocs(productsCollection);
             const currentDocs = snapshot.docs;
             
-            // 1. CLEANUP: Find and remove documents that are duplicates or auto-generated "Item #"
             const batch = writeBatch(db);
-            let hasCleanup = false;
-            const seenNames = new Set<string>();
+            let hasChanges = false;
 
+            // 1. Identify valid unique IDs from the NEW allProductsData
+            const validUniqueIds = initialProductsData.map(p => 
+                p.barcode || p.name.toLowerCase().replace(/[^a-z0-9]/g, '-')
+            );
+
+            // 2. CLEANUP: Delete any document that is NOT in the new list OR is a dummy "Item #"
             currentDocs.forEach((d) => {
                 const data = d.data();
                 const name = data.name || '';
-                
-                // Pattern for auto-generated items ending in "#" then digits
-                const isGenerated = /#\s*\d+$/.test(name);
-                const isDuplicate = seenNames.has(name);
+                const isDummy = /#\s*\d+$/.test(name);
+                const isNotOnList = !validUniqueIds.includes(d.id);
 
-                if (isGenerated || isDuplicate) {
+                if (isDummy || isNotOnList) {
                     batch.delete(d.ref);
-                    hasCleanup = true;
-                } else {
-                    seenNames.add(name);
+                    hasChanges = true;
                 }
             });
 
-            // 2. SEEDING: Add high-quality unique items if they don't exist
-            // We use fixed IDs derived from barcodes or slugified names to prevent future duplication
+            // 3. SEEDING: Add high-quality unique items from the new list if they don't exist
             initialProductsData.forEach((product) => {
                 const uniqueId = product.barcode || product.name.toLowerCase().replace(/[^a-z0-9]/g, '-');
                 const docRef = doc(productsCollection, uniqueId);
                 
-                // Only seed if this specific unique ID isn't already in the current set
                 const alreadyExists = currentDocs.some(d => d.id === uniqueId);
                 if (!alreadyExists) {
                     batch.set(docRef, product);
-                    hasCleanup = true;
+                    hasChanges = true;
                 }
             });
 
-            if (hasCleanup) {
+            if (hasChanges) {
                 await batch.commit().catch(async (error) => {
                     errorEmitter.emit('permission-error', new FirestorePermissionError({
                         path: 'products',
@@ -114,7 +112,7 @@ export function ProductProvider({ children }: { children: ReactNode }) {
     const unsubscribe = onSnapshot(productsCollection, 
         (snapshot) => {
             const productList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
-            // Filter out any duplicates that might have slipped through in memory
+            // Ensure memory stays clean by filtering unique names
             const uniqueProducts = productList.filter((p, index, self) => 
                 index === self.findIndex((t) => t.name === p.name)
             );
@@ -148,7 +146,6 @@ export function ProductProvider({ children }: { children: ReactNode }) {
         isFeatured: productData.isFeatured || false,
     };
 
-    // Use barcode or generated slug as ID to maintain uniqueness
     const uniqueId = productData.barcode || productData.name.toLowerCase().replace(/[^a-z0-9]/g, '-');
     const docRef = doc(db, "products", uniqueId);
 
