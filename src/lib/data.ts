@@ -3,20 +3,6 @@ import type { Product, Category, MockUser, Transaction, CarouselCategory } from 
 export const allProductsData: Omit<Product, 'id'>[] = [
   // --- LIGHTING & ELECTRICAL ---
   { 
-    name: 'Ample Light Pro', 
-    price: 2500, 
-    images: ['/Ample Light.png'], 
-    description: 'Bright ample light with multiple modes.', 
-    longDescription: 'Professional grade lighting for modern homes. Energy efficient LED technology.', 
-    category: 'lighting-electrical', 
-    rating: 4.5, 
-    reviews: 10, 
-    seller: { name: 'Alpha Electricals', id: 'seller-alpha' }, 
-    barcode: 'ALPHA-ELEC-001', 
-    isFeatured: true, 
-    unit: 'item' 
-  },
-  { 
     name: 'Exquisite Chandelier', 
     price: 33000, 
     images: ['/exquisite chandelier.jpg'], 
@@ -270,6 +256,33 @@ export const allProductsData: Omit<Product, 'id'>[] = [
     barcode: 'ALPHA-ROOF-002',
     unit: 'sheet' 
   },
+  // --- EXPANDING TO 89 PRODUCTS ---
+  ...Array.from({ length: 69 }, (_, i) => {
+    const idNum = i + 21;
+    const categories = ['plumbing', 'lighting-electrical', 'tanks', 'decor', 'roofing'];
+    const category = categories[i % categories.length];
+    
+    // Choose images based on category to keep it semi-realistic
+    let image = '/ppr pipes.png';
+    if (category === 'tanks') image = '/kentank 2000l.png';
+    if (category === 'lighting-electrical') image = '/decor lighting design.png';
+    if (category === 'decor') image = '/square lights.png';
+    if (category === 'roofing') image = '/roof 2.png';
+
+    return {
+      name: `${category.charAt(0).toUpperCase() + category.slice(1)} Pro Item #${idNum}`,
+      price: 500 + (i * 150),
+      images: [image],
+      description: `High-quality ${category} supply for professional use.`,
+      longDescription: `This ${category} product is engineered for durability and high performance in modern Kenyan homes and construction projects.`,
+      category: category,
+      rating: 4.0 + (Math.random() * 1.0),
+      reviews: Math.floor(Math.random() * 50),
+      seller: { name: 'Alpha Electricals', id: 'seller-alpha' },
+      barcode: `ALPHA-ITEM-${idNum}`,
+      unit: 'item'
+    };
+  })
 ];
 
 export const categories: Category[] = [

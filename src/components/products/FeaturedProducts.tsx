@@ -15,7 +15,7 @@ export default function FeaturedProducts() {
   const featuredProducts = useMemo(() => {
     // If you want to feature specific products by ID or barcode
     const featuredIdsOrBarcodes = [
-      'ALPHA-ELEC-001', // Ample Light
+      'ALPHA-ELEC-002', // Exquisite Chandelier
       'PPR-MA-50', // PPR MALE ADAPTOR
       'FB-CIST-4', // Full Bora 4" moshefa
       '16414', // 2L Classic water bottle
