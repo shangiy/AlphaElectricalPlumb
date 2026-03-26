@@ -17,7 +17,7 @@ This is a professional Next.js 15 e-commerce application for Alpha Electricals &
 
 Alpha Electricals & Plumbing Ltd is a comprehensive e-commerce platform for home infrastructure and utility supplies. Key features include:
 
-- **Product Catalog**: Multi-category browsing (Tanks, Plumbing, Lighting, Decor, Roofing) with detailed product specifications and image carousels.
+- **Product Catalog**: Multi-category browsing (Tanks, Plumbing, Lighting, Decor, Roofing) with 89+ verified products.
 - **UI Components**:
   - **Seamless Infinite Loop Carousel**: High-end category browser with gradient masking and linear constant-speed animation.
   - **Dynamic Reviews**: Real-time customer feedback section on the homepage where users can read and post reviews directly to Firestore.
@@ -27,7 +27,7 @@ Alpha Electricals & Plumbing Ltd is a comprehensive e-commerce platform for home
   - **AI Description Generator**: Admin tool to create compelling product copy.
 - **E-commerce Workflow**: Persistent shopping cart, location-based shipping calculation, and secure checkout via Paystack.
 - **Order Management**: Real-time order tracking with status updates and map integration.
-- **Admin Suite**: A full-featured dashboard with analytics, inventory management (add/edit products with AI assistance), and user moderation.
+- **Admin Suite**: A full-featured dashboard with analytics, inventory management, and user moderation.
 
 ## 🚀 Pushing Changes to GitHub
 
@@ -45,6 +45,12 @@ To update your live site on Firebase App Hosting, run these commands in your **G
    ```bash
    git push origin main
    ```
+
+### 🔑 Fixing "Authentication Failed"
+If you see a login error when pushing:
+1. Go to [GitHub Settings > Developer Settings > Personal Access Tokens](https://github.com/settings/tokens).
+2. Generate a "Classic" token with `repo` access.
+3. When `git push` asks for a password, paste this **Token** instead of your password.
 
 ## 🛠️ Deployment Checklist
 
