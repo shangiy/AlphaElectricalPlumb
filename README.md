@@ -34,7 +34,7 @@ Alpha Electricals & Plumbing Ltd is a comprehensive e-commerce platform for home
 To update your live site on Firebase App Hosting, run these commands:
 
 1. **Stage changes**: `git add .`
-2. **Commit**: `git commit -m "Update Alpha Electricals project"`
+2. **Commit**: `git commit -m "feat: use environment variable for reCAPTCHA site key"`
 3. **Push**: `git push origin main`
 
 ## 🛠️ Deployment Checklist
@@ -50,6 +50,7 @@ Add these keys to your Firebase App Hosting environment variables:
 - `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID`
 - `NEXT_PUBLIC_FIREBASE_APP_ID`
 - `NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY`
+- `NEXT_PUBLIC_RECAPTCHA_SITE_KEY` (Your Google reCAPTCHA Site Key)
 - `RECAPTCHA_SECRET_KEY` (Your Google reCAPTCHA Secret Key)
 
 ## Local Development

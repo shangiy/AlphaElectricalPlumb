@@ -183,7 +183,6 @@ function LoginFormContent() {
                        <Form {...loginForm}>
                             <form onSubmit={loginForm.handleSubmit(onLogin)} className="space-y-6">
                                 <FormField
-                                     staffers
                                     control={loginForm.control}
                                     name="email"
                                     render={({ field }) => (
@@ -335,7 +334,7 @@ function LoginFormContent() {
                                         <FormItem className="flex flex-col items-center justify-center p-2">
                                             <FormControl>
                                                 <ReCAPTCHA
-                                                    sitekey="6LdFm5gsAAAAALfceOcW6y-68tEYEzNySihKjEzq"
+                                                    sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || "6LdFm5gsAAAAALfceOcW6y-68tEYEzNySihKjEzq"}
                                                     onChange={(value) => field.onChange(value || "")}
                                                 />
                                             </FormControl>
