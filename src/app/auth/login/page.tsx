@@ -347,7 +347,7 @@ function LoginFormContent() {
                                                 <FormControl>
                                                     <ReCAPTCHA
                                                         ref={recaptchaRef}
-                                                        sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || "6LdFm5gsAAAAALfceOcW6y-68tEYEzNySihKjEzq"}
+                                                        sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || ""}
                                                         onChange={(value) => field.onChange(value || "")}
                                                     />
                                                 </FormControl>
