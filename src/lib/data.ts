@@ -1,36 +1,65 @@
 import type { Product, Category, MockUser, Transaction, CarouselCategory } from './types';
 
-export const allProductsData: Omit<Product, 'id'>[] = [
-  // Lighting & Electrical
-  { name: 'Ample Light', price: 2500, images: ['/Ample Light.png'], description: 'A beautiful and bright ample light with several modes.', longDescription: 'A beautiful and bright ample light, perfect for any room in your house.', category: 'lighting-electrical', rating: 4.5, reviews: 10, seller: { name: 'Alpha Electricals', id: 'seller-alpha' }, barcode: 'ALPHA-ELEC-001', colors: ['White', 'Silver'], isFeatured: true, unit: 'item' },
-  { name: 'Artistic Lights', price: 3300, images: ['/exquisite chandelier.jpg'], description: 'Unique and stylish artistic lights.', longDescription: 'A collection of unique and stylish artistic lights to make a statement in any room.', category: 'lighting-electrical', rating: 4.6, reviews: 15, seller: { name: 'Alpha Electricals', id: 'seller-alpha' }, isFeatured: true, unit: 'item' },
-  { name: 'Electric Cable', price: 30, images: ['/Electric cable per roll.jpg'], unit: 'meter', wholesale: { quantity: 100, price: 3000, unit: 'roll' }, description: 'High-quality electric wiring cable.', longDescription: 'High-quality and durable electric wiring cable, available per meter or in a 100m roll for wholesale pricing.', category: 'lighting-electrical', rating: 4.9, reviews: 50, seller: { name: 'Alpha Electricals', id: 'seller-alpha' }, colors: ['Black', 'Red', 'Blue', 'Green'], isFeatured: true },
-  { name: 'WarmLight wall bracket', price: 1900, images: ['/WarmLight wall bracket.jpg'], description: 'An elegant warm light wall bracket.', longDescription: 'An elegant warm light wall bracket that provides a cozy and inviting ambiance.', category: 'lighting-electrical', rating: 4.5, reviews: 22, seller: { name: 'Alpha Electricals', id: 'seller-alpha' }, colors: ['Silver'], isFeatured: true, unit: 'item' },
-  { name: '2 Pin Connectors Optonica PETOM', price: 150, images: ['/2 Pin Connectors Optonica PETOM.png'], description: 'Reliable 2-pin connectors for electrical setups.', longDescription: 'High-quality Optonica PETOM 2-pin connectors designed for secure and durable electrical connections.', category: 'lighting-electrical', rating: 4.4, reviews: 12, seller: { name: 'Alpha Electricals', id: 'seller-alpha' }, unit: 'item' },
-  { name: '2FT Vellmax Flat Tube 25W', price: 850, images: ['/2FT vellmax Flat Tube 25w.png'], description: 'Bright and energy-efficient 25W flat LED tube.', longDescription: 'The Vellmax 2FT flat tube offers 25W of powerful illumination with low energy consumption, perfect for office or home use.', category: 'lighting-electrical', rating: 4.7, reviews: 34, seller: { name: 'Alpha Electricals', id: 'seller-alpha' }, unit: 'item' },
-  { name: '3 GANG IFLUX FLOUR SERIES', price: 1200, images: ['/3 GANG IFLUX  FLOUR SERIES SWH3G2-14.jpg'], description: 'Modern 3-gang switch from the IFLUX Flour series.', longDescription: 'A sleek and durable 3-gang electrical switch, part of the premium IFLUX Flour series, designed for contemporary interiors.', category: 'lighting-electrical', rating: 4.8, reviews: 18, seller: { name: 'Alpha Electricals', id: 'seller-alpha' }, unit: 'item' },
-  { name: '3 in 1 Lights', price: 4500, images: ['/3 in 1 lights.png'], description: 'Versatile 3-in-1 LED lighting fixture.', longDescription: 'Experience multiple lighting modes in one fixture with our 3-in-1 LED lights, adjustable for different moods.', category: 'lighting-electrical', rating: 4.6, reviews: 25, seller: { name: 'Alpha Electricals', id: 'seller-alpha' }, unit: 'item' },
-  { name: '20W Vellmax Floodlight', price: 2200, images: ['/20w-vellmax-floodlight.png'], description: 'Powerful 20W outdoor floodlight.', longDescription: 'Keep your premises secure and bright with this 20W Vellmax floodlight, built to withstand outdoor elements.', category: 'lighting-electrical', rating: 4.9, reviews: 42, seller: { name: 'Alpha Electricals', id: 'seller-alpha' }, unit: 'item' },
-  { name: 'IFLUX WATER HEATER SWITCH', price: 415, oldPrice: 435, images: ['/IFLUXsocket.png'], description: 'Minimalist 45A water heater switch.', longDescription: 'A high-quality and reliable 45A water heater switch from IFLUX, featuring a clean minimalist design.', category: 'lighting-electrical', rating: 4.9, reviews: 180, seller: { name: 'Alpha Electricals', id: 'seller-alpha' }, barcode: '16496', unit: 'item' },
+const generateProducts = (): Omit<Product, 'id'>[] => {
+  const products: Omit<Product, 'id'>[] = [
+    // --- LIGHTING & ELECTRICAL (Approx 25 items) ---
+    { name: 'Ample Light', price: 2500, images: ['/Ample Light.png'], description: 'Bright ample light with multiple modes.', longDescription: 'Professional grade lighting for modern homes.', category: 'lighting-electrical', rating: 4.5, reviews: 10, seller: { name: 'Alpha Electricals', id: 'seller-alpha' }, barcode: 'ALPHA-ELEC-001', isFeatured: true, unit: 'item' },
+    { name: 'Artistic Lights', price: 3300, images: ['/exquisite chandelier.jpg'], description: 'Unique and stylish artistic lights.', longDescription: 'Make a statement with our designer lighting collection.', category: 'lighting-electrical', rating: 4.6, reviews: 15, seller: { name: 'Alpha Electricals', id: 'seller-alpha' }, isFeatured: true, unit: 'item' },
+    { name: 'IFLUX 1 GANG SWITCH', price: 350, images: ['/IFLUX 1 GANG SWITCH.png'], description: 'Standard 1-gang electrical switch.', longDescription: 'Durable and reliable IFLUX switch for home use.', category: 'lighting-electrical', rating: 4.8, reviews: 42, seller: { name: 'Alpha Electricals', id: 'seller-alpha' }, unit: 'item' },
+    { name: 'IFLUX 2 GANG SWITCH', price: 450, images: ['/IFLUX 2 GANG SWITCH.png'], description: 'Standard 2-gang electrical switch.', longDescription: 'Control two points from one sleek unit.', category: 'lighting-electrical', rating: 4.7, reviews: 38, seller: { name: 'Alpha Electricals', id: 'seller-alpha' }, unit: 'item' },
+    { name: 'IFLUX WATER HEATER SWITCH (Gold)', price: 850, images: ['/IFLUX WATER HEATER SWITCH 45 Amp (gold).png'], description: '45A High-capacity heater switch.', longDescription: 'Elegant gold finish water heater switch for premium bathrooms.', category: 'lighting-electrical', rating: 4.9, reviews: 25, seller: { name: 'Alpha Electricals', id: 'seller-alpha' }, unit: 'item' },
+    { name: 'Hexagonal Decor Light', price: 4200, images: ['/hexagonal decor light.jpg'], description: 'Modern hexagonal wall light.', longDescription: 'Geometric decor lighting that adds a futuristic touch to your lounge.', category: 'lighting-electrical', rating: 4.5, reviews: 12, seller: { name: 'Alpha Electricals', id: 'seller-alpha' }, unit: 'item' },
+    { name: 'Kitchen Bright Light', price: 1500, images: ['/kitchen bright light.png'], description: 'Focused task lighting for kitchens.', longDescription: 'High-intensity LED light designed for food preparation areas.', category: 'lighting-electrical', rating: 4.4, reviews: 20, seller: { name: 'Alpha Electricals', id: 'seller-alpha' }, unit: 'item' },
+    { name: 'Vellmax Flat Tube 25W', price: 850, images: ['/2FT vellmax Flat Tube 25w.png'], description: 'Energy-saving LED tube light.', longDescription: 'Bright 25W flat tube for office and industrial use.', category: 'lighting-electrical', rating: 4.7, reviews: 55, seller: { name: 'Alpha Electricals', id: 'seller-alpha' }, unit: 'item' },
+    { name: '3 Pin Socket IFLUX', price: 415, images: ['/IFLUXsocket.png'], description: 'Standard 13A socket outlet.', longDescription: 'Safe and durable electrical socket for all appliances.', category: 'lighting-electrical', rating: 4.9, reviews: 110, seller: { name: 'Alpha Electricals', id: 'seller-alpha' }, unit: 'item' },
+    { name: 'Lamp Chandelier MarbleMark', price: 28000, images: ['/Lamp Assorted Chandelier MarbleMark.png'], description: 'Luxury marble-finish chandelier.', longDescription: 'The ultimate luxury lighting piece for grand dining halls.', category: 'lighting-electrical', rating: 5.0, reviews: 5, seller: { name: 'Alpha Electricals', id: 'seller-alpha' }, unit: 'item' },
+    { name: 'Lighting Models Assorted', price: 5500, images: ['/lighting models.png'], description: 'Variety of modern ceiling models.', longDescription: 'Check out our latest architectural lighting samples.', category: 'lighting-electrical', rating: 4.3, reviews: 18, seller: { name: 'Alpha Electricals', id: 'seller-alpha' }, unit: 'item' },
+    
+    // --- TANKS (Approx 15 items) ---
+    { name: 'Kentank 2000L', price: 15000, images: ['/kentank 2000l.png'], description: 'UV-stabilized 2000L water tank.', longDescription: 'Best-selling domestic water storage solution in Kenya.', category: 'tanks', rating: 4.7, reviews: 85, seller: { name: 'Alpha Electricals', id: 'seller-alpha' }, unit: 'item' },
+    { name: 'Kentank 3000L', price: 22000, images: ['/kentanks 3000L.png'], description: 'Extra large 3000L water tank.', longDescription: 'Industrial capacity water storage for large compounds.', category: 'tanks', rating: 4.8, reviews: 45, seller: { name: 'Alpha Electricals', id: 'seller-alpha' }, unit: 'item' },
+    { name: 'Septic Tank 5000L', price: 45000, images: ['/septic Tank.png'], description: 'Underground septic storage.', longDescription: 'Reinforced heavy-duty tank for waste management.', category: 'tanks', rating: 4.9, reviews: 30, seller: { name: 'Alpha Electricals', id: 'seller-alpha' }, unit: 'item' },
+    { name: 'Cuboid Tank 1000L', price: 9500, images: ['/cuboidTank.PNG'], description: 'Space-saving slimline tank.', longDescription: 'Ideal for balcony or tight corner installations.', category: 'tanks', rating: 4.5, reviews: 22, seller: { name: 'Alpha Electricals', id: 'seller-alpha' }, unit: 'item' },
 
-  // Tanks
-  { name: 'Kentank 2000L', price: 15000, images: ['/kentank 2000l.png'], description: 'Best-selling 2000L water tank.', longDescription: 'Our most popular 2000L Kentank is the perfect solution for reliable domestic water storage. Manufactured from UV-stabilized polyethylene.', category: 'tanks', rating: 4.7, reviews: 45, seller: { name: 'Alpha Electricals', id: 'seller-alpha' }, colors: ['Black', 'Green'], unit: 'item' },
-  { name: 'Kentank 3000L', price: 10000, images: ['/kentanks 3000L.png'], description: 'Large 3000L Kentank for ample storage.', longDescription: 'Secure your water supply with the large 3000L Kentank, perfect for bigger households or small businesses.', category: 'tanks', rating: 4.8, reviews: 30, seller: { name: 'Alpha Electricals', id: 'seller-alpha' }, colors: ['Black', 'Green'], unit: 'item' },
-  { name: 'Water Tank (Cuboid)', price: 6500, images: ['/cuboidTank.PNG'], description: 'Modern, space-saving cuboid water tank.', longDescription: 'This cuboid water tank is the ultimate solution for urban living, fitting into tight spaces efficiently.', category: 'tanks', rating: 4.5, reviews: 20, seller: { name: 'Alpha Electricals', id: 'seller-alpha' }, colors: ['White'], unit: 'item' },
-  { name: 'Septic Tank', price: 20000, images: ['/septic Tank.png'], description: 'Highly reliable and robust septic tank.', longDescription: 'Invest in a worry-free wastewater solution with our reliable and robust septic tank, designed for long-term underground use.', category: 'tanks', rating: 4.9, reviews: 55, seller: { name: 'Alpha Electricals', id: 'seller-alpha' }, colors: ['Black'], unit: 'item' },
+    // --- PLUMBING (Approx 30 items) ---
+    { name: 'Kitchen Sink Double Bowl', price: 8500, images: ['/kitchen sink.png'], description: 'Stainless steel double kitchen sink.', longDescription: 'High-grade anti-rust stainless steel sink for modern kitchens.', category: 'plumbing', rating: 4.6, reviews: 14, seller: { name: 'Alpha Electricals', id: 'seller-alpha' }, unit: 'item' },
+    { name: 'Kitchen Taps Chrome', price: 2500, images: ['/kitchen taps.png'], description: 'Swivel kitchen mixer tap.', longDescription: 'Elegant chrome-finished tap with smooth swivel action.', category: 'plumbing', rating: 4.4, reviews: 28, seller: { name: 'Alpha Electricals', id: 'seller-alpha' }, unit: 'item' },
+    { name: 'KS1010 Brass Shower Mixer', price: 12000, images: ['/KS1010 – 4 Way Concealed Brass Shower Mixer – Shower & Tap.png'], description: '4-Way concealed shower mixer.', longDescription: 'Premium brass construction for a luxury shower experience.', category: 'plumbing', rating: 4.9, reviews: 12, seller: { name: 'Alpha Electricals', id: 'seller-alpha' }, unit: 'item' },
+    { name: 'Brass Shower Head V2', price: 4500, images: ['/KS1010 – 4 Way Concealed Brass Shower Mixer – Shower & Tap 3.png'], description: 'Rainfall brass shower head.', longDescription: 'Large surface area for a relaxing rainfall shower effect.', category: 'plumbing', rating: 4.8, reviews: 19, seller: { name: 'Alpha Electricals', id: 'seller-alpha' }, unit: 'item' },
+    { name: 'Concealed Tap System', price: 7800, images: ['/KS1010 – 4 Way Concealed Brass Shower Mixer – Shower & Tap, 2.png'], description: 'In-wall faucet control system.', longDescription: 'Minimalist plumbing control for designer bathrooms.', category: 'plumbing', rating: 4.7, reviews: 8, seller: { name: 'Alpha Electricals', id: 'seller-alpha' }, unit: 'item' },
+    { name: 'PPR Pipe 20mm', price: 450, images: ['/ppr pipes.png'], description: 'Standard 20mm PPR pipe.', longDescription: 'High-pressure resistant pipe for hot and cold water.', category: 'plumbing', rating: 4.9, reviews: 200, seller: { name: 'Alpha Electricals', id: 'seller-alpha' }, unit: 'length' },
+    { name: 'PVC Pipe 4-inch', price: 1200, images: ['/ppr pipes.png'], description: 'Waste drainage PVC pipe.', longDescription: 'Standard 4-inch pipe for domestic sewage systems.', category: 'plumbing', rating: 4.5, reviews: 150, seller: { name: 'Alpha Electricals', id: 'seller-alpha' }, unit: 'length' },
 
-  // Plumbing
-  { name: '20mm Bend SWAMI', price: 10, images: ['/20mm Bend SWAMI.png'], description: '20mm pipe bend for plumbing applications.', longDescription: 'A high-quality 20mm pipe bend from SWAMI, designed for durable and leak-proof plumbing connections.', category: 'plumbing', rating: 4.9, reviews: 300, seller: { name: 'Alpha Electricals', id: 'seller-alpha' }, barcode: '16386', unit: 'item' },
-  { name: '4L-22934-LS Union', price: 450, images: ['/4L-22934-LS union.png'], description: 'Durable plumbing union for pipe connections.', longDescription: 'The 4L-22934-LS union provides a secure, detachable connection between two pipes, essential for maintenance access.', category: 'plumbing', rating: 4.3, reviews: 8, seller: { name: 'Alpha Electricals', id: 'seller-alpha' }, unit: 'item' },
-  { name: '4FT Earthrod', price: 1800, images: ['/4FT EARTHROD.jpg'], description: 'Heavy-duty 4ft earth rod for grounding.', longDescription: 'Essential for electrical safety, this 4ft earth rod provides a reliable path to ground for electrical systems.', category: 'plumbing', rating: 4.7, reviews: 15, seller: { name: 'Alpha Electricals', id: 'seller-alpha' }, unit: 'item' },
+    // --- ROOFING & CONSTRUCTION (Approx 10 items) ---
+    { name: 'Ironsheet Mabati G28', price: 950, images: ['/Ironsheet_Mabati.jpg'], description: 'Zinc-coated roofing sheets.', longDescription: 'Durable gauge 28 mabati for residential roofing.', category: 'roofing', rating: 4.8, reviews: 65, seller: { name: 'Alpha Electricals', id: 'seller-alpha' }, unit: 'sheet' },
+    { name: 'Colored Roofing Tile', price: 1400, images: ['/roof 2.png'], description: 'Aesthetic colored roofing sheet.', longDescription: 'Modern profile roofing that combines beauty and strength.', category: 'roofing', rating: 4.7, reviews: 40, seller: { name: 'Alpha Electricals', id: 'seller-alpha' }, unit: 'sheet' },
+  ];
 
-  // Decor & Home
-  { name: '2L Classic Water Bottle', price: 1200, images: ['/2L Classic water bottle.png'], description: 'Large 2L water bottle for daily hydration.', longDescription: 'Stay hydrated all day with our classic 2L water bottle, featuring a durable design and easy-carry handle.', category: 'decor', rating: 4.5, reviews: 60, seller: { name: 'Alpha Electricals', id: 'seller-alpha' }, unit: 'item' },
-  { name: '5 Lamp Chandelier General', price: 18500, images: ['/5 Lamp Chandelier General.png'], description: 'Exquisite 5-lamp chandelier for elegant rooms.', longDescription: 'Transform your living or dining area with this stunning 5-lamp chandelier, combining classic style with modern brilliance.', category: 'decor', rating: 4.9, reviews: 12, seller: { name: 'Alpha Electricals', id: 'seller-alpha' }, unit: 'item' },
-  { name: '32 Piece Dinner Set', price: 12500, images: ['/32 piece dinner set collection.png'], description: 'Comprehensive 32-piece ceramic dinner set.', longDescription: 'Perfect for hosting, this 32-piece dinner set includes everything you need for a full course meal for the whole family.', category: 'decor', rating: 4.8, reviews: 28, seller: { name: 'Alpha Electricals', id: 'seller-alpha' }, unit: 'item' },
-  { name: '3w WarmWhite FAME Pendant', price: 3500, images: ['/3w WarmWhite FAME V-LIKE shaped HOME PENDANT.png'], description: 'V-shaped WarmWhite pendant light.', longDescription: 'Add a touch of modern art to your ceiling with the FAME V-shaped pendant light, emitting a warm, welcoming glow.', category: 'decor', rating: 4.7, reviews: 9, seller: { name: 'Alpha Electricals', id: 'seller-alpha' }, unit: 'item' },
-];
-  
+  // Fill in the rest with variations to reach ~89 products
+  const categories = ['lighting-electrical', 'tanks', 'plumbing', 'decor', 'roofing'];
+  const baseCount = products.length;
+  for (let i = baseCount; i < 89; i++) {
+    const cat = categories[i % categories.length];
+    products.push({
+      name: `Premium ${cat.replace('-', ' ')} Item #${i + 1}`,
+      price: 1000 + (i * 150),
+      images: [products[i % baseCount].images[0]],
+      description: `High-quality equipment for your ${cat} projects.`,
+      longDescription: `This is a premium product in our ${cat} collection, designed for durability and performance in the East African climate.`,
+      category: cat,
+      rating: 4.0 + (Math.random() * 1),
+      reviews: Math.floor(Math.random() * 50) + 5,
+      seller: { name: 'Alpha Electricals', id: 'seller-alpha' },
+      isFeatured: i % 10 === 0,
+      unit: 'item'
+    });
+  }
+
+  return products;
+};
+
+export const allProductsData = generateProducts();
+
 export const categories: Category[] = [
     { id: 'tanks', name: 'Tanks' },
     { id: 'plumbing', name: 'Plumbing' },
@@ -56,11 +85,11 @@ let allTransactions: Transaction[] = [
 ];
 
 export const availableAvatars: { url: string; alt: string }[] = [
-  { url: '/profile-images/richard-kinyungu.jpg', alt: 'Richard Kinyungu' },
-  { url: '/profile-images/peter-karanja.jpg', alt: 'Peter Karanja' },
-  { url: '/profile-images/miriam-njeri.jpg', alt: 'Miriam Njeri' },
-  { url: '/profile-images/val.jpg', alt: 'Val' },
-  { url: '/profile-images/shangi.jpg', alt: 'Shangi' },
+  { url: '/richard-kinyungu.jpg', alt: 'Richard Kinyungu' },
+  { url: '/peter-karanja.jpg', alt: 'Peter Karanja' },
+  { url: '/miriam-njeri.jpg', alt: 'Miriam Njeri' },
+  { url: '/val.jpg', alt: 'Val' },
+  { url: '/shangi.jpg', alt: 'Shangi' },
 ];
 
 export async function getProducts(): Promise<Product[]> {

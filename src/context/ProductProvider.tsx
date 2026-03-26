@@ -40,7 +40,7 @@ export function useProducts() {
 }
 
 export function ProductProvider({ children }: { children: ReactNode }) {
-  const [products, setProducts] = useState<Product[]>(initialProductsData.map((p, index) => ({...p, id: `local-${index}`})));
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
@@ -56,8 +56,11 @@ export function ProductProvider({ children }: { children: ReactNode }) {
     const seed = async () => {
         try {
             const snapshot = await getDocs(productsCollection);
-            if (snapshot.empty) {
+            // If the database has fewer than 20 items, we seed it to ensure the 89 items are available
+            if (snapshot.size < 20) {
                 const batch = writeBatch(db);
+                // To avoid duplicates if some exist, we could clear or just append
+                // Here we append the initial data set
                 initialProductsData.forEach((product) => {
                     const docRef = doc(productsCollection);
                     batch.set(docRef, product);
@@ -82,8 +85,11 @@ export function ProductProvider({ children }: { children: ReactNode }) {
 
     const unsubscribe = onSnapshot(productsCollection, 
         (snapshot) => {
-            if (!snapshot.empty) {
-                const productList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
+            const productList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
+            // Use local mock data as fallback if remote is still empty
+            if (productList.length === 0) {
+                setProducts(initialProductsData.map((p, i) => ({...p, id: `local-${i}`})));
+            } else {
                 setProducts(productList);
             }
             setLoading(false);
