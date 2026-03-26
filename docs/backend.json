@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "Product": {
@@ -31,6 +32,19 @@
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["imageUrl", "createdAt"]
+    },
+    "Review": {
+      "title": "Review",
+      "description": "A customer review for the company.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userName": { "type": "string" },
+        "rating": { "type": "number" },
+        "comment": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userName", "rating", "comment", "createdAt"]
     }
   },
   "auth": {
@@ -44,6 +58,10 @@
     "/userSelfies/{selfieId}": {
       "schema": { "$ref": "#/backend/entities/UserSelfie" },
       "description": "Admin-viewable images uploaded via visual search."
+    },
+    "/reviews/{reviewId}": {
+      "schema": { "$ref": "#/backend/entities/Review" },
+      "description": "Publicly readable and writable collection of customer reviews."
     }
   }
 }

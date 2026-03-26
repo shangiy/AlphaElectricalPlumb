@@ -1,3 +1,4 @@
+
 'use client';
 
 import Hero from '@/components/common/Hero';
@@ -7,6 +8,7 @@ import ImpactSection from '@/components/common/ImpactSection';
 import CategoryCarousel from '@/components/common/CategoryCarousel';
 import HomepageAbout from '@/components/common/HomepageAbout';
 import DeliveryServices from '@/components/common/DeliveryServices';
+import CustomerReviews from '@/components/common/CustomerReviews';
 
 export default function Home() {
   return (
@@ -17,6 +19,7 @@ export default function Home() {
       <DeliveryServices />
       <HomepageAbout />
       <ImpactSection />
+      <CustomerReviews />
       <ConnectWithUs />
     </div>
   );

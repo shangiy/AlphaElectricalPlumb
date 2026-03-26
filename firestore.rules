@@ -7,6 +7,7 @@ rules_version = '2';
  * CORE PHILOSOPHY:
  * - Products: Publicly readable and writable for prototype seeding and management.
  * - User Selfies: Publicly writable (for uploads) and readable (for admin viewing).
+ * - Reviews: Publicly readable and writable for customer feedback.
  * - Roles: Publicly accessible for prototype testing.
  */
 
@@ -21,6 +22,11 @@ service cloud.firestore {
     // Allow users to upload selfies and admins to view them
     match /userSelfies/{selfieId} {
       allow create, read, list: if true;
+    }
+
+    // Allow public reviews for the prototype
+    match /reviews/{reviewId} {
+      allow read, list, create: if true;
     }
 
     // Allow roles management for prototype setup
