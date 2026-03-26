@@ -83,6 +83,7 @@ function LoginFormContent() {
     const [socialLoading, setSocialLoading] = useState<null | 'google' | 'facebook'>(null);
     const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
     const [isMounted, setIsMounted] = useState(false);
+    const [isProcessing, setIsProcessing] = useState(false);
     const recaptchaRef = useRef<ReCAPTCHA>(null);
     
     const activeTab = searchParams.get('tab') || 'login';
@@ -112,6 +113,7 @@ function LoginFormContent() {
     };
 
     async function onLogin(data: LoginFormValues) {
+        setIsProcessing(true);
         const existingUser = await getUserByEmail(data.email);
 
         if (!existingUser || existingUser.password !== data.password) {
@@ -120,12 +122,17 @@ function LoginFormContent() {
                 title: "Login Failed",
                 description: "Invalid email or password. Please try again.",
             });
+            setIsProcessing(false);
             return;
         }
         
         login({ name: existingUser.name, username: existingUser.username, email: data.email, role: existingUser.role });
         toast({ title: "Login Successful!", description: `Welcome back, ${existingUser.username}!` });
-        router.push(redirectUrl);
+        
+        // Brief delay to ensure state settles
+        setTimeout(() => {
+            router.push(redirectUrl);
+        }, 100);
     }
 
     async function onSignUp(data: SignUpFormValues) {
@@ -141,6 +148,8 @@ function LoginFormContent() {
             return;
         }
 
+        setIsProcessing(true);
+
         try {
             if (siteKey && recaptchaToken) {
                 // Verify reCAPTCHA on the server
@@ -154,14 +163,27 @@ function LoginFormContent() {
                     });
                     recaptchaRef.current?.reset();
                     setRecaptchaToken(null);
+                    setIsProcessing(false);
                     return;
                 }
             }
 
             await signUp(data);
+            
+            // Explicitly reset reCAPTCHA before leaving the page
+            if (recaptchaRef.current) {
+                recaptchaRef.current.reset();
+            }
+            
             toast({ title: "Account Created!", description: "Welcome! You are now logged in." });
-            router.push(redirectUrl);
+            
+            // Add a safety delay to allow reCAPTCHA overlays to clear and state to persist
+            setTimeout(() => {
+                router.push(redirectUrl);
+            }, 500);
+
         } catch (error: any) {
+            setIsProcessing(false);
             toast({
                 variant: "destructive",
                 title: "Sign-Up Failed",
@@ -177,7 +199,9 @@ function LoginFormContent() {
             const user = await signInMethod();
             if (user) {
                 toast({ title: "Login Successful!", description: `Welcome, ${user.name}!` });
-                router.push(redirectUrl);
+                setTimeout(() => {
+                    router.push(redirectUrl);
+                }, 100);
             }
         } catch (error: any) {
             toast({
@@ -237,7 +261,10 @@ function LoginFormContent() {
                                         </FormItem>
                                     )}
                                 />
-                                <Button type="submit" className="w-full" disabled={loginForm.formState.isSubmitting}>Log In</Button>
+                                <Button type="submit" className="w-full" disabled={isProcessing || loginForm.formState.isSubmitting}>
+                                    {isProcessing ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : null}
+                                    Log In
+                                </Button>
                                 
                                 <div className="text-sm">
                                     <Link href="#" className="font-medium text-primary hover:underline">
@@ -255,11 +282,11 @@ function LoginFormContent() {
                                 </div>
                                 
                                 <div className="grid grid-cols-2 gap-4">
-                                     <Button variant="outline" type="button" onClick={() => handleSocialSignIn('google')} disabled={!!socialLoading}>
+                                     <Button variant="outline" type="button" onClick={() => handleSocialSignIn('google')} disabled={!!socialLoading || isProcessing}>
                                         {socialLoading === 'google' ? <Loader2 className="animate-spin" /> : <GoogleIcon/>}
                                         Google
                                      </Button>
-                                     <Button variant="outline" type="button" onClick={() => handleSocialSignIn('facebook')} disabled={!!socialLoading} className="text-[#1877F2] hover:text-[#1877F2]">
+                                     <Button variant="outline" type="button" onClick={() => handleSocialSignIn('facebook')} disabled={!!socialLoading || isProcessing} className="text-[#1877F2] hover:text-[#1877F2]">
                                         {socialLoading === 'facebook' ? <Loader2 className="animate-spin" /> : <FacebookIcon/>}
                                         Facebook
                                      </Button>
@@ -367,7 +394,10 @@ function LoginFormContent() {
                                     </FormItem>
                                 )}
 
-                                <Button type="submit" className="w-full" disabled={signUpForm.formState.isSubmitting}>Create Account</Button>
+                                <Button type="submit" className="w-full" disabled={isProcessing || signUpForm.formState.isSubmitting}>
+                                    {isProcessing ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : null}
+                                    {isProcessing ? "Processing..." : "Create Account"}
+                                </Button>
                                 
                                 <div className="relative">
                                     <div className="absolute inset-0 flex items-center">
@@ -379,11 +409,11 @@ function LoginFormContent() {
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-4">
-                                     <Button variant="outline" type="button" onClick={() => handleSocialSignIn('google')} disabled={!!socialLoading}>
+                                     <Button variant="outline" type="button" onClick={() => handleSocialSignIn('google')} disabled={!!socialLoading || isProcessing}>
                                         {socialLoading === 'google' ? <Loader2 className="animate-spin" /> : <GoogleIcon/>}
                                         Google
                                      </Button>
-                                     <Button variant="outline" type="button" onClick={() => handleSocialSignIn('facebook')} disabled={!!socialLoading} className="text-[#1877F2] hover:text-[#1877F2]">
+                                     <Button variant="outline" type="button" onClick={() => handleSocialSignIn('facebook')} disabled={!!socialLoading || isProcessing} className="text-[#1877F2] hover:text-[#1877F2]">
                                         {socialLoading === 'facebook' ? <Loader2 className="animate-spin" /> : <FacebookIcon/>}
                                         Facebook
                                      </Button>
