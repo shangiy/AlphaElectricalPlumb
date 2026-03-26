@@ -12,7 +12,7 @@ This is a professional Next.js 15 e-commerce application for Alpha Electricals &
 - **AI**: Firebase Genkit + Google Gemini
 - **Payments**: Paystack Integration
 
-## Project Description (For Data Connect / Documentation)
+## Project Description
 
 Alpha Electricals & Plumbing Ltd is a comprehensive e-commerce platform for home infrastructure and utility supplies. Key features include:
 
@@ -27,12 +27,20 @@ Alpha Electricals & Plumbing Ltd is a comprehensive e-commerce platform for home
 - **Admin Suite**: A full-featured dashboard with sales analytics (charts), inventory management, user moderation, and transaction logging.
 - **User Engagement**: Newsletter subscription, WhatsApp chat widget, and dynamic promotional banners.
 
-## 🚀 Vercel / Firebase Deployment Checklist
+## 🚀 Pushing Changes to GitHub
+
+To update your live site on Firebase App Hosting, run these commands:
+
+1. **Stage changes**: `git add .`
+2. **Commit**: `git commit -m "Update Alpha Electricals project"`
+3. **Push**: `git push origin main`
+
+## 🛠️ Vercel / Firebase Deployment Checklist
 
 Your build will fail unless you provide the Firebase configuration.
 
 ### Step 1: Add Environment Variables
-Add the following keys to your deployment platform (Vercel/Firebase):
+Add the following keys to your deployment platform (Vercel/Firebase Console):
 - `NEXT_PUBLIC_FIREBASE_API_KEY`
 - `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`
 - `NEXT_PUBLIC_FIREBASE_PROJECT_ID`
