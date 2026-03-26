@@ -1,4 +1,3 @@
-
 'use server';
 
 /**
@@ -18,13 +17,19 @@ export async function verifyRecaptcha(token: string | null) {
   }
 
   try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
+
     const response = await fetch('https://www.google.com/recaptcha/api/siteverify', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
       body: `secret=${secretKey}&response=${token}`,
+      signal: controller.signal,
     });
+
+    clearTimeout(timeoutId);
 
     const data = await response.json();
 
@@ -32,9 +37,21 @@ export async function verifyRecaptcha(token: string | null) {
       return { success: true };
     } else {
       console.error('reCAPTCHA verification failed:', data['error-codes']);
-      return { success: false, message: 'reCAPTCHA verification failed. Please try again.', errorCodes: data['error-codes'] };
+      
+      const errorMsg = data['error-codes']?.includes('invalid-input-response') 
+        ? 'Verification expired or invalid. Please try again.'
+        : 'Security verification failed. Please check your domain settings.';
+
+      return { 
+        success: false, 
+        message: errorMsg, 
+        errorCodes: data['error-codes'] 
+      };
     }
-  } catch (error) {
+  } catch (error: any) {
+    if (error.name === 'AbortError') {
+      return { success: false, message: 'Verification timed out. Please try again.' };
+    }
     console.error('Error during reCAPTCHA verification:', error);
     return { success: false, message: 'Internal server error during verification.' };
   }

@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useForm } from 'react-hook-form';
@@ -21,7 +20,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import { getUserByEmail } from '@/lib/data';
-import { useState, Suspense, useRef } from 'react';
+import { useState, Suspense, useRef, useEffect } from 'react';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import ReCAPTCHA from 'react-google-recaptcha';
 import { verifyRecaptcha } from '@/app/actions/verify-recaptcha';
@@ -82,9 +81,14 @@ function LoginFormContent() {
     const redirectUrl = searchParams.get('redirect') || '/';
     const [socialLoading, setSocialLoading] = useState<null | 'google' | 'facebook'>(null);
     const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
+    const [isMounted, setIsMounted] = useState(false);
     const recaptchaRef = useRef<ReCAPTCHA>(null);
     
     const activeTab = searchParams.get('tab') || 'login';
+
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
 
     const loginForm = useForm<LoginFormValues>({
         resolver: zodResolver(loginSchema),
@@ -124,7 +128,10 @@ function LoginFormContent() {
     }
 
     async function onSignUp(data: SignUpFormValues) {
-        if (!recaptchaToken) {
+        const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
+        
+        // Only require recaptcha if the site key is configured
+        if (siteKey && !recaptchaToken) {
             toast({
                 variant: "destructive",
                 title: "Verification Required",
@@ -134,18 +141,20 @@ function LoginFormContent() {
         }
 
         try {
-            // Verify reCAPTCHA on the server
-            const verification = await verifyRecaptcha(recaptchaToken);
-            
-            if (!verification.success) {
-                toast({
-                    variant: "destructive",
-                    title: "Verification Failed",
-                    description: verification.message,
-                });
-                recaptchaRef.current?.reset();
-                setRecaptchaToken(null);
-                return;
+            if (siteKey && recaptchaToken) {
+                // Verify reCAPTCHA on the server
+                const verification = await verifyRecaptcha(recaptchaToken);
+                
+                if (!verification.success) {
+                    toast({
+                        variant: "destructive",
+                        title: "Verification Failed",
+                        description: verification.message,
+                    });
+                    recaptchaRef.current?.reset();
+                    setRecaptchaToken(null);
+                    return;
+                }
             }
 
             await signUp(data);
@@ -181,6 +190,7 @@ function LoginFormContent() {
     }
 
     const redirectQuery = redirectUrl !== '/' ? `&redirect=${encodeURIComponent(redirectUrl)}` : '';
+    const recaptchaSiteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
 
   return (
     <div className="container mx-auto flex min-h-[80vh] items-center justify-center px-4 py-12">
@@ -346,13 +356,15 @@ function LoginFormContent() {
                                     )}
                                 />
 
-                                <FormItem className="flex flex-col items-center justify-center p-2">
-                                    <ReCAPTCHA
-                                        ref={recaptchaRef}
-                                        sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY!}
-                                        onChange={handleRecaptchaChange}
-                                    />
-                                </FormItem>
+                                {isMounted && recaptchaSiteKey && (
+                                    <FormItem className="flex flex-col items-center justify-center p-2 min-h-[78px]">
+                                        <ReCAPTCHA
+                                            ref={recaptchaRef}
+                                            sitekey={recaptchaSiteKey}
+                                            onChange={handleRecaptchaChange}
+                                        />
+                                    </FormItem>
+                                )}
 
                                 <Button type="submit" className="w-full" disabled={signUpForm.formState.isSubmitting}>Create Account</Button>
                                 
