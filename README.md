@@ -8,24 +8,26 @@ This is a professional Next.js 15 e-commerce application for Alpha Electricals &
 - **Framework**: Next.js 15 (App Router)
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS / ShadCN UI
-- **Backend**: Firebase (Auth, Firestore, Storage, Realtime Database)
+- **Backend**: Firebase (Auth, Firestore, Storage)
 - **AI**: Firebase Genkit + Google Gemini
 - **Payments**: Paystack Integration
+- **Security**: Google reCAPTCHA v2
 
 ## Project Description
 
 Alpha Electricals & Plumbing Ltd is a comprehensive e-commerce platform for home infrastructure and utility supplies. Key features include:
 
-- **Product Catalog**: Multi-category browsing (Tanks, Plumbing, Lighting, Decor, Roofing) with detailed product specifications, wholesale pricing, and image carousels.
+- **Product Catalog**: Multi-category browsing (Tanks, Plumbing, Lighting, Decor, Roofing) with detailed product specifications and image carousels.
 - **AI Integration**: 
   - **Alpha AI Chatbot**: Conversational assistant for product queries and order support.
   - **Visual Search**: Users can capture photos to search for matching products.
   - **AI Description Generator**: Admin tool to create compelling product copy.
-  - **Smart Recommendations**: Dynamic "You Might Also Like" sections based on user browsing.
+- **Customer Engagement**:
+  - **Dynamic Reviews**: Real-time customer feedback section on the homepage where users can read and post reviews.
+  - **Newsletter**: Automated subscription flow.
 - **E-commerce Workflow**: Persistent shopping cart, location-based shipping calculation, and secure checkout via Paystack.
 - **Order Management**: Real-time order tracking with status updates and map integration.
-- **Admin Suite**: A full-featured dashboard with sales analytics (charts), inventory management, user moderation, and transaction logging.
-- **User Engagement**: Newsletter subscription, WhatsApp chat widget, and dynamic promotional banners.
+- **Admin Suite**: A full-featured dashboard with analytics, inventory management (add/edit products with AI assistance), and user moderation.
 
 ## 🚀 Pushing Changes to GitHub
 
@@ -35,12 +37,12 @@ To update your live site on Firebase App Hosting, run these commands:
 2. **Commit**: `git commit -m "Update Alpha Electricals project"`
 3. **Push**: `git push origin main`
 
-## 🛠️ Vercel / Firebase Deployment Checklist
+## 🛠️ Deployment Checklist
 
-Your build will fail unless you provide the Firebase configuration.
+Your build will fail unless you provide the following configuration in the Firebase Console:
 
-### Step 1: Add Environment Variables
-Add the following keys to your deployment platform (Vercel/Firebase Console):
+### Environment Variables
+Add these keys to your Firebase App Hosting environment variables:
 - `NEXT_PUBLIC_FIREBASE_API_KEY`
 - `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`
 - `NEXT_PUBLIC_FIREBASE_PROJECT_ID`
@@ -48,7 +50,7 @@ Add the following keys to your deployment platform (Vercel/Firebase Console):
 - `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID`
 - `NEXT_PUBLIC_FIREBASE_APP_ID`
 - `NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY`
-- `RECAPTCHA_SECRET_KEY` (Get this from Google reCAPTCHA Admin Console)
+- `RECAPTCHA_SECRET_KEY` (Your Google reCAPTCHA Secret Key)
 
 ## Local Development
 
