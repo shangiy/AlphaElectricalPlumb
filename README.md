@@ -40,7 +40,7 @@ To update your live site on Firebase App Hosting, run these commands in your **G
    ```
 2. **Commit**: 
    ```bash
-   git commit -m "feat: apply infinite loop carousel and catalog sync logic"
+   git commit -m "feat: sync reCAPTCHA production keys and trigger build"
    ```
 3. **Push**: 
    ```bash
@@ -60,9 +60,9 @@ Your build will fail unless you provide the following configuration in the Fireb
 - `NEXT_PUBLIC_FIREBASE_APP_ID`
 
 ### Security & Payments
-- `NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY`: Your Paystack Live or Test Public Key.
-- `NEXT_PUBLIC_RECAPTCHA_SITE_KEY`: Your production reCAPTCHA site key.
-- `RECAPTCHA_SECRET_KEY`: Your production reCAPTCHA secret key.
+- `NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY`: Your Paystack Public Key.
+- `NEXT_PUBLIC_RECAPTCHA_SITE_KEY`: 6LfK2JgsAAAAP68NWhq95fIcgwItyY
+- `RECAPTCHA_SECRET_KEY`: Your production reCAPTCHA secret key (matching the site key above).
 
 ## Local Development
 
