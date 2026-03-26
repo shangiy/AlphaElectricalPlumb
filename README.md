@@ -11,7 +11,7 @@ This is a professional Next.js 15 e-commerce application for Alpha Electricals &
 - **Backend**: Firebase (Auth, Firestore, Storage)
 - **AI**: Firebase Genkit + Google Gemini
 - **Payments**: Paystack Integration
-- **Security**: Google reCAPTCHA v2
+- **Security**: Google reCAPTCHA v2 (Production Ready)
 
 ## Project Description
 
@@ -31,27 +31,37 @@ Alpha Electricals & Plumbing Ltd is a comprehensive e-commerce platform for home
 
 ## 🚀 Pushing Changes to GitHub
 
-To update your live site on Firebase App Hosting, run these commands:
+To update your live site on Firebase App Hosting, run these commands in your **Git Bash**:
 
-1. **Stage changes**: `git add .`
-2. **Commit**: `git commit -m "feat: use environment variable for reCAPTCHA site key"`
-3. **Push**: `git push origin main`
+1. **Stage changes**: 
+   ```bash
+   git add .
+   ```
+2. **Commit**: 
+   ```bash
+   git commit -m "feat: finalize reCAPTCHA production setup and dynamic reviews"
+   ```
+3. **Push**: 
+   ```bash
+   git push origin main
+   ```
 
 ## 🛠️ Deployment Checklist
 
-Your build will fail unless you provide the following configuration in the Firebase Console:
+Your build will fail unless you provide the following configuration in the Firebase Console under **App Hosting > Your App > Settings > Environment Variables**:
 
-### Environment Variables
-Add these keys to your Firebase App Hosting environment variables:
+### Firebase Config
 - `NEXT_PUBLIC_FIREBASE_API_KEY`
 - `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`
 - `NEXT_PUBLIC_FIREBASE_PROJECT_ID`
 - `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET`
 - `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID`
 - `NEXT_PUBLIC_FIREBASE_APP_ID`
-- `NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY`
-- `NEXT_PUBLIC_RECAPTCHA_SITE_KEY` (Your Google reCAPTCHA Site Key)
-- `RECAPTCHA_SECRET_KEY` (Your Google reCAPTCHA Secret Key)
+
+### Security & Payments
+- `NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY`: Your Paystack Live or Test Public Key.
+- `NEXT_PUBLIC_RECAPTCHA_SITE_KEY`: Use `6LdFm5gsAAAAALfceOcW6y-68tEYEzNySihKjEzq` (Production Site Key).
+- `RECAPTCHA_SECRET_KEY`: Use `6LdFm5gsAAAAANJSHWEzgIUAAOjB12wVOY_kxuhv` (Production Secret Key).
 
 ## Local Development
 
