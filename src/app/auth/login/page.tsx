@@ -323,7 +323,7 @@ function LoginFormContent() {
                                         <FormItem className="flex flex-col items-center justify-center p-2">
                                             <FormControl>
                                                 <ReCAPTCHA
-                                                    sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"
+                                                    sitekey="6LdFm5gsAAAAALfceOcW6y-68tEYEzNySihKjEzq"
                                                     onChange={(value) => field.onChange(value || "")}
                                                 />
                                             </FormControl>
