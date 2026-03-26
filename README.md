@@ -39,7 +39,7 @@ To update your live site on Firebase App Hosting, run these commands in your **G
    ```
 2. **Commit**: 
    ```bash
-   git commit -m "feat: remove recaptcha integration"
+   git commit -m "feat: finalize recaptcha integration"
    ```
 3. **Push**: 
    ```bash
@@ -48,7 +48,7 @@ To update your live site on Firebase App Hosting, run these commands in your **G
 
 ## 🛠️ Deployment Checklist
 
-Your build will fail unless you provide the following configuration in the Firebase Console under **App Hosting > Your App > Settings > Environment Variables**:
+Your build will fail or features will break unless you provide the following configuration in the Firebase Console under **App Hosting > Your App > Settings > Environment Variables**:
 
 ### Firebase Config
 - `NEXT_PUBLIC_FIREBASE_API_KEY`
@@ -59,6 +59,8 @@ Your build will fail unless you provide the following configuration in the Fireb
 - `NEXT_PUBLIC_FIREBASE_APP_ID`
 
 ### Security & Payments
+- `NEXT_PUBLIC_RECAPTCHA_SITE_KEY`: Your Google reCAPTCHA v2 Site Key.
+- `RECAPTCHA_SECRET_KEY`: Your Google reCAPTCHA v2 Secret Key (Server-side).
 - `NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY`: Your Paystack Public Key.
 
 ## Local Development
