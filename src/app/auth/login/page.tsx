@@ -138,7 +138,6 @@ function LoginFormContent() {
     async function onSignUp(data: SignUpFormValues) {
         const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
         
-        // Only require recaptcha if the site key is configured
         if (siteKey && !recaptchaToken) {
             toast({
                 variant: "destructive",
@@ -152,7 +151,6 @@ function LoginFormContent() {
 
         try {
             if (siteKey && recaptchaToken) {
-                // Verify reCAPTCHA on the server
                 const verification = await verifyRecaptcha(recaptchaToken);
                 
                 if (!verification.success) {
@@ -170,14 +168,14 @@ function LoginFormContent() {
 
             await signUp(data);
             
-            // Explicitly reset reCAPTCHA before leaving the page
+            // Explicitly reset reCAPTCHA before leaving the page to unlock UI
             if (recaptchaRef.current) {
                 recaptchaRef.current.reset();
             }
             
             toast({ title: "Account Created!", description: "Welcome! You are now logged in." });
             
-            // Add a safety delay to allow reCAPTCHA overlays to clear and state to persist
+            // Safety delay allows the reCAPTCHA background layers to clear before navigation
             setTimeout(() => {
                 router.push(redirectUrl);
             }, 500);
