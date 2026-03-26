@@ -12,6 +12,7 @@ This is a professional Next.js 15 e-commerce application for Alpha Electricals &
 - **AI**: Firebase Genkit + Google Gemini
 - **Payments**: Paystack Integration
 - **Security**: Google reCAPTCHA v2 (Production Ready)
+- **SEO**: Dynamic `sitemap.xml` for search engine discovery.
 
 ## Project Description
 
@@ -39,7 +40,7 @@ To update your live site on Firebase App Hosting, run these commands in your **G
    ```
 2. **Commit**: 
    ```bash
-   git commit -m "feat: finalize reCAPTCHA production setup and dynamic reviews"
+   git commit -m "feat: add sitemap.xml and update project docs"
    ```
 3. **Push**: 
    ```bash
@@ -60,8 +61,8 @@ Your build will fail unless you provide the following configuration in the Fireb
 
 ### Security & Payments
 - `NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY`: Your Paystack Live or Test Public Key.
-- `NEXT_PUBLIC_RECAPTCHA_SITE_KEY`: Use `6LdFm5gsAAAAALfceOcW6y-68tEYEzNySihKjEzq` (Production Site Key).
-- `RECAPTCHA_SECRET_KEY`: Use `6LdFm5gsAAAAANJSHWEzgIUAAOjB12wVOY_kxuhv` (Production Secret Key).
+- `NEXT_PUBLIC_RECAPTCHA_SITE_KEY`: Your production reCAPTCHA site key.
+- `RECAPTCHA_SECRET_KEY`: Your production reCAPTCHA secret key.
 
 ## Local Development
 
