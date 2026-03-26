@@ -20,10 +20,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import { getUserByEmail } from '@/lib/data';
-import { useState, Suspense, useEffect, useRef } from 'react';
+import { useState, Suspense, useEffect } from 'react';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
-import ReCAPTCHA from 'react-google-recaptcha';
-import { verifyRecaptcha } from '@/app/actions/verify-recaptcha';
 
 // Force dynamic rendering to bypass static generation requirements for useSearchParams
 export const dynamic = 'force-dynamic';
@@ -39,7 +37,6 @@ const signUpSchema = z.object({
   email: z.string().email('Please enter a valid email.'),
   password: z.string().min(8, 'Password must be at least 8 characters.'),
   confirmPassword: z.string(),
-  recaptcha: z.string().min(1, 'Please confirm you are not a robot.'),
 }).refine(data => data.password === data.confirmPassword, {
   message: "Passwords don't match",
   path: ["confirmPassword"],
@@ -81,14 +78,8 @@ function LoginFormContent() {
     const { toast } = useToast();
     const redirectUrl = searchParams.get('redirect') || '/';
     const [socialLoading, setSocialLoading] = useState<null | 'google' | 'facebook'>(null);
-    const [isMounted, setIsMounted] = useState(false);
-    const recaptchaRef = useRef<ReCAPTCHA>(null);
     
     const activeTab = searchParams.get('tab') || 'login';
-
-    useEffect(() => {
-        setIsMounted(true);
-    }, []);
 
     const loginForm = useForm<LoginFormValues>({
         resolver: zodResolver(loginSchema),
@@ -97,7 +88,7 @@ function LoginFormContent() {
 
     const signUpForm = useForm<SignUpFormValues>({
         resolver: zodResolver(signUpSchema),
-        defaultValues: { name: "", username: "", email: "", password: "", confirmPassword: "", recaptcha: "" },
+        defaultValues: { name: "", username: "", email: "", password: "", confirmPassword: "" },
     });
     
     const handleTabChange = (tab: string) => {
@@ -125,20 +116,6 @@ function LoginFormContent() {
 
     async function onSignUp(data: SignUpFormValues) {
         try {
-            // Verify reCAPTCHA token on the server
-            const verification = await verifyRecaptcha(data.recaptcha);
-            if (verification.status === "error") {
-                toast({
-                    variant: "destructive",
-                    title: "Security Check Failed",
-                    description: verification.message,
-                });
-                // Reset the widget so user can try again
-                recaptchaRef.current?.reset();
-                signUpForm.setValue('recaptcha', '');
-                return;
-            }
-
             await signUp(data);
             toast({ title: "Account Created!", description: "Welcome! You are now logged in." });
             router.push(redirectUrl);
@@ -148,8 +125,6 @@ function LoginFormContent() {
                 title: "Sign-Up Failed",
                 description: error.message || "An error occurred. Please try again.",
             });
-            recaptchaRef.current?.reset();
-            signUpForm.setValue('recaptcha', '');
         }
     }
 
@@ -338,24 +313,6 @@ function LoginFormContent() {
                                         </FormItem>
                                     )}
                                 />
-                                {isMounted && (
-                                    <FormField
-                                        control={signUpForm.control}
-                                        name="recaptcha"
-                                        render={({ field }) => (
-                                            <FormItem className="flex flex-col items-center justify-center p-2">
-                                                <FormControl>
-                                                    <ReCAPTCHA
-                                                        ref={recaptchaRef}
-                                                        sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || ""}
-                                                        onChange={(value) => field.onChange(value || "")}
-                                                    />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                )}
                                 <Button type="submit" className="w-full" disabled={signUpForm.formState.isSubmitting}>Create Account</Button>
                                 
                                 <div className="relative">

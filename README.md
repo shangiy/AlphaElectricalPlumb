@@ -1,5 +1,5 @@
 
-# ALPHA Plumbing n Electrical Ltd
+# ALPHA Plumbing n Electrical Ltd 
 
 This is a professional Next.js 15 e-commerce application for Alpha Electricals & Plumbing Ltd, built with a modern stack featuring React, ShadCN UI, Tailwind, and Firebase.
 
@@ -11,7 +11,6 @@ This is a professional Next.js 15 e-commerce application for Alpha Electricals &
 - **Backend**: Firebase (Auth, Firestore, Storage)
 - **AI**: Firebase Genkit + Google Gemini
 - **Payments**: Paystack Integration
-- **Security**: Google reCAPTCHA v2 (Production Ready)
 - **SEO**: Dynamic `sitemap.xml` for search engine discovery.
 
 ## Project Description
@@ -40,7 +39,7 @@ To update your live site on Firebase App Hosting, run these commands in your **G
    ```
 2. **Commit**: 
    ```bash
-   git commit -m "feat: sync reCAPTCHA production keys and trigger build"
+   git commit -m "feat: remove recaptcha integration"
    ```
 3. **Push**: 
    ```bash
@@ -61,8 +60,6 @@ Your build will fail unless you provide the following configuration in the Fireb
 
 ### Security & Payments
 - `NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY`: Your Paystack Public Key.
-- `NEXT_PUBLIC_RECAPTCHA_SITE_KEY`: 6LfK2JgsAAAAP68NWhq95fIcgwItyY
-- `RECAPTCHA_SECRET_KEY`: Your production reCAPTCHA secret key (matching the site key above).
 
 ## Local Development
 
