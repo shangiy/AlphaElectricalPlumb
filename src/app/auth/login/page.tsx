@@ -349,7 +349,7 @@ function LoginFormContent() {
                                 <FormItem className="flex flex-col items-center justify-center p-2">
                                     <ReCAPTCHA
                                         ref={recaptchaRef}
-                                        sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || "6LcON5ksAAAAAI8sbfZbqmU6SWie1ZbA3JgRhidF"}
+                                        sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY!}
                                         onChange={handleRecaptchaChange}
                                     />
                                 </FormItem>
