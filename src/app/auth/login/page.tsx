@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useForm } from 'react-hook-form';
@@ -129,10 +128,12 @@ function LoginFormContent() {
         login({ name: existingUser.name, username: existingUser.username, email: data.email, role: existingUser.role });
         toast({ title: "Login Successful!", description: `Welcome back, ${existingUser.username}!` });
         
-        // Brief delay to ensure state settles
+        // Ensure UI is unlocked before navigation
+        document.body.style.pointerEvents = 'auto';
+        
         setTimeout(() => {
             router.push(redirectUrl);
-        }, 100);
+        }, 150);
     }
 
     async function onSignUp(data: SignUpFormValues) {
@@ -175,10 +176,11 @@ function LoginFormContent() {
             
             toast({ title: "Account Created!", description: "Welcome! You are now logged in." });
             
-            // Safety delay allows the reCAPTCHA background layers to clear before navigation
+            // Force reset body lock and add delay for reCAPTCHA iframe cleanup
+            document.body.style.pointerEvents = 'auto';
             setTimeout(() => {
                 router.push(redirectUrl);
-            }, 500);
+            }, 800);
 
         } catch (error: any) {
             setIsProcessing(false);
@@ -197,9 +199,10 @@ function LoginFormContent() {
             const user = await signInMethod();
             if (user) {
                 toast({ title: "Login Successful!", description: `Welcome, ${user.name}!` });
+                document.body.style.pointerEvents = 'auto';
                 setTimeout(() => {
                     router.push(redirectUrl);
-                }, 100);
+                }, 150);
             }
         } catch (error: any) {
             toast({

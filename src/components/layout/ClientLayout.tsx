@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { Toaster } from '@/components/ui/toaster';
 import Header from '@/components/common/Header';
@@ -21,6 +21,27 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
   const [isChatbotOpen, setIsChatbotOpen] = useState(false);
   const pathname = usePathname();
   const isAdminRoute = pathname.startsWith('/admin');
+
+  // Nuclear Option Fix: Ensures the body is always clickable and scrollable on navigation.
+  // This prevents cases where Radix UI or reCAPTCHA leaves an invisible lock on the screen.
+  useEffect(() => {
+    const unlockUI = () => {
+      document.documentElement.style.pointerEvents = 'auto';
+      document.documentElement.style.overflow = 'auto';
+      document.body.style.pointerEvents = 'auto';
+      document.body.style.overflow = 'auto';
+      
+      // Remove Radix UI lock attributes if they persist
+      document.body.removeAttribute('data-pointer-events-none');
+      document.body.style.removeProperty('pointer-events');
+    };
+
+    unlockUI();
+    
+    // Optional: a small delay to catch any late-initializing scripts
+    const timer = setTimeout(unlockUI, 500);
+    return () => clearTimeout(timer);
+  }, [pathname]);
 
   return (
     <FirebaseClientProvider>
