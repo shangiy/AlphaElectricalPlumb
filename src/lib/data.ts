@@ -1,4 +1,3 @@
-
 import type { Product, Category, MockUser, Transaction, CarouselCategory } from './types';
 
 const STORAGE_BASE_URL = "https://firebasestorage.googleapis.com/v0/b/studio-2955966694-9faa5.firebasestorage.app/o/product%20images%2FDecorative%20Lighting%20and%20chandeliers%2F";
@@ -10,7 +9,7 @@ export const allProductsData: Omit<Product, 'id'>[] = [
     "price": 12500,
     "imageUrls": [`${STORAGE_BASE_URL}5-Light%20Modern%20Wood%20Arm%20Chandelier%20with%20Opal%20Glass%20Shades.webp${URL_SUFFIX}`],
     "description": "Elegant 5-light chandelier combining natural wood texture with opal glass shades.",
-    "longDescription": "This exquisite 5-light chandelier combines the warmth of natural wood arms with the sophisticated elegance of opal glass shades. Perfectly designed for modern living rooms or dining areas, it provides a soft, diffused glow that creates a welcoming atmosphere. The high-quality wood finish adds an organic touch to contemporary interiors. We provide free delivery within Eldoret and professional installation to ensure the fixture is perfectly balanced and fully functional in your home.",
+    "longDescription": "Bring a touch of organic elegance to your interior with this stunning 5-light chandelier. Featuring real wood arms and soft opal glass globes, it provides a warm, diffused glow perfect for dining areas or master bedrooms. The minimalist yet sturdy construction ensures it complements both Scandinavian and modern styles. At Alpha Electricals, we don't just sell you a light; we ensure it works perfectly. This item includes professional delivery and full installation by our certified technicians, leaving your space beautifully lit and ready to enjoy.",
     "category": "lighting-electrical",
     "rating": 4.9,
     "reviews": 12,
@@ -25,7 +24,7 @@ export const allProductsData: Omit<Product, 'id'>[] = [
     "price": 15800,
     "imageUrls": [`${STORAGE_BASE_URL}6-Light%20Linear%20Molecular%20Globe%20Chandelier.webp${URL_SUFFIX}`],
     "description": "Contemporary 6-light linear chandelier with a molecular globe design.",
-    "longDescription": "A striking piece of contemporary art for your ceiling, this 6-light linear chandelier features clear glass globes in a striking molecular arrangement. The linear design makes it an ideal choice for placement over kitchen islands, long dining tables, or in hallways. It offers clear, bright illumination while maintaining a minimalist aesthetic. Our dedicated team handles the entire delivery and setup process, ensuring the molecular structure is securely mounted and perfectly aligned.",
+    "longDescription": "A masterpiece of geometric design, this linear chandelier features six hand-blown glass globes arranged in a molecular structure. It is the ideal lighting solution for long surfaces like kitchen islands or conference tables. The sleek metal finish adds a sophisticated industrial edge to any room. We guarantee a stress-free experience with our expert team handling the secure delivery and precise ceiling mounting. We leave only after the system is fully tested and working to your satisfaction.",
     "category": "lighting-electrical",
     "rating": 4.8,
     "reviews": 8,
@@ -39,7 +38,7 @@ export const allProductsData: Omit<Product, 'id'>[] = [
     "price": 18500,
     "imageUrls": [`${STORAGE_BASE_URL}8-Light%20Modern%20Sputnik%20Chandelier%20with%20White%20Frosted%20Glass%20Shades.webp${URL_SUFFIX}`],
     "description": "Iconic sputnik chandelier with 8 frosted glass shades for superior brightness.",
-    "longDescription": "Add a bold mid-century modern statement to your large rooms with this 8-light sputnik chandelier. The white frosted shades diffuse light evenly across the room, eliminating harsh glares while providing superior brightness. Its iconic starburst design serves as a focal point in any grand entryway or high-ceiling living space. We include professional delivery and expert installation service to guarantee a safe and flawless setup.",
+    "longDescription": "Make a bold architectural statement with our 8-light Sputnik chandelier. Its iconic starburst design and high-quality frosted glass shades provide 360-degree illumination, making it perfect for grand entryways or rooms with high ceilings. The adjustable arms allow you to customize the look to suit your space. Our professional installation service ensures this heavy-duty fixture is balanced and wired correctly for long-term safety. Delivery across Eldoret is included.",
     "category": "lighting-electrical",
     "rating": 5.0,
     "reviews": 15,
@@ -54,11 +53,10 @@ export const allProductsData: Omit<Product, 'id'>[] = [
     "imageUrls": [
       `${STORAGE_BASE_URL}Adjustable%20Cone%20Wall%20Sconce%20with%20Brass%20Swivel.webp${URL_SUFFIX}`,
       `${STORAGE_BASE_URL}Adjustable%20Cone%20Wall%20Sconce%20with%20Brass%20Swivel%20(2).webp${URL_SUFFIX}`,
-      `${STORAGE_BASE_URL}Adjustable%20Cone%20Wall%20Sconce%20with%20Brass%20Swivel%20(3).webp${URL_SUFFIX}`,
-      `${STORAGE_BASE_URL}Adjustable%20Cone%20Wall%20Sconce%20with%20Brass%20Swivel%20(4).webp${URL_SUFFIX}`
+      `${STORAGE_BASE_URL}Adjustable%20Cone%20Wall%20Sconce%20with%20Brass%20Swivel%20(3).webp${URL_SUFFIX}`
     ],
     "description": "Versatile wall sconce with a classic cone shape and adjustable brass swivel.",
-    "longDescription": "Versatile and stylish, this adjustable cone wall sconce is the perfect solution for focused task lighting. The beautiful brass swivel allows for precise positioning, making it an excellent choice for bedside reading, over a desk, or as an accent light to highlight wall decor. It features a durable powder-coated finish and multiple orientation options to fit your unique space. We provide professional installation to ensure the wiring is hidden and the sconce is ready for immediate use.",
+    "longDescription": "The ultimate solution for task lighting, this adjustable cone wall sconce features a high-quality solid brass swivel. Whether you need a reading light for your bedside or a stylish accent for a hallway, its 180-degree rotation allows you to point light exactly where it's needed. The durable powder-coated finish ensures longevity and ease of cleaning. We handle the wall mounting and electrical connection to ensure a seamless, wire-free look. Fully installed and ready for use upon delivery.",
     "category": "lighting-electrical",
     "rating": 4.7,
     "reviews": 24,
@@ -72,7 +70,7 @@ export const allProductsData: Omit<Product, 'id'>[] = [
     "price": 15000,
     "imageUrls": ["https://picsum.photos/seed/tank1/600/600"],
     "description": "High-capacity 2000L water storage tank.",
-    "longDescription": "Manufactured from food-grade material, this 2000L Kentank is the industry standard for durability and safety. Perfect for domestic water storage, it features a heavy-duty design that withstands the elements. We provide fast delivery across the region and offer expert advice on proper placement and base preparation to ensure long-term reliability.",
+    "longDescription": "Ensure a consistent water supply with the industry-leading 2000L Kentank. Built from food-grade, UV-stabilized plastic, this tank is designed to withstand the harsh East African climate without degradation. Ideal for residential rainwater harvesting or borehole storage. We provide express delivery and expert advice on base preparation to ensure your tank remains stable and leak-free for decades.",
     "category": "tanks",
     "rating": 4.7,
     "reviews": 45,
@@ -84,7 +82,7 @@ export const allProductsData: Omit<Product, 'id'>[] = [
     "price": 120,
     "imageUrls": ["https://picsum.photos/seed/pipe1/600/600"],
     "description": "High-quality PPR pipes for hot and cold water systems.",
-    "longDescription": "Durable PPR pipes designed for leak-proof connections in both residential and industrial plumbing. These pipes are highly resistant to corrosion, scale build-up, and high temperatures. We offer bulk delivery and professional plumbing installation services to guarantee a reliable water system for your property.",
+    "longDescription": "Our 20mm PPR pipes are engineered for high-pressure hot and cold water applications. They offer superior resistance to corrosion and scaling, ensuring your water remains clean and your flow remains consistent. Perfect for modern residential plumbing projects. We offer bulk regional delivery and can connect you with certified plumbers for professional installation, ensuring a leak-proof system throughout your property.",
     "category": "plumbing",
     "rating": 4.8,
     "reviews": 80,
