@@ -44,7 +44,7 @@ export default function ProductCard({ product }: ProductCardProps) {
   };
 
   return (
-    <Card className="flex h-full flex-col overflow-hidden transition-shadow hover:shadow-lg bg-white">
+    <Card className="flex h-full flex-col overflow-hidden transition-shadow hover:shadow-lg bg-white group">
       <CardHeader className="p-0 relative">
         {product.imageUrls && product.imageUrls.length > 1 ? (
             <Carousel className="w-full">
