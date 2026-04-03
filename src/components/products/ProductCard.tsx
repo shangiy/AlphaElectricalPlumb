@@ -1,4 +1,3 @@
-
 'use client';
 
 import Image from 'next/image';
@@ -21,7 +20,6 @@ export default function ProductCard({ product }: ProductCardProps) {
   const { addToCart } = useCart();
   const { toast } = useToast();
   
-  // Use the first image in the array as the "main" display image
   const mainImage = product.imageUrls && product.imageUrls[0] 
                     ? product.imageUrls[0] 
                     : "https://placehold.co/400x400?text=No+Image";
