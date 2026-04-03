@@ -13,12 +13,12 @@ export default function FeaturedProducts() {
   const { products, loading } = useProducts();
 
   const featuredProducts = useMemo(() => {
-    // Show products marked as featured, or just the newest ones if none are marked
+    // Show products marked as featured
     const featured = products.filter(p => p.isFeatured);
-    if (featured.length > 0) return featured.slice(0, 10);
+    if (featured.length > 0) return featured.slice(0, 20);
     
-    // Fallback: show the 10 most recently added products
-    return products.slice(0, 10);
+    // Fallback: show the first 20 products from the database
+    return products.slice(0, 20);
   }, [products]);
 
   if (loading) {

@@ -1,30 +1,31 @@
+
 'use client';
 
-import { getProducts } from '@/lib/data';
+import { useProducts } from '@/context/ProductProvider';
 import ProductCard from '@/components/products/ProductCard';
-import { useState, useEffect } from 'react';
-import type { Product } from '@/lib/types';
+import { useMemo } from 'react';
+import { Loader2 } from 'lucide-react';
 
 export default function DecorPage() {
-  const [decorProducts, setDecorProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { products, loading } = useProducts();
 
-  useEffect(() => {
-    async function loadProducts() {
-      const allProducts = await getProducts();
-      const filtered = allProducts.filter(p => p.category === 'decor');
-      setDecorProducts(filtered);
-      setLoading(false);
-    }
-    loadProducts();
-  }, []);
+  const decorProducts = useMemo(() => {
+    // Mapping "Home & Decor" collection to the 'Collections' category from migration
+    return products.filter(p => p.category === 'Collections');
+  }, [products]);
 
   return (
     <section className="bg-secondary py-12 md:py-20">
       <div className="container mx-auto px-4">
-        <h2 className="text-3xl font-bold font-headline mb-8 text-center text-primary">Home & Decor Collection</h2>
+        <div className="text-center mb-12">
+            <h2 className="text-4xl font-bold font-headline text-primary">Home & Decor Collection</h2>
+            <p className="text-muted-foreground mt-2">Premium finishes and artistic touches for your home.</p>
+        </div>
+
         {loading ? (
-          <p>Loading products...</p>
+          <div className="flex justify-center py-20">
+            <Loader2 className="h-10 w-10 animate-spin text-primary" />
+          </div>
         ) : decorProducts.length > 0 ? (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
             {decorProducts.map((product) => (
@@ -32,9 +33,9 @@ export default function DecorPage() {
             ))}
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center py-20 text-center">
+          <div className="flex flex-col items-center justify-center py-20 text-center bg-card rounded-2xl border-2 border-dashed">
             <h3 className="text-2xl font-headline font-semibold">No Products Found</h3>
-            <p className="mt-2 text-muted-foreground">Please check back later.</p>
+            <p className="mt-2 text-muted-foreground">Discovering new ways to enhance your living space.</p>
           </div>
         )}
       </div>

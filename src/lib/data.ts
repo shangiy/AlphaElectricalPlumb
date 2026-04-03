@@ -1,7 +1,9 @@
 
 import type { Product, Category, MockUser, Transaction, CarouselCategory } from './types';
+import { db } from './firebase';
+import { collection, getDocs, query, where, orderBy } from 'firebase/firestore';
 
-// These categories now match the exact folder names used in your Migration Script
+// These categories match the exact folder names used in your Migration Script
 export const categories: Category[] = [
     { id: 'Decorative Lighting and chandeliers', name: 'Lighting & Chandeliers' },
     { id: 'Electrical items', name: 'Electrical Items' },
@@ -23,9 +25,6 @@ export const carouselCategories: CarouselCategory[] = [
     { id: 'roofing', name: 'Roofing & Construction', href: '/roofing', image: '/roof 2.png'},
 ];
 
-// Fallback data for local development only
-export const allProductsData: Omit<Product, 'id'>[] = [];
-
 export const availableAvatars: { url: string; alt: string }[] = [
   { url: '/richard-kinyungu.jpg', alt: 'Richard Kinyungu' },
   { url: '/peter-karanja.jpg', alt: 'Peter Karanja' },
@@ -34,9 +33,24 @@ export const availableAvatars: { url: string; alt: string }[] = [
   { url: '/shangi.jpg', alt: 'Shangi' },
 ];
 
+/**
+ * Fetches all products from Firestore.
+ * Used primarily for Server-Side Genkit tools and search initialization.
+ */
 export async function getProducts(): Promise<Product[]> {
-  // Products are now fetched in real-time by the ProductProvider
-  return [];
+  if (!db) return [];
+  try {
+    const productsCol = collection(db, "products");
+    const q = query(productsCol, orderBy("name", "asc"));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => ({ 
+      id: doc.id, 
+      ...doc.data() 
+    } as Product));
+  } catch (error) {
+    console.error("Error fetching products from Firestore:", error);
+    return [];
+  }
 }
 
 export async function getCategories(): Promise<Category[]> {
