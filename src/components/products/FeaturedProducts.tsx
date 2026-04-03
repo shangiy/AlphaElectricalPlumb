@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useProducts } from '@/context/ProductProvider';
@@ -11,38 +12,13 @@ import Link from 'next/link';
 export default function FeaturedProducts() {
   const { products, loading } = useProducts();
 
-  // Use useMemo to select featured products only when the main products list changes
   const featuredProducts = useMemo(() => {
-    // If you want to feature specific products by ID or barcode
-    const featuredIdsOrBarcodes = [
-      'ALPHA-ELEC-002', // Exquisite Chandelier
-      'PPR-MA-50', // PPR MALE ADAPTOR
-      'FB-CIST-4', // Full Bora 4" moshefa
-      '16414', // 2L Classic water bottle
-      'ALPHA-ELEC-TRCK-01', // 20W Vellmax Tracklight
-      '16386', // 20mm Bend SWAMI
-      '16496', // IFLUX WATER HEATER SWITCH
-      '16466', // 3w WarmWhite FAME
-      '2186484' // KS1010 Shower Mixer
-    ];
-
-    // First, try to find products by ID or barcode
-    let specificProducts = products.filter(p => featuredIdsOrBarcodes.includes(p.id) || (p.barcode && featuredIdsOrBarcodes.includes(p.barcode)));
-
-    // If we don't have enough, fill the rest with products marked as `isFeatured`
-    if (specificProducts.length < 10) {
-      const featuredFlags = products.filter(p => p.isFeatured && !specificProducts.some(sp => sp.id === p.id));
-      specificProducts.push(...featuredFlags.slice(0, 10 - specificProducts.length));
-    }
+    // Show products marked as featured, or just the newest ones if none are marked
+    const featured = products.filter(p => p.isFeatured);
+    if (featured.length > 0) return featured.slice(0, 10);
     
-    // If still not enough, take some from the top of the general list
-    if (specificProducts.length < 10) {
-       const otherProducts = products.filter(p => !specificProducts.some(sp => sp.id === p.id));
-       specificProducts.push(...otherProducts.slice(0, 10 - specificProducts.length));
-    }
-    
-    return specificProducts.slice(0,10);
-
+    // Fallback: show the 10 most recently added products
+    return products.slice(0, 10);
   }, [products]);
 
   if (loading) {
@@ -68,6 +44,7 @@ export default function FeaturedProducts() {
     );
   }
 
+  if (products.length === 0) return null;
 
   return (
     <section className="bg-background py-16">
@@ -75,7 +52,7 @@ export default function FeaturedProducts() {
         <div className="text-center">
             <h2 className="text-3xl font-bold font-headline mb-4 text-[#28235f]">Featured Products</h2>
             <p className="text-muted-foreground mb-10 max-w-2xl mx-auto">
-                Check out our hand-picked selection of top-quality products.
+                Discover our curated selection of high-quality electrical and plumbing solutions.
             </p>
         </div>
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
@@ -86,7 +63,7 @@ export default function FeaturedProducts() {
         
         <div className="mt-12 flex justify-center">
           <Button asChild size="lg" className="w-full sm:w-auto min-w-[280px] bg-[#28235f] hover:bg-[#28235f]/90 text-white font-bold py-6 text-lg rounded-full transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105 active:scale-95">
-            <Link href="/search">View All Products</Link>
+            <Link href="/search">Explore All {products.length} Products</Link>
           </Button>
         </div>
       </div>

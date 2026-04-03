@@ -3,30 +3,21 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import type { Product } from '@/lib/types';
-import { allProductsData as initialProductsData } from '@/lib/data';
 import { db } from '@/lib/firebase';
-import { collection, doc, onSnapshot, getDocs, writeBatch } from 'firebase/firestore';
+import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 
-
-export interface ProductFormData {
-    name: string;
-    description: string;
-    price: number;
-    category: string;
-    barcode?: string;
-    imageUrls: string[];
-    colors?: string[];
-    isFeatured?: boolean;
+interface ProductProviderProps {
+  children: ReactNode;
 }
 
 interface ProductContextType {
   products: Product[];
   loading: boolean;
   submitting: boolean;
-  addProduct: (productData: ProductFormData) => Promise<void>;
-  updateProduct: (productId: string, productData: Partial<ProductFormData>) => Promise<void>;
+  addProduct: (productData: any) => Promise<void>;
+  updateProduct: (productId: string, productData: any) => Promise<void>;
   getProductById: (productId: string) => Product | undefined;
 }
 
@@ -40,7 +31,7 @@ export function useProducts() {
   return context;
 }
 
-export function ProductProvider({ children }: { children: ReactNode }) {
+export function ProductProvider({ children }: ProductProviderProps) {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -51,59 +42,30 @@ export function ProductProvider({ children }: { children: ReactNode }) {
         return;
     }
 
+    // We no longer run 'syncDatabase' here because it was deleting migrated items.
+    // The database is now managed via your migration scripts and the Admin Panel.
+
     const productsCollection = collection(db, "products");
+    const productsQuery = query(productsCollection, orderBy("name", "asc"));
 
-    // Reset and Seeding logic
-    const syncDatabase = async () => {
-        try {
-            const snapshot = await getDocs(productsCollection);
-            const currentDocs = snapshot.docs;
-            
-            const batch = writeBatch(db);
-            let hasChanges = false;
-
-            const validUniqueIds = initialProductsData.map(p => 
-                p.barcode || p.name.toLowerCase().replace(/[^a-z0-9]/g, '-')
-            );
-
-            // Cleanup old items using old 'images' field or missing 'imageUrls'
-            currentDocs.forEach((d) => {
-                const data = d.data();
-                if (!data.imageUrls || !validUniqueIds.includes(d.id)) {
-                    batch.delete(d.ref);
-                    hasChanges = true;
-                }
-            });
-
-            // Seeding new storage-backed items
-            initialProductsData.forEach((product) => {
-                const uniqueId = product.barcode || product.name.toLowerCase().replace(/[^a-z0-9]/g, '-');
-                const docRef = doc(productsCollection, uniqueId);
-                
-                const alreadyExists = currentDocs.some(d => d.id === uniqueId);
-                if (!alreadyExists) {
-                    batch.set(docRef, product);
-                    hasChanges = true;
-                }
-            });
-
-            if (hasChanges) {
-                await batch.commit();
-            }
-        } catch (error) {
-            console.error("Sync error:", error);
-        }
-    };
-
-    syncDatabase();
-
-    const unsubscribe = onSnapshot(productsCollection, 
+    const unsubscribe = onSnapshot(productsQuery, 
         (snapshot) => {
-            const productList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
+            const productList = snapshot.docs.map(doc => ({ 
+                id: doc.id, 
+                ...doc.data() 
+            } as Product));
+            
+            console.log(`Loaded ${productList.length} products from Firestore`);
             setProducts(productList);
             setLoading(false);
         }, 
         async (serverError) => {
+            console.error("Firestore Listen Error:", serverError);
+            const permissionError = new FirestorePermissionError({
+                path: 'products',
+                operation: 'list',
+            } satisfies SecurityRuleContext);
+            errorEmitter.emit('permission-error', permissionError);
             setLoading(false);
         }
     );
@@ -111,14 +73,15 @@ export function ProductProvider({ children }: { children: ReactNode }) {
     return () => unsubscribe();
   }, []);
 
-  const addProduct = useCallback(async (productData: ProductFormData) => {
-    // Basic implementation for MVP
+  const addProduct = useCallback(async (productData: any) => {
     setSubmitting(true);
+    // Implementation for manual adding via Admin Panel can be added here
     setSubmitting(false);
   }, []);
 
-  const updateProduct = useCallback(async (productId: string, productData: Partial<ProductFormData>) => {
+  const updateProduct = useCallback(async (productId: string, productData: any) => {
     setSubmitting(true);
+    // Implementation for manual updates via Admin Panel can be added here
     setSubmitting(false);
   }, []);
 
