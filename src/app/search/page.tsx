@@ -1,3 +1,4 @@
+
 'use client';
 import { useProducts } from '@/context/ProductProvider';
 import { getCategories } from '@/lib/data';
@@ -70,7 +71,7 @@ function ProductListSkeleton() {
                 <Skeleton className="h-10 w-full md:w-44" />
             </div>
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
-            {[...Array(9)].map((_, i) => (
+            {[...Array(12)].map((_, i) => (
                 <div key={i} className="space-y-2">
                     <Skeleton className="aspect-square w-full" />
                     <Skeleton className="h-5 w-3/4" />

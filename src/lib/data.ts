@@ -81,3 +81,7 @@ export async function signUpUser(userData: any): Promise<MockUser> {
 export async function getTransactions(): Promise<Transaction[]> {
   return Promise.resolve([]);
 }
+import { revalidatePath } from 'next/cache';
+
+// And inside your fetch or at the top of the file to disable caching for now:
+export const revalidate = 0;

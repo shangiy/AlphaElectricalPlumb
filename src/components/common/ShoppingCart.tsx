@@ -46,7 +46,7 @@ export default function ShoppingCart({ triggerClassName }: { triggerClassName?: 
                   <div key={item.id} className="flex items-start gap-4">
                     <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-md">
                        <Image
-                          src={item.images[0]}
+                          src={item.imageUrls?.[0] || "https://placehold.co/400x400?text=No+Image"}
                           alt={item.name}
                           fill
                           className="object-cover"

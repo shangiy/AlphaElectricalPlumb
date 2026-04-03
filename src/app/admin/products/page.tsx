@@ -2,7 +2,6 @@
 'use client';
 
 import { useProducts } from '@/context/ProductProvider';
-import type { Product } from '@/lib/types';
 import {
   Table,
   TableBody,
@@ -40,7 +39,7 @@ export default function AdminProductsPage() {
     }
 
     if (loading) {
-        return <div>Loading products...</div>;
+        return <div className="p-12 text-center">Loading products catalog...</div>;
     }
 
     return (
@@ -48,8 +47,8 @@ export default function AdminProductsPage() {
             <CardHeader>
                 <div className="flex items-center justify-between">
                     <div>
-                        <CardTitle>Products</CardTitle>
-                        <CardDescription>Manage all products in your store. ({products.length} products)</CardDescription>
+                        <CardTitle>Products Management</CardTitle>
+                        <CardDescription>Manage your inventory of {products.length} verified items.</CardDescription>
                     </div>
                     <Button asChild>
                         <Link href="/admin/products/add">
@@ -63,8 +62,8 @@ export default function AdminProductsPage() {
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead className="hidden w-[100px] sm:table-cell">Image</TableHead>
-                            <TableHead>Name</TableHead>
+                            <TableHead className="hidden w-[100px] sm:table-cell">Thumbnail</TableHead>
+                            <TableHead>Product Name</TableHead>
                             <TableHead className="hidden md:table-cell">Category</TableHead>
                             <TableHead className="hidden lg:table-cell text-center">Featured</TableHead>
                             <TableHead className="text-right">Price</TableHead>
@@ -77,15 +76,15 @@ export default function AdminProductsPage() {
                         {products.map(product => (
                             <TableRow key={product.id}>
                                 <TableCell className="hidden sm:table-cell">
-                                    <div className="aspect-square rounded-md bg-muted flex items-center justify-center">
-                                        {product.images?.[0] ? (
+                                    <div className="aspect-square rounded-md bg-muted flex items-center justify-center overflow-hidden border">
+                                        {product.imageUrls?.[0] ? (
                                             <Image
                                                 alt={product.name}
-                                                className="aspect-square rounded-md object-cover"
+                                                className="aspect-square object-cover"
                                                 height="64"
-                                                src={product.images[0]}
+                                                src={product.imageUrls[0]}
                                                 width="64"
-                                                data-ai-hint="product image"
+                                                data-ai-hint="product thumbnail"
                                             />
                                         ) : (
                                             <Package className="h-8 w-8 text-muted-foreground" />
@@ -94,7 +93,7 @@ export default function AdminProductsPage() {
                                 </TableCell>
                                 <TableCell className="font-medium">{product.name}</TableCell>
                                 <TableCell className="hidden md:table-cell">
-                                    <Badge variant="secondary">{product.category}</Badge>
+                                    <Badge variant="secondary" className="whitespace-nowrap">{product.category}</Badge>
                                 </TableCell>
                                 <TableCell className="hidden lg:table-cell">
                                     <div className="flex items-center justify-center">
@@ -105,7 +104,7 @@ export default function AdminProductsPage() {
                                       )}
                                     </div>
                                 </TableCell>
-                                <TableCell className="text-right">{formatCurrency(product.price)}</TableCell>
+                                <TableCell className="text-right font-semibold">{formatCurrency(product.price)}</TableCell>
                                 <TableCell>
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
@@ -116,10 +115,10 @@ export default function AdminProductsPage() {
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="end">
                                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                            <DropdownMenuItem onClick={() => router.push(`/admin/products/edit/${product.id}`)}>Edit</DropdownMenuItem>
-                                            <DropdownMenuItem>View Details</DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => router.push(`/admin/products/edit/${product.id}`)}>Edit Details</DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => router.push(`/products/${product.id}`)}>View on Site</DropdownMenuItem>
                                             <DropdownMenuSeparator />
-                                            <DropdownMenuItem className="text-destructive">Delete</DropdownMenuItem>
+                                            <DropdownMenuItem className="text-destructive">Delete Item</DropdownMenuItem>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
                                 </TableCell>

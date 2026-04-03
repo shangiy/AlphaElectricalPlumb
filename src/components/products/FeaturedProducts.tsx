@@ -13,12 +13,12 @@ export default function FeaturedProducts() {
   const { products, loading } = useProducts();
 
   const featuredProducts = useMemo(() => {
-    // Show products marked as featured
+    // Show products marked as featured first
     const featured = products.filter(p => p.isFeatured);
-    if (featured.length > 0) return featured.slice(0, 20);
+    if (featured.length > 0) return featured.slice(0, 50);
     
-    // Fallback: show the first 20 products from the database
-    return products.slice(0, 20);
+    // Fallback: show the first 50 products from the database to populate the grid
+    return products.slice(0, 50);
   }, [products]);
 
   if (loading) {
@@ -30,7 +30,7 @@ export default function FeaturedProducts() {
                     <Skeleton className="h-5 w-1/2 mx-auto mb-10" />
                 </div>
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-                    {[...Array(5)].map((_, i) => (
+                    {[...Array(10)].map((_, i) => (
                         <div key={i} className="space-y-2">
                             <Skeleton className="aspect-square w-full" />
                             <Skeleton className="h-5 w-3/4" />
@@ -52,7 +52,7 @@ export default function FeaturedProducts() {
         <div className="text-center">
             <h2 className="text-3xl font-bold font-headline mb-4 text-[#28235f]">Featured Products</h2>
             <p className="text-muted-foreground mb-10 max-w-2xl mx-auto">
-                Discover our curated selection of high-quality electrical and plumbing solutions.
+                Discover our curated selection of high-quality electrical and plumbing solutions from our {products.length}+ inventory.
             </p>
         </div>
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">

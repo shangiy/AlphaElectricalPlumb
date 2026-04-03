@@ -83,8 +83,6 @@ function CheckoutContent() {
             title: "Order Details Confirmed",
             description: "Please proceed to make your payment.",
         });
-        console.log('Checkout Data:', data);
-        console.log('Cart Items:', cartItems);
         router.push('/track-order');
     }
 
@@ -110,7 +108,7 @@ function CheckoutContent() {
         <div className="container mx-auto px-4 py-12">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
                 
-                {/* Order Summary - Shown first on mobile, right column on desktop */}
+                {/* Order Summary */}
                 <Card className="bg-secondary lg:sticky top-24 h-fit order-1 lg:order-2">
                     <CardHeader>
                         <CardTitle className="text-2xl">Order Summary</CardTitle>
@@ -120,7 +118,14 @@ function CheckoutContent() {
                             {cartItems.map(item => (
                                 <div key={item.id} className="flex justify-between items-center">
                                     <div className="flex items-center gap-4">
-                                        <Image src={item.images[0]} alt={item.name} width={64} height={64} className="rounded-md object-cover"/>
+                                        <div className="relative h-16 w-16 overflow-hidden rounded-md border">
+                                            <Image 
+                                                src={item.imageUrls?.[0] || "https://placehold.co/400x400?text=No+Image"} 
+                                                alt={item.name} 
+                                                fill
+                                                className="object-cover"
+                                            />
+                                        </div>
                                         <div>
                                             <p className="font-semibold">{item.name}</p>
                                             <p className="text-sm text-muted-foreground">Qty: {item.quantity}</p>
@@ -149,7 +154,7 @@ function CheckoutContent() {
                     </CardContent>
                 </Card>
 
-                {/* Shipping Details - Shown second on mobile, left column on desktop */}
+                {/* Shipping Details */}
                 <Card className="order-2 lg:order-1">
                     <CardHeader>
                         <CardTitle className="text-2xl">Contact Information</CardTitle>
