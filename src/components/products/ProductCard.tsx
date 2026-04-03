@@ -21,6 +21,11 @@ export default function ProductCard({ product }: ProductCardProps) {
   const { addToCart } = useCart();
   const { toast } = useToast();
   
+  // Use the first image in the array as the "main" display image
+  const mainImage = product.imageUrls && product.imageUrls[0] 
+                    ? product.imageUrls[0] 
+                    : "https://placehold.co/400x400?text=No+Image";
+
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('en-KE', {
       style: 'currency',
@@ -39,41 +44,37 @@ export default function ProductCard({ product }: ProductCardProps) {
   };
 
   return (
-    <Card className="flex h-full flex-col overflow-hidden transition-shadow hover:shadow-lg">
+    <Card className="flex h-full flex-col overflow-hidden transition-shadow hover:shadow-lg bg-white">
       <CardHeader className="p-0 relative">
-        {product.images.length > 1 ? (
+        {product.imageUrls && product.imageUrls.length > 1 ? (
             <Carousel className="w-full">
               <CarouselContent>
-                {product.images.map((img, index) => (
+                {product.imageUrls.map((img, index) => (
                   <CarouselItem key={index}>
                     <Link href={`/products/${product.id}`} className="block">
-                      <div className="aspect-square overflow-hidden">
-                        <Image
+                      <div className="aspect-square overflow-hidden bg-muted">
+                        <img
                           src={img}
                           alt={`${product.name} image ${index + 1}`}
-                          width={400}
-                          height={400}
                           className="h-full w-full object-cover transition-transform duration-300 ease-in-out hover:scale-105"
-                          data-ai-hint={`${product.category} product`}
+                          loading="lazy"
                         />
                       </div>
                     </Link>
                   </CarouselItem>
                 ))}
               </CarouselContent>
-              <CarouselPrevious className="absolute left-2 top-1/2 -translate-y-1/2 z-10 h-6 w-6" />
-              <CarouselNext className="absolute right-2 top-1/2 -translate-y-1/2 z-10 h-6 w-6" />
+              <CarouselPrevious className="absolute left-2 top-1/2 -translate-y-1/2 z-10 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity" />
+              <CarouselNext className="absolute right-2 top-1/2 -translate-y-1/2 z-10 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity" />
             </Carousel>
         ) : (
             <Link href={`/products/${product.id}`} className="block">
-                <div className="aspect-square overflow-hidden">
-                    <Image
-                    src={product.images[0]}
-                    alt={product.name}
-                    width={400}
-                    height={400}
-                    className="h-full w-full object-cover transition-transform duration-300 ease-in-out hover:scale-105"
-                    data-ai-hint={`${product.category} product`}
+                <div className="aspect-square overflow-hidden bg-muted">
+                    <img
+                      src={mainImage}
+                      alt={product.name}
+                      className="h-full w-full object-cover transition-transform duration-300 ease-in-out hover:scale-105"
+                      loading="lazy"
                     />
                 </div>
             </Link>
@@ -90,12 +91,12 @@ export default function ProductCard({ product }: ProductCardProps) {
       </CardHeader>
       <CardContent className="flex-grow p-4">
         <Link href={`/products/${product.id}`} className="block">
-          <CardTitle className="mb-2 text-base font-semibold leading-tight hover:text-blue active:text-blue transition-colors">
+          <CardTitle className="mb-2 text-base font-semibold leading-tight hover:text-primary transition-colors line-clamp-2 min-h-[2.5rem]">
             {product.name}
           </CardTitle>
         </Link>
-        <p className="mb-2 text-sm text-muted-foreground h-10 overflow-hidden">{product.description}</p>
-        <Rating rating={product.rating} showReviewCount reviewCount={product.reviews} size={16}/>
+        <p className="mb-2 text-xs text-muted-foreground line-clamp-2 h-8">{product.description}</p>
+        <Rating rating={product.rating} showReviewCount reviewCount={product.reviews} size={14}/>
       </CardContent>
        <CardFooter className="flex-col items-start gap-2 p-4 pt-0">
          <div className="flex items-baseline gap-2">
@@ -104,17 +105,17 @@ export default function ProductCard({ product }: ProductCardProps) {
               {product.unit && product.unit !== 'item' && ` / ${product.unit}`}
             </p>
             {product.oldPrice && (
-                <p className="text-sm font-medium text-muted-foreground line-through">
+                <p className="text-xs font-medium text-muted-foreground line-through">
                     {formatPrice(product.oldPrice)}
                 </p>
             )}
          </div>
           
         <div className="flex w-full gap-2 mt-2">
-            <Button size="sm" variant="outline" className="flex-1 hover:bg-[#28235f] hover:text-white border-muted transition-colors" asChild>
+            <Button size="sm" variant="outline" className="flex-1 hover:bg-primary hover:text-white border-muted transition-colors" asChild>
                 <Link href={`/products/${product.id}`}>View More</Link>
             </Button>
-            <Button size="sm" variant="blue" className="flex-1" onClick={() => addToCart(product)}>Add to Cart</Button>
+            <Button size="sm" variant="default" className="flex-1" onClick={() => addToCart(product)}>Add to Cart</Button>
         </div>
       </CardFooter>
     </Card>

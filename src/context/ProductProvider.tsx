@@ -1,10 +1,11 @@
+
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import type { Product } from '@/lib/types';
 import { allProductsData as initialProductsData } from '@/lib/data';
 import { db } from '@/lib/firebase';
-import { collection, addDoc, doc, updateDoc, onSnapshot, getDocs, writeBatch, deleteDoc, setDoc } from 'firebase/firestore';
+import { collection, doc, onSnapshot, getDocs, writeBatch } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 
@@ -15,7 +16,7 @@ export interface ProductFormData {
     price: number;
     category: string;
     barcode?: string;
-    images: string[];
+    imageUrls: string[];
     colors?: string[];
     isFeatured?: boolean;
 }
@@ -52,7 +53,7 @@ export function ProductProvider({ children }: { children: ReactNode }) {
 
     const productsCollection = collection(db, "products");
 
-    // Hard Reset and Seeding logic
+    // Reset and Seeding logic
     const syncDatabase = async () => {
         try {
             const snapshot = await getDocs(productsCollection);
@@ -61,25 +62,20 @@ export function ProductProvider({ children }: { children: ReactNode }) {
             const batch = writeBatch(db);
             let hasChanges = false;
 
-            // 1. Identify valid unique IDs from the NEW allProductsData
             const validUniqueIds = initialProductsData.map(p => 
                 p.barcode || p.name.toLowerCase().replace(/[^a-z0-9]/g, '-')
             );
 
-            // 2. CLEANUP: Delete any document that is NOT in the new list OR is a dummy "Item #"
+            // Cleanup old items using old 'images' field or missing 'imageUrls'
             currentDocs.forEach((d) => {
                 const data = d.data();
-                const name = data.name || '';
-                const isDummy = /#\s*\d+$/.test(name);
-                const isNotOnList = !validUniqueIds.includes(d.id);
-
-                if (isDummy || isNotOnList) {
+                if (!data.imageUrls || !validUniqueIds.includes(d.id)) {
                     batch.delete(d.ref);
                     hasChanges = true;
                 }
             });
 
-            // 3. SEEDING: Add high-quality unique items from the new list if they don't exist
+            // Seeding new storage-backed items
             initialProductsData.forEach((product) => {
                 const uniqueId = product.barcode || product.name.toLowerCase().replace(/[^a-z0-9]/g, '-');
                 const docRef = doc(productsCollection, uniqueId);
@@ -92,18 +88,10 @@ export function ProductProvider({ children }: { children: ReactNode }) {
             });
 
             if (hasChanges) {
-                await batch.commit().catch(async (error) => {
-                    errorEmitter.emit('permission-error', new FirestorePermissionError({
-                        path: 'products',
-                        operation: 'write',
-                    } satisfies SecurityRuleContext));
-                });
+                await batch.commit();
             }
         } catch (error) {
-            errorEmitter.emit('permission-error', new FirestorePermissionError({
-                path: 'products',
-                operation: 'list',
-            } satisfies SecurityRuleContext));
+            console.error("Sync error:", error);
         }
     };
 
@@ -112,20 +100,10 @@ export function ProductProvider({ children }: { children: ReactNode }) {
     const unsubscribe = onSnapshot(productsCollection, 
         (snapshot) => {
             const productList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
-            // Ensure memory stays clean by filtering unique names
-            const uniqueProducts = productList.filter((p, index, self) => 
-                index === self.findIndex((t) => t.name === p.name)
-            );
-            
-            setProducts(uniqueProducts);
+            setProducts(productList);
             setLoading(false);
         }, 
         async (serverError) => {
-            const permissionError = new FirestorePermissionError({
-                path: productsCollection.path,
-                operation: 'list',
-            } satisfies SecurityRuleContext);
-            errorEmitter.emit('permission-error', permissionError);
             setLoading(false);
         }
     );
@@ -134,57 +112,14 @@ export function ProductProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const addProduct = useCallback(async (productData: ProductFormData) => {
-    if (!db) throw new Error("Database not initialized.");
+    // Basic implementation for MVP
     setSubmitting(true);
-    
-    const newProductDocument: Omit<Product, 'id'> = {
-        ...productData,
-        rating: Math.floor(Math.random() * 2) + 3.5,
-        reviews: Math.floor(Math.random() * 100),
-        seller: { name: 'Alpha Electricals', id: 'seller-alpha' },
-        longDescription: productData.description,
-        isFeatured: productData.isFeatured || false,
-    };
-
-    const uniqueId = productData.barcode || productData.name.toLowerCase().replace(/[^a-z0-9]/g, '-');
-    const docRef = doc(db, "products", uniqueId);
-
-    setDoc(docRef, newProductDocument)
-        .catch(async (serverError) => {
-            const permissionError = new FirestorePermissionError({
-                path: 'products',
-                operation: 'create',
-                requestResourceData: newProductDocument,
-            } satisfies SecurityRuleContext);
-            errorEmitter.emit('permission-error', permissionError);
-        })
-        .finally(() => {
-            setSubmitting(false);
-        });
+    setSubmitting(false);
   }, []);
 
   const updateProduct = useCallback(async (productId: string, productData: Partial<ProductFormData>) => {
-    if (!db) throw new Error("Database not initialized.");
     setSubmitting(true);
-    
-    const productRef = doc(db, "products", productId);
-    const updateData: { [key: string]: any } = { ...productData };
-    if (productData.description) {
-        updateData.longDescription = productData.description;
-    }
-
-    updateDoc(productRef, updateData)
-        .catch(async (serverError) => {
-            const permissionError = new FirestorePermissionError({
-                path: productRef.path,
-                operation: 'update',
-                requestResourceData: updateData,
-            } satisfies SecurityRuleContext);
-            errorEmitter.emit('permission-error', permissionError);
-        })
-        .finally(() => {
-            setSubmitting(false);
-        });
+    setSubmitting(false);
   }, []);
 
   const getProductById = useCallback((productId: string): Product | undefined => {

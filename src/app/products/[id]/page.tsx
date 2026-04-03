@@ -8,7 +8,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Rating } from '@/components/ui/rating';
 import ProductRecommendations from '@/components/products/ProductRecommendations';
 import BuyNowButton from '@/components/products/ContactSellerForm';
-import { ShieldCheck, Tags, Box, Share2 } from 'lucide-react';
+import { ShieldCheck, Tags, Box, Share2, Truck, Wrench } from 'lucide-react';
 import AddToCartButton from '@/components/products/AddToCartButton';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
@@ -21,8 +21,8 @@ function ProductContent({ productId }: { productId: string }) {
   const router = useRouter();
   
   const product = getProductById(productId);
-  const [quantity, setQuantity] = useState(1);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [quantity, setQuantity] = useState(1);
 
   if (loading) {
     return <ProductDetailSkeleton />;
@@ -49,15 +49,11 @@ function ProductContent({ productId }: { productId: string }) {
     }).format(price);
   };
 
-  const isMeasurable = product.unit && product.unit !== 'item' && product.unit !== 'roll' && product.unit !== 'pack' && product.unit !== 'bundle' && product.unit !== 'sheet' && product.unit !== 'sq. meter';
+  const isMeasurable = product.unit && product.unit !== 'item' && product.unit !== 'roll' && product.unit !== 'pack';
 
   const priceDisplay = product.unit && product.unit !== 'item' 
     ? `${formatPrice(product.price)} / ${product.unit}`
     : formatPrice(product.price);
-    
-  const wholesaleInfo = product.wholesale 
-    ? `Also available as a ${product.wholesale.quantity}${product.wholesale.unit} for ${formatPrice(product.wholesale.price)}.` 
-    : '';
 
   const technicalLabel = "text-[10px] font-black tracking-[0.3em] uppercase text-muted-foreground";
 
@@ -67,33 +63,28 @@ function ProductContent({ productId }: { productId: string }) {
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-2">
           {/* Image Gallery Column */}
           <div className="space-y-6">
-             <div className="aspect-square overflow-hidden rounded-[2.5rem] bg-secondary/20 shadow-2xl shadow-primary/5 border border-white/20 backdrop-blur-sm">
-                <Image
-                    src={product.images[activeImageIndex]}
+             <div className="aspect-square overflow-hidden rounded-[2.5rem] bg-secondary/20 shadow-2xl border border-white/20">
+                <img
+                    src={product.imageUrls[activeImageIndex]}
                     alt={product.name}
-                    width={800}
-                    height={800}
                     className="h-full w-full object-cover transition-all duration-500 hover:scale-105"
-                    data-ai-hint={`${product.category} product`}
                 />
             </div>
-            {product.images.length > 1 && (
+            {product.imageUrls.length > 1 && (
                 <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
-                    {product.images.map((img, index) => (
+                    {product.imageUrls.map((img, index) => (
                         <button 
                             key={index} 
                             onClick={() => setActiveImageIndex(index)}
                             className={cn(
                                 "relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-[1.5rem] border-2 transition-all duration-300",
-                                activeImageIndex === index ? "border-primary shadow-lg shadow-primary/20 scale-105" : "border-transparent opacity-60 hover:opacity-100"
+                                activeImageIndex === index ? "border-primary shadow-lg scale-105" : "border-transparent opacity-60 hover:opacity-100"
                             )}
                         >
-                            <Image
+                            <img
                                 src={img}
                                 alt={`${product.name} thumbnail ${index + 1}`}
-                                fill
-                                className="object-cover"
-                                data-ai-hint={`${product.category} product thumbnail`}
+                                className="h-full w-full object-cover"
                             />
                         </button>
                     ))}
@@ -120,13 +111,10 @@ function ProductContent({ productId }: { productId: string }) {
                 </div>
             </div>
 
-            <div className="p-8 rounded-[2.5rem] bg-primary/5 border border-primary/10 shadow-xl shadow-primary/5">
+            <div className="p-8 rounded-[2.5rem] bg-primary/5 border border-primary/10 shadow-sm">
                 <p className="text-4xl font-bold font-headline text-primary mb-2">{priceDisplay}</p>
                 {product.oldPrice && (
                     <p className="text-lg text-muted-foreground line-through opacity-50">{formatPrice(product.oldPrice)}</p>
-                )}
-                {wholesaleInfo && (
-                    <p className="text-xs font-bold tracking-widest uppercase text-primary/60 mt-4">{wholesaleInfo}</p>
                 )}
             </div>
 
@@ -139,16 +127,24 @@ function ProductContent({ productId }: { productId: string }) {
                     </div>
                 )}
                 
-                <div className="flex items-center gap-4 p-6 rounded-[2rem] bg-white border shadow-sm group transition-all hover:shadow-md">
-                    <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center transition-colors group-hover:bg-primary/20">
-                        <ShieldCheck className="h-6 w-6 text-primary"/>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="flex items-center gap-4 p-4 rounded-[1.5rem] bg-white border shadow-sm">
+                        <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                            <Truck className="h-5 w-5 text-primary"/>
+                        </div>
+                        <div>
+                            <p className="text-xs font-bold text-muted-foreground">Delivery</p>
+                            <p className="font-bold text-sm">Express Regional</p>
+                        </div>
                     </div>
-                    <div>
-                        <p className={technicalLabel}>Official Vendor</p>
-                        <p className="font-bold text-lg">{product.seller.name}</p>
-                    </div>
-                    <div className="ml-auto flex gap-2">
-                        <Button variant="ghost" size="icon" className="rounded-xl"><Share2 size={18} /></Button>
+                    <div className="flex items-center gap-4 p-4 rounded-[1.5rem] bg-white border shadow-sm">
+                        <div className="h-10 w-10 rounded-xl bg-accent/10 flex items-center justify-center">
+                            <Wrench className="h-5 w-5 text-accent"/>
+                        </div>
+                        <div>
+                            <p className="text-xs font-bold text-muted-foreground">Installation</p>
+                            <p className="font-bold text-sm">Professional Setup</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -158,14 +154,11 @@ function ProductContent({ productId }: { productId: string }) {
                 <BuyNowButton product={product} quantity={quantity} />
             </div>
             
-            <div className="grid grid-cols-2 gap-4">
-                <div className="flex flex-col gap-1 p-4 rounded-[1.5rem] bg-secondary/5 border border-dashed">
-                    <span className={technicalLabel}>Availability</span>
-                    <span className="font-bold text-sm flex items-center gap-2"><Box size={14} className="text-green-500" /> In Stock & Ready</span>
-                </div>
-                <div className="flex flex-col gap-1 p-4 rounded-[1.5rem] bg-secondary/5 border border-dashed">
-                    <span className={technicalLabel}>Delivery</span>
-                    <span className="font-bold text-sm">24-48 Hours Hub Dispatch</span>
+            <div className="flex items-center gap-4 p-6 rounded-[2rem] bg-secondary/5 border border-dashed">
+                <ShieldCheck className="h-6 w-6 text-primary shrink-0"/>
+                <div>
+                    <p className={technicalLabel}>Alpha Warranty</p>
+                    <p className="text-sm font-medium">Genuine product from Alpha Electricals & Plumbing Ltd</p>
                 </div>
             </div>
           </div>
@@ -173,7 +166,7 @@ function ProductContent({ productId }: { productId: string }) {
       </div>
 
       <div className="bg-secondary/10 py-20 border-t border-white/20">
-        <div className="container mx-auto px-4 space-y-16">
+        <div className="container mx-auto px-4">
           <ProductRecommendations productTitle={product.name} productId={product.id} category={product.category} />
         </div>
       </div>
@@ -199,28 +192,11 @@ function ProductDetailSkeleton() {
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-2">
           <div className="space-y-6">
             <Skeleton className="aspect-square w-full rounded-[2.5rem]" />
-            <div className="flex gap-4 overflow-hidden">
-              <Skeleton className="h-20 w-20 rounded-[1.5rem] shrink-0" />
-              <Skeleton className="h-20 w-20 rounded-[1.5rem] shrink-0" />
-              <Skeleton className="h-20 w-20 rounded-[1.5rem] shrink-0" />
-              <Skeleton className="h-20 w-20 rounded-[1.5rem] shrink-0" />
-            </div>
           </div>
           <div className="flex flex-col gap-8">
-            <div className="space-y-4">
-                <Skeleton className="h-4 w-32" />
-                <Skeleton className="h-12 w-3/4" />
-                <Skeleton className="h-6 w-1/4" />
-            </div>
+            <Skeleton className="h-12 w-3/4" />
             <Skeleton className="h-32 w-full rounded-[2.5rem]" />
-            <div className="space-y-4">
-                <Skeleton className="h-24 w-full" />
-                <Skeleton className="h-20 w-full rounded-[2rem]" />
-            </div>
-            <div className="flex flex-col gap-4 sm:flex-row">
-              <Skeleton className="h-14 flex-1 rounded-xl" />
-              <Skeleton className="h-14 flex-1 rounded-xl" />
-            </div>
+            <Skeleton className="h-24 w-full" />
           </div>
         </div>
       </div>

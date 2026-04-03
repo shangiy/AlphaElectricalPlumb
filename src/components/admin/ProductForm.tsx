@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useForm, Controller } from 'react-hook-form';
@@ -33,8 +34,6 @@ import { useEffect, useState } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import ImageUpload from '@/components/admin/ImageUpload';
 import { Loader2 } from 'lucide-react';
-import { generateProductDescription, type GenerateProductDescriptionInput } from '@/ai/flows/product-description-generator';
-
 
 const productFormSchema = z.object({
   name: z.string().min(3, 'Product name must be at least 3 characters.'),
@@ -44,21 +43,20 @@ const productFormSchema = z.object({
   barcode: z.string().optional(),
   isFeatured: z.boolean().default(false),
   colors: z.array(z.string()).optional(),
-  images: z.array(z.string()).min(1, 'Please add at least one image.'),
+  imageUrls: z.array(z.string()).min(1, 'Please add at least one image.'),
 });
 
 interface ProductFormProps {
     product?: Product;
 }
 
-const availableColors = ['Black', 'White', 'Silver', 'Red', 'Blue', 'Green'];
+const availableColors = ['Black', 'White', 'Silver', 'Red', 'Blue', 'Green', 'Brass', 'Wood'];
 
 export default function ProductForm({ product }: ProductFormProps) {
     const { addProduct, updateProduct, submitting } = useProducts();
     const router = useRouter();
     const { toast } = useToast();
     const [categories, setCategories] = useState<Category[]>([]);
-    const [isGenerating, setIsGenerating] = useState(false);
 
     useEffect(() => {
         async function loadCategories() {
@@ -78,52 +76,9 @@ export default function ProductForm({ product }: ProductFormProps) {
             barcode: product?.barcode || '',
             isFeatured: product?.isFeatured || false,
             colors: product?.colors || [],
-            images: product?.images || [],
+            imageUrls: product?.imageUrls || [],
         },
     });
-    
-    const handleGenerateDescription = async () => {
-        const productName = form.getValues('name');
-        const productImages = form.getValues('images');
-        if (!productName) {
-            toast({
-                variant: 'destructive',
-                title: 'Product Name Required',
-                description: 'Please enter a product name before generating a description.',
-            });
-            return;
-        }
-        
-        setIsGenerating(true);
-        try {
-            const aiInput: GenerateProductDescriptionInput = {
-                productTitle: productName,
-            };
-
-            const imageUrl = productImages.length > 0 ? productImages[0] : undefined;
-
-            if (imageUrl && (imageUrl.startsWith('data:image') || imageUrl.startsWith('http'))) {
-                aiInput.productImageDataUri = imageUrl;
-            }
-
-            const result = await generateProductDescription(aiInput);
-            form.setValue('description', result.productDescription.replace(/\\n/g, '\n'), { shouldValidate: true });
-            toast({
-                title: 'Description Generated!',
-                description: 'The AI-generated description has been added.',
-            });
-        } catch (error) {
-            console.error('Error generating description:', error);
-            toast({
-                variant: 'destructive',
-                title: 'Generation Failed',
-                description: 'Could not generate a description at this time.',
-            });
-        } finally {
-            setIsGenerating(false);
-        }
-    };
-
 
     async function onSubmit(data: z.infer<typeof productFormSchema>) {
         const formData: ProductFormData = { ...data };
@@ -136,14 +91,8 @@ export default function ProductForm({ product }: ProductFormProps) {
                 toast({ title: "Product Added!", description: `"${data.name}" has been created.` });
             }
             router.push('/admin/products');
-            router.refresh();
         } catch (error) {
-            console.error('Failed to save product:', error);
-            toast({
-                variant: 'destructive',
-                title: 'Save Failed',
-                description: 'An error occurred while saving the product.',
-            });
+            toast({ variant: 'destructive', title: 'Save Failed', description: 'An error occurred while saving.' });
         }
     }
 
@@ -170,21 +119,9 @@ export default function ProductForm({ product }: ProductFormProps) {
                         render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Product Description</FormLabel>
-                                 <div className="relative">
-                                    <FormControl>
-                                        <Textarea placeholder="Describe the product..." {...field} rows={5} />
-                                    </FormControl>
-                                    <Button 
-                                        type="button" 
-                                        variant="outline" 
-                                        size="sm" 
-                                        className="absolute bottom-2 right-2"
-                                        onClick={handleGenerateDescription}
-                                        disabled={isGenerating}
-                                    >
-                                        {isGenerating ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Generate with AI'}
-                                    </Button>
-                                </div>
+                                <FormControl>
+                                    <Textarea placeholder="Describe the product..." {...field} rows={5} />
+                                </FormControl>
                                 <FormMessage />
                             </FormItem>
                         )}
@@ -212,7 +149,6 @@ export default function ProductForm({ product }: ProductFormProps) {
                                     <FormControl>
                                         <Input placeholder="e.g., ALPHA-TANK-001" {...field} />
                                     </FormControl>
-                                     <FormDescription>The product's unique barcode or Stock Keeping Unit.</FormDescription>
                                     <FormMessage />
                                 </FormItem>
                             )}
@@ -238,86 +174,17 @@ export default function ProductForm({ product }: ProductFormProps) {
                                     ))}
                                     </SelectContent>
                                 </Select>
-                                <FormDescription>The product category will help with filtering and search.</FormDescription>
                                 <FormMessage />
                             </FormItem>
                         )}
                     />
-                    <FormField
+                    
+                    <Controller
                         control={form.control}
-                        name="isFeatured"
-                        render={({ field }) => (
-                            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                            <div className="space-y-0.5">
-                                <FormLabel className="text-base">Feature on homepage</FormLabel>
-                                <FormDescription>
-                                If enabled, this product will appear in the "Featured Products" section.
-                                </FormDescription>
-                            </div>
-                            <FormControl>
-                                <Switch
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                                />
-                            </FormControl>
-                            </FormItem>
-                        )}
-                    />
-                    <FormField
-                        control={form.control}
-                        name="colors"
-                        render={() => (
-                            <FormItem>
-                                <div className="mb-4">
-                                    <FormLabel className="text-base">Colors</FormLabel>
-                                    <FormDescription>
-                                    Optional: Select the available colors for the product.
-                                    </FormDescription>
-                                </div>
-                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                                    {availableColors.map((color) => (
-                                    <FormField
-                                        key={color}
-                                        control={form.control}
-                                        name="colors"
-                                        render={({ field }) => {
-                                        return (
-                                            <FormItem
-                                                key={color}
-                                                className="flex flex-row items-start space-x-3 space-y-0"
-                                            >
-                                                <FormControl>
-                                                    <Checkbox
-                                                    checked={field.value?.includes(color)}
-                                                    onCheckedChange={(checked) => {
-                                                        return checked
-                                                        ? field.onChange([...(field.value || []), color])
-                                                        : field.onChange(
-                                                            field.value?.filter(
-                                                                (value) => value !== color
-                                                            )
-                                                            )
-                                                    }}
-                                                    />
-                                                </FormControl>
-                                                <FormLabel className="font-normal">{color}</FormLabel>
-                                            </FormItem>
-                                        )
-                                        }}
-                                    />
-                                    ))}
-                                </div>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                     />
-
-                     <Controller
-                        control={form.control}
-                        name="images"
+                        name="imageUrls"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Product Images</FormLabel>
+                                <FormLabel>Product Images (Storage URLs)</FormLabel>
                                 <FormControl>
                                     <ImageUpload value={field.value} onChange={field.onChange} />
                                 </FormControl>

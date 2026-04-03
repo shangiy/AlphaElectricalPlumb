@@ -1,5 +1,4 @@
 
-
 export interface Review {
   id: string;
   author: string;
@@ -21,10 +20,10 @@ export interface Product {
   description: string;
   longDescription: string;
   price: number;
-  oldPrice?: number; // Add oldPrice for sales
-  unit?: string; // e.g., 'meter', 'item', 'roll'
+  oldPrice?: number;
+  unit?: string;
   wholesale?: WholesalePrice;
-  images: string[];
+  imageUrls: string[]; // Renamed from images
   category: string;
   rating: number;
   reviews: number;
@@ -67,7 +66,7 @@ export interface MockUser {
   signedUp: string;
   lastSeen: string;
   orders: number;
-  visitDuration: number; // in minutes
+  visitDuration: number;
 }
 
 export interface Transaction {
