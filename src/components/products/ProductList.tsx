@@ -22,14 +22,13 @@ export default function ProductList({ products, categories }: ProductListProps) 
   const [searchTerm, setSearchTerm] = useState(initialSearchTerm);
   const [category, setCategory] = useState('all');
   
-  // Dynamically calculate max price from current products, or default to a safe 1M
   const maxPriceValue = useMemo(() => {
-    if (products.length === 0) return 1000000;
+    if (products.length === 0) return 500000;
     const actualMax = Math.max(...products.map(p => p.price || 0));
-    return actualMax > 0 ? actualMax : 1000000;
+    return actualMax > 0 ? Math.ceil(actualMax / 1000) * 1000 : 500000;
   }, [products]);
 
-  const [priceRange, setPriceRange] = useState([0, 1000000]);
+  const [priceRange, setPriceRange] = useState([0, 500000]);
   const [isPriceRangeInitialized, setIsPriceRangeInitialized] = useState(false);
   const [sortOption, setSortOption] = useState('relevance');
 
@@ -66,12 +65,12 @@ export default function ProductList({ products, categories }: ProductListProps) 
 
     switch (sortOption) {
       case 'price-asc':
-        return [...filtered].sort((a, b) => a.price - b.price);
+        return [...filtered].sort((a, b) => (a.price || 0) - (b.price || 0));
       case 'price-desc':
-        return [...filtered].sort((a, b) => b.price - a.price);
+        return [...filtered].sort((a, b) => (b.price || 0) - (a.price || 0));
       case 'rating-desc':
         return [...filtered].sort((a, b) => (b.rating || 0) - (a.rating || 0));
-      default: // 'relevance'
+      default:
         return filtered;
     }
   }, [products, searchTerm, category, priceRange, sortOption]);

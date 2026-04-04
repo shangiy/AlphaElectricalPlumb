@@ -20,7 +20,6 @@ export default function ProductCard({ product }: ProductCardProps) {
   const { addToCart } = useCart();
   const { toast } = useToast();
   
-  // Exclusively use optimized storage WebP images from the imageUrls array
   const images = product.imageUrls && product.imageUrls.length > 0 
     ? product.imageUrls 
     : [];
@@ -43,6 +42,9 @@ export default function ProductCard({ product }: ProductCardProps) {
     });
   };
 
+  // Helper to check if image is from Firebase Storage
+  const isStorageUrl = (url: string) => url.includes('firebasestorage.googleapis.com');
+
   return (
     <Card className="flex h-full flex-col overflow-hidden transition-all duration-300 hover:shadow-xl bg-white group border-none shadow-sm">
       <CardHeader className="p-0 relative">
@@ -59,6 +61,7 @@ export default function ProductCard({ product }: ProductCardProps) {
                           fill
                           className="object-cover transition-transform duration-500 ease-in-out group-hover:scale-105"
                           loading="lazy"
+                          unoptimized={isStorageUrl(img)}
                         />
                       </div>
                     </Link>
@@ -77,6 +80,7 @@ export default function ProductCard({ product }: ProductCardProps) {
                       fill
                       className="object-cover transition-transform duration-500 ease-in-out group-hover:scale-105"
                       loading="lazy"
+                      unoptimized={isStorageUrl(images[0])}
                     />
                 </div>
             </Link>
