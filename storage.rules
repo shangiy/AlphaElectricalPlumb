@@ -3,10 +3,10 @@ rules_version = '2';
 
 service firebase.storage {
   match /b/{bucket}/o {
-    match /product-images/{allPaths=**} {
-      // Allow anyone to upload images (needed for visual search selfies)
+    // Allow read/write access to all folders to ensure "product images" (with space) 
+    // and "product-images" (with dash) both work perfectly.
+    match /{allPaths=**} {
       allow write: if true;
-      // Allow read access for public product images and admin viewing
       allow read: if true;
     }
   }

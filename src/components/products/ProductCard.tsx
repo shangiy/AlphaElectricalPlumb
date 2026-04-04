@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -51,6 +52,7 @@ export default function ProductCard({ product }: ProductCardProps) {
                   <CarouselItem key={index}>
                     <Link href={`/products/${product.id}`} className="block">
                       <div className="relative aspect-square overflow-hidden bg-secondary/10">
+                        {/* Use standard img tag for reliable loading from Firebase Storage */}
                         <img
                           src={img}
                           alt={`${product.name} orientation ${index + 1}`}

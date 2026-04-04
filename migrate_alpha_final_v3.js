@@ -1,3 +1,4 @@
+
 const admin = require('firebase-admin');
 const serviceAccount = require('./serviceAccountKey.json');
 
@@ -68,14 +69,14 @@ async function migrateAllAlphaProducts() {
       console.log(`Found ${productEntries.length} unique products in ${cat}.`);
 
       for (const [name, urls] of productEntries) {
-        // Create a unique ID based on product name
-        const docId = name.toLowerCase().replace(/[^a-z0-9]/g, '-').substring(0, 30);
+        // Create a unique ID based on product name (increased length to prevent overlaps)
+        const docId = name.toLowerCase().replace(/[^a-z0-9]/g, '-').substring(0, 50);
         
         await db.collection('products').doc(docId).set({
           name: name,
-          imageUrls: urls, // The new array format
+          imageUrls: urls, 
           category: cat,
-          price: 0, // Set to 0 so UI shows "Contact for Price"
+          price: 0, // Default to 0, shows "Contact for Price"
           description: `High-quality ${name} available at Alpha Electricals & Plumbing Ltd.`,
           longDescription: `Experience superior performance with the ${name}. Engineered for durability and efficiency, this product is a cornerstone of modern infrastructure. We provide professional delivery and installation to ensure your system is fully operational and reliable. Contact us for bulk pricing and site visits.`,
           updatedAt: admin.firestore.FieldValue.serverTimestamp(),

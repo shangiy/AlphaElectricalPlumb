@@ -5,7 +5,6 @@ import { useMemo, useRef } from 'react';
 import { useProducts } from '@/context/ProductProvider';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import Image from 'next/image';
 import Link from 'next/link';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { Package } from 'lucide-react';
@@ -75,13 +74,10 @@ export default function ProductRecommendations({ productId, category }: ProductR
                       <Link href={`/products/${product.id}`} className="block">
                         <div className="aspect-square overflow-hidden rounded-[1.5rem] bg-secondary/20 flex items-center justify-center border border-white/20">
                           {product.imageUrls?.[0] ? (
-                            <Image
+                            <img
                               src={product.imageUrls[0]}
                               alt={product.name}
-                              width={250}
-                              height={250}
                               className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                              data-ai-hint="recommended product"
                             />
                           ) : (
                             <Package className="h-12 w-12 text-muted-foreground" />
