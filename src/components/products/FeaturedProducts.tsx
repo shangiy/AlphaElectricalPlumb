@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useProducts } from '@/context/ProductProvider';
@@ -15,10 +14,11 @@ export default function FeaturedProducts() {
   const featuredProducts = useMemo(() => {
     // Show products marked as featured first
     const featured = products.filter(p => p.isFeatured);
-    if (featured.length > 0) return featured.slice(0, 50);
+    // Limit to 20 on homepage for better performance and to prevent ChunkLoad timeouts
+    if (featured.length > 0) return featured.slice(0, 20);
     
-    // Fallback: show the first 50 products from the database to populate the grid
-    return products.slice(0, 50);
+    // Fallback: show the first 20 products from the database to populate the grid
+    return products.slice(0, 20);
   }, [products]);
 
   if (loading) {

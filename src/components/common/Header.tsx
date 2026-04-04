@@ -179,14 +179,14 @@ export default function Header() {
                             "p-0.5 rounded-md",
                             isHeaderOpaque ? "bg-gradient-to-r from-red-500 via-purple-500 to-blue-500 bg-[length:200%_200%] animate-gradient-x" : ""
                           )}>
-                             <Link href="#" className={cn(
-                                "flex items-center gap-1 px-3 py-2 whitespace-nowrap",
+                             <div className={cn(
+                                "flex items-center gap-1 px-3 py-2 cursor-pointer whitespace-nowrap",
                                 navAndIconClasses,
                                 isHeaderOpaque ? "bg-background rounded-[5px]" : "bg-transparent",
                                 "hover:text-accent-foreground"
                               )}>
                                 <ProductsButtonContent />
-                             </Link>
+                             </div>
                            </div>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="start" className="w-56 bg-background" onMouseEnter={handleProductsMenuEnter} onMouseLeave={handleProductsMenuLeave}>

@@ -8,7 +8,7 @@ const serviceAccount = require('./serviceAccountKey.json');
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
-  storageBucket: "studio-2955966694-9faa5.firebasestorage.app"
+  storageBucket: "alpha-plumbing-electrical.appspot.com"
 });
 
 const db = admin.firestore();
