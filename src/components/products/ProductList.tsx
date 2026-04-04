@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -23,9 +22,22 @@ export default function ProductList({ products, categories }: ProductListProps) 
   const [searchTerm, setSearchTerm] = useState(initialSearchTerm);
   const [category, setCategory] = useState('all');
   
-  const maxPrice = useMemo(() => Math.max(...products.map(p => p.price), 15000), [products]);
-  const [priceRange, setPriceRange] = useState([0, maxPrice]);
+  const maxPrice = useMemo(() => {
+    if (products.length === 0) return 100000;
+    return Math.max(...products.map(p => p.price || 0), 100000);
+  }, [products]);
+
+  const [priceRange, setPriceRange] = useState([0, 1000000]); // Large default to show all initially
+  const [isPriceRangeInitialized, setIsPriceRangeInitialized] = useState(false);
   const [sortOption, setSortOption] = useState('relevance');
+
+  // Initialize price range once products are loaded
+  useEffect(() => {
+    if (products.length > 0 && !isPriceRangeInitialized) {
+      setPriceRange([0, maxPrice]);
+      setIsPriceRangeInitialized(true);
+    }
+  }, [products, maxPrice, isPriceRangeInitialized]);
 
   useEffect(() => {
     setSearchTerm(searchParams.get('q') || '');
@@ -38,8 +50,8 @@ export default function ProductList({ products, categories }: ProductListProps) 
       const lowerCaseSearchTerm = searchTerm.toLowerCase();
       filtered = filtered.filter((p) =>
         p.name.toLowerCase().includes(lowerCaseSearchTerm) ||
-        p.description.toLowerCase().includes(lowerCaseSearchTerm) ||
-        p.category.toLowerCase().includes(lowerCaseSearchTerm)
+        (p.description && p.description.toLowerCase().includes(lowerCaseSearchTerm)) ||
+        (p.category && p.category.toLowerCase().includes(lowerCaseSearchTerm))
       );
     }
 
@@ -48,7 +60,7 @@ export default function ProductList({ products, categories }: ProductListProps) 
     }
 
     filtered = filtered.filter(
-      (p) => p.price >= priceRange[0] && p.price <= priceRange[1]
+      (p) => (p.price || 0) >= priceRange[0] && (p.price || 0) <= priceRange[1]
     );
 
     switch (sortOption) {
@@ -57,7 +69,7 @@ export default function ProductList({ products, categories }: ProductListProps) 
       case 'price-desc':
         return [...filtered].sort((a, b) => b.price - a.price);
       case 'rating-desc':
-        return [...filtered].sort((a, b) => b.rating - a.rating);
+        return [...filtered].sort((a, b) => (b.rating || 0) - (a.rating || 0));
       default: // 'relevance'
         return filtered;
     }
@@ -113,7 +125,7 @@ export default function ProductList({ products, categories }: ProductListProps) 
               />
             </div>
 
-            <Button onClick={() => {
+            <Button variant="outline" onClick={() => {
                 setCategory('all');
                 setPriceRange([0, maxPrice]);
                 setSortOption('relevance');

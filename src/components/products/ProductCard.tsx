@@ -20,9 +20,10 @@ export default function ProductCard({ product }: ProductCardProps) {
   const { addToCart } = useCart();
   const { toast } = useToast();
   
-  const mainImage = product.imageUrls && product.imageUrls[0] 
-                    ? product.imageUrls[0] 
-                    : "https://placehold.co/400x400?text=No+Image";
+  // Use imageUrls array from storage migration, fallback to a placeholder
+  const images = product.imageUrls && product.imageUrls.length > 0 
+    ? product.imageUrls 
+    : ["https://placehold.co/400x400?text=No+Image"];
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('en-KE', {
@@ -30,7 +31,7 @@ export default function ProductCard({ product }: ProductCardProps) {
       currency: 'KES',
       currencyDisplay: 'code',
       minimumFractionDigits: 2,
-    }).format(price);
+    }).format(price || 0);
   };
   
   const handleWishlistClick = (e: React.MouseEvent) => {
@@ -44,10 +45,10 @@ export default function ProductCard({ product }: ProductCardProps) {
   return (
     <Card className="flex h-full flex-col overflow-hidden transition-shadow hover:shadow-lg bg-white group">
       <CardHeader className="p-0 relative">
-        {product.imageUrls && product.imageUrls.length > 1 ? (
+        {images.length > 1 ? (
             <Carousel className="w-full">
               <CarouselContent>
-                {product.imageUrls.map((img, index) => (
+                {images.map((img, index) => (
                   <CarouselItem key={index}>
                     <Link href={`/products/${product.id}`} className="block">
                       <div className="aspect-square overflow-hidden bg-muted">
@@ -69,7 +70,7 @@ export default function ProductCard({ product }: ProductCardProps) {
             <Link href={`/products/${product.id}`} className="block">
                 <div className="aspect-square overflow-hidden bg-muted">
                     <img
-                      src={mainImage}
+                      src={images[0]}
                       alt={product.name}
                       className="h-full w-full object-cover transition-transform duration-300 ease-in-out hover:scale-105"
                       loading="lazy"
@@ -94,7 +95,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           </CardTitle>
         </Link>
         <p className="mb-2 text-xs text-muted-foreground line-clamp-2 h-8">{product.description}</p>
-        <Rating rating={product.rating} showReviewCount reviewCount={product.reviews} size={14}/>
+        <Rating rating={product.rating || 5} showReviewCount reviewCount={product.reviews || 0} size={14}/>
       </CardContent>
        <CardFooter className="flex-col items-start gap-2 p-4 pt-0">
          <div className="flex items-baseline gap-2">
