@@ -5,7 +5,7 @@ import type { Product, Category, MockUser, Transaction, CarouselCategory } from 
 import { db } from './firebase';
 import { collection, getDocs, query, where, orderBy } from 'firebase/firestore';
 
-// These categories match the exact folder names used in your Migration Script and Storage folders
+// These categories match the exact folder names in your Storage
 export const categories: Category[] = [
     { id: 'Decorative Lighting and chandeliers', name: 'Lighting & Chandeliers' },
     { id: 'Electrical items', name: 'Electrical Items' },
@@ -35,9 +35,6 @@ export const availableAvatars: { url: string; alt: string }[] = [
   { url: '/shangi.jpg', alt: 'Shangi' },
 ];
 
-/**
- * Fetches all products from Firestore.
- */
 export async function getProducts(): Promise<Product[]> {
   if (!db) return [];
   try {
