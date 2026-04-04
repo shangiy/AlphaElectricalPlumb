@@ -5,7 +5,7 @@ import type { Product, Category, MockUser, Transaction, CarouselCategory } from 
 import { db } from './firebase';
 import { collection, getDocs, query, where, orderBy } from 'firebase/firestore';
 
-// These categories match the exact folder names in your Storage
+// These categories match the exact folder names in Storage for seamless filtering
 export const categories: Category[] = [
     { id: 'Decorative Lighting and chandeliers', name: 'Lighting & Chandeliers' },
     { id: 'Electrical items', name: 'Electrical Items' },
