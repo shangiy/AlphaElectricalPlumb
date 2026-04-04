@@ -9,7 +9,7 @@ const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "AIzaSyDZxNGOFmxyGXFi7qz0PnUy-tulDlzkCPY",
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || "alpha-plumbing-electrical.firebaseapp.com",
   projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "alpha-plumbing-electrical",
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "alpha-plumbing-electrical.appspot.com",
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "studio-2955966694-9faa5.firebasestorage.app",
   messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "388140139017",
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "1:388140139017:web:8ae3562718181e55fceed8"
 };

@@ -5,5 +5,5 @@ export const firebaseConfig = {
   "authDomain": "alpha-plumbing-electrical.firebaseapp.com",
   "measurementId": "",
   "messagingSenderId": "388140139017",
-  "storageBucket": "alpha-plumbing-electrical.appspot.com"
+  "storageBucket": "studio-2955966694-9faa5.firebasestorage.app"
 };
