@@ -3,8 +3,8 @@ rules_version = '2';
 
 service firebase.storage {
   match /b/{bucket}/o {
-    // Allow read/write access to all folders to ensure "product images" (with space) 
-    // and "product-images" (with dash) both work perfectly.
+    // Allow public read access to all files for the prototype
+    // This ensures images load even if the billing/domain setup is incomplete
     match /{allPaths=**} {
       allow write: if true;
       allow read: if true;

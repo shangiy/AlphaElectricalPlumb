@@ -5,6 +5,7 @@ const serviceAccount = require('./serviceAccountKey.json');
 /**
  * MASTER MIGRATION SCRIPT V3 (FIREBASE STUDIO OPTIMIZED)
  * Groups orientations and syncs all categories from Storage to Firestore.
+ * Prevents duplicates by using deterministic IDs.
  */
 
 if (!admin.apps.length) {
@@ -61,6 +62,7 @@ async function migrateAllAlphaProducts() {
 
         if (!productGroups[baseName]) productGroups[baseName] = [];
         
+        // Use the authenticated media URL format
         const publicUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(file.name)}?alt=media`;
         productGroups[baseName].push(publicUrl);
       });
@@ -69,7 +71,7 @@ async function migrateAllAlphaProducts() {
       console.log(`Found ${productEntries.length} unique products in ${cat}.`);
 
       for (const [name, urls] of productEntries) {
-        // Create a unique ID based on product name (increased length to prevent overlaps)
+        // Create a DETERMINISTIC ID based on product name to prevent duplicates
         const docId = name.toLowerCase().replace(/[^a-z0-9]/g, '-').substring(0, 50);
         
         await db.collection('products').doc(docId).set({

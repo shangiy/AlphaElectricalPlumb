@@ -6,11 +6,11 @@ import type { Product } from '@/lib/types';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/context/CartProvider';
-import { Heart, Package } from 'lucide-react';
+import { Heart, Package, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Rating } from '@/components/ui/rating';
 import { cn } from '@/lib/utils';
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
+import { useState } from 'react';
 
 interface ProductCardProps {
   product: Product;
@@ -19,6 +19,7 @@ interface ProductCardProps {
 export default function ProductCard({ product }: ProductCardProps) {
   const { addToCart } = useCart();
   const { toast } = useToast();
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   
   const images = product.imageUrls && product.imageUrls.length > 0 
     ? product.imageUrls 
@@ -42,48 +43,54 @@ export default function ProductCard({ product }: ProductCardProps) {
     });
   };
 
+  const nextImage = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setCurrentImageIndex((prev) => (prev + 1) % images.length);
+  };
+
+  const prevImage = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
+  };
+
   return (
     <Card className="flex h-full flex-col overflow-hidden transition-all duration-300 hover:shadow-xl bg-white group border-none shadow-sm">
-      <CardHeader className="p-0 relative">
-        {images.length > 1 ? (
-            <Carousel className="w-full">
-              <CarouselContent>
-                {images.map((img, index) => (
-                  <CarouselItem key={index}>
-                    <Link href={`/products/${product.id}`} className="block">
-                      <div className="relative aspect-square overflow-hidden bg-secondary/10">
-                        {/* Use standard img tag for reliable loading from Firebase Storage */}
-                        <img
-                          src={img}
-                          alt={`${product.name} orientation ${index + 1}`}
-                          className="h-full w-full object-cover transition-transform duration-500 ease-in-out group-hover:scale-105"
-                          loading="lazy"
-                        />
-                      </div>
-                    </Link>
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-              <CarouselPrevious className="absolute left-2 top-1/2 -translate-y-1/2 z-10 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity bg-white/80" />
-              <CarouselNext className="absolute right-2 top-1/2 -translate-y-1/2 z-10 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity bg-white/80" />
-            </Carousel>
-        ) : images.length === 1 ? (
-            <Link href={`/products/${product.id}`} className="block">
-                <div className="relative aspect-square overflow-hidden bg-secondary/10">
-                    <img
-                      src={images[0]}
-                      alt={product.name}
-                      className="h-full w-full object-cover transition-transform duration-500 ease-in-out group-hover:scale-105"
-                      loading="lazy"
-                    />
-                </div>
-            </Link>
+      <CardHeader className="p-0 relative group/images">
+        {images.length > 0 ? (
+            <div className="relative aspect-square overflow-hidden bg-secondary/10">
+                <img
+                  src={images[currentImageIndex]}
+                  alt={`${product.name} view ${currentImageIndex + 1}`}
+                  className="h-full w-full object-cover transition-transform duration-500 ease-in-out group-hover:scale-105"
+                  loading="lazy"
+                />
+                
+                {images.length > 1 && (
+                    <>
+                        <button 
+                            onClick={prevImage}
+                            className="absolute left-2 top-1/2 -translate-y-1/2 z-10 h-8 w-8 rounded-full bg-white/80 flex items-center justify-center opacity-0 group-hover/images:opacity-100 transition-opacity hover:bg-white"
+                        >
+                            <ChevronLeft className="h-5 w-5" />
+                        </button>
+                        <button 
+                            onClick={nextImage}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 z-10 h-8 w-8 rounded-full bg-white/80 flex items-center justify-center opacity-0 group-hover/images:opacity-100 transition-opacity hover:bg-white"
+                        >
+                            <ChevronRight className="h-5 w-5" />
+                        </button>
+                        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+                            {images.map((_, i) => (
+                                <div key={i} className={cn("h-1.5 w-1.5 rounded-full transition-all", i === currentImageIndex ? "bg-primary w-3" : "bg-white/50")} />
+                            ))}
+                        </div>
+                    </>
+                )}
+            </div>
         ) : (
-            <Link href={`/products/${product.id}`} className="block">
-                <div className="aspect-square overflow-hidden bg-muted flex items-center justify-center">
-                    <Package className="h-12 w-12 text-muted-foreground/20" />
-                </div>
-            </Link>
+            <div className="aspect-square overflow-hidden bg-muted flex items-center justify-center">
+                <Package className="h-12 w-12 text-muted-foreground/20" />
+            </div>
         )}
         
         <Button
@@ -98,7 +105,7 @@ export default function ProductCard({ product }: ProductCardProps) {
       </CardHeader>
       
       <CardContent className="flex-grow p-5">
-        <div className="mb-2 flex items-center justify-between">
+        <div className="mb-2">
             <span className="text-[10px] font-black tracking-widest uppercase text-primary/60">{product.category}</span>
         </div>
         <Link href={`/products/${product.id}`} className="block">
