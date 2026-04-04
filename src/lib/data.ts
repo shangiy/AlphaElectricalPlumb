@@ -48,7 +48,7 @@ export const carouselCategories: CarouselCategory[] = [
         id: 'Mabati and Roofing', 
         name: 'Roofing & Construction', 
         href: '/roofing', 
-        image: 'https://firebasestorage.googleapis.com/v0/b/studio-2955966694-9faa5.firebasestorage.app/o/product%20images%2FMabati%20and%20Roofing%2FVersatile%20Roofing%20Sheets%20(Charcoal%20Black).webp?alt=media'
+        image: 'https://firebasestorage.googleapis.com/v0/b/studio-2955966694-9faa5.firebasestorage.app/o/product%20images%2FMabati%20and%20Roofing%2FVersatile%20Roofing%20Sheets%20(Brick%20Red).webp?alt=media'
     },
 ];
 
