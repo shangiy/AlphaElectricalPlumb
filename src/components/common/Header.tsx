@@ -45,8 +45,10 @@ export default function Header() {
   const pathname = usePathname();
   const isHomePage = pathname === '/';
   
-  const [isHeaderOpaque, setIsHeaderOpaque] = useState(!isHomePage);
-  const [showSearchInHeader, setShowSearchInHeader] = useState(!isHomePage);
+  // Initialize to safe defaults to prevent hydration mismatch.
+  // We will update these in useEffect based on current path and scroll.
+  const [isHeaderOpaque, setIsHeaderOpaque] = useState(false);
+  const [showSearchInHeader, setShowSearchInHeader] = useState(false);
 
   const [isProductsMenuOpen, setProductsMenuOpen] = useState(false);
   const productsMenuTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -56,10 +58,8 @@ export default function Header() {
       const scrollY = window.scrollY;
       const isHomepagePath = window.location.pathname === '/';
       
-      // Early transition for transparency
       setIsHeaderOpaque(!isHomepagePath || scrollY > 20);
       
-      // Threshold for showing the search bar in the header on the homepage.
       const searchThreshold = isHomepagePath ? 350 : 0;
       setShowSearchInHeader(!isHomepagePath || scrollY > searchThreshold);
     };
@@ -70,7 +70,7 @@ export default function Header() {
     return () => {
       window.removeEventListener('scroll', updateHeaderStyles);
     };
-  }, [pathname, isHomePage]);
+  }, [pathname]);
   
   const navLinks = [
     { name: 'Contact Us', href: '/contact' },
@@ -162,11 +162,17 @@ export default function Header() {
             
             {/* Center: Search (Desktop) */}
             <div className="flex-1 w-full max-w-xl mx-auto px-4">
-                {showSearchInHeader && (
-                    <div className="animate-in fade-in duration-700 slide-in-from-top-2">
-                        <HeroSearch isCompact={isHeaderOpaque} />
-                    </div>
-                )}
+                {/* 
+                  CRITICAL: We use class-based visibility instead of conditional rendering (&&) 
+                  to ensure the Radix Dialog inside HeroSearch is always present in the tree. 
+                  This prevents sequential ID drift which causes hydration errors.
+                */}
+                <div className={cn(
+                    "transition-all duration-700 ease-in-out transform",
+                    showSearchInHeader ? "opacity-100 translate-y-0 scale-100" : "opacity-0 -translate-y-4 scale-95 pointer-events-none"
+                )}>
+                    <HeroSearch isCompact={isHeaderOpaque} />
+                </div>
             </div>
 
             {/* Right: Navigation and Icons */}
