@@ -1,7 +1,6 @@
 import type {NextConfig} from 'next';
 
 const nextConfig: NextConfig = {
-  /* config options here */
   typescript: {
     ignoreBuildErrors: true,
   },
@@ -30,8 +29,6 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  // Required for some hosting environments to correctly handle standalone builds
-  output: 'standalone',
 };
 
 export default nextConfig;
