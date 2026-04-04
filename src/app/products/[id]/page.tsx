@@ -1,14 +1,11 @@
-
 'use client';
 
 import { useParams, notFound, useRouter } from 'next/navigation';
 import { useProducts } from '@/context/ProductProvider';
-import Image from 'next/image';
-import { Card, CardContent } from '@/components/ui/card';
 import { Rating } from '@/components/ui/rating';
 import ProductRecommendations from '@/components/products/ProductRecommendations';
 import BuyNowButton from '@/components/products/ContactSellerForm';
-import { ShieldCheck, Tags, Box, Share2, Truck, Wrench } from 'lucide-react';
+import { ShieldCheck, Truck, Wrench } from 'lucide-react';
 import AddToCartButton from '@/components/products/AddToCartButton';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
@@ -42,6 +39,7 @@ function ProductContent({ productId }: { productId: string }) {
   }
   
   const formatPrice = (price: number) => {
+    if (!price || price === 0) return 'Contact for Price';
     return new Intl.NumberFormat('en-KE', {
       style: 'currency',
       currency: 'KES',

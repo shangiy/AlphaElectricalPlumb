@@ -1,6 +1,5 @@
 'use client';
 
-import Image from 'next/image';
 import Link from 'next/link';
 import type { Product } from '@/lib/types';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -42,9 +41,6 @@ export default function ProductCard({ product }: ProductCardProps) {
     });
   };
 
-  // Helper to check if image is from Firebase Storage
-  const isStorageUrl = (url: string) => url.includes('firebasestorage.googleapis.com');
-
   return (
     <Card className="flex h-full flex-col overflow-hidden transition-all duration-300 hover:shadow-xl bg-white group border-none shadow-sm">
       <CardHeader className="p-0 relative">
@@ -55,13 +51,11 @@ export default function ProductCard({ product }: ProductCardProps) {
                   <CarouselItem key={index}>
                     <Link href={`/products/${product.id}`} className="block">
                       <div className="relative aspect-square overflow-hidden bg-secondary/10">
-                        <Image
+                        <img
                           src={img}
                           alt={`${product.name} orientation ${index + 1}`}
-                          fill
-                          className="object-cover transition-transform duration-500 ease-in-out group-hover:scale-105"
+                          className="h-full w-full object-cover transition-transform duration-500 ease-in-out group-hover:scale-105"
                           loading="lazy"
-                          unoptimized={isStorageUrl(img)}
                         />
                       </div>
                     </Link>
@@ -74,13 +68,11 @@ export default function ProductCard({ product }: ProductCardProps) {
         ) : images.length === 1 ? (
             <Link href={`/products/${product.id}`} className="block">
                 <div className="relative aspect-square overflow-hidden bg-secondary/10">
-                    <Image
+                    <img
                       src={images[0]}
                       alt={product.name}
-                      fill
-                      className="object-cover transition-transform duration-500 ease-in-out group-hover:scale-105"
+                      className="h-full w-full object-cover transition-transform duration-500 ease-in-out group-hover:scale-105"
                       loading="lazy"
-                      unoptimized={isStorageUrl(images[0])}
                     />
                 </div>
             </Link>
