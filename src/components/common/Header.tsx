@@ -58,9 +58,11 @@ export default function Header() {
       const scrollY = window.scrollY;
       const isHomepagePath = window.location.pathname === '/';
       
-      setIsHeaderOpaque(!isHomepagePath || scrollY > 20);
+      // Toggle opacity based on scroll or if not on homepage
+      setIsHeaderOpaque(!isHomepagePath || scrollY > 50);
       
-      const searchThreshold = isHomepagePath ? 350 : 0;
+      // Show search bar in header after scrolling past the hero search
+      const searchThreshold = isHomepagePath ? 400 : 0;
       setShowSearchInHeader(!isHomepagePath || scrollY > searchThreshold);
     };
 
@@ -72,21 +74,15 @@ export default function Header() {
     };
   }, [pathname]);
 
-  // Essential for preventing hydration ID drift with Radix UI components.
-  // Returning null until mounted ensures the interactive tree is only built once on the client.
-  if (!isMounted) {
-    return <div className="sticky top-0 z-50 w-full h-20 bg-background/90" />;
-  }
-  
   const navLinks = [
     { name: 'Contact Us', href: '/contact' },
     { name: 'About Us', href: '/about' },
   ];
   
   const headerClasses = cn(
-    "sticky top-0 z-50 w-full transition-all duration-500 overflow-hidden",
+    "sticky top-0 z-50 w-full transition-all duration-500",
     isHeaderOpaque 
-      ? "border-b shadow-sm" 
+      ? "bg-background/95 backdrop-blur-md border-b shadow-sm" 
       : "bg-transparent border-b border-transparent"
   );
 
@@ -96,9 +92,9 @@ export default function Header() {
   );
   
   const navAndIconClasses = cn(
-    "font-semibold text-base transition-all duration-300",
+    "font-semibold text-base transition-all duration-300 px-3 py-2 rounded-md whitespace-nowrap",
     dynamicColorClasses,
-    "hover:text-primary hover:bg-primary/10 rounded-md"
+    "hover:text-primary hover:bg-primary/10"
   );
 
   const iconClasses = cn(
@@ -108,7 +104,7 @@ export default function Header() {
   );
 
   const logoTextClasses = cn(
-    "hidden sm:flex flex-col",
+    "hidden sm:flex flex-col transition-colors duration-300",
     dynamicColorClasses,
     "group-hover:text-primary"
   );
@@ -130,15 +126,6 @@ export default function Header() {
 
   return (
     <header className={headerClasses}>
-      <div className={cn(
-        "absolute inset-0 -z-20 bg-gradient-to-r from-red-500 via-purple-500 to-blue-500 bg-[length:200%_200%] animate-gradient-x transition-opacity duration-500",
-        isHeaderOpaque ? "opacity-100" : "opacity-0"
-      )} />
-      <div className={cn(
-        "absolute inset-0 -z-10 bg-background/90 backdrop-blur-md transition-opacity duration-500",
-        isHeaderOpaque ? "opacity-100" : "opacity-0"
-      )} />
-
       <div className="container mx-auto px-4 relative z-10">
         <div className={cn("hidden w-full items-center gap-4 lg:flex transition-all duration-500", isHeaderOpaque ? "h-20" : "h-24")}>
             <Link href="/" className="flex flex-shrink-0 items-center gap-3 group">
@@ -151,40 +138,32 @@ export default function Header() {
                 />
                 <div className={logoTextClasses}>
                     <span className={cn("font-bold transition-all", isHeaderOpaque ? "text-[18px]" : "text-[20px]")}>Alpha</span>
-                    <div className="w-full h-px bg-current" />
+                    <div className={cn("w-full h-px transition-colors duration-300", !isHeaderOpaque && isHomePage ? "bg-white" : "bg-[#2b235f]")} />
                     <span className="text-[12px] leading-tight">Electricals & Plumbing Ltd</span>
                 </div>
             </Link>
             
-            <div className="flex-1 w-full max-w-xl mx-auto px-4">
-                {/* Persistent in DOM to prevent hydration ID drift, but hidden visually */}
+            <div className="flex-1 w-full max-w-xl mx-auto px-4 overflow-hidden">
                 <div className={cn(
-                    "transition-all duration-700 ease-in-out transform",
-                    showSearchInHeader ? "opacity-100 translate-y-0 scale-100" : "opacity-0 -translate-y-4 scale-95 pointer-events-none"
+                    "transition-all duration-700 ease-in-out transform origin-center",
+                    (showSearchInHeader && isMounted) ? "opacity-100 translate-y-0 scale-100" : "opacity-0 -translate-y-8 scale-90 pointer-events-none"
                 )}>
                     <HeroSearch isCompact={isHeaderOpaque} />
                 </div>
             </div>
 
             <div className="flex items-center justify-end">
-                <nav className='flex items-center'>
+                <nav className='flex items-center gap-1'>
                     <div onMouseEnter={handleProductsMenuEnter} onMouseLeave={handleProductsMenuLeave} className="relative">
                       <DropdownMenu open={isProductsMenuOpen} onOpenChange={setProductsMenuOpen}>
                         <DropdownMenuTrigger asChild>
-                          <div className={cn(
-                            "p-0.5 rounded-md",
-                            isHeaderOpaque ? "bg-gradient-to-r from-red-500 via-purple-500 to-blue-500 bg-[length:200%_200%] animate-gradient-x" : ""
-                          )}>
                              <div className={cn(
-                                "flex items-center gap-1 px-3 py-2 cursor-pointer whitespace-nowrap",
-                                navAndIconClasses,
-                                isHeaderOpaque ? "bg-background rounded-[5px]" : "bg-transparent",
-                                "hover:text-accent-foreground"
+                                "flex items-center gap-1 cursor-pointer",
+                                navAndIconClasses
                               )}>
                                 Products
                                 <ChevronDown className="h-4 w-4" />
                              </div>
-                           </div>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="start" className="w-56 bg-background" onMouseEnter={handleProductsMenuEnter} onMouseLeave={handleProductsMenuLeave}>
                             {productCategories.map((category) => (
@@ -207,7 +186,7 @@ export default function Header() {
                         <Link
                             key={link.name}
                             href={link.href}
-                            className={cn("px-3 py-2 whitespace-nowrap", navAndIconClasses)}
+                            className={navAndIconClasses}
                         >
                             {link.name}
                         </Link>
@@ -263,7 +242,7 @@ export default function Header() {
 
                 <div className={cn(
                     "flex-1 min-w-0 transition-all duration-700 ease-in-out overflow-hidden px-1",
-                    showSearchInHeader ? "opacity-100 max-h-12 translate-y-0" : "opacity-0 max-h-0 -translate-y-4 pointer-events-none"
+                    (showSearchInHeader && isMounted) ? "opacity-100 max-h-12 translate-y-0" : "opacity-0 max-h-0 -translate-y-4 pointer-events-none"
                 )}>
                     <HeroSearch isCompact />
                 </div>
