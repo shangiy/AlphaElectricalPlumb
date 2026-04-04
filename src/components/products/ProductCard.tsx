@@ -52,11 +52,12 @@ export default function ProductCard({ product }: ProductCardProps) {
                 {images.map((img, index) => (
                   <CarouselItem key={index}>
                     <Link href={`/products/${product.id}`} className="block">
-                      <div className="aspect-square overflow-hidden bg-secondary/10">
-                        <img
+                      <div className="relative aspect-square overflow-hidden bg-secondary/10">
+                        <Image
                           src={img}
                           alt={`${product.name} orientation ${index + 1}`}
-                          className="h-full w-full object-cover transition-transform duration-500 ease-in-out group-hover:scale-105"
+                          fill
+                          className="object-cover transition-transform duration-500 ease-in-out group-hover:scale-105"
                           loading="lazy"
                         />
                       </div>
@@ -69,11 +70,12 @@ export default function ProductCard({ product }: ProductCardProps) {
             </Carousel>
         ) : images.length === 1 ? (
             <Link href={`/products/${product.id}`} className="block">
-                <div className="aspect-square overflow-hidden bg-secondary/10">
-                    <img
+                <div className="relative aspect-square overflow-hidden bg-secondary/10">
+                    <Image
                       src={images[0]}
                       alt={product.name}
-                      className="h-full w-full object-cover transition-transform duration-500 ease-in-out group-hover:scale-105"
+                      fill
+                      className="object-cover transition-transform duration-500 ease-in-out group-hover:scale-105"
                       loading="lazy"
                     />
                 </div>

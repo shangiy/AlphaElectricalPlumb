@@ -2,14 +2,16 @@ const admin = require('firebase-admin');
 const serviceAccount = require('./serviceAccountKey.json');
 
 /**
- * MASTER MIGRATION SCRIPT V3 (REPAIRED)
+ * MASTER MIGRATION SCRIPT V3 (FIREBASE STUDIO OPTIMIZED)
  * Groups orientations and syncs all categories from Storage to Firestore.
  */
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-  storageBucket: "studio-2955966694-9faa5.firebasestorage.app"
-});
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+    storageBucket: "studio-2955966694-9faa5.firebasestorage.app"
+  });
+}
 
 const db = admin.firestore();
 const bucket = admin.storage().bucket();
@@ -51,7 +53,10 @@ async function migrateAllAlphaProducts() {
         const baseName = getBaseProductName(fileName);
 
         // Skip non-product branding
-        if (baseName.toLowerCase().includes("logo") || baseName.toLowerCase().includes("background") || baseName.toLowerCase().includes("retail shop")) return;
+        if (baseName.toLowerCase().includes("logo") || 
+            baseName.toLowerCase().includes("background") || 
+            baseName.toLowerCase().includes("retail shop") ||
+            baseName.toLowerCase().includes("delivery team")) return;
 
         if (!productGroups[baseName]) productGroups[baseName] = [];
         
@@ -68,9 +73,9 @@ async function migrateAllAlphaProducts() {
         
         await db.collection('products').doc(docId).set({
           name: name,
-          imageUrls: urls,
+          imageUrls: urls, // The new array format
           category: cat,
-          price: 0, // Default to 0, shows as 'Contact for Price'
+          price: 0, // Set to 0 so UI shows "Contact for Price"
           description: `High-quality ${name} available at Alpha Electricals & Plumbing Ltd.`,
           longDescription: `Experience superior performance with the ${name}. Engineered for durability and efficiency, this product is a cornerstone of modern infrastructure. We provide professional delivery and installation to ensure your system is fully operational and reliable. Contact us for bulk pricing and site visits.`,
           updatedAt: admin.firestore.FieldValue.serverTimestamp(),
