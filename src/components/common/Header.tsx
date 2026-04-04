@@ -71,6 +71,12 @@ export default function Header() {
       window.removeEventListener('scroll', updateHeaderStyles);
     };
   }, [pathname]);
+
+  // To prevent hydration errors from Radix UI ID generation, we ensure
+  // the interactive elements only render after the component has mounted.
+  if (!isMounted) {
+    return <div className="sticky top-0 z-50 w-full h-20 bg-background/90" />;
+  }
   
   const navLinks = [
     { name: 'Contact Us', href: '/contact' },
@@ -153,7 +159,7 @@ export default function Header() {
             <div className="flex-1 w-full max-w-xl mx-auto px-4">
                 <div className={cn(
                     "transition-all duration-700 ease-in-out transform",
-                    (isMounted && showSearchInHeader) ? "opacity-100 translate-y-0 scale-100" : "opacity-0 -translate-y-4 scale-95 pointer-events-none"
+                    showSearchInHeader ? "opacity-100 translate-y-0 scale-100" : "opacity-0 -translate-y-4 scale-95 pointer-events-none"
                 )}>
                     <HeroSearch isCompact={isHeaderOpaque} />
                 </div>
@@ -162,7 +168,7 @@ export default function Header() {
             <div className="flex items-center justify-end">
                 <nav className='flex items-center'>
                     <div onMouseEnter={handleProductsMenuEnter} onMouseLeave={handleProductsMenuLeave} className="relative">
-                      <DropdownMenu open={isMounted && isProductsMenuOpen} onOpenChange={setProductsMenuOpen}>
+                      <DropdownMenu open={isProductsMenuOpen} onOpenChange={setProductsMenuOpen}>
                         <DropdownMenuTrigger asChild>
                           <div className={cn(
                             "p-0.5 rounded-md",
@@ -256,7 +262,7 @@ export default function Header() {
 
                 <div className={cn(
                     "flex-1 min-w-0 transition-all duration-700 ease-in-out overflow-hidden px-1",
-                    (isMounted && showSearchInHeader) ? "opacity-100 max-h-12 translate-y-0" : "opacity-0 max-h-0 -translate-y-4 pointer-events-none"
+                    showSearchInHeader ? "opacity-100 max-h-12 translate-y-0" : "opacity-0 max-h-0 -translate-y-4 pointer-events-none"
                 )}>
                     <HeroSearch isCompact />
                 </div>
