@@ -3,11 +3,11 @@ rules_version = '2';
 
 service firebase.storage {
   match /b/{bucket}/o {
-    // Allow public read access to all files for the prototype
-    // This ensures images load even if the billing/domain setup is incomplete
+    // Allow public read access to everything for the prototype.
+    // This guarantees images load without token issues.
     match /{allPaths=**} {
-      allow write: if true;
       allow read: if true;
+      allow write: if true; 
     }
   }
 }

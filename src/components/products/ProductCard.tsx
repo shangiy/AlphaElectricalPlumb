@@ -59,10 +59,13 @@ export default function ProductCard({ product }: ProductCardProps) {
         {images.length > 0 ? (
             <div className="relative aspect-square overflow-hidden bg-secondary/10">
                 <img
+                  key={images[currentImageIndex]}
                   src={images[currentImageIndex]}
                   alt={`${product.name} view ${currentImageIndex + 1}`}
                   className="h-full w-full object-cover transition-transform duration-500 ease-in-out group-hover:scale-105"
-                  loading="lazy"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = "https://placehold.co/400x400?text=Image+Not+Found";
+                  }}
                 />
                 
                 {images.length > 1 && (
