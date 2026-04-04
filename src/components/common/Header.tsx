@@ -45,15 +45,15 @@ export default function Header() {
   const pathname = usePathname();
   const isHomePage = pathname === '/';
   
-  // Initialize to safe defaults to prevent hydration mismatch.
-  // We will update these in useEffect based on current path and scroll.
   const [isHeaderOpaque, setIsHeaderOpaque] = useState(false);
   const [showSearchInHeader, setShowSearchInHeader] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
   const [isProductsMenuOpen, setProductsMenuOpen] = useState(false);
   const productsMenuTimerRef = useRef<NodeJS.Timeout | null>(null);
   
   useEffect(() => {
+    setIsMounted(true);
     const updateHeaderStyles = () => {
       const scrollY = window.scrollY;
       const isHomepagePath = window.location.pathname === '/';
@@ -120,18 +120,10 @@ export default function Header() {
     }, 200);
   };
 
-  const ProductsButtonContent = () => (
-    <>
-      Products
-      <ChevronDown className="h-4 w-4" />
-    </>
-  );
-
   const authRedirect = pathname !== '/auth/login' ? `&redirect=${encodeURIComponent(pathname)}` : '';
 
   return (
     <header className={headerClasses}>
-      {/* Background Layers for Opaque State */}
       <div className={cn(
         "absolute inset-0 -z-20 bg-gradient-to-r from-red-500 via-purple-500 to-blue-500 bg-[length:200%_200%] animate-gradient-x transition-opacity duration-500",
         isHeaderOpaque ? "opacity-100" : "opacity-0"
@@ -142,9 +134,7 @@ export default function Header() {
       )} />
 
       <div className="container mx-auto px-4 relative z-10">
-        {/* Desktop Header */}
         <div className={cn("hidden w-full items-center gap-4 lg:flex transition-all duration-500", isHeaderOpaque ? "h-20" : "h-24")}>
-            {/* Left: Logo */}
             <Link href="/" className="flex flex-shrink-0 items-center gap-3 group">
                 <Image
                     src="/logo Alpha.png"
@@ -160,26 +150,19 @@ export default function Header() {
                 </div>
             </Link>
             
-            {/* Center: Search (Desktop) */}
             <div className="flex-1 w-full max-w-xl mx-auto px-4">
-                {/* 
-                  CRITICAL: We use class-based visibility instead of conditional rendering (&&) 
-                  to ensure the Radix Dialog inside HeroSearch is always present in the tree. 
-                  This prevents sequential ID drift which causes hydration errors.
-                */}
                 <div className={cn(
                     "transition-all duration-700 ease-in-out transform",
-                    showSearchInHeader ? "opacity-100 translate-y-0 scale-100" : "opacity-0 -translate-y-4 scale-95 pointer-events-none"
+                    (isMounted && showSearchInHeader) ? "opacity-100 translate-y-0 scale-100" : "opacity-0 -translate-y-4 scale-95 pointer-events-none"
                 )}>
                     <HeroSearch isCompact={isHeaderOpaque} />
                 </div>
             </div>
 
-            {/* Right: Navigation and Icons */}
             <div className="flex items-center justify-end">
                 <nav className='flex items-center'>
                     <div onMouseEnter={handleProductsMenuEnter} onMouseLeave={handleProductsMenuLeave} className="relative">
-                      <DropdownMenu open={isProductsMenuOpen} onOpenChange={setProductsMenuOpen}>
+                      <DropdownMenu open={isMounted && isProductsMenuOpen} onOpenChange={setProductsMenuOpen}>
                         <DropdownMenuTrigger asChild>
                           <div className={cn(
                             "p-0.5 rounded-md",
@@ -191,7 +174,8 @@ export default function Header() {
                                 isHeaderOpaque ? "bg-background rounded-[5px]" : "bg-transparent",
                                 "hover:text-accent-foreground"
                               )}>
-                                <ProductsButtonContent />
+                                Products
+                                <ChevronDown className="h-4 w-4" />
                              </div>
                            </div>
                         </DropdownMenuTrigger>
@@ -258,10 +242,7 @@ export default function Header() {
             </div>
         </div>
 
-
-        {/* Mobile Header */}
         <div className="w-full lg:hidden flex flex-col py-2 transition-all duration-500">
-            {/* Top Row: Logo, Compact Search, and Icons */}
             <div className="flex w-full items-center justify-between gap-2">
                  <Link href="/" className="flex-shrink-0 transition-all duration-500">
                     <Image
@@ -275,7 +256,7 @@ export default function Header() {
 
                 <div className={cn(
                     "flex-1 min-w-0 transition-all duration-700 ease-in-out overflow-hidden px-1",
-                    showSearchInHeader ? "opacity-100 max-h-12 translate-y-0" : "opacity-0 max-h-0 -translate-y-4 pointer-events-none"
+                    (isMounted && showSearchInHeader) ? "opacity-100 max-h-12 translate-y-0" : "opacity-0 max-h-0 -translate-y-4 pointer-events-none"
                 )}>
                     <HeroSearch isCompact />
                 </div>
