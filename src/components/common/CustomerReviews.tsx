@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useFirebase, useCollection, useMemoFirebase, useUser } from '@/firebase';
 import { collection, query, orderBy, serverTimestamp, Timestamp } from 'firebase/firestore';
 import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
@@ -11,13 +11,15 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Rating } from '@/components/ui/rating';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, User, MessageSquareQuote, Star } from 'lucide-react';
+import { Loader2, User, MessageSquareQuote, Star, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { cn } from '@/lib/utils';
+import useEmblaCarousel from 'embla-carousel-react';
+import Autoplay from 'embla-carousel-autoplay';
 
 const reviewSchema = z.object({
   userName: z.string().min(2, 'Name must be at least 2 characters.'),
@@ -51,11 +53,25 @@ export default function CustomerReviews() {
     const form = useForm<ReviewFormValues>({
         resolver: zodResolver(reviewSchema),
         defaultValues: {
-            userName: user?.displayName || '',
+            userName: '',
             rating: 5,
             comment: '',
         },
     });
+
+    // Pre-fill user name from social account if available
+    useEffect(() => {
+        if (user?.displayName && !form.getValues('userName')) {
+            form.setValue('userName', user.displayName);
+        }
+    }, [user, form]);
+
+    const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, align: 'start' }, [
+        Autoplay({ delay: 5000, stopOnInteraction: false })
+    ]);
+
+    const scrollPrev = useCallback(() => emblaApi && emblaApi.scrollPrev(), [emblaApi]);
+    const scrollNext = useCallback(() => emblaApi && emblaApi.scrollNext(), [emblaApi]);
 
     const onSubmit = (values: ReviewFormValues) => {
         if (!firestore) return;
@@ -90,7 +106,7 @@ export default function CustomerReviews() {
     };
 
     return (
-        <section className="py-20 bg-secondary/30">
+        <section className="py-20 bg-secondary/30 overflow-hidden">
             <div className="container mx-auto px-4">
                 <div className="flex flex-col md:flex-row justify-between items-center mb-12 gap-6 text-center md:text-left">
                     <div>
@@ -98,82 +114,93 @@ export default function CustomerReviews() {
                         <p className="text-muted-foreground mt-2">What our clients say about Alpha Electricals</p>
                     </div>
                     
-                    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                        <DialogTrigger asChild>
-                            <Button size="lg" className="rounded-full shadow-lg hover:scale-105 transition-transform bg-[#28235f] hover:bg-[#28235f]/90">
-                                <MessageSquareQuote className="mr-2 h-5 w-5" />
-                                Leave a Review
+                    <div className="flex items-center gap-4">
+                        <div className="hidden sm:flex gap-2">
+                            <Button variant="outline" size="icon" className="rounded-full h-10 w-10" onClick={scrollPrev}>
+                                <ChevronLeft className="h-5 w-5" />
                             </Button>
-                        </DialogTrigger>
-                        <DialogContent className="sm:max-w-[425px]">
-                            <DialogHeader>
-                                <DialogTitle>Submit Your Review</DialogTitle>
-                            </DialogHeader>
-                            <Form {...form}>
-                                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                                    <FormField
-                                        control={form.control}
-                                        name="userName"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Your Name</FormLabel>
-                                                <FormControl>
-                                                    <Input placeholder="John Doe" {...field} />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                    <FormField
-                                        control={form.control}
-                                        name="rating"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Rating</FormLabel>
-                                                <div className="flex items-center gap-2">
-                                                    {[1, 2, 3, 4, 5].map((star) => (
-                                                        <button
-                                                            key={star}
-                                                            type="button"
-                                                            onClick={() => field.onChange(star)}
-                                                            className="focus:outline-none"
-                                                        >
-                                                            <Star 
-                                                                className={cn(
-                                                                    "h-8 w-8 transition-colors",
-                                                                    star <= field.value ? "fill-yellow-500 text-yellow-500" : "text-muted-foreground"
-                                                                )} 
-                                                            />
-                                                        </button>
-                                                    ))}
-                                                </div>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                    <FormField
-                                        control={form.control}
-                                        name="comment"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Review</FormLabel>
-                                                <FormControl>
-                                                    <Textarea 
-                                                        placeholder="Share your experience..." 
-                                                        className="resize-none" 
-                                                        rows={4}
-                                                        {...field} 
-                                                    />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                    <Button type="submit" className="w-full bg-primary hover:bg-primary/90">Post Review</Button>
-                                </form>
-                            </Form>
-                        </DialogContent>
-                    </Dialog>
+                            <Button variant="outline" size="icon" className="rounded-full h-10 w-10" onClick={scrollNext}>
+                                <ChevronRight className="h-5 w-5" />
+                            </Button>
+                        </div>
+                        
+                        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                            <DialogTrigger asChild>
+                                <Button size="lg" className="rounded-full shadow-lg hover:scale-105 transition-transform bg-[#28235f] hover:bg-[#28235f]/90">
+                                    <MessageSquareQuote className="mr-2 h-5 w-5" />
+                                    Leave a Review
+                                </Button>
+                            </DialogTrigger>
+                            <DialogContent className="sm:max-w-[425px]">
+                                <DialogHeader>
+                                    <DialogTitle>Submit Your Review</DialogTitle>
+                                </DialogHeader>
+                                <Form {...form}>
+                                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                                        <FormField
+                                            control={form.control}
+                                            name="userName"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel>Name to display</FormLabel>
+                                                    <FormControl>
+                                                        <Input placeholder="Enter your preferred name" {...field} />
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                        <FormField
+                                            control={form.control}
+                                            name="rating"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel>Rating</FormLabel>
+                                                    <div className="flex items-center gap-2">
+                                                        {[1, 2, 3, 4, 5].map((star) => (
+                                                            <button
+                                                                key={star}
+                                                                type="button"
+                                                                onClick={() => field.onChange(star)}
+                                                                className="focus:outline-none"
+                                                            >
+                                                                <Star 
+                                                                    className={cn(
+                                                                        "h-8 w-8 transition-colors",
+                                                                        star <= field.value ? "fill-yellow-500 text-yellow-500" : "text-muted-foreground"
+                                                                    )} 
+                                                                />
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                        <FormField
+                                            control={form.control}
+                                            name="comment"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel>Review</FormLabel>
+                                                    <FormControl>
+                                                        <Textarea 
+                                                            placeholder="Share your experience..." 
+                                                            className="resize-none" 
+                                                            rows={4}
+                                                            {...field} 
+                                                        />
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                        <Button type="submit" className="w-full bg-primary hover:bg-primary/90">Post Review</Button>
+                                    </form>
+                                </Form>
+                            </DialogContent>
+                        </Dialog>
+                    </div>
                 </div>
 
                 {isLoading ? (
@@ -181,26 +208,30 @@ export default function CustomerReviews() {
                         <Loader2 className="h-10 w-10 animate-spin text-primary" />
                     </div>
                 ) : reviews && reviews.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {reviews.map((review) => (
-                            <Card key={review.id} className="bg-card hover:shadow-xl transition-shadow border-primary/10 rounded-2xl overflow-hidden">
-                                <CardHeader className="flex flex-row items-center gap-4 pb-4">
-                                    <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                                        <User size={24} />
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <CardTitle className="text-lg font-bold">{review.userName}</CardTitle>
-                                        <CardDescription className="text-xs">{formatDate(review.createdAt)}</CardDescription>
-                                    </div>
-                                </CardHeader>
-                                <CardContent className="space-y-3">
-                                    <Rating rating={review.rating} size={16} />
-                                    <p className="text-muted-foreground italic leading-relaxed">
-                                        "{review.comment}"
-                                    </p>
-                                </CardContent>
-                            </Card>
-                        ))}
+                    <div className="embla" ref={emblaRef}>
+                        <div className="embla__container flex gap-6">
+                            {reviews.map((review) => (
+                                <div key={review.id} className="embla__slide flex-[0_0_100%] sm:flex-[0_0_50%] lg:flex-[0_0_33.333%] min-w-0">
+                                    <Card className="bg-card h-full hover:shadow-xl transition-all border-primary/10 rounded-2xl overflow-hidden group">
+                                        <CardHeader className="flex flex-row items-center gap-4 pb-4">
+                                            <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+                                                <User size={24} />
+                                            </div>
+                                            <div className="flex flex-col min-w-0">
+                                                <CardTitle className="text-lg font-bold truncate">{review.userName}</CardTitle>
+                                                <CardDescription className="text-xs">{formatDate(review.createdAt)}</CardDescription>
+                                            </div>
+                                        </CardHeader>
+                                        <CardContent className="space-y-3">
+                                            <Rating rating={review.rating} size={16} />
+                                            <p className="text-muted-foreground italic leading-relaxed line-clamp-4">
+                                                "{review.comment}"
+                                            </p>
+                                        </CardContent>
+                                    </Card>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 ) : (
                     <div className="text-center py-20 border-2 border-dashed rounded-3xl bg-background/50 border-primary/20">
