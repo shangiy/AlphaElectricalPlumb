@@ -2,13 +2,13 @@ const admin = require('firebase-admin');
 const serviceAccount = require('./serviceAccountKey.json');
 
 /**
- * MASTER MIGRATION SCRIPT V3
+ * MASTER MIGRATION SCRIPT V3 (REPAIRED)
  * Groups orientations and syncs all categories from Storage to Firestore.
  */
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
-  storageBucket: "alpha-plumbing-electrical.appspot.com"
+  storageBucket: "studio-2955966694-9faa5.firebasestorage.app"
 });
 
 const db = admin.firestore();
@@ -51,7 +51,7 @@ async function migrateAllAlphaProducts() {
         const baseName = getBaseProductName(fileName);
 
         // Skip non-product branding
-        if (baseName.toLowerCase().includes("logo") || baseName.toLowerCase().includes("background")) return;
+        if (baseName.toLowerCase().includes("logo") || baseName.toLowerCase().includes("background") || baseName.toLowerCase().includes("retail shop")) return;
 
         if (!productGroups[baseName]) productGroups[baseName] = [];
         
@@ -70,7 +70,7 @@ async function migrateAllAlphaProducts() {
           name: name,
           imageUrls: urls,
           category: cat,
-          price: 0, // Default to 0, will show as 'Contact for Price'
+          price: 0, // Default to 0, shows as 'Contact for Price'
           description: `High-quality ${name} available at Alpha Electricals & Plumbing Ltd.`,
           longDescription: `Experience superior performance with the ${name}. Engineered for durability and efficiency, this product is a cornerstone of modern infrastructure. We provide professional delivery and installation to ensure your system is fully operational and reliable. Contact us for bulk pricing and site visits.`,
           updatedAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -80,7 +80,7 @@ async function migrateAllAlphaProducts() {
           isFeatured: true
         }, { merge: true });
 
-        console.log(`   ✨ Synced: ${name}`);
+        console.log(`   ✨ Synced: ${name} (${urls.length} views)`);
       }
     } catch (error) {
       console.error(`   ❌ Error in ${cat}:`, error.message);
