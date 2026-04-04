@@ -72,8 +72,8 @@ export default function Header() {
     };
   }, [pathname]);
 
-  // To prevent hydration errors from Radix UI ID generation, we ensure
-  // the interactive elements only render after the component has mounted.
+  // Essential for preventing hydration ID drift with Radix UI components.
+  // Returning null until mounted ensures the interactive tree is only built once on the client.
   if (!isMounted) {
     return <div className="sticky top-0 z-50 w-full h-20 bg-background/90" />;
   }
@@ -157,6 +157,7 @@ export default function Header() {
             </Link>
             
             <div className="flex-1 w-full max-w-xl mx-auto px-4">
+                {/* Persistent in DOM to prevent hydration ID drift, but hidden visually */}
                 <div className={cn(
                     "transition-all duration-700 ease-in-out transform",
                     showSearchInHeader ? "opacity-100 translate-y-0 scale-100" : "opacity-0 -translate-y-4 scale-95 pointer-events-none"
