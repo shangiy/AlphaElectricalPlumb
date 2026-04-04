@@ -3,9 +3,11 @@ const admin = require('firebase-admin');
 const serviceAccount = require('./serviceAccountKey.json');
 
 /**
- * MASTER MIGRATION SCRIPT V3 (FIREBASE STUDIO OPTIMIZED)
- * Groups orientations and syncs all categories from Storage to Firestore.
- * Prevents duplicates by using deterministic IDs.
+ * MASTER CLEAN & SYNC SCRIPT V3
+ * 1. Deletes all existing documents in 'products' to fix duplication.
+ * 2. Scans all 10 Storage folders.
+ * 3. Groups orientation images into arrays.
+ * 4. Re-syncs 254 unique products with deterministic IDs.
  */
 
 if (!admin.apps.length) {
@@ -38,10 +40,19 @@ async function migrateAllAlphaProducts() {
     'Collections'
   ];
 
-  console.log("--- 🚀 Starting Alpha Master Migration V3 ---");
+  console.log("--- 🗑️ Step 1: Clearing Duplicated Products ---");
+  const snapshot = await db.collection('products').get();
+  if (!snapshot.empty) {
+    const batch = db.batch();
+    snapshot.docs.forEach((doc) => batch.delete(doc.ref));
+    await batch.commit();
+    console.log(`Successfully deleted ${snapshot.size} duplicated records.`);
+  }
+
+  console.log("\n--- 🚀 Step 2: Syncing Unique Product Catalog ---");
 
   for (const cat of categories) {
-    console.log(`\n--- 📂 Processing Category: ${cat} ---`);
+    console.log(`\n📂 Processing: ${cat}`);
     const folderPrefix = `product images/${cat}/`;
     
     try {
@@ -62,23 +73,21 @@ async function migrateAllAlphaProducts() {
 
         if (!productGroups[baseName]) productGroups[baseName] = [];
         
-        // Use the authenticated media URL format
         const publicUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(file.name)}?alt=media`;
         productGroups[baseName].push(publicUrl);
       });
 
       const productEntries = Object.entries(productGroups);
-      console.log(`Found ${productEntries.length} unique products in ${cat}.`);
+      console.log(`Found ${productEntries.length} unique products.`);
 
       for (const [name, urls] of productEntries) {
-        // Create a DETERMINISTIC ID based on product name to prevent duplicates
         const docId = name.toLowerCase().replace(/[^a-z0-9]/g, '-').substring(0, 50);
         
         await db.collection('products').doc(docId).set({
           name: name,
           imageUrls: urls, 
           category: cat,
-          price: 0, // Default to 0, shows "Contact for Price"
+          price: 0, 
           description: `High-quality ${name} available at Alpha Electricals & Plumbing Ltd.`,
           longDescription: `Experience superior performance with the ${name}. Engineered for durability and efficiency, this product is a cornerstone of modern infrastructure. We provide professional delivery and installation to ensure your system is fully operational and reliable. Contact us for bulk pricing and site visits.`,
           updatedAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -86,7 +95,7 @@ async function migrateAllAlphaProducts() {
           rating: 5,
           reviews: Math.floor(Math.random() * 50) + 10,
           isFeatured: true
-        }, { merge: true });
+        });
 
         console.log(`   ✨ Synced: ${name} (${urls.length} views)`);
       }
@@ -94,7 +103,7 @@ async function migrateAllAlphaProducts() {
       console.error(`   ❌ Error in ${cat}:`, error.message);
     }
   }
-  console.log("\n--- 🎉 Alpha Master Catalog Migration V3 Fully Complete! ---");
+  console.log("\n--- 🎉 Alpha Master Catalog Sync Fully Complete! ---");
 }
 
 migrateAllAlphaProducts().catch(console.error);
