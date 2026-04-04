@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Slider } from '@/components/ui/slider';
 import { Button } from '@/components/ui/button';
-import { Search } from 'lucide-react';
+import { Search, Loader2 } from 'lucide-react';
 
 interface ProductListProps {
   products: Product[];
@@ -22,22 +22,23 @@ export default function ProductList({ products, categories }: ProductListProps) 
   const [searchTerm, setSearchTerm] = useState(initialSearchTerm);
   const [category, setCategory] = useState('all');
   
-  const maxPrice = useMemo(() => {
-    if (products.length === 0) return 100000;
-    return Math.max(...products.map(p => p.price || 0), 100000);
+  // Dynamically calculate max price from current products, or default to a safe 1M
+  const maxPriceValue = useMemo(() => {
+    if (products.length === 0) return 1000000;
+    const actualMax = Math.max(...products.map(p => p.price || 0));
+    return actualMax > 0 ? actualMax : 1000000;
   }, [products]);
 
-  const [priceRange, setPriceRange] = useState([0, 1000000]); // Large default to show all initially
+  const [priceRange, setPriceRange] = useState([0, 1000000]);
   const [isPriceRangeInitialized, setIsPriceRangeInitialized] = useState(false);
   const [sortOption, setSortOption] = useState('relevance');
 
-  // Initialize price range once products are loaded
   useEffect(() => {
     if (products.length > 0 && !isPriceRangeInitialized) {
-      setPriceRange([0, maxPrice]);
+      setPriceRange([0, maxPriceValue]);
       setIsPriceRangeInitialized(true);
     }
-  }, [products, maxPrice, isPriceRangeInitialized]);
+  }, [products, maxPriceValue, isPriceRangeInitialized]);
 
   useEffect(() => {
     setSearchTerm(searchParams.get('q') || '');
@@ -76,7 +77,12 @@ export default function ProductList({ products, categories }: ProductListProps) 
   }, [products, searchTerm, category, priceRange, sortOption]);
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-KE', { style: 'currency', currency: 'KES', currencyDisplay: 'code', minimumFractionDigits: 0 }).format(price);
+    return new Intl.NumberFormat('en-KE', { 
+      style: 'currency', 
+      currency: 'KES', 
+      currencyDisplay: 'code', 
+      minimumFractionDigits: 0 
+    }).format(price);
   };
   
   return (
@@ -87,7 +93,9 @@ export default function ProductList({ products, categories }: ProductListProps) 
             ) : (
                 <h1 className="text-3xl font-bold font-headline">All Products</h1>
             )}
-            <p className="text-muted-foreground mt-1">{filteredAndSortedProducts.length} products found</p>
+            <p className="text-muted-foreground mt-1">
+              Showing {filteredAndSortedProducts.length} of {products.length} verified items
+            </p>
         </div>
         <div className="flex gap-8 items-start">
           <aside className="hidden w-64 flex-col gap-6 lg:flex sticky top-28">
@@ -110,14 +118,14 @@ export default function ProductList({ products, categories }: ProductListProps) 
 
             <div>
                <label htmlFor="price" className="mb-2 block text-sm font-medium">Price Range</label>
-               <div className="flex justify-between text-sm text-muted-foreground">
+               <div className="flex justify-between text-xs text-muted-foreground mb-4">
                    <span>{formatPrice(priceRange[0])}</span>
                    <span>{formatPrice(priceRange[1])}</span>
                </div>
               <Slider
                 id="price"
                 min={0}
-                max={maxPrice}
+                max={maxPriceValue}
                 step={100}
                 value={priceRange}
                 onValueChange={(value) => setPriceRange(value as [number, number])}
@@ -125,11 +133,12 @@ export default function ProductList({ products, categories }: ProductListProps) 
               />
             </div>
 
-            <Button variant="outline" onClick={() => {
+            <Button variant="outline" className="w-full" onClick={() => {
                 setCategory('all');
-                setPriceRange([0, maxPrice]);
+                setPriceRange([0, maxPriceValue]);
                 setSortOption('relevance');
-            }}>Clear Filters</Button>
+                setSearchTerm('');
+            }}>Clear All Filters</Button>
 
           </aside>
 
@@ -138,14 +147,14 @@ export default function ProductList({ products, categories }: ProductListProps) 
                 <div className="relative flex-grow">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
-                        placeholder="Search products..."
+                        placeholder="Search products by name or feature..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="pl-9"
                     />
                 </div>
                 <div className="flex items-center gap-2">
-                    <label htmlFor="sort-by" className="text-sm font-medium shrink-0">Sort by</label>
+                    <label htmlFor="sort-by" className="text-sm font-medium shrink-0">Sort</label>
                     <Select value={sortOption} onValueChange={setSortOption}>
                         <SelectTrigger id="sort-by" className="w-full md:w-[180px]">
                             <SelectValue placeholder="Sort by" />
@@ -168,8 +177,14 @@ export default function ProductList({ products, categories }: ProductListProps) 
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-border bg-card py-20 text-center">
-                <h3 className="text-2xl font-headline font-semibold">No Products Found</h3>
-                <p className="mt-2 text-muted-foreground">Try adjusting your filters or search terms.</p>
+                <Search className="h-12 w-12 text-muted-foreground/30 mb-4" />
+                <h3 className="text-2xl font-headline font-semibold">No Matches Found</h3>
+                <p className="mt-2 text-muted-foreground max-w-xs mx-auto">
+                  Try adjusting your filters or checking your spelling. We have {products.length} other items in stock.
+                </p>
+                <Button variant="link" onClick={() => {setCategory('all'); setPriceRange([0, maxPriceValue]); setSearchTerm('')}}>
+                  Show All Products
+                </Button>
               </div>
             )}
           </div>
