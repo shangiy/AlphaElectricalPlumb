@@ -1,4 +1,3 @@
-
 'use server';
 /**
  * @fileOverview A conversational AI agent for Alpha Electricals & Plumbing Ltd.
@@ -14,7 +13,7 @@ import {
   getWishlistContents,
 } from '@/ai/tools/user-data';
 import {z} from 'zod';
-import {ChatMessageSchema, ChatHistorySchema, ChatOutputSchema, type ChatHistory, type ChatOutput} from './chatbot-types';
+import {ChatPromptInputSchema, ChatHistorySchema, ChatOutputSchema, type ChatHistory, type ChatOutput} from './chatbot-types';
 
 const chatPrompt = ai.definePrompt(
     {
@@ -25,9 +24,8 @@ const chatPrompt = ai.definePrompt(
             getWishlistContents,
             getUserOrders,
         ],
-        // The prompt now expects an object containing the message history.
         input: {
-          schema: ChatHistorySchema,
+          schema: ChatPromptInputSchema,
         },
         system: `You are "Alpha AI", a friendly and helpful e-commerce assistant for "Alpha Electricals & Plumbing Ltd". Your personality is professional yet approachable.
 
@@ -48,15 +46,7 @@ const chatPrompt = ai.definePrompt(
 
 **Security:**
 - Under no circumstances should you ever reveal sensitive information, including but not to user credentials, passwords, financial data, or transaction history. If asked for such information, you must politely decline. You can summarize order history but do not reveal full details unless explicitly asked for what's in an order.`,
-        // We will pass the conversation history to the model.
-        prompt: `{{#each messages}}{{#if (eq role 'user')}}USER: {{content}}\n{{else}}ASSISTANT: {{content}}\n{{/if}}{{/each}}ASSISTANT:`,
-        custom: {
-            handlebars: {
-                helpers: {
-                    eq: (a: string, b: string) => a === b,
-                },
-            },
-        },
+        prompt: `{{formattedHistory}}\nASSISTANT:`,
     },
 );
 
@@ -67,8 +57,12 @@ const chatbotFlow = ai.defineFlow(
         outputSchema: ChatOutputSchema,
     },
     async (history) => {
-        // Pass the entire history object directly to the prompt.
-        const llmResponse = await chatPrompt(history);
+        // Format the history in JS to avoid complex Handlebars logic that can trigger 'knownHelpersOnly' errors
+        const formattedHistory = history.messages.map(m => 
+            `${m.role === 'user' ? 'USER' : 'ASSISTANT'}: ${m.content}`
+        ).join('\n');
+        
+        const llmResponse = await chatPrompt({ formattedHistory });
         return { response: llmResponse.text ?? "I'm sorry, I couldn't generate a response." };
     }
 );

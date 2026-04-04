@@ -14,6 +14,10 @@ export const ChatHistorySchema = z.object({
 });
 export type ChatHistory = z.infer<typeof ChatHistorySchema>;
 
+export const ChatPromptInputSchema = z.object({
+  formattedHistory: z.string().describe("The formatted conversation history."),
+});
+export type ChatPromptInput = z.infer<typeof ChatPromptInputSchema>;
 
 export const ChatOutputSchema = z.object({
   response: z.string().describe("The chatbot's response to the user."),
