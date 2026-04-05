@@ -1,4 +1,3 @@
-
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
@@ -27,7 +26,7 @@ interface SignUpData {
 
 interface AuthContextType {
   user: User | null;
-  login: (userData: Omit<User, 'id'>) => void;
+  login: (userData: Omit<User, 'id'>) => Promise<void>;
   signUp: (signUpData: SignUpData) => Promise<User>;
   signInWithGoogle: () => Promise<User | null>;
   signInWithFacebook: () => Promise<User | null>;
@@ -51,20 +50,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setLoading(false);
+    // Initial mount loading state
+    const timer = setTimeout(() => setLoading(false), 500);
+    return () => clearTimeout(timer);
   }, []);
 
   const login = async (userData: Omit<User, 'id'>) => {
-    const existingUser = await getUserByEmail(userData.email);
-    if(existingUser) {
-        setUser({
-            id: existingUser.id,
-            name: existingUser.name,
-            username: existingUser.username,
-            email: existingUser.email,
-            role: existingUser.role,
-            avatarUrl: existingUser.avatarUrl,
-        });
+    setLoading(true);
+    try {
+        const existingUser = await getUserByEmail(userData.email);
+        if(existingUser) {
+            setUser({
+                id: existingUser.id,
+                name: existingUser.name,
+                username: existingUser.username,
+                email: existingUser.email,
+                role: existingUser.role,
+                avatarUrl: existingUser.avatarUrl,
+            });
+        }
+    } finally {
+        // Keep loading true for a tiny bit longer to allow routing to catch up
+        setTimeout(() => setLoading(false), 100);
     }
   };
 
@@ -86,7 +93,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         appUser = await signUpUser(newUser);
     }
     
-    login(appUser);
+    await login(appUser);
     return appUser;
   };
 
@@ -119,9 +126,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const signUp = async (signUpData: SignUpData): Promise<User> => {
-    const newUser = await signUpUser(signUpData);
-    login(newUser);
-    return newUser;
+    setLoading(true);
+    try {
+        const newUser = await signUpUser(signUpData);
+        await login(newUser);
+        return newUser;
+    } finally {
+        setLoading(false);
+    }
   };
 
   const updateUser = (updatedData: Partial<User>) => {
@@ -132,7 +144,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = () => {
+    setLoading(true);
     setUser(null);
+    setTimeout(() => setLoading(false), 300);
   };
 
   const value = {

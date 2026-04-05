@@ -26,17 +26,31 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
   // This prevents cases where Radix UI or reCAPTCHA leaves an invisible lock on the screen.
   useEffect(() => {
     const unlockUI = () => {
-      // Force reset essential UI properties
-      document.documentElement.style.pointerEvents = 'auto';
-      document.documentElement.style.overflow = 'auto';
-      document.body.style.pointerEvents = 'auto';
-      document.body.style.overflow = 'auto';
-      
-      // Remove stubborn lock attributes added by Radix UI or ReCAPTCHA
-      document.body.removeAttribute('data-pointer-events-none');
-      document.body.removeAttribute('data-scroll-locked');
-      document.body.style.removeProperty('pointer-events');
-      document.body.style.removeProperty('overflow');
+      try {
+        // Force reset essential UI properties
+        document.documentElement.style.pointerEvents = 'auto';
+        document.documentElement.style.overflow = 'auto';
+        document.body.style.pointerEvents = 'auto';
+        document.body.style.overflow = 'auto';
+        
+        // Remove stubborn lock attributes added by Radix UI or ReCAPTCHA
+        document.body.removeAttribute('data-pointer-events-none');
+        document.body.removeAttribute('data-scroll-locked');
+        document.body.style.removeProperty('pointer-events');
+        document.body.style.removeProperty('overflow');
+        
+        // Remove any Radix dialog overlays that might be stuck
+        const overlays = document.querySelectorAll('[data-radix-portal], [role="presentation"]');
+        overlays.forEach(overlay => {
+            // Check if it's an invisible/stuck overlay blocking input
+            const style = window.getComputedStyle(overlay);
+            if (style.pointerEvents === 'auto' && style.position === 'fixed') {
+                (overlay as HTMLElement).style.pointerEvents = 'none';
+            }
+        });
+      } catch (e) {
+        console.warn('UI Unlock failed slightly:', e);
+      }
     };
 
     unlockUI();

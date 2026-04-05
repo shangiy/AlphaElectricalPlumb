@@ -119,10 +119,14 @@ function LoginFormContent() {
     };
 
     const unlockUI = () => {
-        document.body.style.pointerEvents = 'auto';
-        document.body.style.overflow = 'auto';
-        document.documentElement.style.pointerEvents = 'auto';
-        document.body.removeAttribute('data-pointer-events-none');
+        try {
+            document.body.style.pointerEvents = 'auto';
+            document.body.style.overflow = 'auto';
+            document.documentElement.style.pointerEvents = 'auto';
+            document.documentElement.style.overflow = 'auto';
+            document.body.removeAttribute('data-pointer-events-none');
+            document.body.removeAttribute('data-scroll-locked');
+        } catch (e) {}
     };
 
     async function onLogin(data: LoginFormValues) {
@@ -140,15 +144,21 @@ function LoginFormContent() {
                 return;
             }
             
-            await login({ name: existingUser.name, username: existingUser.username, email: data.email, role: existingUser.role });
+            await login({ 
+                name: existingUser.name, 
+                username: existingUser.username, 
+                email: data.email, 
+                role: existingUser.role 
+            });
+            
             toast({ title: "Login Successful!", description: `Welcome back, ${existingUser.username}!` });
             
             unlockUI();
             
-            // Short delay to ensure state propagates before route transition
+            // Short delay to allow state to settle before routing
             setTimeout(() => {
                 router.push(redirectUrl);
-            }, 100);
+            }, 150);
         } catch (error) {
             console.error("Login error:", error);
             setIsProcessing(false);
@@ -261,7 +271,7 @@ function LoginFormContent() {
                                         <FormItem>
                                             <FormLabel>Email</FormLabel>
                                             <FormControl>
-                                                <Input type="email" placeholder="you@example.com" {...field} />
+                                                <Input type="email" placeholder="you@example.com" {...field} autoComplete="email" />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -274,7 +284,7 @@ function LoginFormContent() {
                                         <FormItem>
                                             <FormLabel>Password</FormLabel>
                                             <FormControl>
-                                                <PasswordInput field={field} placeholder="••••••••" />
+                                                <PasswordInput field={field} placeholder="••••••••" autoComplete="current-password" />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -403,7 +413,7 @@ function LoginFormContent() {
                                     )}
                                 />
 
-                                {isMounted && recaptchaSiteKey && (
+                                {isMounted && recaptchaSiteKey && activeTab === 'signup' && (
                                     <FormItem className="flex flex-col items-center justify-center p-2 min-h-[78px]">
                                         <ReCAPTCHA
                                             ref={recaptchaRef}
