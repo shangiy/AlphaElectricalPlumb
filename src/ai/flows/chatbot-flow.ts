@@ -37,9 +37,8 @@ const chatbotFlow = ai.defineFlow(
             .map(m => `${m.role.toUpperCase()}: ${m.content}`)
             .join('\n');
 
-        // 3. Generate response using the Flash model for speed and credit efficiency
+        // 3. Generate response using the default model (Gemini 1.5 Flash)
         const llmResponse = await ai.generate({
-            model: 'googleai/gemini-1.5-flash',
             system: `You are "Alpha AI", a friendly and helpful e-commerce assistant for "Alpha Electricals & Plumbing Ltd". Your personality is professional yet approachable.
 
             - Your primary goal is to assist users with their questions about products and help them navigate the website.
