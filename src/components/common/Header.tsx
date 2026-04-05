@@ -45,6 +45,7 @@ export default function Header() {
   const pathname = usePathname();
   const isHomePage = pathname === '/';
   
+  // Hydration-safe initial states
   const [isHeaderOpaque, setIsHeaderOpaque] = useState(false);
   const [showSearchInHeader, setShowSearchInHeader] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
@@ -144,6 +145,10 @@ export default function Header() {
             </Link>
             
             <div className="flex-1 w-full max-w-xl mx-auto px-4 overflow-hidden">
+                {/* 
+                  CRITICAL: Render the component container ALWAYS to maintain Radix ID sequence.
+                  Use visibility classes to hide/show it based on scroll.
+                */}
                 <div className={cn(
                     "transition-all duration-700 ease-in-out transform origin-center",
                     (showSearchInHeader && isMounted) ? "opacity-100 translate-y-0 scale-100" : "opacity-0 -translate-y-8 scale-90 pointer-events-none"
