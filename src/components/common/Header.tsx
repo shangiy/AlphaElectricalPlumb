@@ -159,7 +159,6 @@ export default function Header() {
                 </div>
             </Link>
             
-            {/* Smooth Search Container: Flexes to fill center space */}
             <div className="flex-1 flex justify-center items-center px-4 overflow-hidden h-full">
                 <div className={cn(
                     "w-full max-w-xl transition-all duration-700 ease-out transform origin-top",
@@ -204,7 +203,13 @@ export default function Header() {
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className={cn("w-auto px-3 gap-2 rounded-full", iconClasses)}>
-                            <User className="h-7 w-7" />
+                            {user?.avatarUrl ? (
+                                <div className="h-8 w-8 rounded-full overflow-hidden border-2 border-primary shadow-sm">
+                                    <Image src={user.avatarUrl} alt={user.username} width={32} height={32} className="object-cover" />
+                                </div>
+                            ) : (
+                                <User className="h-7 w-7" />
+                            )}
                             <span className="hidden xl:inline">{user ? user.username : 'Log in'}</span>
                         </Button>
                         </DropdownMenuTrigger>
@@ -260,7 +265,13 @@ export default function Header() {
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="icon" className={cn(iconClasses, '[&_svg]:h-6 [&_svg]:w-6')}>
-                                <User />
+                                {user?.avatarUrl ? (
+                                    <div className="h-6 w-6 rounded-full overflow-hidden border border-primary">
+                                        <Image src={user.avatarUrl} alt={user.username} width={24} height={24} className="object-cover" />
+                                    </div>
+                                ) : (
+                                    <User />
+                                )}
                                 <span className="sr-only">Account</span>
                             </Button>
                         </DropdownMenuTrigger>

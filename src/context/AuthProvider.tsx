@@ -3,8 +3,9 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { signUpUser, getUserByEmail } from '@/lib/data';
 import type { MockUser } from '@/lib/types';
-import { auth } from '@/lib/firebase';
+import { auth, db } from '@/lib/firebase';
 import { GoogleAuthProvider, FacebookAuthProvider, signInWithPopup, User as FirebaseUser } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
 
 
 export interface User {
@@ -22,6 +23,7 @@ interface SignUpData {
     email: string;
     password?: string;
     avatarUrl?: string;
+    uid?: string;
 }
 
 interface AuthContextType {
@@ -70,7 +72,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             });
         }
     } finally {
-        // Keep loading true for a tiny bit longer to allow routing to catch up
         setTimeout(() => setLoading(false), 100);
     }
   };
@@ -80,21 +81,50 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw new Error('Social account must have an email address.');
     }
     
-    let appUser = await getUserByEmail(firebaseUser.email);
+    setLoading(true);
+    let appUser: any = null;
+
+    // 1. Try to find the user in our "database" (Firestore)
+    if (db) {
+        const userDoc = await getDoc(doc(db, "users", firebaseUser.uid));
+        if (userDoc.exists()) {
+            appUser = { id: userDoc.id, ...userDoc.data() };
+        }
+    }
 
     if (!appUser) {
-        // If user doesn't exist, create a new one
+        // Fallback: check by email
+        appUser = await getUserByEmail(firebaseUser.email);
+    }
+
+    // 2. If no record exists, create the "handshake" record
+    if (!appUser) {
         const newUser: SignUpData = {
+            uid: firebaseUser.uid,
             name: firebaseUser.displayName || 'Social User',
-            username: firebaseUser.email.split('@')[0], // Create a username from email
+            username: firebaseUser.email.split('@')[0],
             email: firebaseUser.email,
             avatarUrl: firebaseUser.photoURL || undefined,
         };
         appUser = await signUpUser(newUser);
+    } else {
+        // Update their "last active" status
+        await signUpUser({ ...appUser, uid: firebaseUser.uid, lastSeen: new Date().toISOString(), avatarUrl: firebaseUser.photoURL || appUser.avatarUrl });
     }
     
-    await login(appUser);
-    return appUser;
+    // 3. Set the global user state for the app
+    const userToSet: User = {
+        id: appUser.id || firebaseUser.uid,
+        name: appUser.name,
+        username: appUser.username,
+        email: appUser.email,
+        role: appUser.role || 'user',
+        avatarUrl: firebaseUser.photoURL || appUser.avatarUrl,
+    };
+    
+    setUser(userToSet);
+    setLoading(false);
+    return userToSet;
   };
 
   const signInWithGoogle = async (): Promise<User | null> => {
@@ -129,7 +159,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setLoading(true);
     try {
         const newUser = await signUpUser(signUpData);
-        await login(newUser);
+        setUser({
+            id: newUser.id,
+            name: newUser.name,
+            username: newUser.username,
+            email: newUser.email,
+            role: newUser.role,
+            avatarUrl: newUser.avatarUrl,
+        });
         return newUser;
     } finally {
         setLoading(false);

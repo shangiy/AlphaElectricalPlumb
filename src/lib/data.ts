@@ -3,9 +3,9 @@ export const revalidate = 0;
 
 import type { Product, Category, MockUser, Transaction, CarouselCategory } from './types';
 import { db } from './firebase';
-import { collection, getDocs, query, where, orderBy } from 'firebase/firestore';
+import { collection, getDocs, query, where, orderBy, setDoc, doc, getDoc } from 'firebase/firestore';
 
-// Mock users for the prototype
+// Mock users for the prototype (fallback)
 const MOCK_USERS: MockUser[] = [
   {
     id: 'admin-001',
@@ -109,24 +109,53 @@ export async function getCategories(): Promise<Category[]> {
 }
 
 export async function getUsers(): Promise<MockUser[]> {
-  return Promise.resolve(MOCK_USERS);
+  if (!db) return Promise.resolve(MOCK_USERS);
+  try {
+    const usersCol = collection(db, "users");
+    const snapshot = await getDocs(usersCol);
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as MockUser));
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    return Promise.resolve(MOCK_USERS);
+  }
 }
 
 export async function getUserByEmail(email: string): Promise<MockUser | undefined> {
+  if (!db) return Promise.resolve(MOCK_USERS.find(u => u.email === email));
+  try {
+    const usersCol = collection(db, "users");
+    const q = query(usersCol, where("email", "==", email));
+    const snapshot = await getDocs(q);
+    if (!snapshot.empty) {
+      return { id: snapshot.docs[0].id, ...snapshot.docs[0].data() } as MockUser;
+    }
+  } catch (error) {
+    console.error("Error fetching user by email:", error);
+  }
   return Promise.resolve(MOCK_USERS.find(u => u.email === email));
 }
 
 export async function signUpUser(userData: any): Promise<MockUser> {
+    const id = userData.uid || `user-${Date.now()}`;
     const newUser: MockUser = {
-        id: `user-${Date.now()}`,
+        id,
         ...userData,
-        role: 'user',
+        role: userData.role || 'user',
         signedUp: new Date().toISOString(),
         lastSeen: new Date().toISOString(),
         orders: 0,
         visitDuration: 0,
     };
-    return Promise.resolve(newUser);
+    
+    if (db) {
+        try {
+            await setDoc(doc(db, "users", id), newUser, { merge: true });
+        } catch (error) {
+            console.error("Error saving user to Firestore:", error);
+        }
+    }
+    
+    return newUser;
 }
 
 export async function getTransactions(): Promise<Transaction[]> {
