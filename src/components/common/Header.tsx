@@ -72,12 +72,10 @@ export default function Header() {
   }, [pathname]);
 
   // CRITICAL HYDRATION FIX: 
-  // We MUST render a stable, non-interactive shell on the server.
-  // This shell has NO Radix UI components (Dialogs, Dropdowns) to ensure
-  // the ID generation sequence starts only after the client has mounted.
+  // We render a stable shell on the server to prevent ID mismatch.
   if (!mounted) {
     return (
-      <header className="sticky top-0 z-50 w-full transition-all duration-500 bg-transparent border-b border-transparent">
+      <header className="sticky top-0 z-50 w-full bg-transparent border-b border-transparent">
         <div className="container mx-auto px-4 h-24 flex items-center justify-between">
            <div className="flex items-center gap-3">
               <div className="w-[70px] h-[70px] bg-muted/20 animate-pulse rounded-full" />
