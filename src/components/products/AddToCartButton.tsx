@@ -18,8 +18,8 @@ export default function AddToCartButton({ product, quantity = 1 }: AddToCartButt
   };
 
   return (
-    <Button size="xl" variant="blue" className="flex-1" onClick={handleAddToCart}>
-      <ShoppingCart className="mr-2 h-6 w-6" /> Add to Cart
+    <Button size="xl" variant="blue" className="flex-1 shadow-lg active:scale-95 transition-transform" onClick={handleAddToCart}>
+      <ShoppingCart className="mr-2 h-7 w-7" /> Add to Cart
     </Button>
   );
 }

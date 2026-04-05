@@ -147,7 +147,7 @@ function ProductContent({ productId }: { productId: string }) {
                 </div>
             </div>
 
-            <div className="flex flex-col gap-4 sm:flex-row mt-4">
+            <div className="flex flex-col gap-6 sm:flex-row mt-4">
                 <AddToCartButton product={product} quantity={quantity}/>
                 <BuyNowButton product={product} quantity={quantity} />
             </div>
