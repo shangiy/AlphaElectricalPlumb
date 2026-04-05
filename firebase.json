@@ -1,20 +1,21 @@
-
 {
-    "hosting": {
-      "source": ".",
-      "ignore": [
-        "firebase.json",
-        "**/.*",
-        "**/node_modules/**"
-      ],
-      "framework": "nextjs",
-      "site": "alpha-plumbing-electrical"
-    },
-    "firestore": {
-      "rules": "firestore.rules"
-    },
-    "storage": {
-      "rules": "storage.rules"
+  "hosting": {
+    "site": "studio-2955966694-9faa5",
+    "source": ".",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "frameworksBackend": {
+      "region": "us-central1"
     }
+  },
+  "firestore": {
+    "rules": "firestore.rules"
+  },
+  "storage": {
+    "rules": "storage.rules"
   }
-  
+}
+

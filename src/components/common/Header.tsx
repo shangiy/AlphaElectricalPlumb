@@ -56,11 +56,13 @@ export default function Header() {
     setMounted(true);
     const updateHeaderStyles = () => {
       const scrollY = window.scrollY;
-      const isHomepagePath = window.location.pathname === '/';
       
-      setIsHeaderOpaque(!isHomepagePath || scrollY > 50);
-      const searchThreshold = isHomepagePath ? 400 : 0;
-      setShowSearchInHeader(!isHomepagePath || scrollY > searchThreshold);
+      // Header becomes opaque and sticky-styled after minor scroll
+      setIsHeaderOpaque(!isHomePage || scrollY > 20);
+      
+      // Search bar appears in header after hero search bar is roughly scrolled past
+      const searchThreshold = isHomePage ? 350 : 0;
+      setShowSearchInHeader(!isHomePage || scrollY > searchThreshold);
     };
 
     updateHeaderStyles();
@@ -69,10 +71,9 @@ export default function Header() {
     return () => {
       window.removeEventListener('scroll', updateHeaderStyles);
     };
-  }, [pathname]);
+  }, [pathname, isHomePage]);
 
-  // CRITICAL HYDRATION FIX: 
-  // We render a stable shell on the server to prevent ID mismatch.
+  // Stable Shell Rendering to prevent Hydration ID Mismatch
   if (!mounted) {
     return (
       <header className="sticky top-0 z-50 w-full bg-transparent border-b border-transparent">
@@ -99,9 +100,9 @@ export default function Header() {
   ];
   
   const headerClasses = cn(
-    "sticky top-0 z-50 w-full transition-all duration-500",
+    "sticky top-0 z-50 w-full transition-all duration-500 ease-in-out",
     isHeaderOpaque 
-      ? "bg-background/95 backdrop-blur-md border-b shadow-sm" 
+      ? "bg-background/95 backdrop-blur-md border-b shadow-md" 
       : "bg-transparent border-b border-transparent"
   );
 
@@ -142,7 +143,7 @@ export default function Header() {
   return (
     <header className={headerClasses}>
       <div className="container mx-auto px-4 relative z-10">
-        <div className={cn("hidden w-full items-center gap-4 lg:flex transition-all duration-500", isHeaderOpaque ? "h-20" : "h-24")}>
+        <div className={cn("hidden w-full items-center gap-4 lg:flex transition-all duration-500 ease-in-out", isHeaderOpaque ? "h-20" : "h-24")}>
             <Link href="/" className="flex flex-shrink-0 items-center gap-3 group">
                 <Image
                     src="/logo Alpha.png"
@@ -158,10 +159,13 @@ export default function Header() {
                 </div>
             </Link>
             
-            <div className="flex-1 w-full max-w-xl mx-auto px-4">
+            {/* Smooth Search Container: Flexes to fill center space */}
+            <div className="flex-1 flex justify-center items-center px-4 overflow-hidden">
                 <div className={cn(
-                    "transition-all duration-700 ease-in-out transform origin-center",
-                    showSearchInHeader ? "opacity-100 translate-y-0 scale-100" : "opacity-0 -translate-y-8 scale-90 pointer-events-none"
+                    "w-full max-w-xl transition-all duration-500 ease-out transform",
+                    showSearchInHeader 
+                        ? "opacity-100 translate-y-0 scale-100 visible" 
+                        : "opacity-0 -translate-y-10 scale-95 invisible pointer-events-none"
                 )}>
                     <HeroSearch isCompact={isHeaderOpaque} />
                 </div>
@@ -231,6 +235,7 @@ export default function Header() {
             </div>
         </div>
 
+        {/* Mobile Header */}
         <div className="w-full lg:hidden flex flex-col py-2 transition-all duration-500">
             <div className="flex w-full items-center justify-between gap-2">
                  <Link href="/" className="flex-shrink-0 transition-all duration-500">
@@ -244,8 +249,8 @@ export default function Header() {
                 </Link>
 
                 <div className={cn(
-                    "flex-1 min-w-0 transition-all duration-700 ease-in-out overflow-hidden px-1",
-                    showSearchInHeader ? "opacity-100 max-h-12 translate-y-0" : "opacity-0 max-h-0 -translate-y-4 pointer-events-none"
+                    "flex-1 min-w-0 transition-all duration-500 ease-out transform",
+                    showSearchInHeader ? "opacity-100 translate-y-0 scale-100" : "opacity-0 -translate-y-4 scale-95 pointer-events-none invisible"
                 )}>
                     <HeroSearch isCompact />
                 </div>

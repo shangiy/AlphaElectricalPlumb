@@ -1,5 +1,16 @@
 {
   "projects": {
-    "default": "studio-2955966694-9faa5"
-  }
+    "default": "studio-2955966694-9faa5",
+    "staging": "studio-2955966694-9faa5"
+  },
+  "targets": {
+    "studio-2955966694-9faa5": {
+      "hosting": {
+        "main": [
+          "studio-2955966694-9faa5"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }

@@ -137,10 +137,10 @@ export default function HeroSearch({ isCompact = false }: HeroSearchProps) {
 
   return (
     <>
-      <form onSubmit={handleSubmit} className={cn("w-full transition-all duration-700 ease-in-out", isCompact ? "max-w-full" : "max-w-2xl")}>
+      <form onSubmit={handleSubmit} className={cn("w-full transition-all duration-500 ease-in-out", isCompact ? "max-w-full" : "max-w-2xl")}>
         <div className={cn(
-          "relative flex items-center w-full p-1 space-x-1 bg-white border border-gray-200 rounded-full shadow-md transition-all duration-700 ease-in-out",
-          isCompact ? "h-8 sm:h-9 pr-1" : "h-13 pr-2"
+          "relative flex items-center w-full p-1 space-x-1 bg-white border border-gray-200 rounded-full shadow-md transition-all duration-500 ease-in-out",
+          isCompact ? "h-10 pr-1" : "h-14 pr-2"
         )}>
           
           {!isCompact && (
@@ -162,14 +162,14 @@ export default function HeroSearch({ isCompact = false }: HeroSearchProps) {
             placeholder={isCompact ? "Search Alpha..." : ""}
             className={cn(
               "flex-1 pl-4 pr-2 text-foreground focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent border-none appearance-none transition-all duration-500",
-              isCompact ? "h-6 sm:h-7 text-[10px] sm:text-xs placeholder:text-[10px] sm:placeholder:text-xs" : "h-11 text-base"
+              isCompact ? "h-8 text-xs placeholder:text-xs" : "h-12 text-base"
             )}
           />
           
           <Dialog open={isCameraDialogOpen} onOpenChange={setIsCameraDialogOpen}>
             <DialogTrigger asChild>
-              <Button variant="ghost" size="icon" type="button" className={cn("shrink-0 rounded-full transition-all duration-500", isCompact ? "h-6 w-6 sm:h-7 sm:w-7" : "h-9 w-9")}>
-                <Camera className={cn("text-gray-500", isCompact ? "w-3 h-3 sm:w-4 sm:h-4" : "w-5 h-5")} />
+              <Button variant="ghost" size="icon" type="button" className={cn("shrink-0 rounded-full transition-all duration-500", isCompact ? "h-8 w-8" : "h-10 w-10")}>
+                <Camera className={cn("text-gray-500", isCompact ? "w-4 h-4" : "w-5 h-5")} />
                 <span className="sr-only">Search by image</span>
               </Button>
             </DialogTrigger>
@@ -215,11 +215,11 @@ export default function HeroSearch({ isCompact = false }: HeroSearchProps) {
             type="submit" 
             size={isCompact ? "sm" : "lg"} 
             className={cn(
-              "rounded-full bg-[#28235f] hover:bg-[#28235f]/90 text-white transition-all duration-500",
-              isCompact ? "h-6 sm:h-7 px-2 sm:px-3" : "h-11 px-6"
+              "rounded-full bg-[#28235f] hover:bg-[#28235f]/90 text-white transition-all duration-500 shadow-sm",
+              isCompact ? "h-8 px-3" : "h-12 px-6"
             )}
           >
-            <Search className={cn(isCompact ? "w-3 h-3 sm:w-3.5 sm:h-3.5" : "w-5 h-5", !isCompact && "md:mr-2")} />
+            <Search className={cn(isCompact ? "w-4 h-4" : "w-5 h-5", !isCompact && "md:mr-2")} />
             <span className="hidden md:inline">{isCompact ? "" : "Search"}</span>
           </Button>
         </div>
