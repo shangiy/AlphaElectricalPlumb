@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -11,7 +12,7 @@ import {
   SheetClose,
   SheetTrigger,
 } from '@/components/ui/sheet';
-import { User, Menu, ChevronDown } from 'lucide-react';
+import { User, Menu, ChevronDown, Loader2 } from 'lucide-react';
 import ShoppingCart from './ShoppingCart';
 import {
   DropdownMenu,
@@ -45,24 +46,20 @@ export default function Header() {
   const pathname = usePathname();
   const isHomePage = pathname === '/';
   
-  // Hydration-safe initial states
   const [isHeaderOpaque, setIsHeaderOpaque] = useState(false);
   const [showSearchInHeader, setShowSearchInHeader] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   const [isProductsMenuOpen, setProductsMenuOpen] = useState(false);
   const productsMenuTimerRef = useRef<NodeJS.Timeout | null>(null);
   
   useEffect(() => {
-    setIsMounted(true);
+    setMounted(true);
     const updateHeaderStyles = () => {
       const scrollY = window.scrollY;
       const isHomepagePath = window.location.pathname === '/';
       
-      // Toggle opacity based on scroll or if not on homepage
       setIsHeaderOpaque(!isHomepagePath || scrollY > 50);
-      
-      // Show search bar in header after scrolling past the hero search
       const searchThreshold = isHomepagePath ? 400 : 0;
       setShowSearchInHeader(!isHomepagePath || scrollY > searchThreshold);
     };
@@ -74,6 +71,21 @@ export default function Header() {
       window.removeEventListener('scroll', updateHeaderStyles);
     };
   }, [pathname]);
+
+  if (!mounted) {
+    // Return a non-interactive shell to avoid hydration mismatches
+    return (
+      <header className={cn("sticky top-0 z-50 w-full bg-transparent h-24 border-b border-transparent")}>
+        <div className="container mx-auto px-4 h-full flex items-center justify-between">
+           <div className="w-[150px] h-12 bg-muted/20 animate-pulse rounded" />
+           <div className="flex gap-4">
+              <div className="w-8 h-8 bg-muted/20 animate-pulse rounded-full" />
+              <div className="w-8 h-8 bg-muted/20 animate-pulse rounded-full" />
+           </div>
+        </div>
+      </header>
+    );
+  }
 
   const navLinks = [
     { name: 'Contact Us', href: '/contact' },
@@ -111,16 +123,12 @@ export default function Header() {
   );
   
   const handleProductsMenuEnter = () => {
-    if (productsMenuTimerRef.current) {
-      clearTimeout(productsMenuTimerRef.current);
-    }
+    if (productsMenuTimerRef.current) clearTimeout(productsMenuTimerRef.current);
     setProductsMenuOpen(true);
   };
 
   const handleProductsMenuLeave = () => {
-    productsMenuTimerRef.current = setTimeout(() => {
-      setProductsMenuOpen(false);
-    }, 200);
+    productsMenuTimerRef.current = setTimeout(() => setProductsMenuOpen(false), 200);
   };
 
   const authRedirect = pathname !== '/auth/login' ? `&redirect=${encodeURIComponent(pathname)}` : '';
@@ -144,14 +152,10 @@ export default function Header() {
                 </div>
             </Link>
             
-            <div className="flex-1 w-full max-w-xl mx-auto px-4 overflow-hidden">
-                {/* 
-                  CRITICAL: Render the component container ALWAYS to maintain Radix ID sequence.
-                  Use visibility classes to hide/show it based on scroll.
-                */}
+            <div className="flex-1 w-full max-w-xl mx-auto px-4">
                 <div className={cn(
                     "transition-all duration-700 ease-in-out transform origin-center",
-                    (showSearchInHeader && isMounted) ? "opacity-100 translate-y-0 scale-100" : "opacity-0 -translate-y-8 scale-90 pointer-events-none"
+                    showSearchInHeader ? "opacity-100 translate-y-0 scale-100" : "opacity-0 -translate-y-8 scale-90 pointer-events-none"
                 )}>
                     <HeroSearch isCompact={isHeaderOpaque} />
                 </div>
@@ -162,24 +166,16 @@ export default function Header() {
                     <div onMouseEnter={handleProductsMenuEnter} onMouseLeave={handleProductsMenuLeave} className="relative">
                       <DropdownMenu open={isProductsMenuOpen} onOpenChange={setProductsMenuOpen}>
                         <DropdownMenuTrigger asChild>
-                             <div className={cn(
-                                "flex items-center gap-1 cursor-pointer",
-                                navAndIconClasses
-                              )}>
+                             <div className={cn("flex items-center gap-1 cursor-pointer", navAndIconClasses)}>
                                 Products
                                 <ChevronDown className="h-4 w-4" />
                              </div>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="start" className="w-56 bg-background" onMouseEnter={handleProductsMenuEnter} onMouseLeave={handleProductsMenuLeave}>
+                        <DropdownMenuContent align="start" className="w-56 bg-background">
                             {productCategories.map((category) => (
                                 <DropdownMenuItem key={category.name} asChild>
                                 <Link href={category.href} className="flex items-center gap-3 py-2">
-                                    <Image
-                                    src={category.icon}
-                                    alt={category.name}
-                                    width={24}
-                                    height={24}
-                                    />
+                                    <Image src={category.icon} alt={category.name} width={24} height={24} />
                                     <span>{category.name}</span>
                                 </Link>
                                 </DropdownMenuItem>
@@ -188,11 +184,7 @@ export default function Header() {
                       </DropdownMenu>
                     </div>
                     {navLinks.map((link) => (
-                        <Link
-                            key={link.name}
-                            href={link.href}
-                            className={navAndIconClasses}
-                        >
+                        <Link key={link.name} href={link.href} className={navAndIconClasses}>
                             {link.name}
                         </Link>
                     ))}
@@ -247,7 +239,7 @@ export default function Header() {
 
                 <div className={cn(
                     "flex-1 min-w-0 transition-all duration-700 ease-in-out overflow-hidden px-1",
-                    (showSearchInHeader && isMounted) ? "opacity-100 max-h-12 translate-y-0" : "opacity-0 max-h-0 -translate-y-4 pointer-events-none"
+                    showSearchInHeader ? "opacity-100 max-h-12 translate-y-0" : "opacity-0 max-h-0 -translate-y-4 pointer-events-none"
                 )}>
                     <HeroSearch isCompact />
                 </div>

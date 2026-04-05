@@ -1,3 +1,4 @@
+
 import Link from 'next/link';
 import Image from 'next/image';
 import NewsletterForm from './NewsletterForm';
@@ -7,8 +8,6 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 export default function Footer() {
   const socialLinks = [
     { name: 'Facebook', href: 'https://www.facebook.com/Alphaelectricalsandplumbing', icon: <Facebook className="h-6 w-6" />, color: "text-blue-600" },
-    { name: 'Instagram', href: '#', icon: <Instagram className="h-6 w-6" />, color: "text-pink-600" },
-    { name: 'Youtube', href: '#', icon: <Youtube className="h-6 w-6" />, color: "text-red-600" },
     { name: 'TikTok', href: 'https://www.tiktok.com/@AlphaElectricalsandplumb', icon: <Image src="/tiktok-V1.png" alt="TikTok" width={24} height={24} />, color: "" },
     { name: 'WhatsApp', href: 'https://wa.me/254117484887', icon: <Image src="/whatsapp--v1.png" alt="WhatsApp" width={24} height={24} />, color: "text-green-500" },
   ];
@@ -33,7 +32,7 @@ export default function Footer() {
       title: 'Legal',
       links: [
         { name: 'Terms of Service', href: '/terms' },
-        { name: 'Privacy Policy', href: '/privacy-policy' },
+        { name: 'Privacy Policy', href: '/privacy' },
         { name: 'Cookie Policy', href: '/cookie-policy' },
         { name: 'Data Deletion', href: '/data-deletion' },
       ],
