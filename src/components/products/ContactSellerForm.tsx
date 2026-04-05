@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useRouter } from 'next/navigation';
@@ -24,8 +23,8 @@ export default function BuyNowButton({ product, quantity = 1 }: BuyNowButtonProp
   };
 
   return (
-    <Button size="lg" className="flex-1" onClick={handleBuyNow}>
-      <Zap className="mr-2 h-5 w-5" /> Buy Now
+    <Button size="xl" className="flex-1" onClick={handleBuyNow}>
+      <Zap className="mr-2 h-6 w-6" /> Buy Now
     </Button>
   );
 }
