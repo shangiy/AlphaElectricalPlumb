@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from 'next/link';
@@ -12,7 +11,7 @@ import {
   SheetClose,
   SheetTrigger,
 } from '@/components/ui/sheet';
-import { User, Menu, ChevronDown } from 'lucide-react';
+import { User, Menu, ChevronDown, Loader2 } from 'lucide-react';
 import ShoppingCart from './ShoppingCart';
 import {
   DropdownMenu,
@@ -72,15 +71,24 @@ export default function Header() {
     };
   }, [pathname]);
 
-  // Definitive Hydration Fix: Return a consistent shell during SSR
+  // CRITICAL HYDRATION FIX: 
+  // We MUST render a stable, non-interactive shell on the server.
+  // This shell has NO Radix UI components (Dialogs, Dropdowns) to ensure
+  // the ID generation sequence starts only after the client has mounted.
   if (!mounted) {
     return (
-      <header className="sticky top-0 z-50 w-full h-24 bg-transparent border-b border-transparent">
-        <div className="container mx-auto px-4 h-full flex items-center justify-between">
-           <div className="w-32 h-12 bg-muted/10 animate-pulse rounded" />
+      <header className="sticky top-0 z-50 w-full transition-all duration-500 bg-transparent border-b border-transparent">
+        <div className="container mx-auto px-4 h-24 flex items-center justify-between">
+           <div className="flex items-center gap-3">
+              <div className="w-[70px] h-[70px] bg-muted/20 animate-pulse rounded-full" />
+              <div className="hidden sm:flex flex-col gap-1">
+                 <div className="w-20 h-4 bg-muted/20 animate-pulse rounded" />
+                 <div className="w-32 h-3 bg-muted/20 animate-pulse rounded" />
+              </div>
+           </div>
            <div className="flex gap-4">
-              <div className="w-10 h-10 bg-muted/10 animate-pulse rounded-full" />
-              <div className="w-10 h-10 bg-muted/10 animate-pulse rounded-full" />
+              <div className="w-10 h-10 bg-muted/20 animate-pulse rounded-full" />
+              <div className="w-10 h-10 bg-muted/20 animate-pulse rounded-full" />
            </div>
         </div>
       </header>

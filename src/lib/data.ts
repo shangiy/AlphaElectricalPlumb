@@ -5,7 +5,35 @@ import type { Product, Category, MockUser, Transaction, CarouselCategory } from 
 import { db } from './firebase';
 import { collection, getDocs, query, where, orderBy } from 'firebase/firestore';
 
-// These categories match the exact folder names in Storage for seamless filtering
+// Mock users for the prototype
+const MOCK_USERS: MockUser[] = [
+  {
+    id: 'admin-001',
+    name: 'Alpha Admin',
+    username: 'alpha_admin',
+    email: 'admin@alpha.com',
+    password: 'admin12345',
+    role: 'admin',
+    signedUp: '2024-01-01T10:00:00Z',
+    lastSeen: new Date().toISOString(),
+    orders: 15,
+    visitDuration: 45,
+    avatarUrl: '/richard-kinyungu.jpg'
+  },
+  {
+    id: 'user-001',
+    name: 'Test User',
+    username: 'tester',
+    email: 'user@alpha.com',
+    password: 'password123',
+    role: 'user',
+    signedUp: '2024-02-01T12:00:00Z',
+    lastSeen: new Date().toISOString(),
+    orders: 2,
+    visitDuration: 10,
+  }
+];
+
 export const categories: Category[] = [
     { id: 'Decorative Lighting and chandeliers', name: 'Lighting & Chandeliers' },
     { id: 'Electrical items', name: 'Electrical Items' },
@@ -81,11 +109,11 @@ export async function getCategories(): Promise<Category[]> {
 }
 
 export async function getUsers(): Promise<MockUser[]> {
-  return Promise.resolve([]);
+  return Promise.resolve(MOCK_USERS);
 }
 
 export async function getUserByEmail(email: string): Promise<MockUser | undefined> {
-  return Promise.resolve(undefined);
+  return Promise.resolve(MOCK_USERS.find(u => u.email === email));
 }
 
 export async function signUpUser(userData: any): Promise<MockUser> {
