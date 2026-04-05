@@ -4,20 +4,25 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import type { Product } from '@/lib/types';
 import { db } from '@/lib/firebase';
-import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
+import { collection, onSnapshot, query, orderBy, doc, updateDoc } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
+import { updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 
 interface ProductProviderProps {
   children: ReactNode;
 }
 
+export type ProductFormData = Omit<Product, 'id'>;
+
 interface ProductContextType {
   products: Product[];
   loading: boolean;
   submitting: boolean;
-  addProduct: (productData: any) => Promise<void>;
-  updateProduct: (productId: string, productData: any) => Promise<void>;
+  addProduct: (productData: ProductFormData) => Promise<void>;
+  updateProduct: (productId: string, productData: Partial<ProductFormData>) => Promise<void>;
+  toggleFeatured: (productId: string, currentStatus: boolean) => void;
+  updateStock: (productId: string, newCount: number) => void;
   getProductById: (productId: string) => Product | undefined;
 }
 
@@ -42,9 +47,6 @@ export function ProductProvider({ children }: ProductProviderProps) {
         return;
     }
 
-    // We no longer run 'syncDatabase' here because it was deleting migrated items.
-    // The database is now managed via your migration scripts and the Admin Panel.
-
     const productsCollection = collection(db, "products");
     const productsQuery = query(productsCollection, orderBy("name", "asc"));
 
@@ -52,15 +54,15 @@ export function ProductProvider({ children }: ProductProviderProps) {
         (snapshot) => {
             const productList = snapshot.docs.map(doc => ({ 
                 id: doc.id, 
+                stockCount: 0, // Fallback for missing field
+                isFeatured: false, // Fallback for missing field
                 ...doc.data() 
             } as Product));
             
-            console.log(`Loaded ${productList.length} products from Firestore`);
             setProducts(productList);
             setLoading(false);
         }, 
         async (serverError) => {
-            console.error("Firestore Listen Error:", serverError);
             const permissionError = new FirestorePermissionError({
                 path: 'products',
                 operation: 'list',
@@ -73,16 +75,27 @@ export function ProductProvider({ children }: ProductProviderProps) {
     return () => unsubscribe();
   }, []);
 
-  const addProduct = useCallback(async (productData: any) => {
-    setSubmitting(true);
-    // Implementation for manual adding via Admin Panel can be added here
-    setSubmitting(false);
+  const addProduct = useCallback(async (productData: ProductFormData) => {
+    // Implementation for real Firebase add goes here in a full app
+    console.log("Add product requested", productData);
   }, []);
 
-  const updateProduct = useCallback(async (productId: string, productData: any) => {
-    setSubmitting(true);
-    // Implementation for manual updates via Admin Panel can be added here
-    setSubmitting(false);
+  const updateProduct = useCallback(async (productId: string, productData: Partial<ProductFormData>) => {
+    if (!db) return;
+    const productRef = doc(db, 'products', productId);
+    updateDocumentNonBlocking(productRef, productData);
+  }, []);
+
+  const toggleFeatured = useCallback((productId: string, currentStatus: boolean) => {
+    if (!db) return;
+    const productRef = doc(db, "products", productId);
+    updateDocumentNonBlocking(productRef, { isFeatured: !currentStatus });
+  }, []);
+
+  const updateStock = useCallback((productId: string, newCount: number) => {
+    if (!db) return;
+    const productRef = doc(db, "products", productId);
+    updateDocumentNonBlocking(productRef, { stockCount: Math.max(0, newCount) });
   }, []);
 
   const getProductById = useCallback((productId: string): Product | undefined => {
@@ -95,6 +108,8 @@ export function ProductProvider({ children }: ProductProviderProps) {
     submitting,
     addProduct,
     updateProduct,
+    toggleFeatured,
+    updateStock,
     getProductById
   };
 

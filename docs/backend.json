@@ -13,14 +13,15 @@
         "price": { "type": "number" },
         "oldPrice": { "type": "number" },
         "category": { "type": "string" },
-        "images": { "type": "array", "items": { "type": "string" } },
+        "imageUrls": { "type": "array", "items": { "type": "string" } },
         "rating": { "type": "number" },
         "reviews": { "type": "number" },
         "barcode": { "type": "string" },
         "isFeatured": { "type": "boolean" },
-        "unit": { "type": "string" }
+        "unit": { "type": "string" },
+        "stockCount": { "type": "number", "description": "Current number of items in inventory" }
       },
-      "required": ["name", "price", "category", "images"]
+      "required": ["name", "price", "category", "imageUrls"]
     },
     "UserSelfie": {
       "title": "UserSelfie",
@@ -45,6 +46,18 @@
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["userName", "rating", "comment", "createdAt"]
+    },
+    "AppUser": {
+      "title": "AppUser",
+      "description": "User profile with role-based permissions.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "role": { "type": "string", "enum": ["admin", "staff", "user"] },
+        "lastActive": { "type": "string", "format": "date-time" }
+      }
     }
   },
   "auth": {
@@ -62,6 +75,10 @@
     "/reviews/{reviewId}": {
       "schema": { "$ref": "#/backend/entities/Review" },
       "description": "Publicly readable and writable collection of customer reviews."
+    },
+    "/users/{userId}": {
+      "schema": { "$ref": "#/backend/entities/AppUser" },
+      "description": "User profiles and role management."
     }
   }
 }

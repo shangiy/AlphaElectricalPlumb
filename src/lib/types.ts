@@ -23,18 +23,19 @@ export interface Product {
   oldPrice?: number;
   unit?: string;
   wholesale?: WholesalePrice;
-  imageUrls: string[]; // Renamed from images
+  imageUrls: string[];
   category: string;
   rating: number;
   reviews: number;
   reviewsList?: Review[];
-  seller: {
+  seller?: {
     name: string;
     id: string;
   };
   barcode?: string;
   colors?: string[];
   isFeatured?: boolean;
+  stockCount: number;
 }
 
 export interface Category {
