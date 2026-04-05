@@ -1,4 +1,3 @@
-
 'use client';
 import { useProducts } from '@/context/ProductProvider';
 import { getCategories } from '@/lib/data';
@@ -35,7 +34,7 @@ function SearchPageContent() {
 
 export default function SearchPage() {
   return (
-    <div className="bg-secondary">
+    <div className="bg-white">
       <div className="container mx-auto px-4 py-12">
         <Suspense fallback={<ProductListSkeleton />}>
           <SearchPageContent />

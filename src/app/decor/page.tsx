@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useProducts } from '@/context/ProductProvider';
@@ -15,7 +14,7 @@ export default function DecorPage() {
   }, [products]);
 
   return (
-    <section className="bg-secondary py-12 md:py-20">
+    <section className="bg-white py-12 md:py-20">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
             <h2 className="text-4xl font-bold font-headline text-primary">Home & Decor Collection</h2>

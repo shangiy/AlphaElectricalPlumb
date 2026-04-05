@@ -23,7 +23,7 @@ export default function FeaturedProducts() {
 
   if (loading) {
     return (
-        <section className="bg-background py-16">
+        <section className="bg-white py-16">
             <div className="container mx-auto px-4">
                  <div className="text-center">
                     <Skeleton className="h-9 w-1/3 mx-auto mb-4" />
@@ -47,7 +47,7 @@ export default function FeaturedProducts() {
   if (products.length === 0) return null;
 
   return (
-    <section className="bg-background py-16">
+    <section className="bg-white py-16">
       <div className="container mx-auto px-4">
         <div className="text-center">
             <h2 className="text-3xl font-bold font-headline mb-4 text-[#28235f]">Featured Products</h2>

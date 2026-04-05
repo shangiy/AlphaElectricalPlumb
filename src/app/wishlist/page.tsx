@@ -36,7 +36,7 @@ function WishlistContent() {
   }
 
   return (
-    <div className="bg-secondary">
+    <div className="bg-white">
         <div className="container mx-auto px-4 py-12">
         <div className="mb-8 text-center">
             <h1 className="text-4xl font-bold font-headline text-primary">My Wishlist</h1>
