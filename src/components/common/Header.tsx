@@ -100,7 +100,7 @@ export default function Header() {
   ];
   
   const headerClasses = cn(
-    "sticky top-0 z-50 w-full transition-all duration-500 ease-in-out",
+    "sticky top-0 z-50 w-full transition-all duration-500 cubic-bezier(0.4, 0, 0.2, 1)",
     isHeaderOpaque 
       ? "bg-background/95 backdrop-blur-md border-b shadow-md" 
       : "bg-transparent border-b border-transparent"
@@ -160,12 +160,12 @@ export default function Header() {
             </Link>
             
             {/* Smooth Search Container: Flexes to fill center space */}
-            <div className="flex-1 flex justify-center items-center px-4 overflow-hidden">
+            <div className="flex-1 flex justify-center items-center px-4 overflow-hidden h-full">
                 <div className={cn(
-                    "w-full max-w-xl transition-all duration-500 ease-out transform",
+                    "w-full max-w-xl transition-all duration-700 ease-out transform origin-top",
                     showSearchInHeader 
                         ? "opacity-100 translate-y-0 scale-100 visible" 
-                        : "opacity-0 -translate-y-10 scale-95 invisible pointer-events-none"
+                        : "opacity-0 -translate-y-12 scale-90 invisible pointer-events-none"
                 )}>
                     <HeroSearch isCompact={isHeaderOpaque} />
                 </div>

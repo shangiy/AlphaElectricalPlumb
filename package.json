@@ -2,8 +2,11 @@
   "name": "alpha-electrical-plumb",
   "version": "2.3.5",
   "private": true,
+  "engines": {
+    "node": "20"
+  },
   "scripts": {
-    "dev": "next dev -p 9002",
+    "dev": "next dev -p 9003",
     "genkit:dev": "genkit start -- tsx src/ai/dev.ts",
     "genkit:watch": "genkit start -- tsx --watch src/ai/flows,src/ai/tools src/ai/dev.ts",
     "build": "next build",
