@@ -74,7 +74,7 @@ const PasswordInput = ({ field, ...props }: any) => {
 };
 
 function LoginFormContent() {
-    const { login, signUp, signInWithGoogle, signInWithFacebook } = useAuth();
+    const { user, login, signUp, signInWithGoogle, signInWithFacebook } = useAuth();
     const router = useRouter();
     const searchParams = useSearchParams();
     const { toast } = useToast();
@@ -90,6 +90,13 @@ function LoginFormContent() {
     useEffect(() => {
         setIsMounted(true);
     }, []);
+
+    // Auto-redirect if already logged in
+    useEffect(() => {
+        if (isMounted && user) {
+            router.push(redirectUrl);
+        }
+    }, [isMounted, user, router, redirectUrl]);
 
     const loginForm = useForm<LoginFormValues>({
         resolver: zodResolver(loginSchema),
@@ -111,29 +118,42 @@ function LoginFormContent() {
         setRecaptchaToken(token);
     };
 
+    const unlockUI = () => {
+        document.body.style.pointerEvents = 'auto';
+        document.body.style.overflow = 'auto';
+        document.documentElement.style.pointerEvents = 'auto';
+        document.body.removeAttribute('data-pointer-events-none');
+    };
+
     async function onLogin(data: LoginFormValues) {
         setIsProcessing(true);
-        const existingUser = await getUserByEmail(data.email);
+        try {
+            const existingUser = await getUserByEmail(data.email);
 
-        if (!existingUser || existingUser.password !== data.password) {
-            toast({
-                variant: "destructive",
-                title: "Login Failed",
-                description: "Invalid email or password. Please try again.",
-            });
+            if (!existingUser || existingUser.password !== data.password) {
+                toast({
+                    variant: "destructive",
+                    title: "Login Failed",
+                    description: "Invalid email or password. Please try again.",
+                });
+                setIsProcessing(false);
+                return;
+            }
+            
+            await login({ name: existingUser.name, username: existingUser.username, email: data.email, role: existingUser.role });
+            toast({ title: "Login Successful!", description: `Welcome back, ${existingUser.username}!` });
+            
+            unlockUI();
+            
+            // Short delay to ensure state propagates before route transition
+            setTimeout(() => {
+                router.push(redirectUrl);
+            }, 100);
+        } catch (error) {
+            console.error("Login error:", error);
             setIsProcessing(false);
-            return;
+            toast({ variant: "destructive", title: "Error", description: "An unexpected error occurred." });
         }
-        
-        login({ name: existingUser.name, username: existingUser.username, email: data.email, role: existingUser.role });
-        toast({ title: "Login Successful!", description: `Welcome back, ${existingUser.username}!` });
-        
-        // Ensure UI is unlocked before navigation
-        document.body.style.pointerEvents = 'auto';
-        
-        setTimeout(() => {
-            router.push(redirectUrl);
-        }, 150);
     }
 
     async function onSignUp(data: SignUpFormValues) {
@@ -169,18 +189,16 @@ function LoginFormContent() {
 
             await signUp(data);
             
-            // Explicitly reset reCAPTCHA before leaving the page to unlock UI
             if (recaptchaRef.current) {
                 recaptchaRef.current.reset();
             }
             
             toast({ title: "Account Created!", description: "Welcome! You are now logged in." });
             
-            // Force reset body lock and add delay for reCAPTCHA iframe cleanup
-            document.body.style.pointerEvents = 'auto';
+            unlockUI();
             setTimeout(() => {
                 router.push(redirectUrl);
-            }, 800);
+            }, 500);
 
         } catch (error: any) {
             setIsProcessing(false);
@@ -199,10 +217,10 @@ function LoginFormContent() {
             const user = await signInMethod();
             if (user) {
                 toast({ title: "Login Successful!", description: `Welcome, ${user.name}!` });
-                document.body.style.pointerEvents = 'auto';
+                unlockUI();
                 setTimeout(() => {
                     router.push(redirectUrl);
-                }, 150);
+                }, 100);
             }
         } catch (error: any) {
             toast({

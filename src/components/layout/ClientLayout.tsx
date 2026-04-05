@@ -26,21 +26,31 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
   // This prevents cases where Radix UI or reCAPTCHA leaves an invisible lock on the screen.
   useEffect(() => {
     const unlockUI = () => {
+      // Force reset essential UI properties
       document.documentElement.style.pointerEvents = 'auto';
       document.documentElement.style.overflow = 'auto';
       document.body.style.pointerEvents = 'auto';
       document.body.style.overflow = 'auto';
       
-      // Remove Radix UI lock attributes if they persist
+      // Remove stubborn lock attributes added by Radix UI or ReCAPTCHA
       document.body.removeAttribute('data-pointer-events-none');
+      document.body.removeAttribute('data-scroll-locked');
       document.body.style.removeProperty('pointer-events');
+      document.body.style.removeProperty('overflow');
     };
 
     unlockUI();
     
-    // Optional: a small delay to catch any late-initializing scripts
-    const timer = setTimeout(unlockUI, 500);
-    return () => clearTimeout(timer);
+    // Multiple delayed triggers to catch late-running scripts during transitions
+    const timer1 = setTimeout(unlockUI, 100);
+    const timer2 = setTimeout(unlockUI, 500);
+    const timer3 = setTimeout(unlockUI, 1500);
+    
+    return () => {
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+      clearTimeout(timer3);
+    };
   }, [pathname]);
 
   return (
