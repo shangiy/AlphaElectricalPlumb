@@ -35,6 +35,7 @@ export default function Footer() {
         { name: 'Terms of Service', href: '/terms' },
         { name: 'Privacy Policy', href: '/privacy-policy' },
         { name: 'Cookie Policy', href: '/cookie-policy' },
+        { name: 'Data Deletion', href: '/data-deletion' },
       ],
     },
   ];
