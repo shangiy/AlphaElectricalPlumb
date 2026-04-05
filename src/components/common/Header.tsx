@@ -12,7 +12,7 @@ import {
   SheetClose,
   SheetTrigger,
 } from '@/components/ui/sheet';
-import { User, Menu, ChevronDown, Loader2 } from 'lucide-react';
+import { User, Menu, ChevronDown } from 'lucide-react';
 import ShoppingCart from './ShoppingCart';
 import {
   DropdownMenu,
@@ -72,15 +72,15 @@ export default function Header() {
     };
   }, [pathname]);
 
+  // Definitive Hydration Fix: Return a consistent shell during SSR
   if (!mounted) {
-    // Return a non-interactive shell to avoid hydration mismatches
     return (
-      <header className={cn("sticky top-0 z-50 w-full bg-transparent h-24 border-b border-transparent")}>
+      <header className="sticky top-0 z-50 w-full h-24 bg-transparent border-b border-transparent">
         <div className="container mx-auto px-4 h-full flex items-center justify-between">
-           <div className="w-[150px] h-12 bg-muted/20 animate-pulse rounded" />
+           <div className="w-32 h-12 bg-muted/10 animate-pulse rounded" />
            <div className="flex gap-4">
-              <div className="w-8 h-8 bg-muted/20 animate-pulse rounded-full" />
-              <div className="w-8 h-8 bg-muted/20 animate-pulse rounded-full" />
+              <div className="w-10 h-10 bg-muted/10 animate-pulse rounded-full" />
+              <div className="w-10 h-10 bg-muted/10 animate-pulse rounded-full" />
            </div>
         </div>
       </header>
