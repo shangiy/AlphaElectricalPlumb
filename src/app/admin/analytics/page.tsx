@@ -1,11 +1,12 @@
-
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import RevenueAreaChart from "@/components/admin/charts/RevenueAreaChart";
 import SalesBarChart from "@/components/admin/charts/SalesBarChart";
 import CategoryPieChart from "@/components/admin/charts/CategoryPieChart";
 import { Users, MousePointer2, ShoppingCart, RefreshCw, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export default function AnalyticsPage() {
     const pulseStats = [
@@ -94,8 +95,4 @@ export default function AnalyticsPage() {
             </div>
         </div>
     )
-}
-
-function cn(...inputs: any[]) {
-    return inputs.filter(Boolean).join(" ");
 }
