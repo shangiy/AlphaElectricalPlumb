@@ -33,6 +33,7 @@ export default function HeroSearch({ isCompact = false }: HeroSearchProps) {
   const router = useRouter();
   const { toast } = useToast();
 
+  const [mounted, setMounted] = useState(false);
   const [isCameraDialogOpen, setIsCameraDialogOpen] = useState(false);
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
@@ -41,6 +42,10 @@ export default function HeroSearch({ isCompact = false }: HeroSearchProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const placeholders = ["tanks", "chandelier", "solar heater", "ironsheet mabati"];
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const getCameraPermission = async () => {
     if (stream) {
@@ -135,6 +140,13 @@ export default function HeroSearch({ isCompact = false }: HeroSearchProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isCameraDialogOpen]);
 
+  const cameraButton = (
+    <Button variant="ghost" size="icon" type="button" className={cn("shrink-0 rounded-full transition-all duration-500", isCompact ? "h-7 w-7" : "h-10 w-10")}>
+      <Camera className={cn("text-gray-500", isCompact ? "w-3.5 h-3.5" : "w-5 h-5")} />
+      <span className="sr-only">Search by image</span>
+    </Button>
+  );
+
   return (
     <>
       <form onSubmit={handleSubmit} className={cn("w-full transition-all duration-500 ease-in-out", isCompact ? "max-w-full" : "max-w-2xl")}>
@@ -166,50 +178,49 @@ export default function HeroSearch({ isCompact = false }: HeroSearchProps) {
             )}
           />
           
-          <Dialog open={isCameraDialogOpen} onOpenChange={setIsCameraDialogOpen}>
-            <DialogTrigger asChild>
-              <Button variant="ghost" size="icon" type="button" className={cn("shrink-0 rounded-full transition-all duration-500", isCompact ? "h-7 w-7" : "h-10 w-10")}>
-                <Camera className={cn("text-gray-500", isCompact ? "w-3.5 h-3.5" : "w-5 h-5")} />
-                <span className="sr-only">Search by image</span>
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[625px]">
-              <DialogHeader>
-                <DialogTitle>Visual Search</DialogTitle>
-              </DialogHeader>
-              <div className="flex flex-col items-center justify-center gap-4">
-                <div className="w-full bg-black rounded-md overflow-hidden relative">
-                  <video ref={videoRef} className="w-full aspect-video rounded-md" autoPlay playsInline muted />
-                  <canvas ref={canvasRef} className="hidden" />
-                  {(hasCameraPermission === null || isProcessing) && (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/50 text-white gap-2">
-                      <Loader2 className="h-8 w-8 animate-spin" />
-                      <p>{isProcessing ? 'Processing image...' : 'Requesting camera access...'}</p>
-                    </div>
+          {mounted ? (
+            <Dialog open={isCameraDialogOpen} onOpenChange={setIsCameraDialogOpen}>
+              <DialogTrigger asChild>
+                {cameraButton}
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[625px]">
+                <DialogHeader>
+                  <DialogTitle>Visual Search</DialogTitle>
+                </DialogHeader>
+                <div className="flex flex-col items-center justify-center gap-4">
+                  <div className="w-full bg-black rounded-md overflow-hidden relative">
+                    <video ref={videoRef} className="w-full aspect-video rounded-md" autoPlay playsInline muted />
+                    <canvas ref={canvasRef} className="hidden" />
+                    {(hasCameraPermission === null || isProcessing) && (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/50 text-white gap-2">
+                        <Loader2 className="h-8 w-8 animate-spin" />
+                        <p>{isProcessing ? 'Processing image...' : 'Requesting camera access...'}</p>
+                      </div>
+                    )}
+                  </div>
+                  {hasCameraPermission === false && (
+                    <Alert variant="destructive">
+                      <AlertCircle className="h-4 w-4" />
+                      <AlertTitle>Camera Access Required</AlertTitle>
+                      <AlertDescription>
+                        Please allow camera access in your browser to use this feature.
+                        <Button variant="link" className="p-0 h-auto ml-2" onClick={getCameraPermission}>Try Again</Button>
+                      </AlertDescription>
+                    </Alert>
                   )}
                 </div>
-                {hasCameraPermission === false && (
-                  <Alert variant="destructive">
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertTitle>Camera Access Required</AlertTitle>
-                    <AlertDescription>
-                      Please allow camera access in your browser to use this feature.
-                      <Button variant="link" className="p-0 h-auto ml-2" onClick={getCameraPermission}>Try Again</Button>
-                    </AlertDescription>
-                  </Alert>
-                )}
-              </div>
-              <DialogFooter>
-                <DialogClose asChild>
-                  <Button type="button" variant="secondary" disabled={isProcessing}>Cancel</Button>
-                </DialogClose>
-                <Button type="button" onClick={handleCapture} disabled={!hasCameraPermission || isProcessing}>
-                  {isProcessing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Video className="mr-2 h-4 w-4" />}
-                  {isProcessing ? 'Uploading...' : 'Capture'}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+                <DialogFooter>
+                  <DialogClose asChild>
+                    <Button type="button" variant="secondary" disabled={isProcessing}>Cancel</Button>
+                  </DialogClose>
+                  <Button type="button" onClick={handleCapture} disabled={!hasCameraPermission || isProcessing}>
+                    {isProcessing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Video className="mr-2 h-4 w-4" />}
+                    {isProcessing ? 'Uploading...' : 'Capture'}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          ) : cameraButton}
 
           <Button 
             type="submit" 
