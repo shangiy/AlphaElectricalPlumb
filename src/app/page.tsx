@@ -1,6 +1,4 @@
 
-'use client';
-
 import Hero from '@/components/common/Hero';
 import FeaturedProducts from '@/components/products/FeaturedProducts';
 import ConnectWithUs from '@/components/common/ConnectWithUs';
@@ -10,6 +8,11 @@ import HomepageAbout from '@/components/common/HomepageAbout';
 import DeliveryServices from '@/components/common/DeliveryServices';
 import CustomerReviews from '@/components/common/CustomerReviews';
 
+/**
+ * Home Page - Refactored to a Server Component.
+ * This improves performance and prevents ChunkLoadErrors by splitting
+ * the client-side JavaScript into smaller, independent bundles.
+ */
 export default function Home() {
   return (
     <div className="relative w-full">
