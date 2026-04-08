@@ -12,7 +12,7 @@ const MOCK_USERS: MockUser[] = [
     name: 'Alpha Admin',
     username: 'alpha_admin',
     email: 'admin@alpha.com',
-    password: 'admin12345',
+    password: 'passwordadmin',
     role: 'admin',
     signedUp: '2024-01-01T10:00:00Z',
     lastSeen: new Date().toISOString(),
