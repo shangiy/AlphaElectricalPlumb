@@ -19,7 +19,6 @@ import { useAuth } from '@/context/AuthProvider';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
-import { getUserByEmail } from '@/lib/data';
 import { useState, useRef, useEffect } from 'react';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import ReCAPTCHA from 'react-google-recaptcha';
@@ -128,36 +127,17 @@ export default function LoginForm() {
     async function onLogin(data: LoginFormValues) {
         setIsProcessing(true);
         try {
-            const existingUser = await getUserByEmail(data.email);
-
-            if (!existingUser || existingUser.password !== data.password) {
-                toast({
-                    variant: "destructive",
-                    title: "Login Failed",
-                    description: "Invalid email or password. Please try again.",
-                });
-                setIsProcessing(false);
-                return;
-            }
-            
-            await login({ 
-                name: existingUser.name, 
-                username: existingUser.username, 
-                email: data.email, 
-                role: existingUser.role 
-            });
-            
-            toast({ title: "Login Successful!", description: `Welcome back, ${existingUser.username}!` });
-            
+            await login(data.email, data.password);
+            toast({ title: "Login Successful!", description: "Welcome back!" });
             unlockUI();
-            
-            setTimeout(() => {
-                router.push(redirectUrl);
-            }, 150);
-        } catch (error) {
+            setTimeout(() => router.push(redirectUrl), 150);
+        } catch (error: any) {
             console.error("Login error:", error);
             setIsProcessing(false);
-            toast({ variant: "destructive", title: "Error", description: "An unexpected error occurred." });
+            const message = error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found' 
+                ? "Invalid email or password." 
+                : "An unexpected error occurred.";
+            toast({ variant: "destructive", title: "Login Failed", description: message });
         }
     }
 
@@ -178,7 +158,6 @@ export default function LoginForm() {
         try {
             if (siteKey && recaptchaToken) {
                 const verification = await verifyRecaptcha(recaptchaToken);
-                
                 if (!verification.success) {
                     toast({
                         variant: "destructive",
@@ -193,17 +172,9 @@ export default function LoginForm() {
             }
 
             await signUp(data);
-            
-            if (recaptchaRef.current) {
-                recaptchaRef.current.reset();
-            }
-            
             toast({ title: "Account Created!", description: "Welcome! You are now logged in." });
-            
             unlockUI();
-            setTimeout(() => {
-                router.push(redirectUrl);
-            }, 500);
+            setTimeout(() => router.push(redirectUrl), 500);
 
         } catch (error: any) {
             setIsProcessing(false);
@@ -223,9 +194,7 @@ export default function LoginForm() {
             if (user) {
                 toast({ title: "Login Successful!", description: `Welcome, ${user.name}!` });
                 unlockUI();
-                setTimeout(() => {
-                    router.push(redirectUrl);
-                }, 100);
+                setTimeout(() => router.push(redirectUrl), 100);
             }
         } catch (error: any) {
             toast({

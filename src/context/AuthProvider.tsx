@@ -1,12 +1,20 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { signUpUser, getUserByEmail } from '@/lib/data';
+import { getUserByEmail, signUpUser } from '@/lib/data';
 import type { MockUser } from '@/lib/types';
 import { auth, db } from '@/lib/firebase';
-import { GoogleAuthProvider, FacebookAuthProvider, signInWithPopup, User as FirebaseUser } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
-
+import { 
+  GoogleAuthProvider, 
+  FacebookAuthProvider, 
+  signInWithPopup, 
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  User as FirebaseUser,
+  signOut
+} from 'firebase/auth';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 export interface User {
   id: string;
@@ -28,7 +36,7 @@ interface SignUpData {
 
 interface AuthContextType {
   user: User | null;
-  login: (userData: Omit<User, 'id'>) => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
   signUp: (signUpData: SignUpData) => Promise<User>;
   signInWithGoogle: () => Promise<User | null>;
   signInWithFacebook: () => Promise<User | null>;
@@ -51,28 +59,85 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // PERSISTENCE HANDSHAKE: Listen for auth state changes on mount
   useEffect(() => {
-    // Initial mount loading state
-    const timer = setTimeout(() => setLoading(false), 500);
-    return () => clearTimeout(timer);
+    if (!auth || !db) {
+      setLoading(false);
+      return;
+    }
+
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        try {
+          // Fetch the full profile from Firestore
+          const userDoc = await getDoc(doc(db, "users", firebaseUser.uid));
+          if (userDoc.exists()) {
+            const data = userDoc.data();
+            setUser({
+              id: firebaseUser.uid,
+              name: data.name || firebaseUser.displayName || 'User',
+              username: data.username || firebaseUser.email?.split('@')[0] || 'user',
+              email: firebaseUser.email!,
+              role: data.role || 'user',
+              avatarUrl: data.avatarUrl || firebaseUser.photoURL || undefined,
+            });
+          } else {
+            // If user exists in Auth but not Firestore, create the doc
+            const newUser: User = {
+              id: firebaseUser.uid,
+              name: firebaseUser.displayName || 'User',
+              username: firebaseUser.email?.split('@')[0] || 'user',
+              email: firebaseUser.email!,
+              role: 'user',
+              avatarUrl: firebaseUser.photoURL || undefined,
+            };
+            await setDoc(doc(db, "users", firebaseUser.uid), {
+              ...newUser,
+              lastSeen: new Date().toISOString(),
+              signedUp: new Date().toISOString()
+            });
+            setUser(newUser);
+          }
+        } catch (error) {
+          console.error("Error restoring auth session:", error);
+        }
+      } else {
+        setUser(null);
+      }
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
   }, []);
 
-  const login = async (userData: Omit<User, 'id'>) => {
+  const login = async (email: string, password: string) => {
+    if (!auth) return;
     setLoading(true);
     try {
-        const existingUser = await getUserByEmail(userData.email);
-        if(existingUser) {
-            setUser({
-                id: existingUser.id,
-                name: existingUser.name,
-                username: existingUser.username,
-                email: existingUser.email,
-                role: existingUser.role,
-                avatarUrl: existingUser.avatarUrl,
-            });
+      // 1. Try to sign in with real Firebase Auth
+      await signInWithEmailAndPassword(auth, email, password);
+    } catch (error: any) {
+      // 2. Fallback: If user doesn't exist in Auth but exists in Mock Data (like admin)
+      // we perform the "Handshake" by creating them in Auth automatically
+      if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
+        const mockUser = await getUserByEmail(email);
+        if (mockUser && mockUser.password === password) {
+          const result = await createUserWithEmailAndPassword(auth, email, password);
+          await setDoc(doc(db, "users", result.user.uid), {
+            name: mockUser.name,
+            username: mockUser.username,
+            email: mockUser.email,
+            role: mockUser.role,
+            avatarUrl: mockUser.avatarUrl,
+            lastSeen: new Date().toISOString(),
+            signedUp: new Date().toISOString()
+          });
+          return;
         }
+      }
+      throw error;
     } finally {
-        setTimeout(() => setLoading(false), 100);
+      setLoading(false);
     }
   };
 
@@ -81,50 +146,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw new Error('Social account must have an email address.');
     }
     
-    setLoading(true);
-    let appUser: any = null;
-
-    // 1. Try to find the user in our "database" (Firestore)
-    if (db) {
-        const userDoc = await getDoc(doc(db, "users", firebaseUser.uid));
-        if (userDoc.exists()) {
-            appUser = { id: userDoc.id, ...userDoc.data() };
-        }
-    }
-
-    if (!appUser) {
-        // Fallback: check by email
-        appUser = await getUserByEmail(firebaseUser.email);
-    }
-
-    // 2. If no record exists, create the "handshake" record
-    if (!appUser) {
-        const newUser: SignUpData = {
-            uid: firebaseUser.uid,
-            name: firebaseUser.displayName || 'Social User',
-            username: firebaseUser.email.split('@')[0],
-            email: firebaseUser.email,
-            avatarUrl: firebaseUser.photoURL || undefined,
-        };
-        appUser = await signUpUser(newUser);
-    } else {
-        // Update their "last active" status
-        await signUpUser({ ...appUser, uid: firebaseUser.uid, lastSeen: new Date().toISOString(), avatarUrl: firebaseUser.photoURL || appUser.avatarUrl });
-    }
+    // The profile sync is now handled by the central onAuthStateChanged listener
+    // but we return the user object here for immediate feedback in the component
+    const userDoc = await getDoc(doc(db, "users", firebaseUser.uid));
+    const data = userDoc.exists() ? userDoc.data() : {};
     
-    // 3. Set the global user state for the app
-    const userToSet: User = {
-        id: appUser.id || firebaseUser.uid,
-        name: appUser.name,
-        username: appUser.username,
-        email: appUser.email,
-        role: appUser.role || 'user',
-        avatarUrl: firebaseUser.photoURL || appUser.avatarUrl,
+    return {
+        id: firebaseUser.uid,
+        name: data.name || firebaseUser.displayName || 'Social User',
+        username: data.username || firebaseUser.email.split('@')[0],
+        email: firebaseUser.email,
+        role: data.role || 'user',
+        avatarUrl: data.avatarUrl || firebaseUser.photoURL || undefined,
     };
-    
-    setUser(userToSet);
-    setLoading(false);
-    return userToSet;
   };
 
   const signInWithGoogle = async (): Promise<User | null> => {
@@ -133,11 +167,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           const result = await signInWithPopup(auth, provider);
           return await handleSocialSignIn(result.user);
       } catch (error: any) {
-          console.error("Google sign-in error", error);
-          if (error.code === 'auth/popup-closed-by-user') {
-              return null;
-          }
-          throw new Error(error.message);
+          if (error.code === 'auth/popup-closed-by-user') return null;
+          throw error;
       }
   }
 
@@ -147,25 +178,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           const result = await signInWithPopup(auth, provider);
           return await handleSocialSignIn(result.user);
       } catch (error: any) {
-          console.error("Facebook sign-in error", error);
-           if (error.code === 'auth/popup-closed-by-user') {
-              return null;
-          }
-          throw new Error(error.message);
+           if (error.code === 'auth/popup-closed-by-user') return null;
+          throw error;
       }
   }
 
-  const signUp = async (signUpData: SignUpData): Promise<User> => {
+  const signUp = async (data: SignUpData): Promise<User> => {
+    if (!auth) throw new Error("Auth service unavailable");
     setLoading(true);
     try {
-        const newUser = await signUpUser(signUpData);
-        setUser({
-            id: newUser.id,
-            name: newUser.name,
-            username: newUser.username,
-            email: newUser.email,
-            role: newUser.role,
-            avatarUrl: newUser.avatarUrl,
+        const result = await createUserWithEmailAndPassword(auth, data.email, data.password!);
+        const newUser: User = {
+            id: result.user.uid,
+            name: data.name,
+            username: data.username,
+            email: data.email,
+            role: 'user',
+            avatarUrl: data.avatarUrl,
+        };
+        await setDoc(doc(db, "users", result.user.uid), {
+            ...newUser,
+            lastSeen: new Date().toISOString(),
+            signedUp: new Date().toISOString()
         });
         return newUser;
     } finally {
@@ -180,10 +214,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     })
   };
 
-  const logout = () => {
+  const logout = async () => {
     setLoading(true);
+    await signOut(auth);
     setUser(null);
-    setTimeout(() => setLoading(false), 300);
+    setLoading(false);
   };
 
   const value = {
