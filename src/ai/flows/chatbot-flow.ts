@@ -5,8 +5,6 @@
  */
 
 import { ai } from '@/ai/genkit';
-// UPDATED: Using the new google-genai package to fix 404 errors
-import { gemini15Flash } from '@genkit-ai/google-genai'; 
 import { productSearchTool } from '@/ai/tools/product-catalog';
 import {
   getCartContents,
@@ -39,9 +37,9 @@ const chatbotFlow = ai.defineFlow(
             .map(m => `${m.role.toUpperCase()}: ${m.content}`)
             .join('\n');
 
-        // 3. Generate response using the specific gemini15Flash object
+        // 3. Generate response using the specific model string to avoid import errors
         const llmResponse = await ai.generate({
-            model: gemini15Flash, // Explicitly use the stable model object from @genkit-ai/google-genai
+            model: 'googleai/gemini-1.5-flash', // Correct string identifier for Genkit 1.x
             system: `You are "Alpha AI", a friendly and helpful e-commerce assistant for "Alpha Electricals & Plumbing Ltd". Your personality is professional yet approachable.
 
             - Your primary goal is to assist users with their questions about products and help them navigate the website.
