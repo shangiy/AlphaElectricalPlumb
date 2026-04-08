@@ -5,6 +5,7 @@
  */
 
 import { ai } from '@/ai/genkit';
+// We removed the 'gemini15Flash' import line because we are using the string instead
 import { productSearchTool } from '@/ai/tools/product-catalog';
 import {
   getCartContents,
@@ -20,7 +21,6 @@ import {
 
 /**
  * chatbotFlow: The core logic for Alpha AI.
- * It processes chat history and uses available tools to assist the user.
  */
 const chatbotFlow = ai.defineFlow(
     {
@@ -29,16 +29,15 @@ const chatbotFlow = ai.defineFlow(
         outputSchema: ChatOutputSchema,
     },
     async (history) => {
-        // 1. Get the last message from the user to use as the direct prompt
+        // 1. Get the last message from the user
         const lastMessage = history.messages[history.messages.length - 1]?.content || "";
 
-        // 2. Format history for context so the AI remembers previous messages
+        // 2. Format history for context
         const formattedHistory = history.messages
             .map(m => `${m.role.toUpperCase()}: ${m.content}`)
             .join('\n');
 
-        // 3. Generate response using the specific model string to avoid import errors
-        // In Genkit 1.x, we use the string identifier for the model.
+        // 3. Generate response using the string ID to avoid export errors
         const llmResponse = await ai.generate({
             model: 'googleai/gemini-1.5-flash', 
             system: `You are "Alpha AI", a friendly and helpful e-commerce assistant for "Alpha Electricals & Plumbing Ltd". Your personality is professional yet approachable.
@@ -59,7 +58,7 @@ const chatbotFlow = ai.defineFlow(
             - If asked how to search for products, tell them they can use the search bar at the top of the page or just ask you to search for them.
 
             **Security:**
-            - Under no circumstances should you ever reveal sensitive information, including but not limited to user credentials, passwords, financial data, or transaction history. If asked for such information, you must politely decline. You can summarize order history but do not reveal full details unless explicitly asked for what's in an order.`,
+            - Under no circumstances should you ever reveal sensitive information. Summarize order history but do not reveal full credentials or financial details.`,
             prompt: `History:\n${formattedHistory}\n\nUser Question: ${lastMessage}`,
             tools: [productSearchTool, getCartContents, getWishlistContents, getUserOrders],
         });

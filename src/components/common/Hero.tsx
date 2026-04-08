@@ -1,7 +1,12 @@
-
+import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import Link from 'next/link';
-import HeroSearch from './HeroSearch';
+
+// Dynamically import HeroSearch to reduce the size of the initial page chunk
+const HeroSearch = dynamic(() => import('./HeroSearch'), {
+  ssr: true,
+  loading: () => <div className="h-14 w-full max-w-2xl bg-white/20 animate-pulse rounded-full shadow-md border border-white/10" />
+});
 
 export default function Hero() {
   const frequentSearches = [
@@ -10,6 +15,7 @@ export default function Hero() {
     { name: 'PPR Pipes', href: '/plumbing' },
     { name: 'Solar Heaters', href: '/plumbing' },
   ];
+  
   return (
     <section className="relative h-[70vh] md:h-[85vh] w-full flex items-center justify-start text-white -mt-24">
       <Image

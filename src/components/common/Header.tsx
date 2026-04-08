@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
+import dynamic from 'next/dynamic';
 import { Button, buttonVariants } from '@/components/ui/button';
 import {
   Sheet,
@@ -25,8 +26,13 @@ import { useState, useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import HeroSearch from './HeroSearch';
 import { useAuth } from '@/context/AuthProvider';
+
+// Use dynamic import for HeroSearch in header to optimize layout loading
+const HeroSearch = dynamic(() => import('./HeroSearch'), {
+  ssr: true,
+  loading: () => <div className="h-9 w-full max-w-xl bg-muted/10 animate-pulse rounded-full" />
+});
 
 const productCategories = [
   { name: 'Tanks Collection', href: '/tanks', icon: '/kentank 2000l.png' },
