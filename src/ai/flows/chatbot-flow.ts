@@ -38,8 +38,9 @@ const chatbotFlow = ai.defineFlow(
             .join('\n');
 
         // 3. Generate response using the specific model string to avoid import errors
+        // Standardized to 'googleai/gemini-1.5-flash' for Genkit 1.x
         const llmResponse = await ai.generate({
-            model: 'googleai/gemini-1.5-flash', // Correct string identifier for Genkit 1.x
+            model: 'googleai/gemini-1.5-flash',
             system: `You are "Alpha AI", a friendly and helpful e-commerce assistant for "Alpha Electricals & Plumbing Ltd". Your personality is professional yet approachable.
 
             - Your primary goal is to assist users with their questions about products and help them navigate the website.
