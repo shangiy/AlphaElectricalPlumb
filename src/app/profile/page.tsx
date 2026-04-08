@@ -23,6 +23,9 @@ import { useEffect, useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Loader2, User as UserIcon } from 'lucide-react';
 import AvatarSelectionDialog from '@/components/auth/AvatarSelectionDialog';
+import { db } from '@/lib/firebase';
+import { doc } from 'firebase/firestore';
+import { updateDocumentNonBlocking } from '@/firebase';
 
 
 const profileFormSchema = z.object({
@@ -38,6 +41,7 @@ function ProfileContent() {
     const { toast } = useToast();
     const { user, updateUser } = useAuth();
     const [isAvatarDialogOpen, setIsAvatarDialogOpen] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
 
     const form = useForm<ProfileFormValues>({
         resolver: zodResolver(profileFormSchema),
@@ -54,9 +58,9 @@ function ProfileContent() {
     useEffect(() => {
         if (user) {
             form.reset({
-                name: user.name,
-                username: user.username,
-                email: user.email,
+                name: user.name || '',
+                username: user.username || '',
+                email: user.email || '',
                 avatarUrl: user.avatarUrl || '',
             });
         }
@@ -71,13 +75,42 @@ function ProfileContent() {
     };
 
 
-    function onSubmit(data: ProfileFormValues) {
+    async function onSubmit(data: ProfileFormValues) {
         if (!user) return;
-        updateUser({ id: user.id, ...data });
-        toast({
-            title: "Profile Updated!",
-            description: "Your profile information has been saved successfully.",
-        });
+        setIsSaving(true);
+
+        try {
+            // Push changes to Firestore (Persistent)
+            if (db) {
+                const userRef = doc(db, 'users', user.id);
+                updateDocumentNonBlocking(userRef, {
+                    name: data.name,
+                    username: data.username,
+                    avatarUrl: data.avatarUrl,
+                    lastActive: new Date().toISOString()
+                });
+            }
+
+            // Update local state for immediate UI feedback
+            updateUser({ ...data });
+
+            toast({
+                title: "Profile Updated!",
+                description: "Your profile information has been saved successfully.",
+            });
+            
+            // Mark the form as clean
+            form.reset(data);
+        } catch (error) {
+            console.error("Profile update error:", error);
+            toast({
+                variant: "destructive",
+                title: "Uh oh! Something went wrong.",
+                description: "Could not save your profile. Please try again.",
+            });
+        } finally {
+            setIsSaving(false);
+        }
     }
 
     return (
@@ -88,11 +121,11 @@ function ProfileContent() {
                 onSelect={handleAvatarSelect}
             />
             <div className="container mx-auto px-4 py-12">
-                <Card className="max-w-3xl mx-auto">
+                <Card className="max-w-3xl mx-auto shadow-md">
                     <CardHeader>
-                        <CardTitle className="text-2xl">My Profile</CardTitle>
+                        <CardTitle className="text-2xl font-headline text-primary">My Profile</CardTitle>
                         <CardDescription>
-                            View and update your personal information here.
+                            View and update your personal information here. Changes are saved to your account permanently.
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -104,11 +137,11 @@ function ProfileContent() {
                                     render={({ field }) => (
                                         <FormItem>
                                             <FormLabel>Profile Picture</FormLabel>
-                                            <div className="flex items-center gap-4">
-                                                <Avatar className="h-20 w-20">
-                                                    <AvatarImage src={avatarUrl} alt={user?.name} />
-                                                    <AvatarFallback>
-                                                        <UserIcon size={32} />
+                                            <div className="flex items-center gap-6">
+                                                <Avatar className="h-24 w-24 border-2 border-primary/10">
+                                                    <AvatarImage src={avatarUrl} alt={user?.name} className="object-cover" />
+                                                    <AvatarFallback className="bg-muted">
+                                                        <UserIcon size={40} className="text-muted-foreground" />
                                                     </AvatarFallback>
                                                 </Avatar>
                                                 <Button type="button" variant="outline" onClick={() => setIsAvatarDialogOpen(true)}>
@@ -120,36 +153,39 @@ function ProfileContent() {
                                     )}
                                 />
 
-                                <FormField
-                                    control={form.control}
-                                    name="name"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Full Name</FormLabel>
-                                            <FormControl>
-                                                <Input placeholder="Your full name" {...field} />
-                                            </FormControl>
-                                            <FormDescription>This is your public display name.</FormDescription>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="username"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Username</FormLabel>
-                                            <FormControl>
-                                                <Input placeholder="your_username" {...field} />
-                                            </FormControl>
-                                            <FormDescription>
-                                                This is the name that will be displayed in the header.
-                                            </FormDescription>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <FormField
+                                        control={form.control}
+                                        name="name"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Full Name</FormLabel>
+                                                <FormControl>
+                                                    <Input placeholder="Your full name" {...field} />
+                                                </FormControl>
+                                                <FormDescription>This is your public display name.</FormDescription>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control}
+                                        name="username"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Username</FormLabel>
+                                                <FormControl>
+                                                    <Input placeholder="your_username" {...field} />
+                                                </FormControl>
+                                                <FormDescription>
+                                                    This is the name that will be displayed in the header.
+                                                </FormDescription>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
+
                                 <FormField
                                     control={form.control}
                                     name="email"
@@ -166,7 +202,20 @@ function ProfileContent() {
                                         </FormItem>
                                     )}
                                 />
-                                <Button type="submit" disabled={!form.formState.isDirty}>Save Changes</Button>
+                                <Button 
+                                    type="submit" 
+                                    disabled={!form.formState.isDirty || isSaving}
+                                    className="w-full sm:w-auto min-w-[150px]"
+                                >
+                                    {isSaving ? (
+                                        <>
+                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                            Saving...
+                                        </>
+                                    ) : (
+                                        'Save Changes'
+                                    )}
+                                </Button>
                             </form>
                         </Form>
                     </CardContent>

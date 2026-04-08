@@ -9,6 +9,7 @@ rules_version = '2';
  * - User Selfies: Publicly writable (for uploads) and readable (for admin viewing).
  * - Reviews: Publicly readable and writable for customer feedback.
  * - Roles: Publicly accessible for prototype testing.
+ * - Users: Publicly readable/writable for profile management in prototype.
  */
 
 service cloud.firestore {
@@ -27,6 +28,11 @@ service cloud.firestore {
     // Allow public reviews for the prototype
     match /reviews/{reviewId} {
       allow read, list, create: if true;
+    }
+
+    // Allow user profiles management
+    match /users/{userId} {
+      allow read, write: if true;
     }
 
     // Allow roles management for prototype setup

@@ -54,7 +54,9 @@
       "properties": {
         "uid": { "type": "string" },
         "name": { "type": "string" },
+        "username": { "type": "string" },
         "email": { "type": "string", "format": "email" },
+        "avatarUrl": { "type": "string", "format": "uri" },
         "role": { "type": "string", "enum": ["admin", "staff", "user"] },
         "lastActive": { "type": "string", "format": "date-time" }
       }
