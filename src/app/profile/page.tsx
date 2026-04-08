@@ -23,9 +23,8 @@ import { useEffect, useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Loader2, User as UserIcon } from 'lucide-react';
 import AvatarSelectionDialog from '@/components/auth/AvatarSelectionDialog';
-import { db } from '@/lib/firebase';
 import { doc } from 'firebase/firestore';
-import { updateDocumentNonBlocking } from '@/firebase';
+import { useFirestore, updateDocumentNonBlocking } from '@/firebase';
 
 
 const profileFormSchema = z.object({
@@ -40,6 +39,7 @@ type ProfileFormValues = z.infer<typeof profileFormSchema>;
 function ProfileContent() {
     const { toast } = useToast();
     const { user, updateUser } = useAuth();
+    const firestore = useFirestore();
     const [isAvatarDialogOpen, setIsAvatarDialogOpen] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
 
@@ -76,41 +76,35 @@ function ProfileContent() {
 
 
     async function onSubmit(data: ProfileFormValues) {
-        if (!user) return;
+        if (!user || !firestore) return;
         setIsSaving(true);
 
-        try {
-            // Push changes to Firestore (Persistent)
-            if (db) {
-                const userRef = doc(db, 'users', user.id);
-                updateDocumentNonBlocking(userRef, {
-                    name: data.name,
-                    username: data.username,
-                    avatarUrl: data.avatarUrl,
-                    lastActive: new Date().toISOString()
-                });
-            }
+        // 1. Initiate Firestore Update (Non-Blocking Pattern)
+        const userRef = doc(firestore, 'users', user.id);
+        const updateData = {
+            name: data.name,
+            username: data.username,
+            avatarUrl: data.avatarUrl,
+            lastActive: new Date().toISOString()
+        };
 
-            // Update local state for immediate UI feedback
-            updateUser({ ...data });
+        updateDocumentNonBlocking(userRef, updateData);
 
-            toast({
-                title: "Profile Updated!",
-                description: "Your profile information has been saved successfully.",
-            });
-            
-            // Mark the form as clean
-            form.reset(data);
-        } catch (error) {
-            console.error("Profile update error:", error);
-            toast({
-                variant: "destructive",
-                title: "Uh oh! Something went wrong.",
-                description: "Could not save your profile. Please try again.",
-            });
-        } finally {
-            setIsSaving(false);
-        }
+        // 2. Update local state for immediate UI feedback
+        updateUser({ 
+            name: data.name,
+            username: data.username,
+            avatarUrl: data.avatarUrl
+        });
+
+        // 3. Provide feedback and reset form state
+        toast({
+            title: "Profile Updated!",
+            description: "Your changes have been saved to your account.",
+        });
+        
+        form.reset(data);
+        setIsSaving(false);
     }
 
     return (
@@ -125,7 +119,7 @@ function ProfileContent() {
                     <CardHeader>
                         <CardTitle className="text-2xl font-headline text-primary">My Profile</CardTitle>
                         <CardDescription>
-                            View and update your personal information here. Changes are saved to your account permanently.
+                            View and update your personal information here. Changes are saved to your account permanently in Firestore.
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
