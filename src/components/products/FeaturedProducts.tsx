@@ -4,12 +4,23 @@ import { useProducts } from '@/context/ProductProvider';
 import type { Product } from '@/lib/types';
 import ProductCard from './ProductCard';
 import { Skeleton } from '../ui/skeleton';
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 
+/**
+ * FeaturedProducts Component - Client Component.
+ * Displays a grid of products marked as featured, with a fallback to the latest products.
+ * Includes hydration safety to prevent mismatches between server skeleton and client content.
+ */
 export default function FeaturedProducts() {
-  const { products, loading } = useProducts();
+  const { products, loading: contextLoading } = useProducts();
+  const [mounted, setMounted] = useState(false);
+
+  // Set mounted to true after initial mount to ensure hydration consistency
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const featuredProducts = useMemo(() => {
     // Show products marked as featured first
@@ -21,7 +32,11 @@ export default function FeaturedProducts() {
     return products.slice(0, 20);
   }, [products]);
 
-  if (loading) {
+  // Hydration safety: force "loading" state on server and during the first client-side render pass.
+  // This ensures that the server-rendered HTML matches the initial client paint.
+  const isLoading = !mounted || contextLoading;
+
+  if (isLoading) {
     return (
         <section className="bg-white py-16">
             <div className="container mx-auto px-4">
