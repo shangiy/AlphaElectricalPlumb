@@ -2,20 +2,31 @@
 
 import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import { Toaster } from '@/components/ui/toaster';
 import Header from '@/components/common/Header';
 import Footer from '@/components/common/Footer';
 import { CartProvider } from '@/context/CartProvider';
 import { AuthProvider } from '@/context/AuthProvider';
 import { ProductProvider } from '@/context/ProductProvider';
-import Chatbot from '@/components/common/Chatbot';
 import { Button } from '@/components/ui/button';
 import { MessageSquare } from 'lucide-react';
-import WhatsAppButton from '@/components/common/WhatsAppButton';
-import ScrollToTopButton from '@/components/common/ScrollToTopButton';
 import TopBanner from '@/components/common/TopBanner';
-import { Analytics } from '@vercel/analytics/react';
 import { FirebaseClientProvider } from '@/firebase';
+
+// Dynamically import heavy interactive components to resolve ChunkLoadError timeouts
+const Chatbot = dynamic(() => import('@/components/common/Chatbot'), {
+  ssr: false,
+});
+const WhatsAppButton = dynamic(() => import('@/components/common/WhatsAppButton'), {
+  ssr: false,
+});
+const ScrollToTopButton = dynamic(() => import('@/components/common/ScrollToTopButton'), {
+  ssr: false,
+});
+const Analytics = dynamic(() => import('@vercel/analytics/react').then(mod => mod.Analytics), {
+  ssr: false,
+});
 
 export function ClientLayout({ children }: { children: React.ReactNode }) {
   const [isChatbotOpen, setIsChatbotOpen] = useState(false);
