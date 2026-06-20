@@ -6,8 +6,8 @@ import Image from 'next/image';
 
 export default function TopBanner() {
   const offerTexts = [
-    "OFFER! OFFER! OFFER! Easter Holiday OFFER",
-    "Feel welcomed to Shop with us @best prices",
+    "Madaraka Day EASTER HOLIDAY",
+    "OFFER! Madaraka Day EASTER HOLIDAY OFFER!",
   ];
 
   // Duplicate the array to ensure seamless looping
