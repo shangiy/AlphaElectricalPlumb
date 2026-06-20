@@ -1,3 +1,4 @@
+
 import type { Metadata } from 'next';
 import { Poppins, PT_Sans } from 'next/font/google';
 import './globals.css';
@@ -22,8 +23,15 @@ const ptSans = PT_Sans({
 export const metadata: Metadata = {
   title: 'AlphaElectricalPlumb',
   description: 'Premium plumbing, electrical, lighting, and home décor solutions in Eldoret, Kenya.',
+  metadataBase: new URL('https://alphaelectricalsplumbingltd.com'),
   icons: {
-    icon: '/logo Alpha.png',
+    icon: [
+      { url: '/logo Alpha.png' },
+      { url: '/logo Alpha.png', sizes: '32x32', type: 'image/png' },
+    ],
+    apple: [
+      { url: '/logo Alpha.png' },
+    ],
   },
 };
 
