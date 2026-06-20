@@ -5,13 +5,14 @@ import { cn } from '@/lib/utils';
 import Image from 'next/image';
 
 export default function TopBanner() {
-  const offerTexts = [
-    "Madaraka Day EASTER HOLIDAY",
-    "OFFER! Madaraka Day EASTER HOLIDAY OFFER!",
-  ];
+  const offerContent = (
+    <>
+      OFFER! <span className="text-red-500">OFFER!</span> <span className="text-green-500">OFFER!</span> MIDYEAR FLASH SALE, MADARAKA DAY OFFER!
+    </>
+  );
 
-  // Duplicate the array to ensure seamless looping
-  const duplicatedOffers = [...offerTexts, ...offerTexts, ...offerTexts, ...offerTexts];
+  // Duplicate for seamless looping
+  const items = [1, 2, 3, 4, 5, 6];
 
   return (
     <div className={cn(
@@ -27,9 +28,9 @@ export default function TopBanner() {
 
         <div className="w-full inline-flex flex-nowrap overflow-hidden [mask-image:_linear-gradient(to_right,transparent_0,_black_128px,_black_calc(100%-200px),transparent_100%)]">
             <ul className="flex-1 font-bold text-center flex items-center justify-center md:justify-start [&_li]:mx-8 animate-scroll">
-                {duplicatedOffers.map((text, index) => (
+                {items.map((_, index) => (
                     <li key={index} className="whitespace-nowrap text-xl md:text-3xl">
-                        {text}
+                        {offerContent}
                     </li>
                 ))}
             </ul>
