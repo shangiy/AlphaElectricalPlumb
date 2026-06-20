@@ -2,7 +2,6 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { carouselCategories } from '@/lib/data';
 import type { CarouselCategory } from '@/lib/types';
 import { Card, CardContent } from '@/components/ui/card';
@@ -13,7 +12,6 @@ export default function CategoryCarousel() {
   const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
-    // In a real app, this might be an async fetch. For now, we use the imported constant.
     setCategories(carouselCategories);
     setLoading(false);
   }, []);
@@ -49,12 +47,14 @@ export default function CategoryCarousel() {
                 <Link href={category.href} passHref>
                   <Card className="h-80 overflow-hidden transition-all duration-300 border-none shadow-md hover:shadow-xl hover:-translate-y-1 group relative rounded-2xl bg-white">
                     <div className="relative w-full h-full">
-                      <Image
+                      {/* Using standard img tag for direct Storage fetching on custom domains */}
+                      <img
                         src={category.image}
                         alt={category.name}
-                        fill
-                        className="object-cover transition-transform duration-500 group-hover:scale-105"
-                        data-ai-hint="product category"
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = "https://placehold.co/600x800?text=" + encodeURIComponent(category.name);
+                        }}
                       />
                       {/* Gradient overlay for text readability */}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />

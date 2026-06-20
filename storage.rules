@@ -4,7 +4,7 @@ rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
     // Allow public read access to everything for the prototype.
-    // This guarantees images load without token issues.
+    // This guarantees images load without token issues on live domains.
     match /{allPaths=**} {
       allow read: if true;
       allow write: if true; 
