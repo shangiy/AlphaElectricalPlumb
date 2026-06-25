@@ -5,26 +5,26 @@
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 180 30% 10%;
+    --foreground: 220 30% 15%;
     --card: 0 0% 100%;
-    --card-foreground: 180 30% 10%;
+    --card-foreground: 220 30% 15%;
     --popover: 0 0% 100%;
-    --popover-foreground: 180 30% 10%;
-    --primary: 180 70% 40%; /* Teal/Cyan */
+    --popover-foreground: 220 30% 15%;
+    --primary: 180 70% 35%; /* Alpha Teal */
     --primary-foreground: 0 0% 100%;
-    --secondary: 180 20% 95%; /* Light teal tint */
-    --secondary-foreground: 180 70% 40%;
-    --muted: 180 10% 96%;
-    --muted-foreground: 180 5% 45%;
-    --accent: 180 70% 40%;
+    --secondary: 180 15% 96%; /* Soft Utility Gray */
+    --secondary-foreground: 180 70% 35%;
+    --muted: 210 10% 96%;
+    --muted-foreground: 215 15% 45%;
+    --accent: 244 46% 25%; /* Alpha Navy */
     --accent-foreground: 0 0% 100%;
-    --destructive: 0 84.2% 60.2%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
-    --border: 180 10% 90%;
-    --input: 180 10% 90%;
-    --ring: 180 70% 40%;
-    --radius: 1rem;
-    --blue: 210 60% 50%;
+    --border: 214 30% 91%;
+    --input: 214 30% 91%;
+    --ring: 180 70% 35%;
+    --radius: 1.25rem;
+    --blue: 210 100% 50%;
     --blue-foreground: 0 0% 100%;
   }
 }
@@ -34,10 +34,10 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground overflow-x-hidden;
+    @apply bg-background text-foreground overflow-x-hidden selection:bg-primary/20;
   }
   h1, h2, h3, h4, h5, h6 {
-    @apply font-headline tracking-tight;
+    @apply font-headline tracking-tight text-accent;
   }
 }
 
@@ -76,5 +76,9 @@
     50% {
       background-position: 100% 50%;
     }
+  }
+
+  .glass-header {
+    @apply bg-background/80 backdrop-blur-lg border-b border-white/20;
   }
 }

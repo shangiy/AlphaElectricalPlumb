@@ -108,17 +108,17 @@ export default function Header() {
   const headerClasses = cn(
     "sticky top-0 z-50 w-full transition-all duration-500 cubic-bezier(0.4, 0, 0.2, 1)",
     isHeaderOpaque 
-      ? "bg-background/95 backdrop-blur-md border-b shadow-md" 
-      : "bg-transparent border-b border-transparent"
+      ? "bg-background/95 backdrop-blur-md border-b shadow-md py-0" 
+      : "bg-transparent border-b border-transparent py-2"
   );
 
   const dynamicColorClasses = cn(
     "transition-colors duration-300",
-    !isHeaderOpaque && isHomePage ? "text-white" : "text-[#2b235f]"
+    !isHeaderOpaque && isHomePage ? "text-white" : "text-accent"
   );
   
   const navAndIconClasses = cn(
-    "font-semibold text-base transition-all duration-300 px-3 py-2 rounded-md whitespace-nowrap",
+    "font-bold text-base transition-all duration-300 px-3 py-2 rounded-md whitespace-nowrap",
     dynamicColorClasses,
     "hover:text-primary hover:bg-primary/10"
   );
@@ -156,12 +156,12 @@ export default function Header() {
                     alt="AlphaElectricalPlumb Logo"
                     width={isHeaderOpaque ? 70 : 90}
                     height={isHeaderOpaque ? 70 : 90}
-                    className="h-auto transition-all duration-500"
+                    className="h-auto transition-all duration-500 group-hover:scale-105"
                 />
                 <div className={logoTextClasses}>
-                    <span className={cn("font-bold transition-all", isHeaderOpaque ? "text-[18px]" : "text-[20px]")}>Alpha</span>
-                    <div className={cn("w-full h-px transition-colors duration-300", !isHeaderOpaque && isHomePage ? "bg-white" : "bg-[#2b235f]")} />
-                    <span className="text-[12px] leading-tight">Electricals & Plumbing Ltd</span>
+                    <span className={cn("font-black tracking-tighter transition-all", isHeaderOpaque ? "text-[20px]" : "text-[22px]")}>Alpha</span>
+                    <div className={cn("w-full h-0.5 transition-colors duration-300", !isHeaderOpaque && isHomePage ? "bg-white" : "bg-primary")} />
+                    <span className="text-[11px] font-bold uppercase tracking-widest leading-tight mt-0.5">Electricals & Plumbing</span>
                 </div>
             </Link>
             
@@ -186,12 +186,15 @@ export default function Header() {
                                 <ChevronDown className="h-4 w-4" />
                              </div>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="start" className="w-56 bg-background">
+                        <DropdownMenuContent align="start" className="w-64 bg-background p-2 rounded-2xl shadow-xl">
+                            <DropdownMenuLabel className="text-xs uppercase tracking-widest text-muted-foreground mb-1">Catalog</DropdownMenuLabel>
                             {productCategories.map((category) => (
-                                <DropdownMenuItem key={category.name} asChild>
-                                <Link href={category.href} className="flex items-center gap-3 py-2">
-                                    <Image src={category.icon} alt={category.name} width={24} height={24} />
-                                    <span>{category.name}</span>
+                                <DropdownMenuItem key={category.name} asChild className="rounded-xl">
+                                <Link href={category.href} className="flex items-center gap-4 py-3">
+                                    <div className="h-10 w-10 rounded-lg bg-secondary flex items-center justify-center p-2">
+                                        <img src={category.icon} alt={category.name} className="h-full w-full object-contain" />
+                                    </div>
+                                    <span className="font-bold text-accent">{category.name}</span>
                                 </Link>
                                 </DropdownMenuItem>
                             ))}
@@ -208,36 +211,39 @@ export default function Header() {
                     <ShoppingCart triggerClassName={cn(iconClasses, '[&_svg]:h-7 [&_svg]:w-7')} />
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className={cn("w-auto px-3 gap-2 rounded-full", iconClasses)}>
+                        <Button variant="ghost" className={cn("w-auto px-3 gap-2 rounded-full hover:bg-primary/10", iconClasses)}>
                             {user?.avatarUrl ? (
-                                <div className="h-8 w-8 rounded-full overflow-hidden border-2 border-primary shadow-sm">
+                                <div className="h-8 w-8 rounded-full overflow-hidden border-2 border-primary shadow-md">
                                     <Image src={user.avatarUrl} alt={user.username} width={32} height={32} className="object-cover" />
                                 </div>
                             ) : (
                                 <User className="h-7 w-7" />
                             )}
-                            <span className="hidden xl:inline">{user ? user.username : 'Log in'}</span>
+                            <span className="hidden xl:inline font-bold tracking-tight">{user ? user.username : 'Log in'}</span>
                         </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
+                        <DropdownMenuContent align="end" className="w-56 p-2 rounded-2xl shadow-xl">
                         {user ? (
                             <>
-                            <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                            <DropdownMenuLabel className="flex flex-col px-2 py-2">
+                                <span className="text-sm font-black text-accent truncate">{user.name}</span>
+                                <span className="text-[10px] uppercase tracking-widest text-muted-foreground">{user.role} Account</span>
+                            </DropdownMenuLabel>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem asChild><Link href="/profile">Profile</Link></DropdownMenuItem>
+                            <DropdownMenuItem asChild className="rounded-lg"><Link href="/profile">Profile Settings</Link></DropdownMenuItem>
                              {(user.role === 'admin' || user.role === 'staff') && (
-                                <DropdownMenuItem asChild><Link href="/admin">Admin Dashboard</Link></DropdownMenuItem>
+                                <DropdownMenuItem asChild className="rounded-lg bg-primary/10 text-primary font-bold"><Link href="/admin">Admin Dashboard</Link></DropdownMenuItem>
                             )}
-                            <DropdownMenuItem asChild><Link href="/track-order">Track My Order</Link></DropdownMenuItem>
-                            <DropdownMenuItem asChild><Link href="/wishlist">My Wishlist</Link></DropdownMenuItem>
+                            <DropdownMenuItem asChild className="rounded-lg"><Link href="/track-order">Track My Order</Link></DropdownMenuItem>
+                            <DropdownMenuItem asChild className="rounded-lg"><Link href="/wishlist">My Wishlist</Link></DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={logout}>Log out</DropdownMenuItem>
+                            <DropdownMenuItem onClick={logout} className="rounded-lg text-destructive focus:bg-destructive/10">Log out</DropdownMenuItem>
                             </>
                         ) : (
                             <>
-                            <DropdownMenuItem asChild><Link href={`/auth/login?tab=login${authRedirect}`}>Log in</Link></DropdownMenuItem>
+                            <DropdownMenuItem asChild className="rounded-lg py-3"><Link href={`/auth/login?tab=login${authRedirect}`}>Log in</Link></DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem asChild><Link href={`/auth/login?tab=signup${authRedirect}`}>Create Account</Link></DropdownMenuItem>
+                            <DropdownMenuItem asChild className="rounded-lg py-3 bg-primary text-white focus:bg-primary/90 focus:text-white"><Link href={`/auth/login?tab=signup${authRedirect}`}>Create Account</Link></DropdownMenuItem>
                             </>
                         )}
                         </DropdownMenuContent>
@@ -246,15 +252,15 @@ export default function Header() {
             </div>
         </div>
 
-        {/* Mobile Header */}
+        {/* Mobile Header (Refined for Mobile-First) */}
         <div className="w-full lg:hidden flex flex-col py-2 transition-all duration-500">
             <div className="flex w-full items-center justify-between gap-2">
                  <Link href="/" className="flex-shrink-0 transition-all duration-500">
                     <Image
                         src="/logo Alpha.png"
                         alt="AlphaElectricalPlumb Logo"
-                        width={isHeaderOpaque ? 50 : 70}
-                        height={isHeaderOpaque ? 50 : 70}
+                        width={isHeaderOpaque ? 55 : 75}
+                        height={isHeaderOpaque ? 55 : 75}
                         className="h-auto"
                     />
                 </Link>
@@ -281,25 +287,24 @@ export default function Header() {
                                 <span className="sr-only">Account</span>
                             </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
+                        <DropdownMenuContent align="end" className="rounded-xl">
                             {user ? (
                             <>
-                                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                                <DropdownMenuLabel className="text-xs uppercase font-black text-muted-foreground">{user.username}</DropdownMenuLabel>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem asChild><Link href="/profile">Profile</Link></DropdownMenuItem>
                                 {(user.role === 'admin' || user.role === 'staff') && (
-                                    <DropdownMenuItem asChild><Link href="/admin">Admin Dashboard</Link></DropdownMenuItem>
+                                    <DropdownMenuItem asChild className="text-primary font-bold"><Link href="/admin">Dashboard</Link></DropdownMenuItem>
                                 )}
-                                <DropdownMenuItem asChild><Link href="/track-order">Track My Order</Link></DropdownMenuItem>
-                                <DropdownMenuItem asChild><Link href="/wishlist">My Wishlist</Link></DropdownMenuItem>
+                                <DropdownMenuItem asChild><Link href="/track-order">My Orders</Link></DropdownMenuItem>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem onClick={logout}>Log out</DropdownMenuItem>
+                                <DropdownMenuItem onClick={logout} className="text-destructive">Log out</DropdownMenuItem>
                             </>
                             ) : (
                             <>
                                 <DropdownMenuItem asChild><Link href={`/auth/login?tab=login${authRedirect}`}>Log in</Link></DropdownMenuItem>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem asChild><Link href={`/auth/login?tab=signup${authRedirect}`}>Create Account</Link></DropdownMenuItem>
+                                <DropdownMenuItem asChild><Link href={`/auth/login?tab=signup${authRedirect}`}>Sign up</Link></DropdownMenuItem>
                             </>
                             )}
                         </DropdownMenuContent>
@@ -311,51 +316,52 @@ export default function Header() {
                                 <span className="sr-only">Toggle menu</span>
                             </Button>
                         </SheetTrigger>
-                        <SheetContent side="right" className="w-[300px] sm:w-[350px] p-0 flex flex-col">
-                            <SheetHeader className="p-4 border-b">
+                        <SheetContent side="right" className="w-[300px] sm:w-[350px] p-0 flex flex-col border-l-0">
+                            <SheetHeader className="p-6 border-b bg-secondary/30">
                                 <SheetTitle>
                                     <SheetClose asChild>
-                                        <Link href="/" className="flex items-center gap-2">
-                                            <Image src="/logo Alpha.png" alt="Logo" width={70} height={70}/>
-                                            <div className="flex flex-col text-[#2b235f]">
-                                                <span className="font-bold text-[18px] leading-tight">Alpha</span>
-                                                <div className="w-full h-px bg-[#2b235f]" />
-                                                <span className="text-[11px] leading-tight">Electricals & Plumbing Ltd</span>
+                                        <Link href="/" className="flex items-center gap-3">
+                                            <Image src="/logo Alpha.png" alt="Logo" width={60} height={60}/>
+                                            <div className="flex flex-col text-accent">
+                                                <span className="font-black text-[20px] leading-tight tracking-tighter">Alpha</span>
+                                                <span className="text-[10px] font-bold uppercase tracking-widest text-primary">Electricals & Plumbing</span>
                                             </div>
                                         </Link>
                                     </SheetClose>
                                 </SheetTitle>
                             </SheetHeader>
                             <ScrollArea className="flex-1">
-                                <nav className="flex flex-col gap-2 p-4">
-                                <h3 className="px-2 text-sm font-semibold text-muted-foreground">Products</h3>
+                                <nav className="flex flex-col gap-1 p-4">
+                                <h3 className="px-3 py-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Product Collections</h3>
                                 {productCategories.map((category) => (
                                     <SheetClose asChild key={category.name}>
-                                    <Link href={category.href} className="flex items-center gap-3 rounded-md px-2 py-2 text-base font-medium text-foreground hover:bg-accent hover:text-[#8a0b0d]">
-                                        <Image src={category.icon} alt={category.name} width={24} height={24}/>
+                                    <Link href={category.href} className="flex items-center gap-4 rounded-xl px-3 py-3 text-base font-bold text-accent hover:bg-primary/10 hover:text-primary transition-colors">
+                                        <div className="h-8 w-8 p-1 bg-white rounded-lg shadow-sm">
+                                            <img src={category.icon} alt={category.name} className="h-full w-full object-contain" />
+                                        </div>
                                         <span>{category.name}</span>
                                     </Link>
                                     </SheetClose>
                                 ))}
-                                <DropdownMenuSeparator />
-                                <h3 className="px-2 pt-2 text-sm font-semibold text-muted-foreground">Menu</h3>
-                                {[ ...navLinks, { name: 'Team', href: '/team' }].map((link) => (
+                                <div className="my-4 px-3 border-t" />
+                                <h3 className="px-3 py-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Company</h3>
+                                {[ ...navLinks, { name: 'The Team', href: '/team' }].map((link) => (
                                     <SheetClose asChild key={link.name}>
-                                    <Link href={link.href} className="rounded-md px-2 py-2 text-base font-medium text-foreground hover:bg-accent hover:text-[#8a0b0d]">{link.name}</Link>
+                                    <Link href={link.href} className="rounded-xl px-3 py-3 text-base font-bold text-accent hover:bg-secondary transition-colors">{link.name}</Link>
                                     </SheetClose>
                                 ))}
                                 </nav>
                             </ScrollArea>
-                            <div className="flex flex-col gap-2 border-t p-4 mt-auto">
+                            <div className="flex flex-col gap-3 p-6 bg-secondary/10 border-t">
                             {user ? (
-                                <Button variant="outline" className="w-full" onClick={logout}>Log Out</Button>
+                                <Button variant="outline" className="w-full rounded-xl border-accent/20" onClick={logout}>Sign Out</Button>
                             ) : (
-                                <div className="space-y-2">
+                                <div className="space-y-3">
                                 <SheetClose asChild>
-                                <Link href={`/auth/login?tab=login${authRedirect}`} className={cn(buttonVariants({ variant: "default" }), "w-full")}>Log in</Link>
+                                <Link href={`/auth/login?tab=login${authRedirect}`} className={cn(buttonVariants({ variant: "default" }), "w-full rounded-xl font-bold")}>Log in</Link>
                                 </SheetClose>
                                 <SheetClose asChild>
-                                <Link href={`/auth/login?tab=signup${authRedirect}`} className={cn(buttonVariants({ variant: "outline" }), "w-full")}>Create Account</Link>
+                                <Link href={`/auth/login?tab=signup${authRedirect}`} className={cn(buttonVariants({ variant: "outline" }), "w-full rounded-xl font-bold border-accent/20")}>Register Account</Link>
                                 </SheetClose>
                                 </div>
                             )}
