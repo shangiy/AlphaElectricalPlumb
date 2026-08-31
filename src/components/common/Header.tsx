@@ -64,7 +64,9 @@ export default function Header() {
       const scrollY = window.scrollY;
       
       // Threshold for transparency and search visibility
-      setIsHeaderOpaque(!isHomePage || scrollY > 50);
+      // The TopBanner height is 48px on desktop. We transition exactly when it clears.
+      const stickyThreshold = isHomePage ? 48 : 0;
+      setIsHeaderOpaque(!isHomePage || scrollY >= stickyThreshold);
       
       const searchThreshold = isHomePage ? 350 : 0;
       setShowSearchInHeader(!isHomePage || scrollY > searchThreshold);
@@ -85,11 +87,13 @@ export default function Header() {
     { name: 'About Us', href: '/about' },
   ];
   
+  // Header behavior: sticky top-0 means it will scroll UP with the banner
+  // until its top reaches 0, then it stops and locks there.
   const headerClasses = cn(
-    "sticky top-0 z-50 w-full transition-all duration-300",
+    "sticky top-0 z-50 w-full transition-colors duration-300",
     isHeaderOpaque 
-      ? "bg-background/95 backdrop-blur-md border-b shadow-md py-0" 
-      : "bg-transparent border-b border-transparent py-2"
+      ? "bg-background/95 backdrop-blur-md border-b shadow-md" 
+      : "bg-transparent border-b border-transparent"
   );
 
   const dynamicColorClasses = cn(
@@ -129,7 +133,7 @@ export default function Header() {
   return (
     <header className={headerClasses}>
       <div className="container mx-auto px-4 relative z-10">
-        <div className={cn("hidden w-full items-center gap-4 lg:flex transition-all duration-300", isHeaderOpaque ? "h-20" : "h-24")}>
+        <div className={cn("hidden w-full items-center gap-4 lg:flex h-20 transition-all duration-300")}>
             <Link href="/" className="flex flex-shrink-0 items-center gap-3 group">
                 <Image
                     src="/logo Alpha.png"
