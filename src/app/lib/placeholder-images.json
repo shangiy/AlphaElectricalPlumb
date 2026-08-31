@@ -1,4 +1,3 @@
-
 {
   "wanjiku_portrait": {
     "url": "https://picsum.photos/seed/wanjiku/800/1000",
@@ -55,7 +54,7 @@
     "alt": "Roofing & Construction"
   },
   "hero_background": {
-    "url": "https://firebasestorage.googleapis.com/v0/b/studio-2955966694-9faa5.firebasestorage.app/o/background.jpg?alt=media",
+    "url": "/background.jpg",
     "width": 1920,
     "height": 1080,
     "alt": "Alpha Electricals Hero Background"

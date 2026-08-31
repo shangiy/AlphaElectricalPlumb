@@ -1,4 +1,3 @@
-
 'use client';
 
 import dynamic from 'next/dynamic';
@@ -24,15 +23,15 @@ export default function Hero() {
   return (
     <section className="relative h-[70vh] md:h-[85vh] w-full flex items-center justify-start text-white -mt-24">
       {/* 
-         Using direct <img> instead of Next.js <Image> for the specific cloud background 
-         to bypass optimization server timeouts on external storage URLs.
+         Using standard <img> for the main hero background to ensure immediate loading
+         from the public folder. Added explicit alt and styling for high-contrast visibility.
       */}
       <img
         src={hero_background.url}
         alt={hero_background.alt}
         className="absolute inset-0 h-full w-full object-cover -z-10"
         onError={(e) => {
-          // Fallback to the original local asset if storage path fails
+          // Fallback to elegant_background if background.jpg is missing
           (e.target as HTMLImageElement).src = '/elegant_background.jpg';
         }}
       />
