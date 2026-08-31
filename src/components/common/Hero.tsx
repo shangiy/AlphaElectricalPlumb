@@ -29,7 +29,7 @@ export default function Hero() {
         alt={hero_roofing.alt}
         fill
         className="object-cover -z-10"
-        data-ai-hint="roofing sheets"
+        data-ai-hint="elegant abstract background"
         priority
       />
       <div className="absolute inset-0 bg-black/50 -z-10" />
