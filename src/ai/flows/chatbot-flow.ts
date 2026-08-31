@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview A conversational AI agent for Alpha Electricals & Plumbing Ltd.
@@ -5,7 +6,6 @@
  */
 
 import { ai } from '@/ai/genkit';
-// We removed the 'gemini15Flash' import line because we are using the string instead
 import { productSearchTool } from '@/ai/tools/product-catalog';
 import {
   getCartContents,
@@ -37,7 +37,7 @@ const chatbotFlow = ai.defineFlow(
             .map(m => `${m.role.toUpperCase()}: ${m.content}`)
             .join('\n');
 
-        // 3. Generate response using the string ID to avoid export errors
+        // 3. Generate response using the reliable string ID
         const llmResponse = await ai.generate({
             model: 'googleai/gemini-1.5-flash', 
             system: `You are "Alpha AI", a friendly and helpful e-commerce assistant for "Alpha Electricals & Plumbing Ltd". Your personality is professional yet approachable.
