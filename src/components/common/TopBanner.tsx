@@ -16,7 +16,7 @@ export default function TopBanner() {
 
   return (
     <div className={cn(
-      "relative z-40 text-white py-2 px-4 h-10 md:h-12 overflow-hidden",
+      "relative z-30 text-white py-2 px-4 h-10 md:h-12 overflow-hidden",
       "bg-gradient-to-r from-red-500 via-purple-500 to-blue-500 bg-[length:200%_200%] animate-gradient-x"
       )}
     >

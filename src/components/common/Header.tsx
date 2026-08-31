@@ -64,7 +64,8 @@ export default function Header() {
       const scrollY = window.scrollY;
       
       // Threshold for transparency and search visibility
-      // The TopBanner height is 48px on desktop. We transition exactly when it clears.
+      // The TopBanner height is 48px on desktop.
+      // Phase 1 ends and Phase 2 (Locking) begins when scrollY >= 48.
       const stickyThreshold = isHomePage ? 48 : 0;
       setIsHeaderOpaque(!isHomePage || scrollY >= stickyThreshold);
       
@@ -88,9 +89,10 @@ export default function Header() {
   ];
   
   // Header behavior: sticky top-0 means it will scroll UP with the banner
-  // until its top reaches 0, then it stops and locks there.
+  // until its top edge reaches 0, then it stops and locks there.
+  // z-50 ensures it stays above page content.
   const headerClasses = cn(
-    "sticky top-0 z-50 w-full transition-colors duration-300",
+    "sticky top-0 z-50 w-full transition-all duration-300",
     isHeaderOpaque 
       ? "bg-background/95 backdrop-blur-md border-b shadow-md" 
       : "bg-transparent border-b border-transparent"
@@ -133,18 +135,18 @@ export default function Header() {
   return (
     <header className={headerClasses}>
       <div className="container mx-auto px-4 relative z-10">
-        <div className={cn("hidden w-full items-center gap-4 lg:flex h-20 transition-all duration-300")}>
+        <div className={cn("hidden w-full items-center gap-4 lg:flex h-20")}>
             <Link href="/" className="flex flex-shrink-0 items-center gap-3 group">
                 <Image
                     src="/logo Alpha.png"
                     alt="AlphaElectricalPlumb Logo"
                     width={isHeaderOpaque ? 70 : 85}
                     height={isHeaderOpaque ? 70 : 85}
-                    className="h-auto transition-all"
+                    className="h-auto transition-all duration-300"
                 />
                 <div className={logoTextClasses}>
-                    <span className={cn("font-black tracking-tighter transition-all", isHeaderOpaque ? "text-xl" : "text-2xl")}>Alpha</span>
-                    <div className={cn("w-full h-0.5 transition-colors", !isHeaderOpaque && isHomePage ? "bg-white" : "bg-primary")} />
+                    <span className={cn("font-black tracking-tighter transition-all duration-300", isHeaderOpaque ? "text-xl" : "text-2xl")}>Alpha</span>
+                    <div className={cn("w-full h-0.5 transition-colors duration-300", !isHeaderOpaque && isHomePage ? "bg-white" : "bg-primary")} />
                     <span className="text-[10px] font-bold uppercase tracking-widest leading-tight mt-0.5">Electricals & Plumbing</span>
                 </div>
             </Link>
@@ -237,19 +239,19 @@ export default function Header() {
         </div>
 
         {/* Mobile Header */}
-        <div className="w-full lg:hidden flex items-center justify-between py-2">
+        <div className="w-full lg:hidden flex items-center justify-between py-2 h-16">
              <Link href="/" className="flex-shrink-0">
                 <Image
                     src="/logo Alpha.png"
                     alt="AlphaElectricalPlumb Logo"
-                    width={isHeaderOpaque ? 55 : 75}
-                    height={isHeaderOpaque ? 55 : 75}
-                    className="h-auto"
+                    width={isHeaderOpaque ? 55 : 70}
+                    height={isHeaderOpaque ? 55 : 70}
+                    className="h-auto transition-all duration-300"
                 />
             </Link>
 
             <div className={cn(
-                "flex-1 min-w-0 mx-2 transition-all transform",
+                "flex-1 min-w-0 mx-2 transition-all transform duration-300",
                 showSearchInHeader ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-4 pointer-events-none"
             )}>
                 <HeroSearch isCompact />
