@@ -19,6 +19,7 @@ Alpha Electricals & Plumbing Ltd is a comprehensive e-commerce platform for home
 
 - **Product Catalog**: Multi-category browsing (Tanks, Plumbing, Lighting, Decor, Roofing) with 89+ verified products.
 - **UI Components**:
+  - **Two-Stage Sticky Navigation**: Seamless transition from top promotional banner to a locked header search.
   - **Seamless Infinite Loop Carousel**: High-end category browser with gradient masking and linear constant-speed animation.
   - **Dynamic Reviews**: Real-time customer feedback section on the homepage where users can read and post reviews directly to Firestore.
 - **AI Integration**: 
@@ -39,7 +40,7 @@ To update your live site on Firebase App Hosting, run these commands in your **G
    ```
 2. **Commit**: 
    ```bash
-   git commit -m "feat: finalize assets and industrial visual style"
+   git commit -m "feat: finalize hero background and two-stage sticky scroll behavior"
    ```
 3. **Push**: 
    ```bash
