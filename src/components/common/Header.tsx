@@ -63,21 +63,29 @@ export default function Header() {
     const updateHeaderStyles = () => {
       const scrollY = window.scrollY;
       
-      // Threshold for transparency and search visibility
-      // The TopBanner height is 48px on desktop.
-      // Phase 1 ends and Phase 2 (Locking) begins when scrollY >= 48.
-      const stickyThreshold = isHomePage ? 48 : 0;
-      setIsHeaderOpaque(!isHomePage || scrollY >= stickyThreshold);
+      /**
+       * PHASE 1 & 2 LOGIC:
+       * The TopBanner is 40px on mobile (<768px) and 48px on desktop (>=768px).
+       * We lock the header and change its style the moment the banner is scrolled past.
+       */
+      const isMobile = window.innerWidth < 768;
+      const stickyThreshold = isMobile ? 40 : 48;
+
+      // The header becomes opaque and the search appears simultaneously 
+      // when the header reaches the top (scrollY >= threshold)
+      const isLocked = !isHomePage || scrollY >= stickyThreshold;
       
-      const searchThreshold = isHomePage ? 350 : 0;
-      setShowSearchInHeader(!isHomePage || scrollY > searchThreshold);
+      setIsHeaderOpaque(isLocked);
+      setShowSearchInHeader(isLocked);
     };
 
     updateHeaderStyles();
     window.addEventListener('scroll', updateHeaderStyles, { passive: true });
+    window.addEventListener('resize', updateHeaderStyles);
     
     return () => {
       window.removeEventListener('scroll', updateHeaderStyles);
+      window.removeEventListener('resize', updateHeaderStyles);
     };
   }, [pathname, isHomePage]);
 
@@ -94,8 +102,8 @@ export default function Header() {
   const headerClasses = cn(
     "sticky top-0 z-50 w-full transition-all duration-300",
     isHeaderOpaque 
-      ? "bg-background/95 backdrop-blur-md border-b shadow-md" 
-      : "bg-transparent border-b border-transparent"
+      ? "bg-background shadow-lg border-b" // Solid ceiling when locked
+      : "bg-transparent border-b border-transparent" // Riding up phase
   );
 
   const dynamicColorClasses = cn(
