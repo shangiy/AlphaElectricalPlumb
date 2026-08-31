@@ -13,7 +13,7 @@ const HeroSearch = dynamic(() => import('./HeroSearch'), {
 });
 
 export default function Hero() {
-  const { hero_roofing } = placeholderData;
+  const { hero_background } = placeholderData;
 
   const frequentSearches = [
     { name: 'Water Tanks', href: '/tanks' },
@@ -25,19 +25,19 @@ export default function Hero() {
   return (
     <section className="relative h-[70vh] md:h-[85vh] w-full flex items-center justify-start text-white -mt-24">
       <Image
-        src={hero_roofing.url}
-        alt={hero_roofing.alt}
+        src={hero_background.url}
+        alt={hero_background.alt}
         fill
         className="object-cover -z-10"
-        data-ai-hint="elegant abstract background"
+        data-ai-hint="industrial background"
         priority
       />
-      <div className="absolute inset-0 bg-black/50 -z-10" />
+      <div className="absolute inset-0 bg-black/40 -z-10" />
       <div className="container mx-auto px-4 text-left mt-24">
-        <h1 className="text-4xl md:text-6xl font-bold font-headline mb-4 max-w-3xl text-white drop-shadow-lg">
+        <h1 className="text-4xl md:text-6xl font-bold font-headline mb-4 max-w-3xl text-white drop-shadow-2xl">
           Welcome to Alpha Electricals & Plumbing Ltd
         </h1>
-        <p className="text-lg md:text-xl max-w-3xl mb-8 text-white/90 drop-shadow-md">
+        <p className="text-lg md:text-xl max-w-3xl mb-8 text-white/90 drop-shadow-lg font-medium">
           Your trusted source for Tanks, Lighting, Plumbing & More
         </p>
 
@@ -46,12 +46,12 @@ export default function Hero() {
         </div>
         
         <div className="mt-6 flex items-center justify-start gap-2 md:gap-4 flex-wrap">
-          <span className="text-sm font-medium">Frequently searched:</span>
+          <span className="text-sm font-semibold drop-shadow-md">Frequently searched:</span>
           {frequentSearches.map((item) => (
             <Link
               key={item.name}
               href={item.href}
-              className="text-sm rounded-full px-3 py-1 border border-white/50 bg-white/10 hover:bg-white/20 transition-colors"
+              className="text-sm font-medium rounded-full px-3 py-1 border border-white/50 bg-white/10 hover:bg-white/30 backdrop-blur-sm transition-all shadow-sm"
             >
               {item.name}
             </Link>

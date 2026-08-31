@@ -54,8 +54,8 @@
     "height": 800,
     "alt": "Roofing & Construction"
   },
-  "hero_roofing": {
-    "url": "/elegant_background.jpg",
+  "hero_background": {
+    "url": "https://firebasestorage.googleapis.com/v0/b/studio-2955966694-9faa5.firebasestorage.app/o/background.jpg?alt=media",
     "width": 1920,
     "height": 1080,
     "alt": "Alpha Electricals Hero Background"
