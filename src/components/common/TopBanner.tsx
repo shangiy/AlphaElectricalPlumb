@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Clock } from 'lucide-react';
@@ -17,7 +16,7 @@ export default function TopBanner() {
 
   return (
     <div className={cn(
-      "text-white py-2 px-4",
+      "relative z-40 text-white py-2 px-4",
       "bg-gradient-to-r from-red-500 via-purple-500 to-blue-500 bg-[length:200%_200%] animate-gradient-x"
       )}
     >

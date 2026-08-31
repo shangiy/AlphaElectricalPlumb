@@ -63,10 +63,16 @@ export default function Header() {
     const updateHeaderStyles = () => {
       const scrollY = window.scrollY;
       
-      // Header becomes opaque and sticky-styled after minor scroll
-      setIsHeaderOpaque(!isHomePage || scrollY > 20);
+      /**
+       * STICKY THRESHOLD:
+       * The TopBanner is roughly 48px high. 
+       * We want the header to become opaque and "stuck-styled" 
+       * precisely as the banner clears the viewport.
+       */
+      const bannerHeight = 48; 
+      setIsHeaderOpaque(!isHomePage || scrollY >= bannerHeight);
       
-      // Search bar appears in header after hero search bar is roughly scrolled past
+      // Search bar appears in header after hero search bar is scrolled past
       const searchThreshold = isHomePage ? 350 : 0;
       setShowSearchInHeader(!isHomePage || scrollY > searchThreshold);
     };
@@ -106,9 +112,9 @@ export default function Header() {
   ];
   
   const headerClasses = cn(
-    "sticky top-0 z-50 w-full transition-all duration-500 cubic-bezier(0.4, 0, 0.2, 1)",
+    "sticky top-0 z-50 w-full transition-all duration-300 ease-in-out",
     isHeaderOpaque 
-      ? "bg-background/95 backdrop-blur-md border-b shadow-md py-0" 
+      ? "bg-background/98 backdrop-blur-md border-b shadow-lg py-0 translate-y-0" 
       : "bg-transparent border-b border-transparent py-2"
   );
 
