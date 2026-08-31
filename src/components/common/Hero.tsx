@@ -28,7 +28,7 @@ export default function Hero() {
       />
       <div className="absolute inset-0 bg-black/60 -z-10" />
       <div className="container mx-auto px-4 text-left mt-24">
-        <h1 className="text-4xl md:text-6xl font-bold font-headline mb-4 max-w-3xl">
+        <h1 className="text-4xl md:text-6xl font-bold font-headline mb-4 max-w-3xl text-white">
           Welcome to Alpha Electricals & Plumbing Ltd
         </h1>
         <p className="text-lg md:text-xl max-w-3xl mb-8">
