@@ -12,7 +12,7 @@ import {
   SheetClose,
   SheetTrigger,
 } from '@/components/ui/sheet';
-import { User, Menu, ChevronDown, Loader2 } from 'lucide-react';
+import { User, Menu, ChevronDown } from 'lucide-react';
 import ShoppingCart from './ShoppingCart';
 import {
   DropdownMenu,
@@ -63,16 +63,9 @@ export default function Header() {
     const updateHeaderStyles = () => {
       const scrollY = window.scrollY;
       
-      /**
-       * STICKY THRESHOLD:
-       * The TopBanner is roughly 48px high. 
-       * We want the header to become opaque and "stuck-styled" 
-       * precisely as the banner clears the viewport.
-       */
-      const bannerHeight = 48; 
-      setIsHeaderOpaque(!isHomePage || scrollY >= bannerHeight);
+      // Threshold for transparency and search visibility
+      setIsHeaderOpaque(!isHomePage || scrollY > 50);
       
-      // Search bar appears in header after hero search bar is scrolled past
       const searchThreshold = isHomePage ? 350 : 0;
       setShowSearchInHeader(!isHomePage || scrollY > searchThreshold);
     };
@@ -85,26 +78,7 @@ export default function Header() {
     };
   }, [pathname, isHomePage]);
 
-  // Stable Shell Rendering to prevent Hydration ID Mismatch
-  if (!mounted) {
-    return (
-      <header className="sticky top-0 z-50 w-full bg-transparent border-b border-transparent">
-        <div className="container mx-auto px-4 h-24 flex items-center justify-between">
-           <div className="flex items-center gap-3">
-              <div className="w-[70px] h-[70px] bg-muted/20 animate-pulse rounded-full" />
-              <div className="hidden sm:flex flex-col gap-1">
-                 <div className="w-20 h-4 bg-muted/20 animate-pulse rounded" />
-                 <div className="w-32 h-3 bg-muted/20 animate-pulse rounded" />
-              </div>
-           </div>
-           <div className="flex gap-4">
-              <div className="w-10 h-10 bg-muted/20 animate-pulse rounded-full" />
-              <div className="w-10 h-10 bg-muted/20 animate-pulse rounded-full" />
-           </div>
-        </div>
-      </header>
-    );
-  }
+  if (!mounted) return null;
 
   const navLinks = [
     { name: 'Contact Us', href: '/contact' },
@@ -112,9 +86,9 @@ export default function Header() {
   ];
   
   const headerClasses = cn(
-    "sticky top-0 z-50 w-full transition-all duration-300 ease-in-out",
+    "sticky top-0 z-50 w-full transition-all duration-300",
     isHeaderOpaque 
-      ? "bg-background/98 backdrop-blur-md border-b shadow-lg py-0 translate-y-0" 
+      ? "bg-background/95 backdrop-blur-md border-b shadow-md py-0" 
       : "bg-transparent border-b border-transparent py-2"
   );
 
@@ -155,28 +129,28 @@ export default function Header() {
   return (
     <header className={headerClasses}>
       <div className="container mx-auto px-4 relative z-10">
-        <div className={cn("hidden w-full items-center gap-4 lg:flex transition-all duration-500 ease-in-out", isHeaderOpaque ? "h-20" : "h-24")}>
+        <div className={cn("hidden w-full items-center gap-4 lg:flex transition-all duration-300", isHeaderOpaque ? "h-20" : "h-24")}>
             <Link href="/" className="flex flex-shrink-0 items-center gap-3 group">
                 <Image
                     src="/logo Alpha.png"
                     alt="AlphaElectricalPlumb Logo"
-                    width={isHeaderOpaque ? 70 : 90}
-                    height={isHeaderOpaque ? 70 : 90}
-                    className="h-auto transition-all duration-500 group-hover:scale-105"
+                    width={isHeaderOpaque ? 70 : 85}
+                    height={isHeaderOpaque ? 70 : 85}
+                    className="h-auto transition-all"
                 />
                 <div className={logoTextClasses}>
-                    <span className={cn("font-black tracking-tighter transition-all", isHeaderOpaque ? "text-[20px]" : "text-[22px]")}>Alpha</span>
-                    <div className={cn("w-full h-0.5 transition-colors duration-300", !isHeaderOpaque && isHomePage ? "bg-white" : "bg-primary")} />
-                    <span className="text-[11px] font-bold uppercase tracking-widest leading-tight mt-0.5">Electricals & Plumbing</span>
+                    <span className={cn("font-black tracking-tighter transition-all", isHeaderOpaque ? "text-xl" : "text-2xl")}>Alpha</span>
+                    <div className={cn("w-full h-0.5 transition-colors", !isHeaderOpaque && isHomePage ? "bg-white" : "bg-primary")} />
+                    <span className="text-[10px] font-bold uppercase tracking-widest leading-tight mt-0.5">Electricals & Plumbing</span>
                 </div>
             </Link>
             
             <div className="flex-1 flex justify-center items-center px-4 overflow-hidden h-full">
                 <div className={cn(
-                    "w-full max-w-xl transition-all duration-700 ease-out transform origin-top",
+                    "w-full max-w-xl transition-all duration-500 transform",
                     showSearchInHeader 
-                        ? "opacity-100 translate-y-0 scale-100 visible" 
-                        : "opacity-0 -translate-y-12 scale-90 invisible pointer-events-none"
+                        ? "opacity-100 translate-y-0 scale-100" 
+                        : "opacity-0 -translate-y-8 scale-95 pointer-events-none"
                 )}>
                     <HeroSearch isCompact={isHeaderOpaque} />
                 </div>
@@ -258,123 +232,72 @@ export default function Header() {
             </div>
         </div>
 
-        {/* Mobile Header (Refined for Mobile-First) */}
-        <div className="w-full lg:hidden flex flex-col py-2 transition-all duration-500">
-            <div className="flex w-full items-center justify-between gap-2">
-                 <Link href="/" className="flex-shrink-0 transition-all duration-500">
-                    <Image
-                        src="/logo Alpha.png"
-                        alt="AlphaElectricalPlumb Logo"
-                        width={isHeaderOpaque ? 55 : 75}
-                        height={isHeaderOpaque ? 55 : 75}
-                        className="h-auto"
-                    />
-                </Link>
+        {/* Mobile Header */}
+        <div className="w-full lg:hidden flex items-center justify-between py-2">
+             <Link href="/" className="flex-shrink-0">
+                <Image
+                    src="/logo Alpha.png"
+                    alt="AlphaElectricalPlumb Logo"
+                    width={isHeaderOpaque ? 55 : 75}
+                    height={isHeaderOpaque ? 55 : 75}
+                    className="h-auto"
+                />
+            </Link>
 
-                <div className={cn(
-                    "flex-1 min-w-0 transition-all duration-500 ease-out transform",
-                    showSearchInHeader ? "opacity-100 translate-y-0 scale-100" : "opacity-0 -translate-y-4 scale-95 pointer-events-none invisible"
-                )}>
-                    <HeroSearch isCompact />
-                </div>
+            <div className={cn(
+                "flex-1 min-w-0 mx-2 transition-all transform",
+                showSearchInHeader ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-4 pointer-events-none"
+            )}>
+                <HeroSearch isCompact />
+            </div>
 
-                <div className="flex items-center flex-shrink-0">
-                    <ShoppingCart triggerClassName={cn(iconClasses, '[&_svg]:h-6 [&_svg]:w-6')} />
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className={cn(iconClasses, '[&_svg]:h-6 [&_svg]:w-6')}>
-                                {user?.avatarUrl ? (
-                                    <div className="h-6 w-6 rounded-full overflow-hidden border border-primary">
-                                        <Image src={user.avatarUrl} alt={user.username} width={24} height={24} className="object-cover" />
-                                    </div>
-                                ) : (
-                                    <User />
-                                )}
-                                <span className="sr-only">Account</span>
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="rounded-xl">
-                            {user ? (
-                            <>
-                                <DropdownMenuLabel className="text-xs uppercase font-black text-muted-foreground">{user.username}</DropdownMenuLabel>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem asChild><Link href="/profile">Profile</Link></DropdownMenuItem>
-                                {(user.role === 'admin' || user.role === 'staff') && (
-                                    <DropdownMenuItem asChild className="text-primary font-bold"><Link href="/admin">Dashboard</Link></DropdownMenuItem>
-                                )}
-                                <DropdownMenuItem asChild><Link href="/track-order">My Orders</Link></DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem onClick={logout} className="text-destructive">Log out</DropdownMenuItem>
-                            </>
-                            ) : (
-                            <>
-                                <DropdownMenuItem asChild><Link href={`/auth/login?tab=login${authRedirect}`}>Log in</Link></DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem asChild><Link href={`/auth/login?tab=signup${authRedirect}`}>Sign up</Link></DropdownMenuItem>
-                            </>
-                            )}
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                    <Sheet>
-                        <SheetTrigger asChild>
-                            <Button variant="ghost" size="icon" className={cn(iconClasses, '[&_svg]:h-6 [&_svg]:w-6')}>
-                                <Menu />
-                                <span className="sr-only">Toggle menu</span>
-                            </Button>
-                        </SheetTrigger>
-                        <SheetContent side="right" className="w-[300px] sm:w-[350px] p-0 flex flex-col border-l-0">
-                            <SheetHeader className="p-6 border-b bg-secondary/30">
-                                <SheetTitle>
-                                    <SheetClose asChild>
-                                        <Link href="/" className="flex items-center gap-3">
-                                            <Image src="/logo Alpha.png" alt="Logo" width={60} height={60}/>
-                                            <div className="flex flex-col text-accent">
-                                                <span className="font-black text-[20px] leading-tight tracking-tighter">Alpha</span>
-                                                <span className="text-[10px] font-bold uppercase tracking-widest text-primary">Electricals & Plumbing</span>
-                                            </div>
-                                        </Link>
-                                    </SheetClose>
-                                </SheetTitle>
-                            </SheetHeader>
-                            <ScrollArea className="flex-1">
-                                <nav className="flex flex-col gap-1 p-4">
-                                <h3 className="px-3 py-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Product Collections</h3>
-                                {productCategories.map((category) => (
-                                    <SheetClose asChild key={category.name}>
-                                    <Link href={category.href} className="flex items-center gap-4 rounded-xl px-3 py-3 text-base font-bold text-accent hover:bg-primary/10 hover:text-primary transition-colors">
-                                        <div className="h-8 w-8 p-1 bg-white rounded-lg shadow-sm">
-                                            <img src={category.icon} alt={category.name} className="h-full w-full object-contain" />
-                                        </div>
-                                        <span>{category.name}</span>
+            <div className="flex items-center">
+                <ShoppingCart triggerClassName={cn(iconClasses, '[&_svg]:h-6 [&_svg]:w-6')} />
+                <Sheet>
+                    <SheetTrigger asChild>
+                        <Button variant="ghost" size="icon" className={cn(iconClasses, '[&_svg]:h-6 [&_svg]:w-6')}>
+                            <Menu />
+                        </Button>
+                    </SheetTrigger>
+                    <SheetContent side="right" className="w-[300px] p-0 flex flex-col">
+                        <SheetHeader className="p-6 border-b bg-secondary/30">
+                            <SheetTitle>
+                                <SheetClose asChild>
+                                    <Link href="/" className="flex items-center gap-3">
+                                        <Image src="/logo Alpha.png" alt="Logo" width={50} height={50}/>
+                                        <span className="font-black text-xl text-accent">Alpha</span>
                                     </Link>
-                                    </SheetClose>
-                                ))}
-                                <div className="my-4 px-3 border-t" />
-                                <h3 className="px-3 py-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Company</h3>
-                                {[ ...navLinks, { name: 'The Team', href: '/team' }].map((link) => (
-                                    <SheetClose asChild key={link.name}>
-                                    <Link href={link.href} className="rounded-xl px-3 py-3 text-base font-bold text-accent hover:bg-secondary transition-colors">{link.name}</Link>
-                                    </SheetClose>
-                                ))}
-                                </nav>
-                            </ScrollArea>
-                            <div className="flex flex-col gap-3 p-6 bg-secondary/10 border-t">
-                            {user ? (
-                                <Button variant="outline" className="w-full rounded-xl border-accent/20" onClick={logout}>Sign Out</Button>
-                            ) : (
-                                <div className="space-y-3">
-                                <SheetClose asChild>
-                                <Link href={`/auth/login?tab=login${authRedirect}`} className={cn(buttonVariants({ variant: "default" }), "w-full rounded-xl font-bold")}>Log in</Link>
                                 </SheetClose>
-                                <SheetClose asChild>
-                                <Link href={`/auth/login?tab=signup${authRedirect}`} className={cn(buttonVariants({ variant: "outline" }), "w-full rounded-xl font-bold border-accent/20")}>Register Account</Link>
+                            </SheetTitle>
+                        </SheetHeader>
+                        <ScrollArea className="flex-1">
+                            <nav className="flex flex-col p-4">
+                            <h3 className="px-3 py-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Catalog</h3>
+                            {productCategories.map((category) => (
+                                <SheetClose asChild key={category.name}>
+                                <Link href={category.href} className="flex items-center gap-4 px-3 py-3 text-base font-bold text-accent hover:bg-primary/10 rounded-xl">
+                                    <img src={category.icon} alt={category.name} className="h-6 w-6 object-contain" />
+                                    <span>{category.name}</span>
+                                </Link>
                                 </SheetClose>
-                                </div>
-                            )}
-                            </div>
-                        </SheetContent>
-                    </Sheet>
-                </div>
+                            ))}
+                            <div className="my-4 border-t" />
+                            {navLinks.map((link) => (
+                                <SheetClose asChild key={link.name}>
+                                <Link href={link.href} className="px-3 py-3 text-base font-bold text-accent">{link.name}</Link>
+                                </SheetClose>
+                            ))}
+                            </nav>
+                        </ScrollArea>
+                        <div className="p-6 border-t">
+                        {user ? (
+                            <Button variant="outline" className="w-full" onClick={logout}>Sign Out</Button>
+                        ) : (
+                            <Link href={`/auth/login?tab=login${authRedirect}`} className={cn(buttonVariants(), "w-full")}>Log in</Link>
+                        )}
+                        </div>
+                    </SheetContent>
+                </Sheet>
             </div>
         </div>
       </div>
