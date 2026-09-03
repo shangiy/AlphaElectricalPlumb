@@ -1,5 +1,5 @@
 
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Poppins, PT_Sans } from 'next/font/google';
 import './globals.css';
 import { cn } from '@/lib/utils';
@@ -20,10 +20,15 @@ const ptSans = PT_Sans({
   weight: ['400', '700'],
 });
 
+export const viewport: Viewport = {
+  themeColor: '#1a3a32',
+};
+
 export const metadata: Metadata = {
   title: 'AlphaElectricalPlumb',
   description: 'Premium plumbing, electrical, lighting, and home décor solutions in Eldoret, Kenya.',
   metadataBase: new URL('https://alphaelectricalsplumbingltd.com'),
+  manifest: '/manifest.json',
   icons: {
     icon: [
       { url: '/logo Alpha.png' },
@@ -32,6 +37,14 @@ export const metadata: Metadata = {
     apple: [
       { url: '/logo Alpha.png' },
     ],
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'AlphaElectricalPlumb',
+  },
+  formatDetection: {
+    telephone: false,
   },
 };
 
@@ -42,6 +55,17 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <meta name="application-name" content="Alpha" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="Alpha" />
+        <meta name="format-detection" content="telephone=no" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="msapplication-config" content="/icons/browserconfig.xml" />
+        <meta name="msapplication-TileColor" content="#1a3a32" />
+        <meta name="msapplication-tap-highlight" content="no" />
+      </head>
       <body
         className={cn(
           'min-h-screen bg-background font-body antialiased',

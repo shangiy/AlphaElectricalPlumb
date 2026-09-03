@@ -1,0 +1,22 @@
+
+{
+  "name": "Alpha Electricals & Plumbing Ltd",
+  "short_name": "Alpha",
+  "description": "Premium plumbing, electrical, lighting, and home décor solutions in Eldoret, Kenya.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1a3a32",
+  "icons": [
+    {
+      "src": "/logo Alpha.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/logo Alpha.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
