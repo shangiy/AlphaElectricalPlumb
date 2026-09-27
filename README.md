@@ -1,38 +1,36 @@
 
 # ALPHA Plumbing n Electrical Ltd 
 
-This is a professional Next.js 15 e-commerce application for Alpha Electricals & Plumbing Ltd, built with a modern stack featuring React, ShadCN UI, Tailwind, and Firebase.
+This is a professional Next.js 15 e-commerce application for Alpha Electricals & Plumbing Ltd.
+
+## 🚀 Shifting from Firebase to Supabase
+
+Due to Firebase billing issues, the backend has been migrated to Supabase.
+
+### 🛠️ Supabase Configuration
+You must provide the following environment variables in your Vercel Dashboard (**Project Settings > Environment Variables**):
+
+- `NEXT_PUBLIC_SUPABASE_URL`: Your Supabase Project URL.
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Your Supabase Anonymous Key.
+
+### 📂 Image Management
+To save costs on Cloud Storage, images can now be served from the `public` folder.
+1. Place your product images in `public/product-images/`.
+2. In your Supabase `products` table, set the `imageUrls` to use the filenames (e.g., `["tank-2000l.jpg"]`).
+3. The app will automatically resolve these to `/product-images/tank-2000l.jpg`.
 
 ## Technology Stack
 
 - **Framework**: Next.js 15 (App Router)
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS / ShadCN UI
-- **Backend**: Firebase (Auth, Firestore, Storage)
+- **Backend**: Supabase (Auth, Database, Storage)
 - **AI**: Firebase Genkit + Google Gemini
 - **Payments**: Paystack Integration
-- **SEO**: Dynamic `sitemap.xml` for search engine discovery.
-
-## Project Description
-
-Alpha Electricals & Plumbing Ltd is a comprehensive e-commerce platform for home infrastructure and utility supplies. Key features include:
-
-- **Product Catalog**: Multi-category browsing (Tanks, Plumbing, Lighting, Decor, Roofing) with 89+ verified products.
-- **UI Components**:
-  - **Two-Stage Sticky Navigation**: Seamless transition from top promotional banner to a locked header search.
-  - **Seamless Infinite Loop Carousel**: High-end category browser with gradient masking and linear constant-speed animation.
-  - **Dynamic Reviews**: Real-time customer feedback section on the homepage where users can read and post reviews directly to Firestore.
-- **AI Integration**: 
-  - **Alpha AI Chatbot**: Conversational assistant for product queries and order support.
-  - **Visual Search**: Users can capture photos to search for matching products.
-  - **AI Description Generator**: Admin tool to create compelling product copy.
-- **E-commerce Workflow**: Persistent shopping cart, location-based shipping calculation, and secure checkout via Paystack.
-- **Order Management**: Real-time order tracking with status updates and map integration.
-- **Admin Suite**: A full-featured dashboard with analytics, inventory management, and user moderation.
 
 ## 🚀 Pushing Changes to GitHub
 
-To update your live site on Firebase App Hosting, run these commands in your **Git Bash**:
+To update your live site on Vercel, run these commands:
 
 1. **Stage changes**: 
    ```bash
@@ -40,44 +38,12 @@ To update your live site on Firebase App Hosting, run these commands in your **G
    ```
 2. **Commit**: 
    ```bash
-   git commit -m "feat: finalize hero background and two-stage sticky scroll behavior"
+   git commit -m "feat: migrate backend to supabase for cost efficiency"
    ```
 3. **Push**: 
    ```bash
    git push origin main
    ```
-
-### 🔑 Fixing "Authentication Failed"
-If you see a login error when pushing:
-1. Go to [GitHub Settings > Developer Settings > Personal Access Tokens](https://github.com/settings/tokens).
-2. Generate a "Classic" token with `repo` access.
-3. When `git push` asks for a password, paste this **Token** instead of your password.
-
-## 🛠️ Deployment Checklist
-
-Your build will fail or features will break unless you provide the following configuration in the Firebase Console under **App Hosting > Your App > Settings > Environment Variables**:
-
-### Firebase Config
-- `NEXT_PUBLIC_FIREBASE_API_KEY`
-- `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`
-- `NEXT_PUBLIC_FIREBASE_PROJECT_ID`
-- `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET`
-- `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID`
-- `NEXT_PUBLIC_FIREBASE_APP_ID`
-
-### Security & Payments
-- `NEXT_PUBLIC_RECAPTCHA_SITE_KEY`: 6LcON5ksAAAAAI8sbfZbqmU6SWie1ZbA3JgRhidF
-- `RECAPTCHA_SECRET_KEY`: 6LcON5ksAAAAAOegjV1gynR2gxhAWQ2gbqwlQ7Mv
-- `NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY`: Your Paystack Public Key.
-
-### ⚠️ IMPORTANT: Fix "Invalid domain for site key"
-If you see this error in your browser:
-1. Go to [Google reCAPTCHA Console](https://www.google.com/recaptcha/admin/).
-2. Select your key.
-3. Click **Settings** (top right).
-4. **UNCHECK** the box "Verify the origin of reCAPTCHA solutions".
-5. Click **Save**.
-6. Refresh your app preview.
 
 ## Local Development
 

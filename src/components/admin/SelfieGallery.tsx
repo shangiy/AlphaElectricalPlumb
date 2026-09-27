@@ -1,19 +1,16 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { db } from '@/lib/firebase';
-import { collection, onSnapshot, orderBy, query, Timestamp } from 'firebase/firestore';
+import { supabase } from '@/lib/supabase';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import Image from 'next/image';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Camera } from 'lucide-react';
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 
 interface UserSelfie {
     id: string;
     imageUrl: string;
-    createdAt: Timestamp;
+    createdAt: string;
 }
 
 export default function SelfieGallery() {
@@ -21,37 +18,34 @@ export default function SelfieGallery() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (!db) return;
+        const fetchSelfies = async () => {
+            if (!supabase) return;
+            try {
+                const { data, error } = await supabase
+                    .from('user_selfies')
+                    .select('*')
+                    .order('created_at', { ascending: false });
 
-        const selfiesCollection = collection(db, "userSelfies");
-        const q = query(selfiesCollection, orderBy("createdAt", "desc"));
-        
-        const unsubscribe = onSnapshot(q, 
-            (snapshot) => {
-                const selfieList = snapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data()
-                } as UserSelfie));
-                setSelfies(selfieList);
-                setLoading(false);
-            },
-            async (error) => {
-                const permissionError = new FirestorePermissionError({
-                    path: selfiesCollection.path,
-                    operation: 'list',
-                } satisfies SecurityRuleContext);
-                
-                errorEmitter.emit('permission-error', permissionError);
+                if (error) throw error;
+
+                setSelfies((data || []).map(s => ({
+                    id: s.id,
+                    imageUrl: s.image_url,
+                    createdAt: s.created_at
+                })));
+            } catch (error) {
+                console.error("Error fetching selfies:", error);
+            } finally {
                 setLoading(false);
             }
-        );
+        };
 
-        return () => unsubscribe();
+        fetchSelfies();
     }, []);
 
-    const formatDateTime = (timestamp: Timestamp) => {
-        if (!timestamp) return 'No date';
-        const date = timestamp.toDate();
+    const formatDateTime = (dateString: string) => {
+        if (!dateString) return 'No date';
+        const date = new Date(dateString);
         return date.toLocaleString('en-US', {
             year: 'numeric',
             month: 'short',

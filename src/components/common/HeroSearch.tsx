@@ -19,10 +19,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AnimatedPlaceholder } from './AnimatedPlaceholder';
 import { cn } from '@/lib/utils';
 import { uploadImage } from '@/lib/storage';
-import { db } from '@/lib/firebase';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
+import { supabase } from '@/lib/supabase';
 
 interface HeroSearchProps {
   isCompact?: boolean;
@@ -83,33 +80,28 @@ export default function HeroSearch({ isCompact = false }: HeroSearchProps) {
       const imageDataUrl = canvas.toDataURL('image/jpeg', 0.9);
       
       try {
+        // Upload image (Helper still uses storage bucket logic which should be checked)
         const downloadURL = await uploadImage(imageDataUrl);
-        const selfieData = {
-            imageUrl: downloadURL,
-            createdAt: serverTimestamp()
-        };
+        
+        if (!supabase) throw new Error("Supabase not available");
 
-        addDoc(collection(db, "userSelfies"), selfieData)
-            .then(() => {
-                toast({
-                    title: 'Image Uploaded!',
-                    description: 'Your image has been saved and will be reviewed by an admin.',
-                });
-            })
-            .catch(async (serverError) => {
-                const permissionError = new FirestorePermissionError({
-                    path: 'userSelfies',
-                    operation: 'create',
-                    requestResourceData: selfieData,
-                });
-                errorEmitter.emit('permission-error', permissionError);
-            });
+        const { error } = await supabase.from('user_selfies').insert([{
+            image_url: downloadURL,
+        }]);
+
+        if (error) throw error;
+
+        toast({
+            title: 'Image Uploaded!',
+            description: 'Your image has been saved and will be reviewed by an admin.',
+        });
 
       } catch (error) {
+        console.error("Capture error:", error);
         toast({
             variant: "destructive",
             title: "Upload Failed",
-            description: "Could not save the image. Please try again.",
+            description: "Could not save the image. Please check your connection.",
         });
       } finally {
         setIsProcessing(false);

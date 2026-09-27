@@ -1,40 +1,25 @@
 
-import { revalidatePath } from 'next/cache';
-export const revalidate = 0;
-
 import type { Product, Category, MockUser, Transaction, CarouselCategory } from './types';
-import { db } from './firebase';
-import { collection, getDocs, query, where, orderBy, setDoc, doc, getDoc } from 'firebase/firestore';
+import { supabase } from './supabase';
 import placeholderImages from '@/app/lib/placeholder-images.json';
 
-// Mock users for the prototype (fallback)
-const MOCK_USERS: MockUser[] = [
-  {
-    id: 'admin-001',
-    name: 'Alpha Admin',
-    username: 'alpha_admin',
-    email: 'admin@alpha.com',
-    password: 'passwordadmin',
-    role: 'admin',
-    signedUp: '2024-01-01T10:00:00Z',
-    lastSeen: new Date().toISOString(),
-    orders: 15,
-    visitDuration: 45,
-    avatarUrl: '/richard-kinyungu.jpg'
-  },
-  {
-    id: 'user-001',
-    name: 'Test User',
-    username: 'tester',
-    email: 'user@alpha.com',
-    password: 'password123',
-    role: 'user',
-    signedUp: '2024-02-01T12:00:00Z',
-    lastSeen: new Date().toISOString(),
-    orders: 2,
-    visitDuration: 10,
+/**
+ * Image URL Transformer:
+ * This helper ensures that if an image is meant to be stored in the public folder,
+ * it maps correctly. It also handles legacy Firebase URLs by defaulting to a placeholder
+ * if the Firebase site is down.
+ */
+const transformImageUrl = (url: string) => {
+  if (!url) return "https://placehold.co/600x800?text=No+Image";
+  
+  // If the image is a local path or already a valid external URL, return it
+  if (url.startsWith('/') || url.startsWith('http')) {
+    return url;
   }
-];
+  
+  // Assume it's a file name in your public/product-images folder
+  return `/product-images/${url}`;
+};
 
 export const categories: Category[] = [
     { id: 'Decorative Lighting and chandeliers', name: 'Lighting & Chandeliers' },
@@ -82,26 +67,27 @@ export const carouselCategories: CarouselCategory[] = [
     },
 ];
 
-export const availableAvatars: { url: string; alt: string }[] = [
-  { url: '/richard-kinyungu.jpg', alt: 'Richard Kinyungu' },
-  { url: '/peter-karanja.jpg', alt: 'Peter Karanja' },
-  { url: '/miriam-njeri.jpg', alt: 'Miriam Njeri' },
-  { url: '/val.jpg', alt: 'Val' },
-  { url: '/shangi.jpg', alt: 'Shangi' },
-];
-
 export async function getProducts(): Promise<Product[]> {
-  if (!db) return [];
   try {
-    const productsCol = collection(db, "products");
-    const q = query(productsCol, orderBy("name", "asc"));
-    const snapshot = await getDocs(q);
-    return snapshot.docs.map(doc => ({ 
-      id: doc.id, 
-      ...doc.data() 
-    } as Product));
+    // Graceful fallback if Supabase is not configured
+    if (!supabase) {
+      console.warn("getProducts: Supabase client is null. Returning empty catalog.");
+      return [];
+    }
+
+    const { data, error } = await supabase
+      .from('products')
+      .select('*')
+      .order('name', { ascending: true });
+
+    if (error) throw error;
+
+    return (data || []).map(p => ({
+      ...p,
+      imageUrls: (p.imageUrls || []).map(transformImageUrl)
+    })) as Product[];
   } catch (error) {
-    console.error("Error fetching products from Firestore:", error);
+    console.error("Error fetching products from Supabase:", error);
     return [];
   }
 }
@@ -111,53 +97,19 @@ export async function getCategories(): Promise<Category[]> {
 }
 
 export async function getUsers(): Promise<MockUser[]> {
-  if (!db) return Promise.resolve(MOCK_USERS);
   try {
-    const usersCol = collection(db, "users");
-    const snapshot = await getDocs(usersCol);
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as MockUser));
+    if (!supabase) return [];
+    
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*');
+
+    if (error) throw error;
+    return data as any[];
   } catch (error) {
     console.error("Error fetching users:", error);
-    return Promise.resolve(MOCK_USERS);
+    return [];
   }
-}
-
-export async function getUserByEmail(email: string): Promise<MockUser | undefined> {
-  if (!db) return Promise.resolve(MOCK_USERS.find(u => u.email === email));
-  try {
-    const usersCol = collection(db, "users");
-    const q = query(usersCol, where("email", "==", email));
-    const snapshot = await getDocs(q);
-    if (!snapshot.empty) {
-      return { id: snapshot.docs[0].id, ...snapshot.docs[0].data() } as MockUser;
-    }
-  } catch (error) {
-    console.error("Error fetching user by email:", error);
-  }
-  return Promise.resolve(MOCK_USERS.find(u => u.email === email));
-}
-
-export async function signUpUser(userData: any): Promise<MockUser> {
-    const id = userData.uid || `user-${Date.now()}`;
-    const newUser: MockUser = {
-        id,
-        ...userData,
-        role: userData.role || 'user',
-        signedUp: new Date().toISOString(),
-        lastSeen: new Date().toISOString(),
-        orders: 0,
-        visitDuration: 0,
-    };
-    
-    if (db) {
-        try {
-            await setDoc(doc(db, "users", id), newUser, { merge: true });
-        } catch (error) {
-            console.error("Error saving user to Firestore:", error);
-        }
-    }
-    
-    return newUser;
 }
 
 export async function getTransactions(): Promise<Transaction[]> {

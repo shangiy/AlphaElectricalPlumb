@@ -3,11 +3,8 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import type { Product } from '@/lib/types';
-import { db } from '@/lib/firebase';
-import { collection, onSnapshot, query, orderBy, doc, updateDoc } from 'firebase/firestore';
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
-import { updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { supabase } from '@/lib/supabase';
+import { getProducts } from '@/lib/data';
 
 interface ProductProviderProps {
   children: ReactNode;
@@ -41,61 +38,56 @@ export function ProductProvider({ children }: ProductProviderProps) {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
-  useEffect(() => {
-    if (!db) {
-        setLoading(false);
-        return;
-    }
-
-    const productsCollection = collection(db, "products");
-    const productsQuery = query(productsCollection, orderBy("name", "asc"));
-
-    const unsubscribe = onSnapshot(productsQuery, 
-        (snapshot) => {
-            const productList = snapshot.docs.map(doc => ({ 
-                id: doc.id, 
-                stockCount: 0, // Fallback for missing field
-                isFeatured: false, // Fallback for missing field
-                ...doc.data() 
-            } as Product));
-            
-            setProducts(productList);
-            setLoading(false);
-        }, 
-        async (serverError) => {
-            const permissionError = new FirestorePermissionError({
-                path: 'products',
-                operation: 'list',
-            } satisfies SecurityRuleContext);
-            errorEmitter.emit('permission-error', permissionError);
-            setLoading(false);
-        }
-    );
-
-    return () => unsubscribe();
+  const fetchProducts = useCallback(async () => {
+    setLoading(true);
+    const data = await getProducts();
+    setProducts(data);
+    setLoading(false);
   }, []);
 
+  useEffect(() => {
+    fetchProducts();
+
+    if (!supabase) return;
+
+    // Set up real-time subscription for product updates
+    const channel = supabase
+      .channel('public:products')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => {
+        fetchProducts();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [fetchProducts]);
+
   const addProduct = useCallback(async (productData: ProductFormData) => {
-    // Implementation for real Firebase add goes here in a full app
-    console.log("Add product requested", productData);
+    if (!supabase) throw new Error("Database service is unavailable.");
+    setSubmitting(true);
+    try {
+      const { error } = await supabase.from('products').insert([productData]);
+      if (error) throw error;
+    } finally {
+      setSubmitting(false);
+    }
   }, []);
 
   const updateProduct = useCallback(async (productId: string, productData: Partial<ProductFormData>) => {
-    if (!db) return;
-    const productRef = doc(db, 'products', productId);
-    updateDocumentNonBlocking(productRef, productData);
+    if (!supabase) throw new Error("Database service is unavailable.");
+    const { error } = await supabase.from('products').update(productData).eq('id', productId);
+    if (error) throw error;
   }, []);
 
-  const toggleFeatured = useCallback((productId: string, currentStatus: boolean) => {
-    if (!db) return;
-    const productRef = doc(db, "products", productId);
-    updateDocumentNonBlocking(productRef, { isFeatured: !currentStatus });
+  const toggleFeatured = useCallback(async (productId: string, currentStatus: boolean) => {
+    if (!supabase) return;
+    await supabase.from('products').update({ isFeatured: !currentStatus }).eq('id', productId);
   }, []);
 
-  const updateStock = useCallback((productId: string, newCount: number) => {
-    if (!db) return;
-    const productRef = doc(db, "products", productId);
-    updateDocumentNonBlocking(productRef, { stockCount: Math.max(0, newCount) });
+  const updateStock = useCallback(async (productId: string, newCount: number) => {
+    if (!supabase) return;
+    await supabase.from('products').update({ stockCount: Math.max(0, newCount) }).eq('id', productId);
   }, []);
 
   const getProductById = useCallback((productId: string): Product | undefined => {

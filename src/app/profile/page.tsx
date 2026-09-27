@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useForm } from 'react-hook-form';
@@ -23,9 +22,7 @@ import { useEffect, useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Loader2, User as UserIcon } from 'lucide-react';
 import AvatarSelectionDialog from '@/components/auth/AvatarSelectionDialog';
-import { doc } from 'firebase/firestore';
-import { useFirestore, updateDocumentNonBlocking } from '@/firebase';
-
+import { supabase } from '@/lib/supabase';
 
 const profileFormSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters.'),
@@ -39,7 +36,6 @@ type ProfileFormValues = z.infer<typeof profileFormSchema>;
 function ProfileContent() {
     const { toast } = useToast();
     const { user, updateUser } = useAuth();
-    const firestore = useFirestore();
     const [isAvatarDialogOpen, setIsAvatarDialogOpen] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
 
@@ -76,35 +72,44 @@ function ProfileContent() {
 
 
     async function onSubmit(data: ProfileFormValues) {
-        if (!user || !firestore) return;
+        if (!user || !supabase) return;
         setIsSaving(true);
 
-        // 1. Initiate Firestore Update (Non-Blocking Pattern)
-        const userRef = doc(firestore, 'users', user.id);
-        const updateData = {
-            name: data.name,
-            username: data.username,
-            avatarUrl: data.avatarUrl,
-            lastActive: new Date().toISOString()
-        };
+        try {
+            // Update Supabase profile
+            const { error } = await supabase
+                .from('profiles')
+                .update({
+                    name: data.name,
+                    username: data.username,
+                    avatar_url: data.avatarUrl,
+                })
+                .eq('id', user.id);
 
-        updateDocumentNonBlocking(userRef, updateData);
+            if (error) throw error;
 
-        // 2. Update local state for immediate UI feedback
-        updateUser({ 
-            name: data.name,
-            username: data.username,
-            avatarUrl: data.avatarUrl
-        });
+            // Update local context state
+            updateUser({ 
+                name: data.name,
+                username: data.username,
+                avatarUrl: data.avatarUrl
+            });
 
-        // 3. Provide feedback and reset form state
-        toast({
-            title: "Profile Updated!",
-            description: "Your changes have been saved to your account.",
-        });
-        
-        form.reset(data);
-        setIsSaving(false);
+            toast({
+                title: "Profile Updated!",
+                description: "Your changes have been saved to your account.",
+            });
+            
+            form.reset(data);
+        } catch (error) {
+            toast({
+                variant: "destructive",
+                title: "Update Failed",
+                description: "Could not save your profile changes. Please try again.",
+            });
+        } finally {
+            setIsSaving(false);
+        }
     }
 
     return (
@@ -119,7 +124,7 @@ function ProfileContent() {
                     <CardHeader>
                         <CardTitle className="text-2xl font-headline text-primary">My Profile</CardTitle>
                         <CardDescription>
-                            View and update your personal information here. Changes are saved to your account permanently in Firestore.
+                            View and update your personal information here. Changes are saved to your account permanently in Supabase.
                         </CardDescription>
                     </CardHeader>
                     <CardContent>

@@ -1,9 +1,8 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useFirebase, useCollection, useMemoFirebase, useUser } from '@/firebase';
-import { collection, query, orderBy, serverTimestamp, Timestamp } from 'firebase/firestore';
-import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/context/AuthProvider';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -33,26 +32,46 @@ interface ReviewData {
     userName: string;
     rating: number;
     comment: string;
-    createdAt: Timestamp;
+    createdAt: string;
 }
 
 export default function CustomerReviews() {
-    const { firestore } = useFirebase();
-    const { user } = useUser();
+    const { user } = useAuth();
     const { toast } = useToast();
+    const [reviews, setReviews] = useState<ReviewData[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [mounted, setMounted] = useState(false);
 
-    useEffect(() => {
-        setMounted(true);
+    const fetchReviews = useCallback(async () => {
+        if (!supabase) return;
+        setIsLoading(true);
+        try {
+            const { data, error } = await supabase
+                .from('reviews')
+                .select('*')
+                .order('created_at', { ascending: false });
+            
+            if (error) throw error;
+            
+            setReviews((data || []).map(r => ({
+                id: r.id,
+                userName: r.user_name,
+                rating: r.rating,
+                comment: r.comment,
+                createdAt: r.created_at
+            })));
+        } catch (error) {
+            console.error("Error fetching reviews:", error);
+        } finally {
+            setIsLoading(false);
+        }
     }, []);
 
-    const reviewsQuery = useMemoFirebase(() => {
-        if (!firestore) return null;
-        return query(collection(firestore, 'reviews'), orderBy('createdAt', 'desc'));
-    }, [firestore]);
-
-    const { data: reviews, isLoading } = useCollection<ReviewData>(reviewsQuery);
+    useEffect(() => {
+        setMounted(true);
+        fetchReviews();
+    }, [fetchReviews]);
 
     const form = useForm<ReviewFormValues>({
         resolver: zodResolver(reviewSchema),
@@ -63,10 +82,9 @@ export default function CustomerReviews() {
         },
     });
 
-    // Pre-fill user name from social account if available
     useEffect(() => {
-        if (user?.displayName && !form.getValues('userName')) {
-            form.setValue('userName', user.displayName);
+        if (user?.name && !form.getValues('userName')) {
+            form.setValue('userName', user.name);
         }
     }, [user, form]);
 
@@ -77,32 +95,42 @@ export default function CustomerReviews() {
     const scrollPrev = useCallback(() => emblaApi && emblaApi.scrollPrev(), [emblaApi]);
     const scrollNext = useCallback(() => emblaApi && emblaApi.scrollNext(), [emblaApi]);
 
-    const onSubmit = (values: ReviewFormValues) => {
-        if (!firestore) return;
+    const onSubmit = async (values: ReviewFormValues) => {
+        if (!supabase) return;
 
-        const reviewData = {
-            ...values,
-            createdAt: serverTimestamp(),
-        };
+        try {
+            const { error } = await supabase.from('reviews').insert([{
+                user_name: values.userName,
+                rating: values.rating,
+                comment: values.comment
+            }]);
 
-        addDocumentNonBlocking(collection(firestore, 'reviews'), reviewData);
-        
-        toast({
-            title: "Review Submitted!",
-            description: "Thank you for your feedback.",
-        });
-        
-        form.reset({
-            userName: user?.displayName || '',
-            rating: 5,
-            comment: '',
-        });
-        setIsDialogOpen(false);
+            if (error) throw error;
+
+            toast({
+                title: "Review Submitted!",
+                description: "Thank you for your feedback.",
+            });
+            
+            form.reset({
+                userName: user?.name || '',
+                rating: 5,
+                comment: '',
+            });
+            setIsDialogOpen(false);
+            fetchReviews();
+        } catch (error) {
+            toast({
+                variant: "destructive",
+                title: "Error",
+                description: "Could not submit review. Please try again.",
+            });
+        }
     };
 
-    const formatDate = (timestamp: Timestamp) => {
-        if (!timestamp) return 'Just now';
-        return timestamp.toDate().toLocaleDateString('en-KE', {
+    const formatDate = (dateString: string) => {
+        if (!dateString) return 'Just now';
+        return new Date(dateString).toLocaleDateString('en-KE', {
             year: 'numeric',
             month: 'long',
             day: 'numeric',
