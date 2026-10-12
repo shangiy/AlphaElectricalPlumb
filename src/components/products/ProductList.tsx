@@ -8,8 +8,8 @@ import { Package } from 'lucide-react';
 
 /**
  * ProductList Component
- * Unified to use the ProductProvider hook, which leverages the 
- * Master Image Resolver in lib/data.ts for consistent image loading.
+ * Mark as 'use client' to handle dynamic data fetching from Supabase.
+ * Leverages the ProductProvider for consistent real-time updates.
  */
 export default function ProductList() {
   const { products, loading } = useProducts();
@@ -34,9 +34,9 @@ export default function ProductList() {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center border-2 border-dashed rounded-3xl bg-muted/10 border-muted-foreground/20">
         <Package className="h-12 w-12 text-muted-foreground mb-4 opacity-20" />
-        <h3 className="text-xl font-bold text-muted-foreground font-headline">No Products Listed</h3>
+        <h3 className="text-xl font-bold text-muted-foreground font-headline">Inventory Synchronizing</h3>
         <p className="text-sm text-muted-foreground mt-2 max-w-xs mx-auto">
-          We are currently updating our inventory. Please check back shortly for our new arrivals.
+          We are currently mapping your Supabase Storage to the storefront. Please refresh in a moment.
         </p>
       </div>
     );
@@ -45,9 +45,9 @@ export default function ProductList() {
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold font-headline text-accent">Our Product Catalog</h2>
+        <h2 className="text-2xl font-bold font-headline text-accent">Product Catalog</h2>
         <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest bg-muted px-3 py-1 rounded-full">
-          {products.length} Items Syncing
+          {products.length} Items Available
         </span>
       </div>
       

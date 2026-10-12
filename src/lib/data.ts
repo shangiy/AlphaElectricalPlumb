@@ -5,72 +5,65 @@ import placeholderImages from '@/app/lib/placeholder-images.json';
 
 /**
  * Robust Image URL Resolver:
- * 1. Handles 'Saved Pictures/' prefix removal.
- * 2. Normalizes backslashes to forward slashes.
- * 3. Provides fallbacks for local 'public/product-images/' folder.
- * 4. Generates authenticated-safe public URLs from Supabase Storage.
+ * This function handles the specific "Saved Pictures/" prefix found in your Supabase DB.
+ * It generates URLs for both the stripped path and the full path to ensure coverage.
  */
 const resolveProductImage = (p: any): string[] => {
-  let images: string[] = [];
+  const images: string[] = [];
 
   const normalize = (path: string) => {
     if (!path || typeof path !== 'string') return '';
     return path.trim().replace(/\\/g, '/').replace(/^\//, '');
   };
 
-  // 1. Resolve image_path column (Primary Supabase Storage source)
-  const rawPath = normalize(p.image_path || p.image_path || '');
+  // 1. Resolve from image_path column (Main Supabase Source)
+  const rawPath = normalize(p.image_path || '');
   if (rawPath && supabase) {
-    // Try cleaned path (strip 'Saved Pictures/')
-    const cleanPath = rawPath.replace(/^Saved Pictures\//i, '');
-    const { data: cleanData } = supabase.storage.from('product-images').getPublicUrl(cleanPath);
-    if (cleanData?.publicUrl) images.push(cleanData.publicUrl);
+    const bucket = 'product-images';
     
-    // Also try the original path in case the folder was uploaded as 'Saved Pictures'
-    if (cleanPath !== rawPath) {
-      const { data: origData } = supabase.storage.from('product-images').getPublicUrl(rawPath);
-      if (origData?.publicUrl) images.push(origData.publicUrl);
-    }
+    // Variation A: Strip 'Saved Pictures/' (e.g. "solar/panel.jpg")
+    const cleanPath = rawPath.replace(/^Saved Pictures\//i, '');
+    const { data: cleanUrl } = supabase.storage.from(bucket).getPublicUrl(cleanPath);
+    if (cleanUrl?.publicUrl) images.push(cleanUrl.publicUrl);
+
+    // Variation B: Keep full path (e.g. "Saved Pictures/solar/panel.jpg")
+    const { data: fullUrl } = supabase.storage.from(bucket).getPublicUrl(rawPath);
+    if (fullUrl?.publicUrl && !images.includes(fullUrl.publicUrl)) images.push(fullUrl.publicUrl);
+    
+    // Variation C: Local Public Folder Fallback
+    const fileName = cleanPath.split('/').pop();
+    if (fileName) images.push(`/product-images/${fileName}`);
   }
 
-  // 2. Resolve imageUrls array (Handles filenames for local public folder or array of paths)
+  // 2. Resolve from imageUrls/image_urls array
   const rawUrls = p.imageUrls || p.image_urls || [];
   const urlArray = Array.isArray(rawUrls) ? rawUrls : (typeof rawUrls === 'string' ? [rawUrls] : []);
   
   urlArray.forEach((u: string) => {
-    if (!u || typeof u !== 'string') return;
+    if (!u) return;
     const norm = normalize(u);
-    
     if (norm.startsWith('http')) {
       if (!images.includes(norm)) images.push(norm);
     } else {
-      // Case: Just a filename (e.g. "tank.jpg") -> check public/product-images/
       const fileName = norm.split('/').pop();
-      const localPath = `/product-images/${fileName}`;
-      if (!images.includes(localPath)) images.push(localPath);
-      
-      // Also try it as a storage path in the bucket
-      if (supabase) {
-        const { data: storageData } = supabase.storage.from('product-images').getPublicUrl(norm.replace(/^Saved Pictures\//i, ''));
-        if (storageData?.publicUrl && !images.includes(storageData.publicUrl)) images.push(storageData.publicUrl);
-      }
+      images.push(`/product-images/${fileName}`);
     }
   });
 
-  // 3. legacy image_url fallback
+  // 3. Resolve from legacy image_url column
   if (p.image_url && typeof p.image_url === 'string' && !images.includes(p.image_url)) {
     images.push(p.image_url);
   }
 
   // Deduplicate and filter empty strings
-  images = Array.from(new Set(images.filter(Boolean)));
+  const finalImages = Array.from(new Set(images.filter(Boolean)));
 
-  // Final Fallback
-  if (images.length === 0) {
-    images.push("https://placehold.co/600x800?text=Image+Not+Found");
+  // Global Fallback
+  if (finalImages.length === 0) {
+    finalImages.push("https://placehold.co/600x800?text=Image+Not+Found");
   }
 
-  return images;
+  return finalImages;
 };
 
 export const categories: Category[] = [
@@ -134,9 +127,9 @@ export async function getProducts(): Promise<Product[]> {
       ...p,
       imageUrls: resolveProductImage(p),
       price: Number(p.price) || 0,
-      stockCount: Number(p.stock_count || p.stockCount) || 0,
-      rating: Number(p.rating) || 5,
-      reviews: Number(p.reviews) || 0
+      stockCount: Number(p.stock_count || p.stockCount || 0),
+      rating: Number(p.rating || 5),
+      reviews: Number(p.reviews || 0)
     })) as Product[];
   } catch (error) {
     console.error("Error fetching products from Supabase:", error);
