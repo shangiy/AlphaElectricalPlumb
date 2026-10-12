@@ -4,20 +4,26 @@ import { supabase } from './supabase';
 import placeholderImages from '@/app/lib/placeholder-images.json';
 
 /**
- * Robust Image URL Resolver:
- * Implements the exact logic to strip 'Saved Pictures/' and fetch from 'product-images' bucket.
+ * Master Image URL Resolver:
+ * Strips the 'Saved Pictures/' prefix and builds a public URL from the 'product-images' bucket.
  */
 const resolveProductImage = (product: any): string[] => {
   if (!supabase) return ["/placeholder.jpg"];
 
-  // EXACT LOGIC FROM USER
+  // EXACT LOGIC FROM USER REQUEST:
+  // 1. Get raw path and trim
   const rawPath = product.image_path?.trim() ?? '';
+  // 2. Strip 'Saved Pictures/' prefix if present
   const cleanPath = rawPath.replace(/^Saved Pictures\//, '');
   
-  const { data } = supabase.storage.from('product-images').getPublicUrl(cleanPath);
-  const imageUrl = cleanPath ? data.publicUrl : '/placeholder.jpg';
+  // 3. Generate public URL from 'product-images' bucket
+  if (cleanPath) {
+    const { data } = supabase.storage.from('product-images').getPublicUrl(cleanPath);
+    return [data.publicUrl];
+  }
 
-  return [imageUrl];
+  // Fallback to image_url if path is missing, or placeholder
+  return [product.image_url || "/placeholder.jpg"];
 };
 
 export const categories: Category[] = [

@@ -9,6 +9,7 @@ import { Package } from 'lucide-react';
 /**
  * ProductList Component
  * Displays the product catalog fetched from Supabase.
+ * Uses the centralized ProductProvider for state management.
  */
 export default function ProductList() {
   const { products, loading } = useProducts();
@@ -35,7 +36,7 @@ export default function ProductList() {
         <Package className="h-12 w-12 text-muted-foreground mb-4 opacity-20" />
         <h3 className="text-xl font-bold text-muted-foreground font-headline">No Products Found</h3>
         <p className="text-sm text-muted-foreground mt-2 max-w-xs mx-auto">
-          We couldn't find any products in the database. Please check your Supabase dashboard.
+          We couldn't find any products in the database. Please check your Supabase dashboard or the project configuration.
         </p>
       </div>
     );
