@@ -83,8 +83,10 @@ export async function getProducts(): Promise<Product[]> {
     if (error) throw error;
 
     return (data || []).map(p => {
-      // 1. Resolve image_path from Supabase Storage
+      // 1. Resolve image_path from Supabase Storage (Bucket: product-images)
       const rawPath = p.image_path?.trim() ?? '';
+      // Based on dashboard, paths are "Saved Pictures/folder/file.jpg"
+      // We strip "Saved Pictures/" to map to the root of the "product-images" bucket
       const cleanPath = rawPath.replace(/^Saved Pictures\//, '');
       
       let storageUrl = null;
@@ -92,11 +94,13 @@ export async function getProducts(): Promise<Product[]> {
         storageUrl = supabase.storage.from('product-images').getPublicUrl(cleanPath).data.publicUrl;
       }
 
-      // 2. Resolve other URLs (public/product-images or external)
+      // 2. Resolve other URLs if they exist in the imageUrls array
       const otherUrls = (p.imageUrls || []).map(transformImageUrl);
 
-      // Prioritize the Storage URL (image_path) if available
-      const finalUrls = storageUrl ? [storageUrl, ...otherUrls] : (otherUrls.length > 0 ? otherUrls : ["/placeholder.jpg"]);
+      // Prioritize the Storage URL (image_path) if available, then raw URLs
+      const finalUrls = storageUrl 
+        ? [storageUrl, ...otherUrls] 
+        : (otherUrls.length > 0 ? otherUrls : ["https://placehold.co/600x800?text=No+Image"]);
 
       return {
         ...p,

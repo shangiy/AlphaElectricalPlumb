@@ -63,8 +63,10 @@ export default function ProductList() {
       
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
         {products.map((product) => {
-          // Image Path Resolution Logic
+          // Image Path Resolution Logic matching dashboard screenshot
           const rawPath = product.image_path?.trim() ?? ''
+          
+          // Remove "Saved Pictures/" prefix if folders like "solar/" are at the bucket root
           const cleanPath = rawPath.replace(/^Saved Pictures\//, '')
 
           const imageUrl = cleanPath
