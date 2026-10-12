@@ -5,6 +5,7 @@ import placeholderImages from '@/app/lib/placeholder-images.json';
 /**
  * Master Image URL Resolver:
  * Strips the 'Saved Pictures/' prefix and builds a public URL from the 'product-images' bucket.
+ * Accounts for the 'product images' folder seen in the Supabase Storage dashboard.
  */
 const resolveProductImage = (product: any): string[] => {
   if (!supabase) return ["/placeholder.jpg"];
@@ -12,24 +13,25 @@ const resolveProductImage = (product: any): string[] => {
   // 1. Get raw path from database column 'image_path'
   const rawPath = product.image_path?.trim() ?? '';
   
-  // 2. Strip 'Saved Pictures/' prefix if present (handles both forward and backward slashes)
-  const cleanPath = rawPath.replace(/^(Saved Pictures[\\\/])/, '');
+  if (!rawPath) {
+    // Fallback to direct image_url column or placeholder
+    if (product.image_url) return [product.image_url];
+    return ["/placeholder.jpg"];
+  }
+
+  // 2. Strip 'Saved Pictures/' prefix if present
+  let cleanPath = rawPath.replace(/^(Saved Pictures[\\\/])/, '');
   
-  // 3. Generate public URL from 'product-images' bucket
+  // 3. Prepend the actual storage folder name found in Supabase (as seen in screenshot breadcrumbs)
+  // If the path doesn't already start with the storage folder, add it.
+  if (cleanPath && !cleanPath.toLowerCase().startsWith('product images/')) {
+    cleanPath = `product images/${cleanPath}`;
+  }
+  
+  // 4. Generate public URL from 'product-images' bucket
   if (cleanPath) {
     const { data } = supabase.storage.from('product-images').getPublicUrl(cleanPath);
     return [data.publicUrl];
-  }
-
-  // Fallback 1: Direct image_url column
-  if (product.image_url) {
-    return [product.image_url];
-  }
-
-  // Fallback 2: Local public folder (matching filenames)
-  if (product.name) {
-    const localPath = `/product-images/${product.name.toLowerCase().replace(/\s+/g, '-')}.jpg`;
-    return [localPath];
   }
 
   return ["/placeholder.jpg"];
