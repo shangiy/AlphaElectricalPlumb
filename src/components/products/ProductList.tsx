@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useProducts } from '@/context/ProductProvider';
@@ -7,8 +8,8 @@ import { Package } from 'lucide-react';
 
 /**
  * ProductList Component
- * Renders the main grid of products fetched from Supabase.
- * Uses the ProductProvider for real-time data sync.
+ * Unified to use the ProductProvider hook, which leverages the 
+ * Master Image Resolver in lib/data.ts for consistent image loading.
  */
 export default function ProductList() {
   const { products, loading } = useProducts();
@@ -44,9 +45,9 @@ export default function ProductList() {
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold font-headline text-accent">Latest Arrivals</h2>
+        <h2 className="text-2xl font-bold font-headline text-accent">Our Product Catalog</h2>
         <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest bg-muted px-3 py-1 rounded-full">
-          {products.length} Items Available
+          {products.length} Items Syncing
         </span>
       </div>
       
