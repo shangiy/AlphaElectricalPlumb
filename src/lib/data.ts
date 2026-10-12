@@ -1,4 +1,3 @@
-
 import type { Product, Category, MockUser, Transaction, CarouselCategory } from './types';
 import { supabase } from './supabase';
 import placeholderImages from '@/app/lib/placeholder-images.json';
@@ -10,7 +9,7 @@ import placeholderImages from '@/app/lib/placeholder-images.json';
 const resolveProductImage = (product: any): string[] => {
   if (!supabase) return ["/placeholder.jpg"];
 
-  // 1. Get raw path from database
+  // 1. Get raw path from database column 'image_path'
   const rawPath = product.image_path?.trim() ?? '';
   
   // 2. Strip 'Saved Pictures/' prefix if present (handles both forward and backward slashes)
@@ -22,8 +21,18 @@ const resolveProductImage = (product: any): string[] => {
     return [data.publicUrl];
   }
 
-  // Fallback to explicit image_url column or placeholder
-  return [product.image_url || "/placeholder.jpg"];
+  // Fallback 1: Direct image_url column
+  if (product.image_url) {
+    return [product.image_url];
+  }
+
+  // Fallback 2: Local public folder (matching filenames)
+  if (product.name) {
+    const localPath = `/product-images/${product.name.toLowerCase().replace(/\s+/g, '-')}.jpg`;
+    return [localPath];
+  }
+
+  return ["/placeholder.jpg"];
 };
 
 export const categories: Category[] = [

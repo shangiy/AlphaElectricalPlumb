@@ -1,4 +1,3 @@
-
 import { createClient } from '@supabase/supabase-js';
 
 // Specific project credentials for Alpha Electricals & Plumbing Ltd

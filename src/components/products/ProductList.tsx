@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useProducts } from '@/context/ProductProvider';
@@ -9,7 +8,8 @@ import { Package } from 'lucide-react';
 /**
  * ProductList Component
  * Displays the product catalog fetched from Supabase.
- * The image resolution (stripping prefixes) is handled centrally in ProductProvider/data.ts.
+ * The image resolution (stripping prefixes) is handled centrally in lib/data.ts
+ * via the ProductProvider to ensure consistency.
  */
 export default function ProductList() {
   const { products, loading } = useProducts();
