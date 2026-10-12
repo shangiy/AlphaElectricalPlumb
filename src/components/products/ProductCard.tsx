@@ -6,7 +6,7 @@ import type { Product } from '@/lib/types';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/context/CartProvider';
-import { Heart, Package, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Heart, Package, ChevronLeft, ChevronRight, MessageCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Rating } from '@/components/ui/rating';
 import { cn } from '@/lib/utils';
@@ -41,6 +41,13 @@ export default function ProductCard({ product }: ProductCardProps) {
       title: 'Added to Wishlist!',
       description: `${product.name} has been saved for later.`,
     });
+  };
+
+  const handleWhatsAppInquiry = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const phoneNumber = '254117484887';
+    const message = `Hello Alpha Electricals, I am interested in inquiring about the ${product.name} (KES ${product.price}). Please provide more details.`;
+    window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank');
   };
 
   const nextImage = (e: React.MouseEvent) => {
@@ -96,15 +103,26 @@ export default function ProductCard({ product }: ProductCardProps) {
             </div>
         )}
         
-        <Button
-            size="icon"
-            variant="ghost"
-            className="absolute top-3 right-3 h-9 w-9 rounded-full bg-white/90 hover:bg-white text-destructive z-20 shadow-sm"
-            onClick={handleWishlistClick}
-            aria-label="Add to wishlist"
-        >
-            <Heart className="h-5 w-5" />
-        </Button>
+        <div className="absolute top-3 right-3 flex flex-col gap-2 z-20">
+            <Button
+                size="icon"
+                variant="ghost"
+                className="h-9 w-9 rounded-full bg-white/90 hover:bg-white text-destructive shadow-sm"
+                onClick={handleWishlistClick}
+                aria-label="Add to wishlist"
+            >
+                <Heart className="h-5 w-5" />
+            </Button>
+            <Button
+                size="icon"
+                variant="ghost"
+                className="h-9 w-9 rounded-full bg-green-500/90 hover:bg-green-500 text-white shadow-sm"
+                onClick={handleWhatsAppInquiry}
+                aria-label="Inquire on WhatsApp"
+            >
+                <MessageCircle className="h-5 w-5" />
+            </Button>
+        </div>
       </CardHeader>
       
       <CardContent className="flex-grow p-5">

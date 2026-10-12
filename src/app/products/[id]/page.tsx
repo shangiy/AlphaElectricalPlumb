@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useParams, notFound, useRouter } from 'next/navigation';
@@ -5,7 +6,7 @@ import { useProducts } from '@/context/ProductProvider';
 import { Rating } from '@/components/ui/rating';
 import ProductRecommendations from '@/components/products/ProductRecommendations';
 import BuyNowButton from '@/components/products/ContactSellerForm';
-import { ShieldCheck, Truck, Wrench } from 'lucide-react';
+import { ShieldCheck, Truck, Wrench, MessageCircle } from 'lucide-react';
 import AddToCartButton from '@/components/products/AddToCartButton';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
@@ -45,6 +46,12 @@ function ProductContent({ productId }: { productId: string }) {
       currency: 'KES',
       currencyDisplay: 'code',
     }).format(price);
+  };
+
+  const handleWhatsAppInquiry = () => {
+    const phoneNumber = '254117484887';
+    const message = `Hello Alpha Electricals, I am inquiring about: ${product.name} (ID: ${product.id}). Price: ${formatPrice(product.price)}. Is this currently available for delivery?`;
+    window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank');
   };
 
   const isMeasurable = product.unit && product.unit !== 'item' && product.unit !== 'roll' && product.unit !== 'pack';
@@ -147,9 +154,19 @@ function ProductContent({ productId }: { productId: string }) {
                 </div>
             </div>
 
-            <div className="flex flex-col gap-6 sm:flex-row mt-4">
-                <AddToCartButton product={product} quantity={quantity}/>
-                <BuyNowButton product={product} quantity={quantity} />
+            <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-6 sm:flex-row">
+                    <AddToCartButton product={product} quantity={quantity}/>
+                    <BuyNowButton product={product} quantity={quantity} />
+                </div>
+                <Button 
+                    variant="outline" 
+                    size="xl" 
+                    className="w-full border-green-500 text-green-600 hover:bg-green-500 hover:text-white"
+                    onClick={handleWhatsAppInquiry}
+                >
+                    <MessageCircle className="mr-2 h-7 w-7" /> Inquire via WhatsApp
+                </Button>
             </div>
             
             <div className="flex items-center gap-4 p-6 rounded-[2rem] bg-secondary/5 border border-dashed">

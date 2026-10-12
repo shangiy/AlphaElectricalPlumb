@@ -19,7 +19,7 @@ const resolveProductImage = (p: any): string[] => {
   };
 
   // 1. Resolve image_path column (Primary Supabase Storage source)
-  const rawPath = normalize(p.image_path || p.imagePath || '');
+  const rawPath = normalize(p.image_path || p.image_path || '');
   if (rawPath && supabase) {
     // Try cleaned path (strip 'Saved Pictures/')
     const cleanPath = rawPath.replace(/^Saved Pictures\//i, '');
