@@ -5,65 +5,19 @@ import placeholderImages from '@/app/lib/placeholder-images.json';
 
 /**
  * Robust Image URL Resolver:
- * This function handles the specific "Saved Pictures/" prefix found in your Supabase DB.
- * It generates URLs for both the stripped path and the full path to ensure coverage.
+ * Implements the exact logic to strip 'Saved Pictures/' and fetch from 'product-images' bucket.
  */
-const resolveProductImage = (p: any): string[] => {
-  const images: string[] = [];
+const resolveProductImage = (product: any): string[] => {
+  if (!supabase) return ["/placeholder.jpg"];
 
-  const normalize = (path: string) => {
-    if (!path || typeof path !== 'string') return '';
-    return path.trim().replace(/\\/g, '/').replace(/^\//, '');
-  };
-
-  // 1. Resolve from image_path column (Main Supabase Source)
-  const rawPath = normalize(p.image_path || '');
-  if (rawPath && supabase) {
-    const bucket = 'product-images';
-    
-    // Variation A: Strip 'Saved Pictures/' (e.g. "solar/panel.jpg")
-    const cleanPath = rawPath.replace(/^Saved Pictures\//i, '');
-    const { data: cleanUrl } = supabase.storage.from(bucket).getPublicUrl(cleanPath);
-    if (cleanUrl?.publicUrl) images.push(cleanUrl.publicUrl);
-
-    // Variation B: Keep full path (e.g. "Saved Pictures/solar/panel.jpg")
-    const { data: fullUrl } = supabase.storage.from(bucket).getPublicUrl(rawPath);
-    if (fullUrl?.publicUrl && !images.includes(fullUrl.publicUrl)) images.push(fullUrl.publicUrl);
-    
-    // Variation C: Local Public Folder Fallback
-    const fileName = cleanPath.split('/').pop();
-    if (fileName) images.push(`/product-images/${fileName}`);
-  }
-
-  // 2. Resolve from imageUrls/image_urls array
-  const rawUrls = p.imageUrls || p.image_urls || [];
-  const urlArray = Array.isArray(rawUrls) ? rawUrls : (typeof rawUrls === 'string' ? [rawUrls] : []);
+  // EXACT LOGIC FROM USER
+  const rawPath = product.image_path?.trim() ?? '';
+  const cleanPath = rawPath.replace(/^Saved Pictures\//, '');
   
-  urlArray.forEach((u: string) => {
-    if (!u) return;
-    const norm = normalize(u);
-    if (norm.startsWith('http')) {
-      if (!images.includes(norm)) images.push(norm);
-    } else {
-      const fileName = norm.split('/').pop();
-      images.push(`/product-images/${fileName}`);
-    }
-  });
+  const { data } = supabase.storage.from('product-images').getPublicUrl(cleanPath);
+  const imageUrl = cleanPath ? data.publicUrl : '/placeholder.jpg';
 
-  // 3. Resolve from legacy image_url column
-  if (p.image_url && typeof p.image_url === 'string' && !images.includes(p.image_url)) {
-    images.push(p.image_url);
-  }
-
-  // Deduplicate and filter empty strings
-  const finalImages = Array.from(new Set(images.filter(Boolean)));
-
-  // Global Fallback
-  if (finalImages.length === 0) {
-    finalImages.push("https://placehold.co/600x800?text=Image+Not+Found");
-  }
-
-  return finalImages;
+  return [imageUrl];
 };
 
 export const categories: Category[] = [

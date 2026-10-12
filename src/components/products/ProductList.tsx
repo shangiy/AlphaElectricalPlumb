@@ -8,8 +8,7 @@ import { Package } from 'lucide-react';
 
 /**
  * ProductList Component
- * Mark as 'use client' to handle dynamic data fetching from Supabase.
- * Leverages the ProductProvider for consistent real-time updates.
+ * Displays the product catalog fetched from Supabase.
  */
 export default function ProductList() {
   const { products, loading } = useProducts();
@@ -34,9 +33,9 @@ export default function ProductList() {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center border-2 border-dashed rounded-3xl bg-muted/10 border-muted-foreground/20">
         <Package className="h-12 w-12 text-muted-foreground mb-4 opacity-20" />
-        <h3 className="text-xl font-bold text-muted-foreground font-headline">Inventory Synchronizing</h3>
+        <h3 className="text-xl font-bold text-muted-foreground font-headline">No Products Found</h3>
         <p className="text-sm text-muted-foreground mt-2 max-w-xs mx-auto">
-          We are currently mapping your Supabase Storage to the storefront. Please refresh in a moment.
+          We couldn't find any products in the database. Please check your Supabase dashboard.
         </p>
       </div>
     );
