@@ -6,13 +6,13 @@ import placeholderImages from '@/app/lib/placeholder-images.json';
 /**
  * Image URL Transformer:
  * Resolves paths from Supabase Storage and handles local public folder fallbacks.
+ * Specifically handles the 'Saved Pictures/' prefix found in the database.
  */
 const resolveProductImage = (p: any): string[] => {
   const images: string[] = [];
 
-  // 1. Resolve image_path from Supabase Storage (Bucket: product-images)
-  // Logic: Strip "Saved Pictures/" prefix if present
-  const rawPath = p.image_path?.trim() ?? '';
+  // 1. Resolve image_path (prioritized for Supabase Storage)
+  const rawPath = (p.image_path || p.imagePath || '').trim();
   const cleanPath = rawPath.replace(/^Saved Pictures\//, '');
   
   if (cleanPath && supabase) {
@@ -35,14 +35,14 @@ const resolveProductImage = (p: any): string[] => {
     });
   }
 
-  // 3. Fallback to image_url column if provided (legacy support)
+  // 3. Fallback to legacy image_url column
   if (p.image_url && !images.includes(p.image_url)) {
     images.push(p.image_url);
   }
 
   // Final Fallback if no images found
   if (images.length === 0) {
-    images.push("https://placehold.co/600x800?text=No+Image");
+    images.push("https://placehold.co/600x800?text=No+Image+Available");
   }
 
   return images;
