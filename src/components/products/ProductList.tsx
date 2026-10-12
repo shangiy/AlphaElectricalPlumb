@@ -1,193 +1,53 @@
-'use client';
+import { useEffect, useState } from 'react'
+import { supabase } from '@/lib/supabaseClient'
 
-import { useState, useMemo, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
-import type { Product, Category } from '@/lib/types';
-import ProductCard from './ProductCard';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
-import { Slider } from '@/components/ui/slider';
-import { Button } from '@/components/ui/button';
-import { Search, Loader2 } from 'lucide-react';
-
-interface ProductListProps {
-  products: Product[];
-  categories: Category[];
-}
-
-export default function ProductList({ products, categories }: ProductListProps) {
-  const searchParams = useSearchParams();
-  const initialSearchTerm = searchParams.get('q') || '';
-  
-  const [searchTerm, setSearchTerm] = useState(initialSearchTerm);
-  const [category, setCategory] = useState('all');
-  
-  const maxPriceValue = useMemo(() => {
-    if (products.length === 0) return 500000;
-    const actualMax = Math.max(...products.map(p => p.price || 0));
-    return actualMax > 0 ? Math.ceil(actualMax / 1000) * 1000 : 500000;
-  }, [products]);
-
-  const [priceRange, setPriceRange] = useState([0, 500000]);
-  const [isPriceRangeInitialized, setIsPriceRangeInitialized] = useState(false);
-  const [sortOption, setSortOption] = useState('relevance');
+export default function ProductList() {
+  const [products, setProducts] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (products.length > 0 && !isPriceRangeInitialized) {
-      setPriceRange([0, maxPriceValue]);
-      setIsPriceRangeInitialized(true);
-    }
-  }, [products, maxPriceValue, isPriceRangeInitialized]);
+    async function fetchProducts() {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
 
-  useEffect(() => {
-    setSearchTerm(searchParams.get('q') || '');
-  }, [searchParams]);
-
-  const filteredAndSortedProducts = useMemo(() => {
-    let filtered = products;
-
-    if (searchTerm) {
-      const lowerCaseSearchTerm = searchTerm.toLowerCase();
-      filtered = filtered.filter((p) =>
-        p.name.toLowerCase().includes(lowerCaseSearchTerm) ||
-        (p.description && p.description.toLowerCase().includes(lowerCaseSearchTerm)) ||
-        (p.category && p.category.toLowerCase().includes(lowerCaseSearchTerm))
-      );
+      if (error) {
+        console.error('Error fetching products:', error)
+      } else {
+        setProducts(data || [])
+      }
+      setLoading(false)
     }
 
-    if (category !== 'all') {
-      filtered = filtered.filter((p) => p.category === category);
-    }
+    fetchProducts()
+  }, [])
 
-    filtered = filtered.filter(
-      (p) => (p.price || 0) >= priceRange[0] && (p.price || 0) <= priceRange[1]
-    );
+  if (loading) return <div>Loading catalog...</div>
 
-    switch (sortOption) {
-      case 'price-asc':
-        return [...filtered].sort((a, b) => (a.price || 0) - (b.price || 0));
-      case 'price-desc':
-        return [...filtered].sort((a, b) => (b.price || 0) - (a.price || 0));
-      case 'rating-desc':
-        return [...filtered].sort((a, b) => (b.rating || 0) - (a.rating || 0));
-      default:
-        return filtered;
-    }
-  }, [products, searchTerm, category, priceRange, sortOption]);
-
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-KE', { 
-      style: 'currency', 
-      currency: 'KES', 
-      currencyDisplay: 'code', 
-      minimumFractionDigits: 0 
-    }).format(price);
-  };
-  
   return (
-    <div>
-        <div className="mb-8">
-            {searchTerm ? (
-                <h1 className="text-3xl font-bold font-headline">Results for "{searchTerm}"</h1>
-            ) : (
-                <h1 className="text-3xl font-bold font-headline">All Products</h1>
-            )}
-            <p className="text-muted-foreground mt-1">
-              Showing {filteredAndSortedProducts.length} of {products.length} verified items
-            </p>
-        </div>
-        <div className="flex gap-8 items-start">
-          <aside className="hidden w-64 flex-col gap-6 lg:flex sticky top-28">
-            <h3 className="text-lg font-headline font-semibold">Filters</h3>
-            
-            <div>
-              <label htmlFor="category" className="mb-2 block text-sm font-medium">Category</label>
-              <Select value={category} onValueChange={setCategory}>
-                <SelectTrigger id="category">
-                  <SelectValue placeholder="Select a category" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem>
-                  {categories.map((c) => (
-                    <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+    <div style={{ padding: '20px' }}>
+      <h2>Alpha Electrical & Plumbing Catalog</h2>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '20px' }}>
+        {products.map((product) => {
+          // Generates the full public URL from your Supabase Storage bucket
+          const imageUrl = product.image_path
+            ? supabase.storage.from('products').getPublicUrl(product.image_path).data.publicUrl
+            : product.image_url || '/placeholder.jpg'
 
-            <div>
-               <label htmlFor="price" className="mb-2 block text-sm font-medium">Price Range</label>
-               <div className="flex justify-between text-xs text-muted-foreground mb-4">
-                   <span>{formatPrice(priceRange[0])}</span>
-                   <span>{formatPrice(priceRange[1])}</span>
-               </div>
-              <Slider
-                id="price"
-                min={0}
-                max={maxPriceValue}
-                step={100}
-                value={priceRange}
-                onValueChange={(value) => setPriceRange(value as [number, number])}
-                className="mt-2"
+          return (
+            <div key={product.id} style={{ border: '1px solid #e2e8f0', borderRadius: '8px', padding: '16px', textAlign: 'center' }}>
+              <img
+                src={imageUrl}
+                alt={product.name}
+                style={{ width: '100%', height: '200px', objectFit: 'contain', borderRadius: '6px' }}
               />
+              <h3 style={{ fontSize: '1.1rem', margin: '12px 0 6px' }}>{product.name}</h3>
+              <p style={{ fontWeight: 'bold', color: '#2563eb' }}>KES {product.price}</p>
+              <p style={{ fontSize: '0.9rem', color: '#64748b' }}>{product.description}</p>
             </div>
-
-            <Button variant="outline" className="w-full" onClick={() => {
-                setCategory('all');
-                setPriceRange([0, maxPriceValue]);
-                setSortOption('relevance');
-                setSearchTerm('');
-            }}>Clear All Filters</Button>
-
-          </aside>
-
-          <div className="flex-1">
-            <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                <div className="relative flex-grow">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                        placeholder="Search products by name or feature..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-9"
-                    />
-                </div>
-                <div className="flex items-center gap-2">
-                    <label htmlFor="sort-by" className="text-sm font-medium shrink-0">Sort</label>
-                    <Select value={sortOption} onValueChange={setSortOption}>
-                        <SelectTrigger id="sort-by" className="w-full md:w-[180px]">
-                            <SelectValue placeholder="Sort by" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="relevance">Relevance</SelectItem>
-                            <SelectItem value="price-asc">Price: Low to High</SelectItem>
-                            <SelectItem value="price-desc">Price: High to Low</SelectItem>
-                            <SelectItem value="rating-desc">Top Rated</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
-            </div>
-
-            {filteredAndSortedProducts.length > 0 ? (
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
-                {filteredAndSortedProducts.map((product) => (
-                  <ProductCard key={product.id} product={product} />
-                ))}
-              </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-border bg-card py-20 text-center">
-                <Search className="h-12 w-12 text-muted-foreground/30 mb-4" />
-                <h3 className="text-2xl font-headline font-semibold">No Matches Found</h3>
-                <p className="mt-2 text-muted-foreground max-w-xs mx-auto">
-                  Try adjusting your filters or checking your spelling. We have {products.length} other items in stock.
-                </p>
-                <Button variant="link" onClick={() => {setCategory('all'); setPriceRange([0, maxPriceValue]); setSearchTerm('')}}>
-                  Show All Products
-                </Button>
-              </div>
-            )}
-          </div>
-        </div>
+          )
+        })}
+      </div>
     </div>
-  );
+  )
 }

@@ -1,6 +1,7 @@
 import dynamic from 'next/dynamic';
 import Hero from '@/components/common/Hero';
 import HomepageAbout from '@/components/common/HomepageAbout';
+import ProductList from '@/components/products/ProductList';
 
 // Dynamically import heavy sections to split bundles and prevent ChunkLoadErrors
 const CategoryCarousel = dynamic(() => import('@/components/common/CategoryCarousel'), {
@@ -25,6 +26,12 @@ export default function Home() {
       <Hero />
       <CategoryCarousel />
       <FeaturedProducts />
+      
+      {/* Supabase Product Catalog Section */}
+      <section className="px-4 py-8">
+        <ProductList />
+      </section>
+
       <DeliveryServices />
       <HomepageAbout />
       <ImpactSection />
