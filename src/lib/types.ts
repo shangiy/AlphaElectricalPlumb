@@ -24,7 +24,8 @@ export interface Product {
   unit?: string;
   wholesale?: WholesalePrice;
   imageUrls: string[];
-  image_path?: string;
+  image_path?: string; // Supabase storage path
+  image_url?: string;  // Direct fallback URL
   category: string;
   rating: number;
   reviews: number;

@@ -1,13 +1,13 @@
 
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://mieyjseiypykozsfgazj.supabase.co';
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'sb_publishable_IF5Z1vWWAbG5b5Syl-ytTQ_u5G43LtM';
 
 /**
  * Supabase Client Initialization
- * Added a safety check to prevent the "supabaseUrl is required" crash 
- * if environment variables are missing during build or initial setup.
+ * Initialized with provided project credentials as fallbacks to ensure 
+ * the app works immediately in the Studio environment.
  */
 export const supabase = (supabaseUrl && supabaseAnonKey) 
   ? createClient(supabaseUrl, supabaseAnonKey)

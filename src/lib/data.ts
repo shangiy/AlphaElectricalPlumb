@@ -5,20 +5,47 @@ import placeholderImages from '@/app/lib/placeholder-images.json';
 
 /**
  * Image URL Transformer:
- * This helper ensures that if an image is meant to be stored in the public folder,
- * it maps correctly. It also handles legacy Firebase URLs by defaulting to a placeholder
- * if the Firebase site is down.
+ * Resolves paths from Supabase Storage and handles local public folder fallbacks.
  */
-const transformImageUrl = (url: string) => {
-  if (!url) return "https://placehold.co/600x800?text=No+Image";
+const resolveProductImage = (p: any): string[] => {
+  const images: string[] = [];
+
+  // 1. Resolve image_path from Supabase Storage (Bucket: product-images)
+  // Logic: Strip "Saved Pictures/" prefix if present
+  const rawPath = p.image_path?.trim() ?? '';
+  const cleanPath = rawPath.replace(/^Saved Pictures\//, '');
   
-  // If the image is a local path or already a valid external URL, return it
-  if (url.startsWith('/') || url.startsWith('http')) {
-    return url;
+  if (cleanPath && supabase) {
+    const { data } = supabase.storage.from('product-images').getPublicUrl(cleanPath);
+    if (data?.publicUrl) {
+      images.push(data.publicUrl);
+    }
   }
-  
-  // Assume it's a file name in your public/product-images folder
-  return `/product-images/${url}`;
+
+  // 2. Add raw imageUrls from the array column if they exist
+  if (Array.isArray(p.imageUrls)) {
+    p.imageUrls.forEach((url: string) => {
+      if (url && !images.includes(url)) {
+        // Map local filenames to public folder if they aren't full URLs
+        const finalUrl = (url.startsWith('/') || url.startsWith('http')) 
+          ? url 
+          : `/product-images/${url}`;
+        images.push(finalUrl);
+      }
+    });
+  }
+
+  // 3. Fallback to image_url column if provided (legacy support)
+  if (p.image_url && !images.includes(p.image_url)) {
+    images.push(p.image_url);
+  }
+
+  // Final Fallback if no images found
+  if (images.length === 0) {
+    images.push("https://placehold.co/600x800?text=No+Image");
+  }
+
+  return images;
 };
 
 export const categories: Category[] = [
@@ -69,11 +96,7 @@ export const carouselCategories: CarouselCategory[] = [
 
 export async function getProducts(): Promise<Product[]> {
   try {
-    // Graceful fallback if Supabase is not configured
-    if (!supabase) {
-      console.warn("getProducts: Supabase client is null. Returning empty catalog.");
-      return [];
-    }
+    if (!supabase) return [];
 
     const { data, error } = await supabase
       .from('products')
@@ -82,31 +105,10 @@ export async function getProducts(): Promise<Product[]> {
 
     if (error) throw error;
 
-    return (data || []).map(p => {
-      // 1. Resolve image_path from Supabase Storage (Bucket: product-images)
-      const rawPath = p.image_path?.trim() ?? '';
-      // Based on dashboard, paths are "Saved Pictures/folder/file.jpg"
-      // We strip "Saved Pictures/" to map to the root of the "product-images" bucket
-      const cleanPath = rawPath.replace(/^Saved Pictures\//, '');
-      
-      let storageUrl = null;
-      if (cleanPath && supabase) {
-        storageUrl = supabase.storage.from('product-images').getPublicUrl(cleanPath).data.publicUrl;
-      }
-
-      // 2. Resolve other URLs if they exist in the imageUrls array
-      const otherUrls = (p.imageUrls || []).map(transformImageUrl);
-
-      // Prioritize the Storage URL (image_path) if available, then raw URLs
-      const finalUrls = storageUrl 
-        ? [storageUrl, ...otherUrls] 
-        : (otherUrls.length > 0 ? otherUrls : ["https://placehold.co/600x800?text=No+Image"]);
-
-      return {
-        ...p,
-        imageUrls: finalUrls
-      };
-    }) as Product[];
+    return (data || []).map(p => ({
+      ...p,
+      imageUrls: resolveProductImage(p)
+    })) as Product[];
   } catch (error) {
     console.error("Error fetching products from Supabase:", error);
     return [];

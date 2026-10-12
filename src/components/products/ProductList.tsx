@@ -7,10 +7,12 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Button } from '@/components/ui/button';
 import { Loader2, Package } from 'lucide-react';
 import Link from 'next/link';
+import { useCart } from '@/context/CartProvider';
 
 export default function ProductList() {
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const { addToCart } = useCart();
 
   useEffect(() => {
     async function fetchProducts() {
@@ -63,15 +65,18 @@ export default function ProductList() {
       
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
         {products.map((product) => {
-          // Image Path Resolution Logic matching dashboard screenshot
-          const rawPath = product.image_path?.trim() ?? ''
-          
-          // Remove "Saved Pictures/" prefix if folders like "solar/" are at the bucket root
-          const cleanPath = rawPath.replace(/^Saved Pictures\//, '')
+          // Robust Image Path Resolution Logic
+          const rawPath = product.image_path?.trim() ?? '';
+          const cleanPath = rawPath.replace(/^Saved Pictures\//, '');
 
-          const imageUrl = cleanPath
-            ? supabase.storage.from('product-images').getPublicUrl(cleanPath).data.publicUrl
-            : '/placeholder.jpg'
+          let imageUrl = '/placeholder.jpg';
+          if (cleanPath && supabase) {
+            imageUrl = supabase.storage.from('product-images').getPublicUrl(cleanPath).data.publicUrl;
+          } else if (product.image_url) {
+            imageUrl = product.image_url;
+          } else if (Array.isArray(product.imageUrls) && product.imageUrls.length > 0) {
+            imageUrl = product.imageUrls[0];
+          }
 
           return (
             <Card key={product.id} className="flex h-full flex-col overflow-hidden transition-all duration-300 hover:shadow-xl bg-white group border-none shadow-sm">
@@ -111,6 +116,7 @@ export default function ProductList() {
                     <Button size="sm" variant="outline" className="flex-1 rounded-full border-primary/20 hover:bg-primary/5 font-semibold" asChild>
                         <Link href={`/products/${product.id}`}>Details</Link>
                     </Button>
+                    <Button size="sm" className="flex-1 rounded-full font-semibold shadow-md" onClick={() => addToCart(product)}>+ Cart</Button>
                 </div>
               </CardFooter>
             </Card>
