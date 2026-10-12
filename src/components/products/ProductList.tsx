@@ -9,7 +9,7 @@ import { Package } from 'lucide-react';
 /**
  * ProductList Component
  * Displays the product catalog fetched from Supabase.
- * Uses the centralized ProductProvider for state management.
+ * The image resolution (stripping prefixes) is handled centrally in ProductProvider/data.ts.
  */
 export default function ProductList() {
   const { products, loading } = useProducts();
@@ -36,7 +36,7 @@ export default function ProductList() {
         <Package className="h-12 w-12 text-muted-foreground mb-4 opacity-20" />
         <h3 className="text-xl font-bold text-muted-foreground font-headline">No Products Found</h3>
         <p className="text-sm text-muted-foreground mt-2 max-w-xs mx-auto">
-          We couldn't find any products in the database. Please check your Supabase dashboard or the project configuration.
+          We couldn't find any products in the database. Please verify your Supabase connection and catalog.
         </p>
       </div>
     );
@@ -45,9 +45,9 @@ export default function ProductList() {
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold font-headline text-accent">Product Catalog</h2>
+        <h2 className="text-2xl font-bold font-headline text-accent">Our Product Catalog</h2>
         <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest bg-muted px-3 py-1 rounded-full">
-          {products.length} Items Available
+          {products.length} Items
         </span>
       </div>
       

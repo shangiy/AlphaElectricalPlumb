@@ -10,11 +10,11 @@ import placeholderImages from '@/app/lib/placeholder-images.json';
 const resolveProductImage = (product: any): string[] => {
   if (!supabase) return ["/placeholder.jpg"];
 
-  // EXACT LOGIC FROM USER REQUEST:
-  // 1. Get raw path and trim
+  // 1. Get raw path from database
   const rawPath = product.image_path?.trim() ?? '';
-  // 2. Strip 'Saved Pictures/' prefix if present
-  const cleanPath = rawPath.replace(/^Saved Pictures\//, '');
+  
+  // 2. Strip 'Saved Pictures/' prefix if present (handles both forward and backward slashes)
+  const cleanPath = rawPath.replace(/^(Saved Pictures[\\\/])/, '');
   
   // 3. Generate public URL from 'product-images' bucket
   if (cleanPath) {
@@ -22,7 +22,7 @@ const resolveProductImage = (product: any): string[] => {
     return [data.publicUrl];
   }
 
-  // Fallback to image_url if path is missing, or placeholder
+  // Fallback to explicit image_url column or placeholder
   return [product.image_url || "/placeholder.jpg"];
 };
 
