@@ -24,6 +24,7 @@ export interface Product {
   unit?: string;
   wholesale?: WholesalePrice;
   imageUrls: string[];
+  image_path?: string;
   category: string;
   rating: number;
   reviews: number;

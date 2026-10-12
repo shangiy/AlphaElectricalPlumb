@@ -82,10 +82,27 @@ export async function getProducts(): Promise<Product[]> {
 
     if (error) throw error;
 
-    return (data || []).map(p => ({
-      ...p,
-      imageUrls: (p.imageUrls || []).map(transformImageUrl)
-    })) as Product[];
+    return (data || []).map(p => {
+      // 1. Resolve image_path from Supabase Storage
+      const rawPath = p.image_path?.trim() ?? '';
+      const cleanPath = rawPath.replace(/^Saved Pictures\//, '');
+      
+      let storageUrl = null;
+      if (cleanPath && supabase) {
+        storageUrl = supabase.storage.from('product-images').getPublicUrl(cleanPath).data.publicUrl;
+      }
+
+      // 2. Resolve other URLs (public/product-images or external)
+      const otherUrls = (p.imageUrls || []).map(transformImageUrl);
+
+      // Prioritize the Storage URL (image_path) if available
+      const finalUrls = storageUrl ? [storageUrl, ...otherUrls] : (otherUrls.length > 0 ? otherUrls : ["/placeholder.jpg"]);
+
+      return {
+        ...p,
+        imageUrls: finalUrls
+      };
+    }) as Product[];
   } catch (error) {
     console.error("Error fetching products from Supabase:", error);
     return [];

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -63,15 +64,12 @@ export default function ProductList() {
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
         {products.map((product) => {
           // Image Path Resolution Logic
-          const rawPath = product.image_path?.trim() ?? '';
-          const cleanPath = rawPath.replace(/^Saved Pictures\//, '');
-          
-          let imageUrl = '/placeholder.jpg';
-          if (cleanPath && supabase) {
-            imageUrl = supabase.storage.from('product-images').getPublicUrl(cleanPath).data.publicUrl;
-          } else if (product.imageUrls && product.imageUrls[0]) {
-            imageUrl = product.imageUrls[0];
-          }
+          const rawPath = product.image_path?.trim() ?? ''
+          const cleanPath = rawPath.replace(/^Saved Pictures\//, '')
+
+          const imageUrl = cleanPath
+            ? supabase.storage.from('product-images').getPublicUrl(cleanPath).data.publicUrl
+            : '/placeholder.jpg'
 
           return (
             <Card key={product.id} className="flex h-full flex-col overflow-hidden transition-all duration-300 hover:shadow-xl bg-white group border-none shadow-sm">
