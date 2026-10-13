@@ -3,38 +3,67 @@ import { supabase } from './supabase';
 import placeholderImages from '@/app/lib/placeholder-images.json';
 
 /**
+ * Robust Category Folder Mapper:
+ * Maps shorthand folder names often found in database paths to the actual 
+ * folder names used in the Supabase Storage bucket.
+ */
+const categoryFolderMap: Record<string, string> = {
+  'solar': 'Solar panels & accessories',
+  'tanks': 'Tanks category',
+  'lighting': 'Decorative Lighting and chandeliers',
+  'electrical': 'Electrical items',
+  'plumbing': 'Plumbing',
+  'sanitary': 'Sanitary Ware Toilets & Bathroom Fixtures',
+  'shower': 'Shower Category',
+  'mabati': 'Mabati and Roofing',
+  'construction': 'Construction and Fencing equip\'nts',
+  'collections': 'Collections',
+  'decor': 'Collections', // Mapping decor to Collections based on catalog structure
+};
+
+/**
  * Master Image URL Resolver:
- * Strips the 'Saved Pictures/' prefix and builds a public URL from the 'product-images' bucket.
- * Accounts for the 'product images' folder seen in the Supabase Storage dashboard.
+ * 1. Strips prefixes like 'Saved Pictures/'.
+ * 2. Maps shorthand category folders to full storage folder names.
+ * 3. Builds the final URL pointing to the 'product images' folder in the 'product-images' bucket.
  */
 const resolveProductImage = (product: any): string[] => {
   if (!supabase) return ["/placeholder.jpg"];
 
-  // 1. Get raw path from database column 'image_path'
   const rawPath = product.image_path?.trim() ?? '';
-  
   if (!rawPath) {
-    // Fallback to direct image_url column or placeholder
-    if (product.image_url) return [product.image_url];
+    if (product.image_url && product.image_url.startsWith('http')) return [product.image_url];
     return ["/placeholder.jpg"];
   }
 
-  // 2. Strip 'Saved Pictures/' prefix if present
-  let cleanPath = rawPath.replace(/^(Saved Pictures[\\\/])/, '');
+  // 1. Clean path (remove prefix, handle backslashes)
+  let cleanPath = rawPath.replace(/^(Saved Pictures[\\\/])/, '').replace(/\\/g, '/');
   
-  // 3. Prepend the actual storage folder name found in Supabase (as seen in screenshot breadcrumbs)
-  // If the path doesn't already start with the storage folder, add it.
-  if (cleanPath && !cleanPath.toLowerCase().startsWith('product images/')) {
-    cleanPath = `product images/${cleanPath}`;
-  }
-  
-  // 4. Generate public URL from 'product-images' bucket
-  if (cleanPath) {
-    const { data } = supabase.storage.from('product-images').getPublicUrl(cleanPath);
-    return [data.publicUrl];
+  // 2. Extract shorthand folder and filename
+  const pathParts = cleanPath.split('/');
+  if (pathParts.length >= 2) {
+    const shorthand = pathParts[0].toLowerCase();
+    const filename = pathParts.slice(1).join('/');
+    
+    // Check if we have a mapping for this shorthand
+    if (categoryFolderMap[shorthand]) {
+      cleanPath = `${categoryFolderMap[shorthand]}/${filename}`;
+    }
   }
 
-  return ["/placeholder.jpg"];
+  // 3. Try variations (Full Storage Path is the priority)
+  const variations = [
+    `product images/${cleanPath}`, // Main target: bucket/product images/Full Category Name/file.jpg
+    cleanPath,                     // Fallback 1: bucket/Full Category Name/file.jpg
+    rawPath                        // Fallback 2: Original database path
+  ];
+
+  const urls = variations.map(path => {
+    const { data } = supabase.storage.from('product-images').getPublicUrl(path);
+    return data.publicUrl;
+  });
+
+  return urls;
 };
 
 export const categories: Category[] = [

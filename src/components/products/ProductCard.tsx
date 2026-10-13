@@ -4,9 +4,10 @@ import type { Product } from '@/lib/types';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Rating } from '@/components/ui/rating';
 import Link from 'next/link';
-import { MessageCircle } from 'lucide-react';
+import { MessageCircle, ShoppingCart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/context/CartProvider';
+import { useState } from 'react';
 
 interface ProductCardProps {
   product: Product;
@@ -14,6 +15,7 @@ interface ProductCardProps {
 
 export default function ProductCard({ product }: ProductCardProps) {
   const { addToCart } = useCart();
+  const [imgIndex, setImgIndex] = useState(0);
   
   const formatPrice = (price: number) => {
     if (!price || price === 0) return 'Contact for Price';
@@ -38,8 +40,18 @@ export default function ProductCard({ product }: ProductCardProps) {
     addToCart(product);
   };
 
-  // The imageUrl is already resolved in getProducts (src/lib/data.ts)
-  const imageUrl = product.imageUrls?.[0] || '/placeholder.jpg';
+  // Try the primary image URL resolved from Supabase
+  const currentImageUrl = product.imageUrls?.[imgIndex] || '/placeholder.jpg';
+
+  const handleImageError = () => {
+    // If we have more variants to try in the fallback chain, try the next one
+    if (imgIndex < (product.imageUrls?.length || 0) - 1) {
+      setImgIndex(prev => prev + 1);
+    } else {
+      // Ultimately fallback to placeholder
+      setImgIndex(100); // Trigger placeholder logic
+    }
+  };
 
   return (
     <Link href={`/products/${product.id}`} className="group h-full block">
@@ -47,25 +59,24 @@ export default function ProductCard({ product }: ProductCardProps) {
         <CardHeader className="p-0">
           <div className="relative aspect-square overflow-hidden bg-secondary/20 flex items-center justify-center">
             <img
-              src={imageUrl}
+              src={imgIndex === 100 ? '/placeholder.jpg' : currentImageUrl}
               alt={product.name}
               className="h-full w-full object-cover transition-transform duration-500 group-hover/card:scale-110"
-              onError={(e) => {
-                (e.target as HTMLImageElement).src = '/placeholder.jpg';
-              }}
+              onError={handleImageError}
             />
             {product.oldPrice && product.oldPrice > product.price && (
                 <div className="absolute top-3 left-3 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-lg">
                     OFFER
                 </div>
             )}
-            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-2 px-4">
                 <Button 
                     size="sm" 
                     variant="secondary" 
-                    className="rounded-full font-bold shadow-lg"
+                    className="rounded-full font-bold shadow-lg flex-1"
                     onClick={handleAddToCart}
                 >
+                    <ShoppingCart className="h-4 w-4 mr-1" />
                     Quick Add
                 </Button>
             </div>
