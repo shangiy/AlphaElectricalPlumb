@@ -1,127 +1,97 @@
-'use client';
-
-import type { Product } from '@/lib/types';
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
-import { Rating } from '@/components/ui/rating';
+import React from 'react';
+import { supabase } from '@/lib/supabaseClient';
 import Link from 'next/link';
-import { MessageCircle, ShoppingCart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { MessageCircle, ShoppingCart } from 'lucide-react';
 import { useCart } from '@/context/CartProvider';
-import { useState } from 'react';
 
 interface ProductCardProps {
-  product: Product;
+  product: {
+    id: string | number;
+    name: string;
+    price: number;
+    description?: string;
+    image_path?: string | null;
+    category?: string;
+  };
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
   const { addToCart } = useCart();
-  const [imgIndex, setImgIndex] = useState(0);
-  
-  const formatPrice = (price: number) => {
-    if (!price || price === 0) return 'Contact for Price';
-    return new Intl.NumberFormat('en-KE', {
-      style: 'currency',
-      currency: 'KES',
-      currencyDisplay: 'code',
-    }).format(price);
-  };
+
+  // Clean the database path by stripping leading prefixes and any extra slashes
+  const rawPath = product.image_path?.trim() ?? '';
+  const cleanPath = rawPath
+    .replace(/^product-images\//, '')
+    .replace(/^Saved Pictures\//, '')
+    .replace(/^\/+/, ''); // Removes any leading forward slashes
+
+  /**
+   * IMPORTANT: Your working URL showed a nested folder structure:
+   * .../public/product-images/product-images/toilets...
+   * This means we need to pass 'product-images/' + the category path to getPublicUrl
+   */
+  const storagePath = `product-images/${cleanPath}`;
+
+  // Generate the direct public URL from the 'product-images' bucket
+  const imageUrl = cleanPath
+    ? supabase.storage.from('product-images').getPublicUrl(storagePath).data.publicUrl
+    : 'https://placehold.co/400x400?text=No+Image';
+
+  // Debugging: View these in your browser console (F12) to verify the paths
+  console.log("Product:", product.name, "Cleaned Path:", cleanPath, "Final Storage Path:", storagePath, "Image URL:", imageUrl);
 
   const handleWhatsAppInquiry = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     const phoneNumber = '254117484887';
-    const message = `Hello Alpha Electricals, I am interested in: ${product.name}. Price: ${formatPrice(product.price)}. Is this available for delivery?`;
+    const message = `Hello Alpha Electricals, I am inquiring about: ${product.name}. Price: KES ${product.price?.toLocaleString()}. Is this available?`;
     window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank');
   };
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    addToCart(product);
+    addToCart(product as any, true);
   };
-
-  /**
-   * Self-Healing Logic:
-   * If an image fails to load, try the next URL in the pre-resolved list.
-   */
-  const handleImageError = () => {
-    if (imgIndex < (product.imageUrls?.length || 0) - 1) {
-      setImgIndex(prev => prev + 1);
-    } else {
-      setImgIndex(100); // Fallback to placeholder
-    }
-  };
-
-  const displayImageUrl = imgIndex === 100 
-    ? "/placeholder.jpg" 
-    : (product.imageUrls?.[imgIndex] || "/placeholder.jpg");
 
   return (
-    <Link href={`/products/${product.id}`} className="group h-full block">
-      <Card className="h-full flex flex-col overflow-hidden transition-all duration-300 hover:shadow-xl border-none bg-white rounded-2xl group/card">
-        <CardHeader className="p-0">
-          <div className="relative aspect-square overflow-hidden bg-secondary/20 flex items-center justify-center">
-            <img
-              src={displayImageUrl}
-              alt={product.name}
-              className="h-full w-full object-cover transition-transform duration-500 group-hover/card:scale-110"
-              onError={handleImageError}
-              loading="lazy"
-            />
-            {product.oldPrice && product.oldPrice > product.price && (
-                <div className="absolute top-3 left-3 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-lg">
-                    OFFER
-                </div>
-            )}
-            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-2 px-4">
-                <Button 
-                    size="sm" 
-                    variant="secondary" 
-                    className="rounded-full font-bold shadow-lg flex-1"
-                    onClick={handleAddToCart}
-                >
-                    <ShoppingCart className="h-4 w-4 mr-1" />
-                    Quick Add
-                </Button>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="p-4 flex-grow flex flex-col gap-2">
-          <div className="flex flex-col">
-            <span className="text-[10px] font-bold text-primary uppercase tracking-widest">{product.category}</span>
-            <h3 className="font-bold text-accent group-hover/card:text-primary transition-colors line-clamp-2 min-h-[2.5rem]">
-                {product.name}
-            </h3>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <Rating rating={product.rating} size={12} />
-            <span className="text-[10px] text-muted-foreground">({product.reviews})</span>
+    <div className="group relative flex flex-col h-full rounded-2xl border bg-card text-card-foreground shadow-sm transition-all hover:shadow-xl hover:-translate-y-1 overflow-hidden">
+      <Link href={`/products/${product.id}`} className="block relative aspect-square overflow-hidden bg-muted">
+        <img
+          src={imageUrl}
+          alt={product.name}
+          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+          onError={(e) => {
+            (e.target as HTMLImageElement).src = 'https://placehold.co/400x400?text=Image+Not+Found';
+          }}
+        />
+        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors" />
+      </Link>
+
+      <div className="p-4 flex flex-col flex-grow">
+        <div className="mb-2">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-primary/70">{product.category || 'Product'}</span>
+            <h3 className="font-bold text-lg line-clamp-1 group-hover:text-primary transition-colors">{product.name}</h3>
+        </div>
+        
+        <p className="text-sm text-muted-foreground line-clamp-2 mb-4 h-10">{product.description}</p>
+        
+        <div className="mt-auto flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xl font-black text-primary">KES {product.price?.toLocaleString()}</span>
           </div>
 
-          <div className="mt-auto pt-2 flex items-baseline gap-2">
-            <span className="text-lg font-black text-primary">
-              {formatPrice(product.price)}
-            </span>
-            {product.oldPrice && product.oldPrice > product.price && (
-              <span className="text-xs text-muted-foreground line-through opacity-60">
-                {formatPrice(product.oldPrice)}
-              </span>
-            )}
-          </div>
-        </CardContent>
-        <CardFooter className="p-4 pt-0">
-             <Button 
-                variant="outline" 
-                size="sm" 
-                className="w-full text-green-600 border-green-500 hover:bg-green-50 rounded-xl font-bold gap-2"
-                onClick={handleWhatsAppInquiry}
-            >
-                <MessageCircle className="h-4 w-4" />
-                WhatsApp Inquiry
+          <div className="grid grid-cols-2 gap-2">
+            <Button size="sm" variant="outline" className="rounded-full border-primary text-primary hover:bg-primary hover:text-white" onClick={handleAddToCart}>
+                <ShoppingCart className="h-4 w-4 mr-1" /> Cart
             </Button>
-        </CardFooter>
-      </Card>
-    </Link>
+            <Button size="sm" className="rounded-full bg-green-600 hover:bg-green-700" onClick={handleWhatsAppInquiry}>
+                <MessageCircle className="h-4 w-4 mr-1" /> Chat
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

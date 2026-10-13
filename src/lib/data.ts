@@ -21,12 +21,15 @@ const resolveProductImages = (product: any): string[] => {
   const rawPath = product.image_path?.trim() ?? '';
   if (!rawPath) return ["/placeholder.jpg"];
 
-  // Step A: Strip "Saved Pictures/"
-  const relativePath = rawPath.replace(/^Saved Pictures[\\\/]/, '').replace(/\\/g, '/');
+  // Step A: Strip "Saved Pictures/" and "product-images/" if they exist at the start
+  const relativePath = rawPath
+    .replace(/^Saved Pictures[\\\/]/, '')
+    .replace(/^product-images[\\\/]/, '')
+    .replace(/\\/g, '/')
+    .replace(/^\/+/, ''); // Strip any leading slashes
 
   // Step B: Build the specific nested path revealed in the working URL
-  // The working URL has: .../public/product-images/product-images/toilets%20&%20sinks/...
-  // Bucket is "product-images", Folder is "product-images"
+  // Working URL: .../public/product-images/product-images/toilets%20&%20sinks/...
   const nestedPath = `product-images/${relativePath}`;
 
   const { data } = supabase.storage.from('product-images').getPublicUrl(nestedPath);
