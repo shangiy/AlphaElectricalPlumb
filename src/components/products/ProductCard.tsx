@@ -43,7 +43,7 @@ export default function ProductCard({ product }: ProductCardProps) {
   /**
    * Self-Healing Logic:
    * If an image fails to load, we move to the next possible URL in the pre-resolved list.
-   * This handles shorthand path errors vs full storage paths automatically.
+   * This is critical because the user's bucket has a nested "product-images" folder.
    */
   const handleImageError = () => {
     if (imgIndex < (product.imageUrls?.length || 0) - 1) {

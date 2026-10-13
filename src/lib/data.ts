@@ -20,17 +20,19 @@ const categoryFolderMap: Record<string, string> = {
   'construction': 'Construction and Fencing equip\'nts',
   'collections': 'Collections',
   'decor': 'Collections',
+  'toilets': 'toilets & sinks',
+  'sinks': 'toilets & sinks',
 };
 
 /**
  * Master Image URL Resolver:
- * Generates an array of possible URLs for a product.
- * If the primary storage path fails, the frontend will try the next one.
+ * Generates an array of possible URLs for a product based on the 
+ * observed storage structure in the working sample URL.
  */
 const resolveProductImages = (product: any): string[] => {
   if (!supabase) return ["/placeholder.jpg"];
 
-  // 1. If explicit array exists in database (e.g. from migration or manual edit)
+  // 1. If explicit array exists in database
   if (Array.isArray(product.imageUrls) && product.imageUrls.length > 0) {
     return product.imageUrls.map(url => url.startsWith('http') ? url : `/placeholder.jpg`);
   }
@@ -43,23 +45,29 @@ const resolveProductImages = (product: any): string[] => {
   const pathsToTry: string[] = [];
 
   if (rawPath) {
-    // A. Clean path: remove "Saved Pictures/" prefix and normalize slashes
+    // A. Clean path: remove "Saved Pictures/" prefix
     const cleanPath = rawPath.replace(/^Saved Pictures[\\\/]/, '').replace(/\\/g, '/');
-    
-    // B. Handle Shorthand Mapping (e.g., "solar/panel.jpg" -> "product images/Solar panels & accessories/panel.jpg")
     const pathParts = cleanPath.split('/');
+    
+    // B. Based on the working URL provided by the user:
+    // .../public/product-images/product-images/toilets%20&%20sinks/Blue%20Ceramic...
+    // We try prepending "product-images/" folder inside the "product-images" bucket
+    pathsToTry.push(`product-images/${cleanPath}`);
+    pathsToTry.push(`product images/${cleanPath}`);
+    
+    // C. Handle Shorthand Mapping
     if (pathParts.length >= 2) {
       const shorthand = pathParts[0].toLowerCase();
       const filename = pathParts.slice(1).join('/');
       
       if (categoryFolderMap[shorthand]) {
-        // Most likely path based on your dashboard screenshot
-        pathsToTry.push(`product images/${categoryFolderMap[shorthand]}/${filename}`);
+        const fullCategory = categoryFolderMap[shorthand];
+        pathsToTry.push(`product-images/${fullCategory}/${filename}`);
+        pathsToTry.push(`${fullCategory}/${filename}`);
       }
     }
 
-    // C. Try standardized variations
-    pathsToTry.push(`product images/${cleanPath}`);
+    // D. Direct check
     pathsToTry.push(cleanPath);
     pathsToTry.push(rawPath);
   }
@@ -71,10 +79,9 @@ const resolveProductImages = (product: any): string[] => {
     return data.publicUrl;
   });
 
-  // Filter out empty results and return unique set
+  // Unique list of URLs
   const finalUrls = Array.from(new Set(resolvedUrls.filter(Boolean)));
   
-  // Return the resolved list or a fallback
   return finalUrls.length > 0 ? finalUrls : ["/placeholder.jpg"];
 };
 
