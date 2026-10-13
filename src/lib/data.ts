@@ -3,86 +3,32 @@ import { supabase } from './supabase';
 import placeholderImages from '@/app/lib/placeholder-images.json';
 
 /**
- * Robust Category Folder Mapper:
- * Maps shorthand folder names found in database paths to the actual 
- * folder names used in the Supabase Storage bucket.
- */
-const categoryFolderMap: Record<string, string> = {
-  'solar': 'Solar panels & accessories',
-  'tanks': 'Tanks category',
-  'lighting': 'Decorative Lighting and chandeliers',
-  'electrical': 'Electrical items',
-  'plumbing': 'Plumbing',
-  'sanitary': 'Sanitary Ware Toilets & Bathroom Fixtures',
-  'shower': 'Shower Category',
-  'mabati': 'Mabati and Roofing',
-  'roofing': 'Mabati and Roofing',
-  'construction': 'Construction and Fencing equip\'nts',
-  'collections': 'Collections',
-  'decor': 'Collections',
-  'toilets': 'toilets & sinks',
-  'sinks': 'toilets & sinks',
-};
-
-/**
- * Master Image URL Resolver:
- * Generates an array of possible URLs for a product based on the 
- * observed storage structure in the working sample URL.
+ * Image URL Resolver:
+ * Implements the logic to strip the "Saved Pictures/" prefix and build the 
+ * public URL from the 'product-images' bucket properly.
+ * This prevents path doubling by passing only the clean relative path to the SDK.
  */
 const resolveProductImages = (product: any): string[] => {
   if (!supabase) return ["/placeholder.jpg"];
 
-  // 1. If explicit array exists in database
-  if (Array.isArray(product.imageUrls) && product.imageUrls.length > 0) {
-    return product.imageUrls.map(url => url.startsWith('http') ? url : `/placeholder.jpg`);
-  }
-  
-  if (Array.isArray(product.image_urls) && product.image_urls.length > 0) {
-    return product.image_urls.map((url: string) => url.startsWith('http') ? url : `/placeholder.jpg`);
+  // 1. If an explicit array of URLs exists in the database, use it directly
+  const explicitUrls = product.imageUrls || product.image_urls;
+  if (Array.isArray(explicitUrls) && explicitUrls.length > 0) {
+    return explicitUrls.map((url: string) => url.startsWith('http') ? url : "/placeholder.jpg");
   }
 
+  // 2. Handle the image_path string from Supabase
   const rawPath = product.image_path?.trim() ?? '';
-  const pathsToTry: string[] = [];
+  if (!rawPath) return ["/placeholder.jpg"];
 
-  if (rawPath) {
-    // A. Clean path: remove "Saved Pictures/" prefix
-    const cleanPath = rawPath.replace(/^Saved Pictures[\\\/]/, '').replace(/\\/g, '/');
-    const pathParts = cleanPath.split('/');
-    
-    // B. Based on the working URL provided by the user:
-    // .../public/product-images/product-images/toilets%20&%20sinks/Blue%20Ceramic...
-    // We try prepending "product-images/" folder inside the "product-images" bucket
-    pathsToTry.push(`product-images/${cleanPath}`);
-    pathsToTry.push(`product images/${cleanPath}`);
-    
-    // C. Handle Shorthand Mapping
-    if (pathParts.length >= 2) {
-      const shorthand = pathParts[0].toLowerCase();
-      const filename = pathParts.slice(1).join('/');
-      
-      if (categoryFolderMap[shorthand]) {
-        const fullCategory = categoryFolderMap[shorthand];
-        pathsToTry.push(`product-images/${fullCategory}/${filename}`);
-        pathsToTry.push(`${fullCategory}/${filename}`);
-      }
-    }
-
-    // D. Direct check
-    pathsToTry.push(cleanPath);
-    pathsToTry.push(rawPath);
-  }
-
-  // Generate public URLs for all path variations
-  const resolvedUrls = pathsToTry.map(path => {
-    if (path.startsWith('http')) return path;
-    const { data } = supabase.storage.from('product-images').getPublicUrl(path);
-    return data.publicUrl;
-  });
-
-  // Unique list of URLs
-  const finalUrls = Array.from(new Set(resolvedUrls.filter(Boolean)));
+  // Step 1: Strip "Saved Pictures/" prefix and normalize slashes
+  const cleanPath = rawPath.replace(/^Saved Pictures[\\\/]/, '').replace(/\\/g, '/');
   
-  return finalUrls.length > 0 ? finalUrls : ["/placeholder.jpg"];
+  // Step 2: Generate the public URL from the 'product-images' bucket
+  // We pass only the cleanPath (e.g., 'toilets & sinks/image.jpg')
+  const { data } = supabase.storage.from('product-images').getPublicUrl(cleanPath);
+  
+  return [data.publicUrl || "/placeholder.jpg"];
 };
 
 export const categories: Category[] = [
@@ -148,7 +94,8 @@ export async function getProducts(): Promise<Product[]> {
       price: Number(p.price) || 0,
       stockCount: Number(p.stock_count || p.stockCount || 0),
       rating: Number(p.rating || 5),
-      reviews: Number(p.reviews || 0)
+      reviews: Number(p.reviews || 0),
+      longDescription: p.longDescription || p.description || ""
     })) as Product[];
   } catch (error) {
     console.error("Error fetching products from Supabase:", error);
@@ -179,3 +126,10 @@ export async function getUsers(): Promise<MockUser[]> {
 export async function getTransactions(): Promise<Transaction[]> {
   return Promise.resolve([]);
 }
+
+export const availableAvatars = [
+    { url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix', alt: 'Avatar 1' },
+    { url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka', alt: 'Avatar 2' },
+    { url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Milo', alt: 'Avatar 3' },
+    { url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Casper', alt: 'Avatar 4' },
+];
