@@ -18,52 +18,62 @@ const categoryFolderMap: Record<string, string> = {
   'mabati': 'Mabati and Roofing',
   'construction': 'Construction and Fencing equip\'nts',
   'collections': 'Collections',
-  'decor': 'Collections', // Mapping decor to Collections based on catalog structure
+  'decor': 'Collections',
 };
 
 /**
  * Master Image URL Resolver:
- * 1. Strips prefixes like 'Saved Pictures/'.
- * 2. Maps shorthand category folders to full storage folder names.
- * 3. Builds the final URL pointing to the 'product images' folder in the 'product-images' bucket.
+ * Generates a list of possible URLs for a product to ensure we find the image
+ * regardless of slight path differences in the bucket.
  */
-const resolveProductImage = (product: any): string[] => {
+const resolveProductImages = (product: any): string[] => {
   if (!supabase) return ["/placeholder.jpg"];
 
+  // 1. Start with existing imageUrls array if provided by migration script
+  if (Array.isArray(product.imageUrls) && product.imageUrls.length > 0) {
+    return product.imageUrls.map(url => url.startsWith('http') ? url : `/placeholder.jpg`);
+  }
+
   const rawPath = product.image_path?.trim() ?? '';
-  if (!rawPath) {
-    if (product.image_url && product.image_url.startsWith('http')) return [product.image_url];
-    return ["/placeholder.jpg"];
-  }
-
-  // 1. Clean path (remove prefix, handle backslashes)
-  let cleanPath = rawPath.replace(/^(Saved Pictures[\\\/])/, '').replace(/\\/g, '/');
+  const fallbackUrl = product.image_url?.trim() ?? '';
   
-  // 2. Extract shorthand folder and filename
-  const pathParts = cleanPath.split('/');
-  if (pathParts.length >= 2) {
-    const shorthand = pathParts[0].toLowerCase();
-    const filename = pathParts.slice(1).join('/');
+  const pathsToTry: string[] = [];
+
+  if (rawPath) {
+    // Clean path (remove prefix, handle backslashes)
+    let cleanPath = rawPath.replace(/^(Saved Pictures[\\\/])/, '').replace(/\\/g, '/');
     
-    // Check if we have a mapping for this shorthand
-    if (categoryFolderMap[shorthand]) {
-      cleanPath = `${categoryFolderMap[shorthand]}/${filename}`;
+    const parts = cleanPath.split('/');
+    if (parts.length >= 2) {
+      const shorthand = parts[0].toLowerCase();
+      const filename = parts.slice(1).join('/');
+      
+      // If we have a mapping for this shorthand, try the full category path
+      if (categoryFolderMap[shorthand]) {
+        pathsToTry.push(`product images/${categoryFolderMap[shorthand]}/${filename}`);
+      }
     }
+
+    // Standard variations based on user bucket structure
+    pathsToTry.push(`product images/${cleanPath}`);
+    pathsToTry.push(cleanPath);
+    pathsToTry.push(rawPath);
   }
 
-  // 3. Try variations (Full Storage Path is the priority)
-  const variations = [
-    `product images/${cleanPath}`, // Main target: bucket/product images/Full Category Name/file.jpg
-    cleanPath,                     // Fallback 1: bucket/Full Category Name/file.jpg
-    rawPath                        // Fallback 2: Original database path
-  ];
+  if (fallbackUrl) {
+    pathsToTry.push(fallbackUrl);
+  }
 
-  const urls = variations.map(path => {
+  // Generate public URLs from Supabase for all paths
+  const resolvedUrls = pathsToTry.map(path => {
+    if (path.startsWith('http')) return path;
     const { data } = supabase.storage.from('product-images').getPublicUrl(path);
     return data.publicUrl;
   });
 
-  return urls;
+  // Filter out empty results and return unique set
+  const finalUrls = Array.from(new Set(resolvedUrls.filter(Boolean)));
+  return finalUrls.length > 0 ? finalUrls : ["/placeholder.jpg"];
 };
 
 export const categories: Category[] = [
@@ -125,7 +135,7 @@ export async function getProducts(): Promise<Product[]> {
 
     return (data || []).map(p => ({
       ...p,
-      imageUrls: resolveProductImage(p),
+      imageUrls: resolveProductImages(p),
       price: Number(p.price) || 0,
       stockCount: Number(p.stock_count || p.stockCount || 0),
       rating: Number(p.rating || 5),

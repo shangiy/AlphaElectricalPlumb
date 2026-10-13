@@ -40,18 +40,19 @@ export default function ProductCard({ product }: ProductCardProps) {
     addToCart(product);
   };
 
-  // Try the primary image URL resolved from Supabase
-  const currentImageUrl = product.imageUrls?.[imgIndex] || '/placeholder.jpg';
-
+  // If the image fails to load, try the next resolved URL in our list
   const handleImageError = () => {
-    // If we have more variants to try in the fallback chain, try the next one
     if (imgIndex < (product.imageUrls?.length || 0) - 1) {
       setImgIndex(prev => prev + 1);
     } else {
-      // Ultimately fallback to placeholder
-      setImgIndex(100); // Trigger placeholder logic
+      // Ultimately fallback to a local placeholder if all Supabase paths fail
+      setImgIndex(100); 
     }
   };
+
+  const displayImageUrl = imgIndex === 100 
+    ? "/placeholder.jpg" 
+    : (product.imageUrls?.[imgIndex] || "/placeholder.jpg");
 
   return (
     <Link href={`/products/${product.id}`} className="group h-full block">
@@ -59,10 +60,11 @@ export default function ProductCard({ product }: ProductCardProps) {
         <CardHeader className="p-0">
           <div className="relative aspect-square overflow-hidden bg-secondary/20 flex items-center justify-center">
             <img
-              src={imgIndex === 100 ? '/placeholder.jpg' : currentImageUrl}
+              src={displayImageUrl}
               alt={product.name}
               className="h-full w-full object-cover transition-transform duration-500 group-hover/card:scale-110"
               onError={handleImageError}
+              loading="lazy"
             />
             {product.oldPrice && product.oldPrice > product.price && (
                 <div className="absolute top-3 left-3 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-lg">
