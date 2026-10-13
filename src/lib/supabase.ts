@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 
 // Specific project credentials for Alpha Electricals & Plumbing Ltd
 // URL and Anon/Public Key as found in Supabase Project Settings > API
+// The Anon Key is correct for frontend usage to allow image viewing and data fetching.
 const supabaseUrl = 'https://mieyjseiypykozsfgazj.supabase.co';
 const supabaseAnonKey = 'sb_publishable_IF5Z1vWWAbG5b5Syl-ytTQ_u5G43LtM';
 

@@ -5,29 +5,31 @@ import placeholderImages from '@/app/lib/placeholder-images.json';
 /**
  * Image URL Resolver:
  * Implements the logic to strip the "Saved Pictures/" prefix and build the 
- * public URL from the 'product-images' bucket properly.
- * This prevents path doubling by passing only the clean relative path to the SDK.
+ * public URL properly from the 'product-images' bucket.
+ * 
+ * Logic follows specific user requirement:
+ * 1. Strip "Saved Pictures/"
+ * 2. Pass clean path to bucket 'product-images'
  */
 const resolveProductImages = (product: any): string[] => {
   if (!supabase) return ["/placeholder.jpg"];
 
-  // 1. If an explicit array of URLs exists in the database, use it directly
-  const explicitUrls = product.imageUrls || product.image_urls;
+  // 1. Check for explicit URLs array in DB (image_urls or imageUrls)
+  const explicitUrls = product.image_urls || product.imageUrls;
   if (Array.isArray(explicitUrls) && explicitUrls.length > 0) {
     return explicitUrls.map((url: string) => url.startsWith('http') ? url : "/placeholder.jpg");
   }
 
-  // 2. Handle the image_path string from Supabase
+  // 2. Build URL from image_path (Targeting the product-images bucket)
   const rawPath = product.image_path?.trim() ?? '';
   if (!rawPath) return ["/placeholder.jpg"];
 
-  // Step 1: Strip "Saved Pictures/" prefix and normalize slashes
+  // Strip prefix exactly as requested
   const cleanPath = rawPath.replace(/^Saved Pictures[\\\/]/, '').replace(/\\/g, '/');
   
-  // Step 2: Generate the public URL from the 'product-images' bucket
-  // We pass only the cleanPath (e.g., 'toilets & sinks/image.jpg')
   const { data } = supabase.storage.from('product-images').getPublicUrl(cleanPath);
   
+  // Return as an array to support UI gallery components
   return [data.publicUrl || "/placeholder.jpg"];
 };
 
