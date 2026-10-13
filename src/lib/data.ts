@@ -4,33 +4,45 @@ import placeholderImages from '@/app/lib/placeholder-images.json';
 
 /**
  * Image URL Resolver:
- * Implements the logic to strip the "Saved Pictures/" prefix and build the 
- * public URL properly from the 'product-images' bucket.
- * 
- * Logic follows specific user requirement:
- * 1. Strip "Saved Pictures/"
- * 2. Pass clean path to bucket 'product-images'
+ * Maps database paths to the actual Supabase Storage structure.
+ * Based on the working URL: .../public/product-images/product-images/toilets%20&%20sinks/...
  */
 const resolveProductImages = (product: any): string[] => {
   if (!supabase) return ["/placeholder.jpg"];
 
-  // 1. Check for explicit URLs array in DB (image_urls or imageUrls)
+  // 1. Handle explicit image arrays if present
   const explicitUrls = product.image_urls || product.imageUrls;
   if (Array.isArray(explicitUrls) && explicitUrls.length > 0) {
     return explicitUrls.map((url: string) => url.startsWith('http') ? url : "/placeholder.jpg");
   }
 
-  // 2. Build URL from image_path (Targeting the product-images bucket)
+  // 2. Process the image_path column
   const rawPath = product.image_path?.trim() ?? '';
   if (!rawPath) return ["/placeholder.jpg"];
 
-  // Strip prefix exactly as requested
+  // Strip "Saved Pictures/" and normalize slashes
   const cleanPath = rawPath.replace(/^Saved Pictures[\\\/]/, '').replace(/\\/g, '/');
-  
-  const { data } = supabase.storage.from('product-images').getPublicUrl(cleanPath);
-  
-  // Return as an array to support UI gallery components
-  return [data.publicUrl || "/placeholder.jpg"];
+
+  const urls: string[] = [];
+
+  // Pattern 1: Double-nested folder (found in working URL)
+  // Bucket: product-images, Folder: product-images
+  urls.push(supabase.storage.from('product-images').getPublicUrl(`product-images/${cleanPath}`).data.publicUrl);
+
+  // Pattern 2: Single-space nested folder (found in migration script)
+  // Bucket: product-images, Folder: product images
+  urls.push(supabase.storage.from('product-images').getPublicUrl(`product images/${cleanPath}`).data.publicUrl);
+
+  // Pattern 3: Root-level in bucket (User's direct code suggestion)
+  urls.push(supabase.storage.from('product-images').getPublicUrl(cleanPath).data.publicUrl);
+
+  // Pattern 4: Local public fallback
+  const filename = cleanPath.split('/').pop() || '';
+  if (filename) {
+    urls.push(`/product-images/${filename}`);
+  }
+
+  return urls;
 };
 
 export const categories: Category[] = [

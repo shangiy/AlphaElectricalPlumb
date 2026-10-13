@@ -42,15 +42,13 @@ export default function ProductCard({ product }: ProductCardProps) {
 
   /**
    * Self-Healing Logic:
-   * If an image fails to load, we move to the next possible URL in the pre-resolved list.
-   * This is critical because the user's bucket has a nested "product-images" folder.
+   * If an image fails to load, try the next URL in the pre-resolved list.
    */
   const handleImageError = () => {
     if (imgIndex < (product.imageUrls?.length || 0) - 1) {
       setImgIndex(prev => prev + 1);
     } else {
-      // Ultimately fallback to a generic placeholder if all paths fail
-      setImgIndex(100); 
+      setImgIndex(100); // Fallback to placeholder
     }
   };
 
