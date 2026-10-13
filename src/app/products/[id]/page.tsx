@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useParams, notFound, useRouter } from 'next/navigation';
@@ -68,11 +67,15 @@ function ProductContent({ productId }: { productId: string }) {
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-2">
           {/* Image Gallery Column */}
           <div className="space-y-6">
-             <div className="aspect-square overflow-hidden rounded-[2.5rem] bg-secondary/20 shadow-2xl border border-white/20">
+             <div className="aspect-square overflow-hidden rounded-[2.5rem] bg-secondary/20 shadow-2xl border border-white/20 relative">
                 <img
+                    key={activeImageIndex}
                     src={product.imageUrls[activeImageIndex]}
                     alt={product.name}
                     className="h-full w-full object-cover transition-all duration-500 hover:scale-105"
+                    onError={(e) => {
+                        (e.target as HTMLImageElement).src = "/placeholder.jpg";
+                    }}
                 />
             </div>
             {product.imageUrls.length > 1 && (
@@ -90,6 +93,9 @@ function ProductContent({ productId }: { productId: string }) {
                                 src={img}
                                 alt={`${product.name} thumbnail ${index + 1}`}
                                 className="h-full w-full object-cover"
+                                onError={(e) => {
+                                    (e.target as HTMLImageElement).src = "/placeholder.jpg";
+                                }}
                             />
                         </button>
                     ))}

@@ -40,12 +40,16 @@ export default function ProductCard({ product }: ProductCardProps) {
     addToCart(product);
   };
 
-  // If the image fails to load, try the next resolved URL in our list
+  /**
+   * Self-Healing Logic:
+   * If an image fails to load, we move to the next possible URL in the pre-resolved list.
+   * This handles shorthand path errors vs full storage paths automatically.
+   */
   const handleImageError = () => {
     if (imgIndex < (product.imageUrls?.length || 0) - 1) {
       setImgIndex(prev => prev + 1);
     } else {
-      // Ultimately fallback to a local placeholder if all Supabase paths fail
+      // Ultimately fallback to a generic placeholder if all paths fail
       setImgIndex(100); 
     }
   };

@@ -4,7 +4,7 @@ import placeholderImages from '@/app/lib/placeholder-images.json';
 
 /**
  * Robust Category Folder Mapper:
- * Maps shorthand folder names often found in database paths to the actual 
+ * Maps shorthand folder names found in database paths to the actual 
  * folder names used in the Supabase Storage bucket.
  */
 const categoryFolderMap: Record<string, string> = {
@@ -16,6 +16,7 @@ const categoryFolderMap: Record<string, string> = {
   'sanitary': 'Sanitary Ware Toilets & Bathroom Fixtures',
   'shower': 'Shower Category',
   'mabati': 'Mabati and Roofing',
+  'roofing': 'Mabati and Roofing',
   'construction': 'Construction and Fencing equip\'nts',
   'collections': 'Collections',
   'decor': 'Collections',
@@ -23,48 +24,47 @@ const categoryFolderMap: Record<string, string> = {
 
 /**
  * Master Image URL Resolver:
- * Generates a list of possible URLs for a product to ensure we find the image
- * regardless of slight path differences in the bucket.
+ * Generates an array of possible URLs for a product.
+ * If the primary storage path fails, the frontend will try the next one.
  */
 const resolveProductImages = (product: any): string[] => {
   if (!supabase) return ["/placeholder.jpg"];
 
-  // 1. Start with existing imageUrls array if provided by migration script
+  // 1. If explicit array exists in database (e.g. from migration or manual edit)
   if (Array.isArray(product.imageUrls) && product.imageUrls.length > 0) {
     return product.imageUrls.map(url => url.startsWith('http') ? url : `/placeholder.jpg`);
   }
+  
+  if (Array.isArray(product.image_urls) && product.image_urls.length > 0) {
+    return product.image_urls.map((url: string) => url.startsWith('http') ? url : `/placeholder.jpg`);
+  }
 
   const rawPath = product.image_path?.trim() ?? '';
-  const fallbackUrl = product.image_url?.trim() ?? '';
-  
   const pathsToTry: string[] = [];
 
   if (rawPath) {
-    // Clean path (remove prefix, handle backslashes)
-    let cleanPath = rawPath.replace(/^(Saved Pictures[\\\/])/, '').replace(/\\/g, '/');
+    // A. Clean path: remove "Saved Pictures/" prefix and normalize slashes
+    const cleanPath = rawPath.replace(/^Saved Pictures[\\\/]/, '').replace(/\\/g, '/');
     
-    const parts = cleanPath.split('/');
-    if (parts.length >= 2) {
-      const shorthand = parts[0].toLowerCase();
-      const filename = parts.slice(1).join('/');
+    // B. Handle Shorthand Mapping (e.g., "solar/panel.jpg" -> "product images/Solar panels & accessories/panel.jpg")
+    const pathParts = cleanPath.split('/');
+    if (pathParts.length >= 2) {
+      const shorthand = pathParts[0].toLowerCase();
+      const filename = pathParts.slice(1).join('/');
       
-      // If we have a mapping for this shorthand, try the full category path
       if (categoryFolderMap[shorthand]) {
+        // Most likely path based on your dashboard screenshot
         pathsToTry.push(`product images/${categoryFolderMap[shorthand]}/${filename}`);
       }
     }
 
-    // Standard variations based on user bucket structure
+    // C. Try standardized variations
     pathsToTry.push(`product images/${cleanPath}`);
     pathsToTry.push(cleanPath);
     pathsToTry.push(rawPath);
   }
 
-  if (fallbackUrl) {
-    pathsToTry.push(fallbackUrl);
-  }
-
-  // Generate public URLs from Supabase for all paths
+  // Generate public URLs for all path variations
   const resolvedUrls = pathsToTry.map(path => {
     if (path.startsWith('http')) return path;
     const { data } = supabase.storage.from('product-images').getPublicUrl(path);
@@ -73,6 +73,8 @@ const resolveProductImages = (product: any): string[] => {
 
   // Filter out empty results and return unique set
   const finalUrls = Array.from(new Set(resolvedUrls.filter(Boolean)));
+  
+  // Return the resolved list or a fallback
   return finalUrls.length > 0 ? finalUrls : ["/placeholder.jpg"];
 };
 
