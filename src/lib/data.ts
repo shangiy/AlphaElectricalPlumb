@@ -1,6 +1,5 @@
 import type { Product, Category, MockUser, Transaction, CarouselCategory } from './types';
 import { supabase } from './supabase';
-import placeholderImages from '@/app/lib/placeholder-images.json';
 
 /**
  * Image URL Resolver:
@@ -101,6 +100,8 @@ export async function getProducts(): Promise<Product[]> {
     const { data, error } = await supabase
       .from('products')
       .select('*')
+      // Filter out the redundant/broken solar panel product
+      .neq('id', '06f51dd1-9c33-457a-b06c-af49c1017377')
       .order('name', { ascending: true });
 
     if (error) throw error;
