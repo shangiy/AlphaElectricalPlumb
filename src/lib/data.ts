@@ -21,18 +21,21 @@ const resolveProductImages = (product: any): string[] => {
   const rawPath = product.image_path?.trim() ?? '';
   if (!rawPath) return ["/placeholder.jpg"];
 
-  // Step A: Strip "Saved Pictures/" and "product-images/" if they exist at the start
-  const relativePath = rawPath
-    .replace(/^Saved Pictures[\\\/]/, '')
+  // Clean the database path by stripping leading prefixes and any extra slashes
+  const cleanPath = rawPath
     .replace(/^product-images[\\\/]/, '')
+    .replace(/^Saved Pictures[\\\/]/, '')
     .replace(/\\/g, '/')
     .replace(/^\/+/, ''); // Strip any leading slashes
 
-  // Step B: Build the specific nested path revealed in the working URL
-  // Working URL: .../public/product-images/product-images/toilets%20&%20sinks/...
-  const nestedPath = `product-images/${relativePath}`;
+  /**
+   * IMPORTANT: The working URL showed a nested folder structure:
+   * .../public/product-images/product-images/category/...
+   * This means we need to pass 'product-images/' + the category path to getPublicUrl
+   */
+  const storagePath = `product-images/${cleanPath}`;
 
-  const { data } = supabase.storage.from('product-images').getPublicUrl(nestedPath);
+  const { data } = supabase.storage.from('product-images').getPublicUrl(storagePath);
   
   return [data.publicUrl];
 };
@@ -96,6 +99,9 @@ export async function getProducts(): Promise<Product[]> {
 
     return (data || []).map(p => ({
       ...p,
+      name: p.name || "Unnamed Product",
+      category: p.category || "Uncategorized",
+      description: p.description || p.longDescription || "",
       imageUrls: resolveProductImages(p),
       price: Number(p.price) || 0,
       stockCount: Number(p.stock_count || p.stockCount || 0),

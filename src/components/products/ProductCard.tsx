@@ -27,8 +27,8 @@ export default function ProductCard({ product }: ProductCardProps) {
     .replace(/^\/+/, ''); // Removes any leading forward slashes
 
   /**
-   * IMPORTANT: Your working URL showed a nested folder structure:
-   * .../public/product-images/product-images/toilets...
+   * IMPORTANT: The working URL showed a nested folder structure:
+   * .../public/product-images/product-images/category/...
    * This means we need to pass 'product-images/' + the category path to getPublicUrl
    */
   const storagePath = `product-images/${cleanPath}`;
@@ -38,7 +38,7 @@ export default function ProductCard({ product }: ProductCardProps) {
     ? supabase.storage.from('product-images').getPublicUrl(storagePath).data.publicUrl
     : 'https://placehold.co/400x400?text=No+Image';
 
-  // Debugging: View these in your browser console (F12) to verify the paths
+  // Debugging: View these in your browser console to verify the paths
   console.log("Product:", product.name, "Cleaned Path:", cleanPath, "Final Storage Path:", storagePath, "Image URL:", imageUrl);
 
   const handleWhatsAppInquiry = (e: React.MouseEvent) => {
