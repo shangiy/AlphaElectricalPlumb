@@ -1,45 +1,34 @@
-import React from 'react';
-import { supabase } from '@/lib/supabaseClient';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { MessageCircle, ShoppingCart } from 'lucide-react';
 import { useCart } from '@/context/CartProvider';
+import type { Product } from '@/lib/types';
 
 interface ProductCardProps {
-  product: {
-    id: string | number;
-    name: string;
-    price: number;
-    description?: string;
-    image_path?: string | null;
-    category?: string;
-  };
+  product: Product;
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
   const { addToCart } = useCart();
+  const [imgIndex, setImgIndex] = useState(0);
 
-  // Clean the database path by stripping leading prefixes and any extra slashes
-  const rawPath = product.image_path?.trim() ?? '';
-  const cleanPath = rawPath
-    .replace(/^product-images\//, '')
-    .replace(/^Saved Pictures\//, '')
-    .replace(/^\/+/, ''); // Removes any leading forward slashes
+  // Use the pre-resolved imageUrls from the data helper
+  const imageUrls = product.imageUrls && product.imageUrls.length > 0 
+    ? product.imageUrls 
+    : ['/placeholder.jpg'];
 
-  /**
-   * IMPORTANT: The working URL showed a nested folder structure:
-   * .../public/product-images/product-images/category/...
-   * This means we need to pass 'product-images/' + the category path to getPublicUrl
-   */
-  const storagePath = `product-images/${cleanPath}`;
+  const handleImageError = () => {
+    // If the first image fails, try the next one in the candidate array
+    if (imgIndex < imageUrls.length - 1) {
+      setImgIndex(imgIndex + 1);
+    } else {
+      // Final fallback to placeholder
+      setImgIndex(-1);
+    }
+  };
 
-  // Generate the direct public URL from the 'product-images' bucket
-  const imageUrl = cleanPath
-    ? supabase.storage.from('product-images').getPublicUrl(storagePath).data.publicUrl
-    : 'https://placehold.co/400x400?text=No+Image';
-
-  // Debugging: View these in your browser console to verify the paths
-  console.log("Product:", product.name, "Cleaned Path:", cleanPath, "Final Storage Path:", storagePath, "Image URL:", imageUrl);
+  const currentImageUrl = imgIndex === -1 ? '/placeholder.jpg' : imageUrls[imgIndex];
 
   const handleWhatsAppInquiry = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -52,19 +41,17 @@ export default function ProductCard({ product }: ProductCardProps) {
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    addToCart(product as any, true);
+    addToCart(product, true);
   };
 
   return (
     <div className="group relative flex flex-col h-full rounded-2xl border bg-card text-card-foreground shadow-sm transition-all hover:shadow-xl hover:-translate-y-1 overflow-hidden">
       <Link href={`/products/${product.id}`} className="block relative aspect-square overflow-hidden bg-muted">
         <img
-          src={imageUrl}
+          src={currentImageUrl}
           alt={product.name}
           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-          onError={(e) => {
-            (e.target as HTMLImageElement).src = 'https://placehold.co/400x400?text=Image+Not+Found';
-          }}
+          onError={handleImageError}
         />
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors" />
       </Link>

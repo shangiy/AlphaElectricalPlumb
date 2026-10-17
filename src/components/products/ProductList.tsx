@@ -26,12 +26,13 @@ export default function ProductList({ products: initialProducts }: ProductListPr
 
   const filteredProducts = useMemo(() => {
     if (!query) return products;
-    // Robust safety checks with optional chaining and nullish coalescing to prevent 'toLowerCase' runtime errors
-    return products.filter(p => 
-      (p.name?.toLowerCase() ?? '').includes(query) || 
-      (p.description?.toLowerCase() ?? '').includes(query) ||
-      (p.category?.toLowerCase() ?? '').includes(query)
-    );
+    // Robust safety checks with optional chaining and nullish coalescing
+    return products.filter(p => {
+      const name = (p.name || '').toLowerCase();
+      const desc = (p.description || '').toLowerCase();
+      const cat = (p.category || '').toLowerCase();
+      return name.includes(query) || desc.includes(query) || cat.includes(query);
+    });
   }, [products, query]);
 
   if (loading) {

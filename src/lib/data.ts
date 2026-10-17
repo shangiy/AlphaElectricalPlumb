@@ -3,9 +3,9 @@ import { supabase } from './supabase';
 
 /**
  * Image URL Resolver:
- * Matches the exact pattern of the working "Blue Ceramic Squatting Pan" image.
- * DB: "Saved Pictures/category/filename.webp"
- * Storage: bucket "product-images" -> folder "product-images" -> "category" -> "filename.webp"
+ * Provides multiple candidate URLs to handle different storage structures.
+ * 1. Nested: /product-images/product-images/category/file.webp
+ * 2. Root:   /product-images/category/file.webp
  */
 const resolveProductImages = (product: any): string[] => {
   if (!supabase) return ["/placeholder.jpg"];
@@ -20,23 +20,25 @@ const resolveProductImages = (product: any): string[] => {
   const rawPath = product.image_path?.trim() ?? '';
   if (!rawPath) return ["/placeholder.jpg"];
 
-  // Clean the database path by stripping leading prefixes and any extra slashes
+  // Clean the database path
   const cleanPath = rawPath
     .replace(/^product-images[\\\/]/, '')
     .replace(/^Saved Pictures[\\\/]/, '')
     .replace(/\\/g, '/')
-    .replace(/^\/+/, ''); // Strip any leading slashes
+    .replace(/^\/+/, '');
 
   /**
-   * IMPORTANT: The working URL showed a nested folder structure:
-   * .../public/product-images/product-images/category/...
-   * This means we need to pass 'product-images/' + the category path to getPublicUrl
+   * We generate two candidates:
+   * Candidate A: The nested folder structure confirmed to work for some items.
+   * Candidate B: The direct root path (fallback for other items).
    */
-  const storagePath = `product-images/${cleanPath}`;
+  const nestedPath = `product-images/${cleanPath}`;
+  const rootPath = cleanPath;
 
-  const { data } = supabase.storage.from('product-images').getPublicUrl(storagePath);
+  const nestedUrl = supabase.storage.from('product-images').getPublicUrl(nestedPath).data.publicUrl;
+  const rootUrl = supabase.storage.from('product-images').getPublicUrl(rootPath).data.publicUrl;
   
-  return [data.publicUrl];
+  return [nestedUrl, rootUrl];
 };
 
 export const categories: Category[] = [
@@ -52,9 +54,6 @@ export const categories: Category[] = [
     { id: 'Collections', name: 'Our Collections' },
 ];
 
-/**
- * Helper to get public URL for carousel collection items
- */
 const getCollectionImageUrl = (filename: string) => {
   if (!supabase) return "/placeholder.jpg";
   return supabase.storage.from('product-images').getPublicUrl(`product-images/collections/${filename}`).data.publicUrl;
