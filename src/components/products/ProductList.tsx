@@ -26,7 +26,7 @@ export default function ProductList({ products: initialProducts }: ProductListPr
 
   const filteredProducts = useMemo(() => {
     if (!query) return products;
-    // Robust safety checks to prevent 'toLowerCase' of undefined runtime errors
+    // Robust safety checks with optional chaining and nullish coalescing to prevent 'toLowerCase' runtime errors
     return products.filter(p => 
       (p.name?.toLowerCase() ?? '').includes(query) || 
       (p.description?.toLowerCase() ?? '').includes(query) ||

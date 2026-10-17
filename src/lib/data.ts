@@ -97,11 +97,16 @@ export async function getProducts(): Promise<Product[]> {
   try {
     if (!supabase) return [];
 
+    // Filter out invalid/test products requested by the user
+    const excludedIds = [
+      '06f51dd1-9c33-457a-b06c-af49c1017377', // All-Weather Solar Panel test
+      '12f2b128-b21e-4c85-8c9d-2e636bf03719'  // Alpha chandelier collection test
+    ];
+
     const { data, error } = await supabase
       .from('products')
       .select('*')
-      // Filter out the redundant/broken solar panel product
-      .neq('id', '06f51dd1-9c33-457a-b06c-af49c1017377')
+      .not('id', 'in', `(${excludedIds.join(',')})`)
       .order('name', { ascending: true });
 
     if (error) throw error;
