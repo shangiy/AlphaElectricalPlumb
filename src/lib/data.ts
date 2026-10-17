@@ -53,36 +53,44 @@ export const categories: Category[] = [
     { id: 'Collections', name: 'Our Collections' },
 ];
 
+/**
+ * Helper to get public URL for carousel collection items
+ */
+const getCollectionImageUrl = (filename: string) => {
+  if (!supabase) return "/placeholder.jpg";
+  return supabase.storage.from('product-images').getPublicUrl(`product-images/collections/${filename}`).data.publicUrl;
+}
+
 export const carouselCategories: CarouselCategory[] = [
     { 
         id: 'Tanks category', 
         name: 'Tanks', 
         href: '/tanks', 
-        image: placeholderImages.cat_tanks.url
+        image: getCollectionImageUrl('tanks.webp')
     },
     { 
         id: 'Plumbing', 
         name: 'Plumbing', 
         href: '/plumbing', 
-        image: placeholderImages.cat_plumbing.url
+        image: getCollectionImageUrl('plumbing.webp')
     },
     { 
         id: 'Decorative Lighting and chandeliers', 
         name: 'Lighting & Electrical', 
         href: '/lighting', 
-        image: placeholderImages.cat_lighting.url
+        image: getCollectionImageUrl('lighting.webp')
     },
     { 
         id: 'Collections', 
         name: 'Home & Decor', 
         href: '/decor', 
-        image: placeholderImages.cat_decor.url
+        image: getCollectionImageUrl('decor.webp')
     },
     { 
         id: 'Mabati and Roofing', 
         name: 'Roofing & Construction', 
         href: '/roofing', 
-        image: placeholderImages.cat_roofing.url
+        image: getCollectionImageUrl('roofing.webp')
     },
 ];
 

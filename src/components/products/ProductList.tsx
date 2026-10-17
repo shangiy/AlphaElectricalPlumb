@@ -26,7 +26,7 @@ export default function ProductList({ products: initialProducts }: ProductListPr
 
   const filteredProducts = useMemo(() => {
     if (!query) return products;
-    // Added optional chaining and nullish coalescing to prevent "toLowerCase of undefined" errors
+    // Fix: Added optional chaining and nullish coalescing to prevent "toLowerCase of undefined" errors
     return products.filter(p => 
       (p.name?.toLowerCase() ?? '').includes(query) || 
       (p.description?.toLowerCase() ?? '').includes(query) ||
