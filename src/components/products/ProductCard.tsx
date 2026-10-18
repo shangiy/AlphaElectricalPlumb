@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabaseClient';
@@ -14,47 +14,67 @@ interface Product {
 }
 
 /**
- * Optimized Product Card: Handles Supabase image resolution with path cleaning and fallback support.
- * Correctly marked with 'use client' for React Hook compatibility.
+ * Optimized Product Card: 
+ * Implements "Self-Healing" image resolution by testing multiple storage path candidates.
+ * This ensures visibility even after database path updates or folder migrations.
  */
 export default function ProductCard({ product }: { product: Product }) {
+  const [imgIndex, setImgIndex] = useState(0);
+
   // Parse image path: handle single strings or JSON arrays of multi-view images
-  let imagePath = '';
-  try {
-    if (product.image_path) {
-      if (product.image_path.trim().startsWith('[')) {
-        const parsed = JSON.parse(product.image_path);
-        imagePath = Array.isArray(parsed) && parsed.length > 0 ? parsed[0] : '';
-      } else {
-        imagePath = product.image_path;
+  const rawPath = useMemo(() => {
+    try {
+      if (product.image_path) {
+        if (product.image_path.trim().startsWith('[')) {
+          const parsed = JSON.parse(product.image_path);
+          return Array.isArray(parsed) && parsed.length > 0 ? parsed[0] : '';
+        }
+        return product.image_path;
       }
+    } catch (e) {
+      return product.image_path || '';
     }
-  } catch (e) {
-    imagePath = product.image_path || '';
-  }
+    return '';
+  }, [product.image_path]);
 
-  // Clean redundant bucket prefixes from storage path for robust URL resolution
-  const cleanPath = imagePath
-    .replace(/^(product-images\/)+/g, '')
-    .replace(/^(Saved Pictures\/)+/g, '')
-    .replace(/^\/+/, '');
+  // Clean redundant bucket prefixes from storage path
+  const cleanPath = useMemo(() => {
+    return rawPath
+      .replace(/^(product-images\/)+/g, '')
+      .replace(/^(Saved Pictures\/)+/g, '')
+      .replace(/\\/g, '/')
+      .replace(/^\/+/, '');
+  }, [rawPath]);
 
-  const initialUrl = cleanPath
-    ? supabase.storage.from('product-images').getPublicUrl(cleanPath).data.publicUrl
-    : 'https://placehold.co/400x400?text=' + encodeURIComponent(product.name);
+  // Generate candidates: Try with and without the folder prefix to match Supabase storage structure
+  const candidateUrls = useMemo(() => {
+    if (!cleanPath) return ['/placeholder.jpg'];
+    return [
+      supabase.storage.from('product-images').getPublicUrl(`product-images/${cleanPath}`).data.publicUrl,
+      supabase.storage.from('product-images').getPublicUrl(cleanPath).data.publicUrl,
+    ];
+  }, [cleanPath]);
 
-  const [imgSrc, setImgSrc] = useState(initialUrl);
+  const handleImageError = () => {
+    if (imgIndex < candidateUrls.length - 1) {
+      setImgIndex(imgIndex + 1);
+    } else {
+      setImgIndex(-1); // Final fallback to placeholder
+    }
+  };
+
+  const currentImageUrl = imgIndex === -1 
+    ? `https://placehold.co/400x400?text=${encodeURIComponent(product.name)}`
+    : candidateUrls[imgIndex];
 
   return (
     <div className="group relative rounded-2xl border bg-card overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col h-full">
       <Link href={`/products/${product.id}`} className="relative aspect-square overflow-hidden bg-muted block">
         <img
-          src={imgSrc}
+          src={currentImageUrl}
           alt={product.name}
           className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
-          onError={() => {
-            setImgSrc('https://placehold.co/400x400?text=' + encodeURIComponent(product.name));
-          }}
+          onError={handleImageError}
         />
       </Link>
       <div className="p-4 flex flex-col flex-1 justify-between">
