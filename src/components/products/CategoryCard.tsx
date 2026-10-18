@@ -2,7 +2,6 @@
 
 import { supabase } from '@/lib/supabaseClient';
 import Link from 'next/link';
-import { useState } from 'react';
 
 interface Category {
   id: string;
@@ -22,42 +21,29 @@ const categoryImageMap: Record<string, string> = {
 };
 
 export default function CategoryCard({ category }: { category: Category }) {
-  const [imgIndex, setImgIndex] = useState(0);
+  // 1. Check if the category has an image_path in the DB, otherwise use the map or name fallback
+  let rawPath = category.image_path || `collections/${categoryImageMap[category.name.trim()] || `${category.name.trim()}.webp`}`;
 
-  // 1. Determine the target filename
-  const filename = categoryImageMap[category.name.trim()] || `${category.name.trim()}.webp`;
-  
-  // 2. Build candidates to handle varying folder structures (Self-Healing)
-  const candidates = [
-    `collections/${filename}`,
-    filename,
-    `product-images/collections/${filename}`
-  ];
+  // 2. Clean path to remove duplicate bucket names like 'product-images/' or 'product-images/product-images/'
+  const cleanPath = rawPath
+    .replace(/^(product-images\/)+/g, '')
+    .replace(/^(Saved Pictures\/)+/g, '')
+    .replace(/^\/+/, '');
 
-  const getUrl = (path: string) => {
-    return supabase.storage.from('product-images').getPublicUrl(path).data.publicUrl;
-  };
-
-  const handleImageError = () => {
-    if (imgIndex < candidates.length - 1) {
-      setImgIndex(prev => prev + 1);
-    } else {
-      setImgIndex(-1); // Final fallback
-    }
-  };
-
-  const currentUrl = imgIndex === -1 
-    ? `https://placehold.co/400x500?text=${encodeURIComponent(category.name)}`
-    : getUrl(candidates[imgIndex]);
+  const imageUrl = supabase.storage
+    .from('product-images')
+    .getPublicUrl(cleanPath).data.publicUrl;
 
   return (
     <Link href={category.href || '#'} className="block group">
       <div className="relative rounded-[2rem] overflow-hidden shadow-md aspect-[4/5] bg-muted border border-white/25 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
         <img
-          src={currentUrl}
+          src={imageUrl}
           alt={category.name}
-          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-          onError={handleImageError}
+          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+          onError={(e) => {
+            (e.target as HTMLImageElement).src = 'https://placehold.co/400x500?text=' + encodeURIComponent(category.name);
+          }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-6">
           <h3 className="text-white font-bold text-xl font-headline leading-tight">{category.name}</h3>
