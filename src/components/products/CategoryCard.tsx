@@ -1,23 +1,34 @@
-
 'use client';
 
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabaseClient';
 import Link from 'next/link';
 
 interface Category {
   id: string;
   name: string;
   href: string;
+  image_path?: string | null;
 }
 
 export default function CategoryCard({ category }: { category: Category }) {
-  // Clean category name for file matching (e.g., "Tanks" -> "Tanks.webp")
-  const fileName = `${category.name.trim()}.webp`;
-  const storagePath = `COLLECTION/${fileName}`;
+  // Use database image_path if available, otherwise fallback to matching the category name in collections
+  // We use the 'product-images/' prefix to match your working storage pattern
+  const rawPath = category.image_path || `product-images/collections/${category.name.trim()}.webp`;
+  
+  // Clean path to remove any leading bucket or redundant folder duplications
+  const cleanPath = rawPath
+    .replace(/^product-images\//, '')
+    .replace(/^Saved Pictures\//, '')
+    .replace(/^\/+/, '');
+
+  // Prepend 'product-images/' to match the nested folder structure revealed in your working links
+  const finalPath = `product-images/${cleanPath}`;
 
   const imageUrl = supabase.storage
     .from('product-images')
-    .getPublicUrl(storagePath).data.publicUrl;
+    .getPublicUrl(finalPath).data.publicUrl;
+
+  console.log("Category:", category.name, "Final Path:", finalPath);
 
   return (
     <Link href={category.href} className="block w-full h-full">

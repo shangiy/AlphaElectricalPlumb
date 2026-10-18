@@ -1,11 +1,10 @@
-
 import type { Product, Category, MockUser, Transaction, CarouselCategory } from './types';
 import { supabase } from './supabase';
 
 /**
  * Image URL Resolver:
  * Supports single strings or JSON arrays of paths.
- * Generates both "Nested" and "Root" candidate URLs for every path to ensure "Self-Healing"
+ * Generates candidate URLs for every path to ensure "Self-Healing"
  * visibility if folders were moved in Supabase.
  */
 const resolveProductImages = (product: any): string[] => {
@@ -27,7 +26,7 @@ const resolveProductImages = (product: any): string[] => {
     basePaths = [rawPath];
   }
 
-  // 2. Generate candidates for EACH base path to ensure maximum visibility
+  // 2. Generate candidates for EACH base path
   const allCandidates: string[] = [];
   basePaths.forEach(path => {
     const cleanPath = path
@@ -39,7 +38,7 @@ const resolveProductImages = (product: any): string[] => {
     // Candidate A: Nested folder structure (Found in working links)
     allCandidates.push(supabase.storage.from('product-images').getPublicUrl(`product-images/${cleanPath}`).data.publicUrl);
     
-    // Candidate B: Root level bucket access (Standard fallback)
+    // Candidate B: Root level bucket access
     allCandidates.push(supabase.storage.from('product-images').getPublicUrl(cleanPath).data.publicUrl);
   });
 
@@ -59,42 +58,36 @@ export const categories: Category[] = [
     { id: 'Collections', name: 'Our Collections' },
 ];
 
-const getCollectionImageUrl = (filename: string) => {
-  if (!supabase) return "/placeholder.jpg";
-  // The user requested images from the 'COLLECTION' folder in Supabase
-  return supabase.storage.from('product-images').getPublicUrl(`COLLECTION/${filename}`).data.publicUrl;
-}
-
 export const carouselCategories: CarouselCategory[] = [
     { 
         id: 'Tanks category', 
         name: 'Tanks', 
         href: '/tanks', 
-        image: getCollectionImageUrl('Tanks.webp')
+        image: '' // Resolved in CategoryCard using collections folder
     },
     { 
         id: 'Plumbing', 
         name: 'Plumbing', 
         href: '/plumbing', 
-        image: getCollectionImageUrl('Plumbing.webp')
+        image: ''
     },
     { 
         id: 'Decorative Lighting and chandeliers', 
         name: 'Lighting & Electrical', 
         href: '/lighting', 
-        image: getCollectionImageUrl('Lighting & Electrical.webp')
+        image: ''
     },
     { 
         id: 'Collections', 
         name: 'Home & Decor', 
         href: '/decor', 
-        image: getCollectionImageUrl('Home & Decor.webp')
+        image: ''
     },
     { 
         id: 'Mabati and Roofing', 
         name: 'Roofing & Construction', 
         href: '/roofing', 
-        image: getCollectionImageUrl('Roofing & Construction.webp')
+        image: ''
     },
 ];
 
