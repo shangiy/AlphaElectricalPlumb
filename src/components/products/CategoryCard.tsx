@@ -2,6 +2,7 @@
 
 import { supabase } from '@/lib/supabaseClient';
 import Link from 'next/link';
+import { useState } from 'react';
 
 interface Category {
   id: string;
@@ -21,31 +22,42 @@ const categoryImageMap: Record<string, string> = {
 };
 
 export default function CategoryCard({ category }: { category: Category }) {
-  // 1. Check if the category has an image_path in the data, otherwise use the map or name fallback
-  let rawPath = category.image_path || `collections/${categoryImageMap[category.name.trim()] || `${category.name.trim()}.webp`}`;
+  const [imgIndex, setImgIndex] = useState(0);
 
-  // 2. Clean path to remove duplicate bucket names like 'product-images/' or 'product-images/product-images/'
-  const cleanPath = rawPath
-    .replace(/^(product-images\/)+/g, '')
-    .replace(/^(Saved Pictures\/)+/g, '')
-    .replace(/\\/g, '/')
-    .replace(/^\/+/, '');
+  // 1. Determine the target filename
+  const filename = categoryImageMap[category.name.trim()] || `${category.name.trim()}.webp`;
+  
+  // 2. Build candidates to handle varying folder structures (Self-Healing)
+  const candidates = [
+    `collections/${filename}`,
+    filename,
+    `product-images/collections/${filename}`
+  ];
 
-  const imageUrl = supabase.storage
-    .from('product-images')
-    .getPublicUrl(cleanPath).data.publicUrl;
+  const getUrl = (path: string) => {
+    return supabase.storage.from('product-images').getPublicUrl(path).data.publicUrl;
+  };
+
+  const handleImageError = () => {
+    if (imgIndex < candidates.length - 1) {
+      setImgIndex(prev => prev + 1);
+    } else {
+      setImgIndex(-1); // Final fallback
+    }
+  };
+
+  const currentUrl = imgIndex === -1 
+    ? `https://placehold.co/400x500?text=${encodeURIComponent(category.name)}`
+    : getUrl(candidates[imgIndex]);
 
   return (
     <Link href={category.href || '#'} className="block group">
       <div className="relative rounded-[2rem] overflow-hidden shadow-md aspect-[4/5] bg-muted border border-white/25 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
         <img
-          src={imageUrl}
+          src={currentUrl}
           alt={category.name}
           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-          onError={(e) => {
-            // Silently fallback to placeholder to prevent development overlay
-            (e.target as HTMLImageElement).src = 'https://placehold.co/400x500?text=' + encodeURIComponent(category.name);
-          }}
+          onError={handleImageError}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-6">
           <h3 className="text-white font-bold text-xl font-headline leading-tight">{category.name}</h3>

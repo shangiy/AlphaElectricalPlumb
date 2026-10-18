@@ -23,12 +23,12 @@ export default function ProductList({ products: initialProducts }: ProductListPr
   const filteredProducts = useMemo(() => {
     let list = products || [];
     
-    // 1. Apply strict category filter first if present (ideal for navigation links)
+    // 1. Apply strict category filter first if present
     if (categoryFilter) {
       list = list.filter(p => p && p.category === categoryFilter);
     }
     
-    // 2. Apply fuzzy text search if present
+    // 2. Apply fuzzy text search if present with ultra-defensive coding
     if (query) {
       list = list.filter(p => {
         if (!p) return false;

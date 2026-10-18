@@ -57,43 +57,43 @@ export const carouselCategories: CarouselCategory[] = [
     { 
         id: 'Tanks category', 
         name: 'Tanks', 
-        href: '/search?category=Tanks%20category', 
+        href: '/category/Tanks%20category', 
         image: '' 
     },
     { 
         id: 'Plumbing', 
         name: 'Plumbing', 
-        href: '/search?category=Plumbing', 
+        href: '/category/Plumbing', 
         image: ''
     },
     { 
         id: 'Decorative Lighting and chandeliers', 
         name: 'Electricals and Cables', 
-        href: '/search?category=Decorative%20Lighting%20and%20chandeliers', 
+        href: '/category/Decorative%20Lighting%20and%20chandeliers', 
         image: ''
     },
     { 
         id: 'Collections', 
         name: 'Home & Decor', 
-        href: '/search?category=Collections', 
+        href: '/category/Collections', 
         image: ''
     },
     { 
         id: 'Sanitary Ware Toilets & Bathroom Fixtures', 
         name: 'Toilets & Sinks', 
-        href: '/search?category=Sanitary%20Ware%20Toilets%20%26%20Bathroom%20Fixtures', 
+        href: '/category/Sanitary%20Ware%20Toilets%20%26%20Bathroom%20Fixtures', 
         image: ''
     },
     { 
         id: 'Solar panels & accessories', 
         name: 'Solar category', 
-        href: '/search?category=Solar%20panels%20%26%20accessories', 
+        href: '/category/Solar%20panels%20%26%20accessories', 
         image: ''
     },
     { 
         id: 'Mabati and Roofing', 
         name: 'Roofing & Construction', 
-        href: '/search?category=Mabati%20and%20Roofing', 
+        href: '/category/Mabati%20and%20Roofing', 
         image: ''
     },
 ];
