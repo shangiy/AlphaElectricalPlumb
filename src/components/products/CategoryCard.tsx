@@ -24,7 +24,7 @@ const categoryImageMap: Record<string, string> = {
 export default function CategoryCard({ category }: { category: Category }) {
   const [candidateIndex, setCandidateIndex] = useState(0);
 
-  // 1. Determine base path from map or DB
+  // 1. Determine base path from map or fallback
   const rawPath = category.image_path || `collections/${categoryImageMap[category.name.trim()] || `${category.name.trim()}.webp`}`;
 
   // 2. Generate Candidate URLs (Self-Healing)
@@ -38,7 +38,7 @@ export default function CategoryCard({ category }: { category: Category }) {
       .replace(/^\/+/, '');
 
     return [
-      // Candidate A: Nested folder structure (Found in working links)
+      // Candidate A: Nested folder structure
       supabase.storage.from('product-images').getPublicUrl(`product-images/${cleanPath}`).data.publicUrl,
       // Candidate B: Root level bucket access
       supabase.storage.from('product-images').getPublicUrl(cleanPath).data.publicUrl

@@ -22,19 +22,13 @@ function ProductContent({ productId }: { productId: string }) {
   const [quantity, setQuantity] = useState(1);
   const [failedImages, setFailedImages] = useState<Set<number>>(new Set());
 
-  // Reset gallery state when product changes
   useEffect(() => {
     setActiveImageIndex(0);
     setFailedImages(new Set());
   }, [productId]);
 
-  /**
-   * Smart Image Filtering Logic:
-   * Dedupes URLs and hides broken candidates.
-   */
   const uniqueImages = useMemo(() => {
     if (!product) return [];
-    // Filter out duplicates (case-insensitive) and handle errors
     const seen = new Set<string>();
     return product.imageUrls.filter((url, index) => {
       const lower = url.toLowerCase();
@@ -82,7 +76,6 @@ function ProductContent({ productId }: { productId: string }) {
         next.add(index);
         return next;
     });
-    // If the active image fails, move to the next working one
     if (activeImageIndex === index) {
         setActiveImageIndex(prev => prev + 1);
     }
@@ -140,7 +133,6 @@ function ProductContent({ productId }: { productId: string }) {
             )}
           </div>
 
-          {/* Product Details Column */}
           <div className="flex flex-col gap-8">
             <div className="space-y-4">
                 <div className="flex items-center gap-4">

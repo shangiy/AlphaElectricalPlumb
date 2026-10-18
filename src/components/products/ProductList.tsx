@@ -12,11 +12,6 @@ interface ProductListProps {
   products?: Product[];
 }
 
-/**
- * ProductList Component
- * Displays the product catalog fetched from Supabase.
- * Filters products based on the search query in the URL with robust safety checks.
- */
 export default function ProductList({ products: initialProducts }: ProductListProps) {
   const { products: contextProducts, loading } = useProducts();
   const searchParams = useSearchParams();
@@ -29,14 +24,12 @@ export default function ProductList({ products: initialProducts }: ProductListPr
     if (!query) return list;
     
     return list.filter(p => {
-      // Robust defensive coding: 
-      // Safely handle missing or malformed product data to prevent TypeError crashes.
       if (!p) return false;
       
-      const name = (p.name || '').toLowerCase();
-      const desc = (p.description || p.longDescription || '').toLowerCase();
-      const cat = (p.category || '').toLowerCase();
-      const brand = (p.brand || '').toLowerCase();
+      const name = (p.name ?? '').toLowerCase();
+      const desc = (p.description ?? p.longDescription ?? '').toLowerCase();
+      const cat = (p.category ?? '').toLowerCase();
+      const brand = (p.brand ?? '').toLowerCase();
       
       return (
         name.includes(query) || 
@@ -69,7 +62,7 @@ export default function ProductList({ products: initialProducts }: ProductListPr
         <Package className="h-12 w-12 text-muted-foreground mb-4 opacity-20" />
         <h3 className="text-xl font-bold text-muted-foreground font-headline">No Products Found</h3>
         <p className="text-sm text-muted-foreground mt-2 max-w-xs mx-auto">
-          We couldn't find any products in the database. Please verify your Supabase connection and catalog.
+          We couldn't find any products in the database.
         </p>
       </div>
     );

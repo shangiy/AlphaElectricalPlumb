@@ -28,7 +28,6 @@ import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAuth } from '@/context/AuthProvider';
 
-// Use dynamic import for HeroSearch in header to optimize layout loading
 const HeroSearch = dynamic(() => import('./HeroSearch'), {
   ssr: true,
   loading: () => <div className="h-9 w-full max-w-xl bg-muted/10 animate-pulse rounded-full" />
@@ -62,17 +61,9 @@ export default function Header() {
     setMounted(true);
     const updateHeaderStyles = () => {
       const scrollY = window.scrollY;
-      
-      /**
-       * PHASE 1 & 2 LOGIC:
-       * The TopBanner is 40px on mobile (<768px) and 48px on desktop (>=768px).
-       * We lock the header and change its style the moment the banner is scrolled past.
-       */
       const isMobile = window.innerWidth < 768;
       const stickyThreshold = isMobile ? 40 : 48;
 
-      // The header becomes opaque and the search appears simultaneously 
-      // when the header reaches the top (scrollY >= threshold)
       const isLocked = !isHomePage || scrollY >= stickyThreshold;
       
       setIsHeaderOpaque(isLocked);
@@ -96,14 +87,11 @@ export default function Header() {
     { name: 'About Us', href: '/about' },
   ];
   
-  // Header behavior: sticky top-0 means it will scroll UP with the banner
-  // until its top edge reaches 0, then it stops and locks there.
-  // z-50 ensures it stays above page content.
   const headerClasses = cn(
     "sticky top-0 z-50 w-full transition-all duration-300",
     isHeaderOpaque 
-      ? "bg-background shadow-lg border-b" // Solid ceiling when locked
-      : "bg-transparent border-b border-transparent" // Riding up phase
+      ? "bg-background shadow-lg border-b" 
+      : "bg-transparent border-b border-transparent"
   );
 
   const dynamicColorClasses = cn(

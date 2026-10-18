@@ -10,13 +10,11 @@ import { supabase } from './supabase';
 const resolveProductImages = (product: any): string[] => {
   if (!supabase) return ["/placeholder.jpg"];
 
-  // 1. Get raw paths from database
   const rawPath = product.image_path?.trim() ?? '';
   if (!rawPath) return ["/placeholder.jpg"];
 
   let basePaths: string[] = [];
   try {
-    // Check if the string is a JSON array (e.g. ["img1.webp", "img2.webp"])
     if (rawPath.startsWith('[') && rawPath.endsWith(']')) {
       basePaths = JSON.parse(rawPath);
     } else {
@@ -26,7 +24,6 @@ const resolveProductImages = (product: any): string[] => {
     basePaths = [rawPath];
   }
 
-  // 2. Generate candidates for EACH base path
   const allCandidates: string[] = [];
   basePaths.forEach(path => {
     const cleanPath = path
@@ -35,15 +32,12 @@ const resolveProductImages = (product: any): string[] => {
       .replace(/\\/g, '/')
       .replace(/^\/+/, '');
 
-    // Candidate A: Nested folder structure (Found in working links)
     allCandidates.push(supabase.storage.from('product-images').getPublicUrl(`product-images/${cleanPath}`).data.publicUrl);
-    
-    // Candidate B: Root level bucket access
     allCandidates.push(supabase.storage.from('product-images').getPublicUrl(cleanPath).data.publicUrl);
   });
 
-  // Filter out duplicates that might occur if path was already clean
-  return Array.from(new Set(allCandidates)).length > 0 ? Array.from(new Set(allCandidates)) : ["/placeholder.jpg"];
+  const unique = Array.from(new Set(allCandidates));
+  return unique.length > 0 ? unique : ["/placeholder.jpg"];
 };
 
 export const categories: Category[] = [
@@ -108,11 +102,10 @@ export async function getProducts(): Promise<Product[]> {
   try {
     if (!supabase) return [];
 
-    // Filter out invalid/test products requested by the user
     const excludedIds = [
-      '06f51dd1-9c33-457a-b06c-af49c1017377', // All-Weather Solar Panel test
-      '12f2b128-b21e-4c85-8c9d-2e636bf03719', // Alpha chandelier collection test
-      '66b8671c-5d1f-4203-b234-f7b4accc5904'  // Modern Crystal redundant chandelier
+      '06f51dd1-9c33-457a-b06c-af49c1017377',
+      '12f2b128-b21e-4c85-8c9d-2e636bf03719',
+      '66b8671c-5d1f-4203-b234-f7b4accc5904'
     ];
 
     const { data, error } = await supabase
@@ -122,7 +115,6 @@ export async function getProducts(): Promise<Product[]> {
 
     if (error) throw error;
 
-    // Filter list locally to ensure safety
     return (data || [])
       .filter(p => p && p.id && !excludedIds.includes(p.id))
       .map(p => ({
@@ -150,11 +142,7 @@ export async function getCategories(): Promise<Category[]> {
 export async function getUsers(): Promise<MockUser[]> {
   try {
     if (!supabase) return [];
-    
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*');
-
+    const { data, error } = await supabase.from('profiles').select('*');
     if (error) throw error;
     return data as any[];
   } catch (error) {
