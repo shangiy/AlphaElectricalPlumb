@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
@@ -35,11 +34,12 @@ export default function ProductCard({ product }: { product: Product }) {
     let rawPaths: string[] = [];
     try {
       if (product.image_path) {
+        const trimmed = product.image_path.trim();
         // Handle JSON strings (e.g. multi-image arrays from database)
-        if (product.image_path.trim().startsWith('[')) {
-          rawPaths = JSON.parse(product.image_path.replace(/[\r\n]/g, ''));
+        if (trimmed.startsWith('[')) {
+          rawPaths = JSON.parse(trimmed.replace(/[\r\n]/g, ''));
         } else {
-          rawPaths = [product.image_path];
+          rawPaths = [trimmed];
         }
       }
     } catch (e) {
@@ -58,7 +58,9 @@ export default function ProductCard({ product }: { product: Product }) {
         .replace(/^\/+/, '');
       
       // Candidate 1: Direct public URL from Supabase storage
-      candidates.push(supabase.storage.from('product-images').getPublicUrl(clean).data.publicUrl);
+      if (supabase) {
+        candidates.push(supabase.storage.from('product-images').getPublicUrl(clean).data.publicUrl);
+      }
     });
 
     // Filtering out indices that have previously failed to load

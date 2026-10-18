@@ -12,7 +12,7 @@ import {
   SheetClose,
   SheetTrigger,
 } from '@/components/ui/sheet';
-import { User, Menu, ChevronDown } from 'lucide-react';
+import { User, Menu, ChevronDown, LayoutDashboard } from 'lucide-react';
 import ShoppingCart from './ShoppingCart';
 import {
   DropdownMenu,
@@ -188,6 +188,13 @@ export default function Header() {
                             {link.name}
                         </Link>
                     ))}
+                    {/* Highly visible Admin link for administrators */}
+                    {(user?.role === 'admin' || user?.role === 'staff') && (
+                      <Link href="/admin" className={cn(navAndIconClasses, "text-primary border border-primary/20 bg-primary/5 px-4")}>
+                        <LayoutDashboard className="mr-1 h-4 w-4 inline-block" />
+                        Admin Panel
+                      </Link>
+                    )}
                 </nav>
                 <div className="flex items-center ml-2">
                     <ShoppingCart triggerClassName={cn(iconClasses, '[&_svg]:h-7 [&_svg]:w-7')} />
@@ -283,6 +290,14 @@ export default function Header() {
                                 </Link>
                                 </SheetClose>
                             ))}
+                            {(user?.role === 'admin' || user?.role === 'staff') && (
+                              <SheetClose asChild>
+                                <Link href="/admin" className="flex items-center gap-4 px-3 py-3 text-base font-bold text-primary bg-primary/5 rounded-xl mt-4">
+                                    <LayoutDashboard className="h-6 w-6" />
+                                    <span>Admin Panel</span>
+                                </Link>
+                              </SheetClose>
+                            )}
                             <div className="my-4 border-t" />
                             {navLinks.map((link) => (
                                 <SheetClose asChild key={link.name}>
