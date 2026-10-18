@@ -27,6 +27,7 @@ export default function ProductList({ products: initialProducts }: ProductListPr
       if (!p) return false;
       
       // Robust searching with safety checks for null/undefined fields
+      // This prevents the 'TypeError: Cannot read properties of undefined (reading toLowerCase)'
       const name = (p.name ?? '').toLowerCase();
       const desc = (p.description ?? p.longDescription ?? '').toLowerCase();
       const cat = (p.category ?? '').toLowerCase();

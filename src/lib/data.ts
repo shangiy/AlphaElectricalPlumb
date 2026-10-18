@@ -81,13 +81,13 @@ export const carouselCategories: CarouselCategory[] = [
     { 
         id: 'Sanitary Ware Toilets & Bathroom Fixtures', 
         name: 'Toilets & Sinks', 
-        href: '/plumbing', 
+        href: '/search?q=Sanitary%20Ware%20Toilets%20%26%20Bathroom%20Fixtures', 
         image: ''
     },
     { 
         id: 'Solar panels & accessories', 
         name: 'Solar category', 
-        href: '/plumbing', 
+        href: '/search?q=Solar%20panels%20%26%20accessories', 
         image: ''
     },
     { 
