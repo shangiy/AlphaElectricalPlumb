@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useParams, notFound, useRouter } from 'next/navigation';
@@ -28,6 +27,22 @@ function ProductContent({ productId }: { productId: string }) {
     setActiveImageIndex(0);
     setFailedImages(new Set());
   }, [productId]);
+
+  /**
+   * Smart Image Filtering Logic:
+   * Dedupes URLs and hides broken candidates.
+   */
+  const uniqueImages = useMemo(() => {
+    if (!product) return [];
+    // Filter out duplicates (case-insensitive) and handle errors
+    const seen = new Set<string>();
+    return product.imageUrls.filter((url, index) => {
+      const lower = url.toLowerCase();
+      if (seen.has(lower) || failedImages.has(index)) return false;
+      seen.add(lower);
+      return true;
+    });
+  }, [product, failedImages]);
 
   if (loading) {
     return <ProductDetailSkeleton />;
@@ -67,6 +82,10 @@ function ProductContent({ productId }: { productId: string }) {
         next.add(index);
         return next;
     });
+    // If the active image fails, move to the next working one
+    if (activeImageIndex === index) {
+        setActiveImageIndex(prev => prev + 1);
+    }
   };
 
   const isMeasurable = product.unit && product.unit !== 'item' && product.unit !== 'roll' && product.unit !== 'pack';
@@ -94,7 +113,7 @@ function ProductContent({ productId }: { productId: string }) {
             </div>
             
             {/* Thumbnails Window */}
-            {product.imageUrls.length > 1 && (
+            {uniqueImages.length > 1 && (
                 <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
                     {product.imageUrls.map((img, index) => {
                         if (failedImages.has(index)) return null;

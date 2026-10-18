@@ -1,4 +1,3 @@
-
 import type { Product, Category, MockUser, Transaction, CarouselCategory } from './types';
 import { supabase } from './supabase';
 

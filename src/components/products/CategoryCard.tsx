@@ -1,4 +1,3 @@
-
 'use client';
 
 import { supabase } from '@/lib/supabaseClient';
@@ -19,7 +18,7 @@ const categoryImageMap: Record<string, string> = {
   'Electricals and Cables': 'Electric Socket Collection.webp',
   'Home & Decor': 'Bird Art Lights fixture Collection.webp',
   'Toilets & Sinks': 'Hand-wash Basin and  Pedestal Sink Collection.webp',
-  'Solar category': 'Solar items collection.webp',
+  'Solar category': 'Seven SS Stars 150 Liters Non-Pressurized  Solar Water Heater 4.webp',
 };
 
 export default function CategoryCard({ category }: { category: Category }) {
