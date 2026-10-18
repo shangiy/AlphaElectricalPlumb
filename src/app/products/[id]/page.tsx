@@ -9,7 +9,7 @@ import { ShieldCheck, Truck, Wrench, MessageCircle } from 'lucide-react';
 import AddToCartButton from '@/components/products/AddToCartButton';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import QuantitySelector from '@/components/products/QuantitySelector';
 import { cn } from '@/lib/utils';
 
@@ -22,11 +22,18 @@ function ProductContent({ productId }: { productId: string }) {
   const [quantity, setQuantity] = useState(1);
   const [failedImages, setFailedImages] = useState<Set<number>>(new Set());
 
-  // Reset indices when product changes
+  // Reset gallery state when product changes
   useEffect(() => {
     setActiveImageIndex(0);
     setFailedImages(new Set());
   }, [productId]);
+
+  // Determine working unique thumbnails
+  const workingImages = useMemo(() => {
+    if (!product) return [];
+    // Filter out indices that have failed to load
+    return product.imageUrls.filter((_, i) => !failedImages.has(i));
+  }, [product, failedImages]);
 
   if (loading) {
     return <ProductDetailSkeleton />;
@@ -66,7 +73,7 @@ function ProductContent({ productId }: { productId: string }) {
         next.add(index);
         return next;
     });
-    // If the active image failed, automatically shift to the first working one
+    // If the active image failed, try to find the next available working one
     if (index === activeImageIndex) {
         const firstWorking = product.imageUrls.findIndex((_, i) => !failedImages.has(i) && i !== index);
         if (firstWorking !== -1) setActiveImageIndex(firstWorking);
@@ -81,30 +88,29 @@ function ProductContent({ productId }: { productId: string }) {
 
   const technicalLabel = "text-[10px] font-black tracking-[0.3em] uppercase text-muted-foreground";
 
-  // Filter thumbnails to only show unique working ones
-  const validThumbnails = product.imageUrls.filter((_, i) => !failedImages.has(i));
-
   return (
     <div className="bg-background">
       <div className="container mx-auto px-4 py-12 lg:py-20">
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-2">
-          {/* Image Gallery Column */}
+          {/* Image Gallery Column - Restored Multiple View Window */}
           <div className="space-y-6">
              <div className="aspect-square overflow-hidden rounded-[2.5rem] bg-secondary/20 shadow-2xl border border-white/20 relative">
                 <img
                     key={activeImageIndex}
-                    src={product.imageUrls[activeImageIndex]}
+                    src={product.imageUrls[activeImageIndex] || '/placeholder.jpg'}
                     alt={product.name}
                     className="h-full w-full object-cover transition-all duration-500 hover:scale-105"
                     onError={() => handleImageError(activeImageIndex)}
                 />
             </div>
-            {/* Show view window if more than one candidate/image path exists */}
+            
+            {/* Thumbnails Window - Restored for side-views */}
             {product.imageUrls.length > 1 && (
                 <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
                     {product.imageUrls.map((img, index) => {
-                        // Hide broken candidates, but keep the window visible for working ones
+                        // Don't render thumbnails that failed to load
                         if (failedImages.has(index)) return null;
+                        
                         return (
                             <button 
                                 key={index} 
@@ -116,7 +122,7 @@ function ProductContent({ productId }: { productId: string }) {
                             >
                                 <img
                                     src={img}
-                                    alt={`${product.name} thumbnail ${index + 1}`}
+                                    alt={`${product.name} view ${index + 1}`}
                                     className="h-full w-full object-cover"
                                     onError={() => handleImageError(index)}
                                 />
