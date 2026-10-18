@@ -15,7 +15,7 @@ interface ProductListProps {
 /**
  * ProductList Component
  * Displays the product catalog fetched from Supabase.
- * Filters products based on the search query in the URL.
+ * Filters products based on the search query in the URL with safety checks.
  */
 export default function ProductList({ products: initialProducts }: ProductListProps) {
   const { products: contextProducts, loading } = useProducts();
@@ -26,11 +26,13 @@ export default function ProductList({ products: initialProducts }: ProductListPr
 
   const filteredProducts = useMemo(() => {
     if (!query) return products;
-    // Robust safety checks with optional chaining and nullish coalescing
-    return products.filter(p => {
-      const name = (p.name || '').toLowerCase();
-      const desc = (p.description || '').toLowerCase();
-      const cat = (p.category || '').toLowerCase();
+    
+    return (products || []).filter(p => {
+      // Robust safety checks to prevent "cannot read toLowerCase of undefined"
+      const name = (p?.name || '').toLowerCase();
+      const desc = (p?.description || p?.longDescription || '').toLowerCase();
+      const cat = (p?.category || '').toLowerCase();
+      
       return name.includes(query) || desc.includes(query) || cat.includes(query);
     });
   }, [products, query]);

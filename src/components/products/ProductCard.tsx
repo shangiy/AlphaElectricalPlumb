@@ -13,17 +13,17 @@ export default function ProductCard({ product }: ProductCardProps) {
   const { addToCart } = useCart();
   const [imgIndex, setImgIndex] = useState(0);
 
-  // Use the pre-resolved imageUrls from the data helper
+  // Self-Healing Image Logic: Try Candidate URLs resolved in data.ts
   const imageUrls = product.imageUrls && product.imageUrls.length > 0 
     ? product.imageUrls 
     : ['/placeholder.jpg'];
 
   const handleImageError = () => {
-    // If the first image fails, try the next one in the candidate array
+    // If Candidate A (Nested) fails, try Candidate B (Root)
     if (imgIndex < imageUrls.length - 1) {
       setImgIndex(imgIndex + 1);
     } else {
-      // Final fallback to placeholder
+      // Final fallback to generic placeholder
       setImgIndex(-1);
     }
   };

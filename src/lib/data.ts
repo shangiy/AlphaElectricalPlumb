@@ -99,7 +99,8 @@ export async function getProducts(): Promise<Product[]> {
     // Filter out invalid/test products requested by the user
     const excludedIds = [
       '06f51dd1-9c33-457a-b06c-af49c1017377', // All-Weather Solar Panel test
-      '12f2b128-b21e-4c85-8c9d-2e636bf03719'  // Alpha chandelier collection test
+      '12f2b128-b21e-4c85-8c9d-2e636bf03719', // Alpha chandelier collection test
+      '66b8671c-5d1f-4203-b234-f7b4accc5904'  // Modern Crystal redundant chandelier
     ];
 
     const { data, error } = await supabase
