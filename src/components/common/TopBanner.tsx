@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Clock } from 'lucide-react';
@@ -29,7 +30,6 @@ export default function TopBanner() {
     </>
   );
 
-  // Duplicate for seamless looping
   const items = [1, 2, 3, 4, 5, 6];
 
   return (

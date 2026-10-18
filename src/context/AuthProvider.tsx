@@ -47,13 +47,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // If Supabase is not configured, we can't check auth
     if (!supabase) {
       setLoading(false);
       return;
     }
 
-    // Check active sessions and sets the user
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
@@ -64,7 +62,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     checkUser();
 
-    // Listen for changes on auth state
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (session?.user) {
         await fetchProfile(session.user);
@@ -96,13 +93,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           avatarUrl: data.avatar_url || supabaseUser.user_metadata.avatar_url,
         });
       } else {
-        // Create profile if it doesn't exist
+        // PROVISIONING LOGIC: Automatically make admin@alpha.com an admin
+        const assignedRole = supabaseUser.email === 'admin@alpha.com' ? 'admin' : 'user';
+
         const newUser: User = {
           id: supabaseUser.id,
           name: supabaseUser.user_metadata.full_name || 'User',
           username: supabaseUser.email?.split('@')[0] || 'user',
           email: supabaseUser.email!,
-          role: 'user',
+          role: assignedRole,
           avatarUrl: supabaseUser.user_metadata.avatar_url,
         };
         
@@ -110,7 +109,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           id: supabaseUser.id,
           name: newUser.name,
           username: newUser.username,
-          role: 'user',
+          role: assignedRole,
           avatar_url: newUser.avatarUrl,
         });
         
