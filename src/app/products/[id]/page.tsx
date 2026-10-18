@@ -9,7 +9,7 @@ import { ShieldCheck, Truck, Wrench, MessageCircle } from 'lucide-react';
 import AddToCartButton from '@/components/products/AddToCartButton';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import QuantitySelector from '@/components/products/QuantitySelector';
 import { cn } from '@/lib/utils';
 
@@ -20,6 +20,13 @@ function ProductContent({ productId }: { productId: string }) {
   const product = getProductById(productId);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
+  const [failedImages, setFailedImages] = useState<Set<number>>(new Set());
+
+  // Reset indices when product changes
+  useEffect(() => {
+    setActiveImageIndex(0);
+    setFailedImages(new Set());
+  }, [productId]);
 
   if (loading) {
     return <ProductDetailSkeleton />;
@@ -53,6 +60,19 @@ function ProductContent({ productId }: { productId: string }) {
     window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank');
   };
 
+  const handleImageError = (index: number) => {
+    setFailedImages(prev => {
+        const next = new Set(prev);
+        next.add(index);
+        return next;
+    });
+    // If the active image failed, try to show the next available one
+    if (index === activeImageIndex) {
+        const firstWorking = product.imageUrls.findIndex((_, i) => !failedImages.has(i) && i !== index);
+        if (firstWorking !== -1) setActiveImageIndex(firstWorking);
+    }
+  };
+
   const isMeasurable = product.unit && product.unit !== 'item' && product.unit !== 'roll' && product.unit !== 'pack';
 
   const priceDisplay = product.unit && product.unit !== 'item' 
@@ -60,6 +80,9 @@ function ProductContent({ productId }: { productId: string }) {
     : formatPrice(product.price);
 
   const technicalLabel = "text-[10px] font-black tracking-[0.3em] uppercase text-muted-foreground";
+
+  // Filter thumbnails to only show working ones
+  const validThumbnails = product.imageUrls.filter((_, i) => !failedImages.has(i));
 
   return (
     <div className="bg-background">
@@ -73,32 +96,31 @@ function ProductContent({ productId }: { productId: string }) {
                     src={product.imageUrls[activeImageIndex]}
                     alt={product.name}
                     className="h-full w-full object-cover transition-all duration-500 hover:scale-105"
-                    onError={(e) => {
-                        (e.target as HTMLImageElement).src = "/placeholder.jpg";
-                    }}
+                    onError={() => handleImageError(activeImageIndex)}
                 />
             </div>
-            {product.imageUrls.length > 1 && (
+            {validThumbnails.length > 1 && (
                 <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
-                    {product.imageUrls.map((img, index) => (
-                        <button 
-                            key={index} 
-                            onClick={() => setActiveImageIndex(index)}
-                            className={cn(
-                                "relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-[1.5rem] border-2 transition-all duration-300",
-                                activeImageIndex === index ? "border-primary shadow-lg scale-105" : "border-transparent opacity-60 hover:opacity-100"
-                            )}
-                        >
-                            <img
-                                src={img}
-                                alt={`${product.name} thumbnail ${index + 1}`}
-                                className="h-full w-full object-cover"
-                                onError={(e) => {
-                                    (e.target as HTMLImageElement).src = "/placeholder.jpg";
-                                }}
-                            />
-                        </button>
-                    ))}
+                    {product.imageUrls.map((img, index) => {
+                        if (failedImages.has(index)) return null;
+                        return (
+                            <button 
+                                key={index} 
+                                onClick={() => setActiveImageIndex(index)}
+                                className={cn(
+                                    "relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-[1.5rem] border-2 transition-all duration-300",
+                                    activeImageIndex === index ? "border-primary shadow-lg scale-105" : "border-transparent opacity-60 hover:opacity-100"
+                                )}
+                            >
+                                <img
+                                    src={img}
+                                    alt={`${product.name} thumbnail ${index + 1}`}
+                                    className="h-full w-full object-cover"
+                                    onError={() => handleImageError(index)}
+                                />
+                            </button>
+                        );
+                    })}
                 </div>
             )}
           </div>

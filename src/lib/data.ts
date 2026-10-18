@@ -3,42 +3,48 @@ import { supabase } from './supabase';
 
 /**
  * Image URL Resolver:
- * Provides multiple candidate URLs to handle different storage structures.
- * 1. Nested: /product-images/product-images/category/file.webp
- * 2. Root:   /product-images/category/file.webp
+ * Supports single strings, JSON arrays, or dedicated URL columns.
+ * It resolves paths against the 'product-images' bucket and 'product-images' subfolder.
  */
 const resolveProductImages = (product: any): string[] => {
   if (!supabase) return ["/placeholder.jpg"];
 
-  // 1. If there's already a full URL array, use it
+  // 1. Prioritize a dedicated array of full URLs if it exists
   const explicitUrls = product.image_urls || product.imageUrls;
   if (Array.isArray(explicitUrls) && explicitUrls.length > 0) {
     return explicitUrls.map((url: string) => url.startsWith('http') ? url : "/placeholder.jpg");
   }
 
-  // 2. Process the image_path column
+  // 2. Process the image_path column (supports single string or JSON array)
   const rawPath = product.image_path?.trim() ?? '';
   if (!rawPath) return ["/placeholder.jpg"];
 
-  // Clean the database path
-  const cleanPath = rawPath
-    .replace(/^product-images[\\\/]/, '')
-    .replace(/^Saved Pictures[\\\/]/, '')
-    .replace(/\\/g, '/')
-    .replace(/^\/+/, '');
+  let paths: string[] = [];
+  try {
+    // Check if the string is a JSON array (e.g. ["img1.webp", "img2.webp"])
+    if (rawPath.startsWith('[') && rawPath.endsWith(']')) {
+      paths = JSON.parse(rawPath);
+    } else {
+      paths = [rawPath];
+    }
+  } catch (e) {
+    paths = [rawPath];
+  }
 
-  /**
-   * We generate two candidates:
-   * Candidate A: The nested folder structure confirmed to work for some items.
-   * Candidate B: The direct root path (fallback for other items).
-   */
-  const nestedPath = `product-images/${cleanPath}`;
-  const rootPath = cleanPath;
+  // 3. Map every path to a valid public URL
+  return paths.map(path => {
+    const cleanPath = path
+      .replace(/^product-images[\\\/]/, '')
+      .replace(/^Saved Pictures[\\\/]/, '')
+      .replace(/\\/g, '/')
+      .replace(/^\/+/, '');
 
-  const nestedUrl = supabase.storage.from('product-images').getPublicUrl(nestedPath).data.publicUrl;
-  const rootUrl = supabase.storage.from('product-images').getPublicUrl(rootPath).data.publicUrl;
-  
-  return [nestedUrl, rootUrl];
+    /**
+     * We resolve to the 'product-images' subfolder within the 'product-images' bucket
+     * to match the structure revealed in your working links.
+     */
+    return supabase.storage.from('product-images').getPublicUrl(`product-images/${cleanPath}`).data.publicUrl;
+  });
 };
 
 export const categories: Category[] = [
