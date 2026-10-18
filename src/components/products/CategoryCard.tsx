@@ -19,26 +19,31 @@ const categoryImageMap: Record<string, string> = {
 };
 
 export default function CategoryCard({ category }: { category: Category }) {
-  // 1. Determine the intended path in the collections folder
-  const mappedFileName = categoryImageMap[category.name.trim()] || `${category.name.trim()}.webp`;
-  const storagePath = `collections/${mappedFileName}`;
+  // 1. Check if the category has an image_path in the DB, otherwise use the map or name fallback
+  let rawPath = category.image_path || `collections/${categoryImageMap[category.name.trim()] || `${category.name.trim()}.webp`}`;
 
-  // 2. Generate the public URL from Supabase
+  // 2. Clean path to remove duplicate bucket names like 'product-images/' or 'product-images/product-images/'
+  const cleanPath = rawPath
+    .replace(/^(product-images\/)+/g, '')
+    .replace(/^(Saved Pictures\/)+/g, '')
+    .replace(/^\/+/, '');
+
   const imageUrl = supabase.storage
     .from('product-images')
-    .getPublicUrl(storagePath).data.publicUrl;
+    .getPublicUrl(cleanPath).data.publicUrl;
+
+  console.log("Category:", category.name, "Clean Path:", cleanPath, "Generated URL:", imageUrl);
 
   return (
-    <Link href={category.href || `/search?q=${encodeURIComponent(category.name)}`} className="block group">
+    <Link href={category.href || '#'} className="block group">
       <div className="relative rounded-[2rem] overflow-hidden shadow-md aspect-[4/5] bg-muted border border-white/25 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
         <img
           src={imageUrl}
           alt={category.name}
           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
           onError={(e) => {
-            // Graceful fallback without noisy console error that triggers Next.js overlay
-            const target = e.target as HTMLImageElement;
-            target.src = `https://placehold.co/400x500?text=${encodeURIComponent(category.name)}`;
+            console.error("Failed to load image for:", category.name, "URL:", imageUrl);
+            (e.target as HTMLImageElement).src = 'https://placehold.co/400x500?text=' + encodeURIComponent(category.name);
           }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-6">
