@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Clock } from 'lucide-react';
@@ -7,7 +8,13 @@ import Image from 'next/image';
 export default function TopBanner() {
   const offerContent = (
     <>
-      OFFER! <span className="text-red-500">OFFER!</span> <span className="text-green-500">OFFER!</span> MIDYEAR FLASH SALE, MADARAKA DAY OFFER!
+      OFFER! <span className="text-red-500">OFFER!</span> <span className="text-green-500">OFFER!</span> MIDYEAR FLASH SALE,{" "}
+      <span className="inline-flex font-black tracking-tighter drop-shadow-md bg-white/20 px-2 rounded-md mx-1 border border-white/10">
+        <span className="text-black">MAS</span>
+        <span className="text-[#BB0000]">HUJ</span>
+        <span className="text-[#006600]">AA</span>
+      </span>{" "}
+      DAY OFFER!
     </>
   );
 
