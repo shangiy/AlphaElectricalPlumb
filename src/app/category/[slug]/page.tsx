@@ -9,6 +9,10 @@ interface PageProps {
   }>;
 }
 
+/**
+ * Dynamic Category Page with Inclusive Filtering.
+ * Supports comma-separated multi-categories (e.g., "Lighting, Decor").
+ */
 export default async function CategoryPage({ params }: PageProps) {
   const { slug } = await params;
   
@@ -19,10 +23,26 @@ export default async function CategoryPage({ params }: PageProps) {
   const categoryInfo = categories.find(c => c.id === decodedSlug);
   const displayName = categoryInfo ? categoryInfo.name : decodedSlug.replace(/-/g, ' ');
 
-  // Fetch products matching this category using the optimized utility
-  // This ensures images are correctly resolved with the project's logic
+  // Fetch all products and apply inclusive filtering
   const allProducts = await getProducts();
-  const products = allProducts.filter(p => p.category === decodedSlug);
+  
+  const products = allProducts.filter(p => {
+    if (!p.category) return false;
+    
+    // Normalize values for comparison
+    const dbCategory = p.category.toLowerCase();
+    const searchId = decodedSlug.toLowerCase();
+    const searchName = displayName.toLowerCase();
+
+    // Check if the product matches by exact ID, display name, or as part of a multi-category string
+    return (
+      dbCategory === searchId || 
+      dbCategory === searchName ||
+      dbCategory.includes(searchId) ||
+      dbCategory.includes(searchName) ||
+      (categoryInfo && dbCategory.includes(categoryInfo.id.toLowerCase()))
+    );
+  });
 
   return (
     <div className="bg-background min-h-screen">

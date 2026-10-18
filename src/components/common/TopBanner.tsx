@@ -4,6 +4,11 @@ import { Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 
+/**
+ * TopBanner: Featuring seasonally updated promotional text.
+ * Enhanced "MASHUJAA" text with artistic Kenyan flag (Black-Red-Green) 
+ * horizontal stripes using CSS background-clip.
+ */
 export default function TopBanner() {
   const offerContent = (
     <>

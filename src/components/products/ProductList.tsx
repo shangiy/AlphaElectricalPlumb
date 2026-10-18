@@ -12,23 +12,31 @@ interface ProductListProps {
   products?: Product[];
 }
 
+/**
+ * Inclusive Product List.
+ * Supports comma-separated categories and fuzzy search.
+ */
 export default function ProductList({ products: initialProducts }: ProductListProps) {
   const { products: contextProducts, loading } = useProducts();
   const searchParams = useSearchParams();
   const query = (searchParams.get('q') || '').toLowerCase().trim();
-  const categoryFilter = searchParams.get('category');
+  const categoryFilter = searchParams.get('category')?.toLowerCase();
 
   const products = initialProducts || contextProducts;
 
   const filteredProducts = useMemo(() => {
     let list = products || [];
     
-    // 1. Apply strict category filter first if present
+    // 1. Apply inclusive category filter
     if (categoryFilter) {
-      list = list.filter(p => p && p.category === categoryFilter);
+      list = list.filter(p => {
+        if (!p || !p.category) return false;
+        const dbCat = p.category.toLowerCase();
+        return dbCat === categoryFilter || dbCat.includes(categoryFilter);
+      });
     }
     
-    // 2. Apply fuzzy text search if present with ultra-defensive coding
+    // 2. Apply fuzzy text search
     if (query) {
       list = list.filter(p => {
         if (!p) return false;
@@ -87,7 +95,7 @@ export default function ProductList({ products: initialProducts }: ProductListPr
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold font-headline text-accent">
+        <h2 className="text-2xl font-bold font-headline text-accent capitalize">
           {resultTitle}
         </h2>
         <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest bg-muted px-3 py-1 rounded-full">

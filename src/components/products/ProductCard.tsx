@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { MessageCircle, ShoppingCart } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 
 interface Product {
@@ -11,9 +10,12 @@ interface Product {
   name: string;
   price: number;
   image_path?: string | null;
-  category_id?: string;
+  category?: string;
 }
 
+/**
+ * Product Card: Handles Supabase image resolution with path cleaning and fallback support.
+ */
 export default function ProductCard({ product }: { product: Product }) {
   // Parse image path: handle single strings or JSON arrays of multi-view images
   let imagePath = '';
