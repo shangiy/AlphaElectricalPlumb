@@ -16,8 +16,8 @@ const resolveProductImages = (product: any): string[] => {
   let basePaths: string[] = [];
   try {
     // Handle JSON strings (e.g. multi-image arrays)
+    // We clean standard JSON artifacts and carriage returns to ensure successful parsing
     if (rawPath.startsWith('[') && rawPath.endsWith(']')) {
-      // Pre-clean standard JSON artifacts like carriage returns to ensure successful parsing
       const cleanedJson = rawPath.replace(/[\r\n]/g, '').trim();
       basePaths = JSON.parse(cleanedJson);
     } else {
@@ -32,14 +32,15 @@ const resolveProductImages = (product: any): string[] => {
   basePaths.forEach(path => {
     if (!path) return;
     
-    // Normalize path by stripping redundant prefixes
+    // Normalize path by stripping redundant bucket or "Saved Pictures" prefixes
     const cleanPath = path
-      .replace(/^product-images[\\\/]/, '')
-      .replace(/^Saved Pictures[\\\/]/, '')
+      .replace(/^product-images[\\\/]/i, '')
+      .replace(/^Saved Pictures[\\\/]/i, '')
       .replace(/\\/g, '/')
       .replace(/^\/+/, '');
 
-    // Try both candidate paths: with folder and root
+    // Return both possible candidates: with subfolder and root
+    // The ProductCard component handles the "Self-Healing" by skipping the broken one
     allCandidates.push(supabase.storage.from('product-images').getPublicUrl(`product-images/${cleanPath}`).data.publicUrl);
     allCandidates.push(supabase.storage.from('product-images').getPublicUrl(cleanPath).data.publicUrl);
   });
