@@ -16,31 +16,39 @@ export default function ProductList({ products: initialProducts }: ProductListPr
   const { products: contextProducts, loading } = useProducts();
   const searchParams = useSearchParams();
   const query = (searchParams.get('q') || '').toLowerCase().trim();
+  const categoryFilter = searchParams.get('category');
 
   const products = initialProducts || contextProducts;
 
   const filteredProducts = useMemo(() => {
-    const list = products || [];
-    if (!query) return list;
+    let list = products || [];
     
-    return list.filter(p => {
-      if (!p) return false;
-      
-      // Robust searching with safety checks for null/undefined fields
-      // This prevents the 'TypeError: Cannot read properties of undefined (reading toLowerCase)'
-      const name = (p.name ?? '').toLowerCase();
-      const desc = (p.description ?? p.longDescription ?? '').toLowerCase();
-      const cat = (p.category ?? '').toLowerCase();
-      const brand = (p.brand ?? '').toLowerCase();
-      
-      return (
-        name.includes(query) || 
-        desc.includes(query) || 
-        cat.includes(query) ||
-        brand.includes(query)
-      );
-    });
-  }, [products, query]);
+    // 1. Apply strict category filter first if present (ideal for navigation links)
+    if (categoryFilter) {
+      list = list.filter(p => p && p.category === categoryFilter);
+    }
+    
+    // 2. Apply fuzzy text search if present
+    if (query) {
+      list = list.filter(p => {
+        if (!p) return false;
+        
+        const name = (p.name ?? '').toLowerCase();
+        const desc = (p.description ?? p.longDescription ?? '').toLowerCase();
+        const cat = (p.category ?? '').toLowerCase();
+        const brand = (p.brand ?? '').toLowerCase();
+        
+        return (
+          name.includes(query) || 
+          desc.includes(query) || 
+          cat.includes(query) ||
+          brand.includes(query)
+        );
+      });
+    }
+    
+    return list;
+  }, [products, query, categoryFilter]);
 
   if (loading) {
     return (
@@ -70,11 +78,17 @@ export default function ProductList({ products: initialProducts }: ProductListPr
     );
   }
 
+  const resultTitle = categoryFilter 
+    ? `Collection: ${categoryFilter}`
+    : query 
+      ? `Search Results for "${query}"` 
+      : 'Our Product Catalog';
+
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold font-headline text-accent">
-          {query ? `Search Results for "${query}"` : 'Our Product Catalog'}
+          {resultTitle}
         </h2>
         <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest bg-muted px-3 py-1 rounded-full">
           {filteredProducts.length} Items
@@ -90,7 +104,7 @@ export default function ProductList({ products: initialProducts }: ProductListPr
       ) : (
         <div className="text-center py-20 bg-muted/5 rounded-3xl border-2 border-dashed">
              <Search className="h-12 w-12 text-muted-foreground mb-4 mx-auto opacity-20" />
-             <p className="text-muted-foreground">No products match your search criteria.</p>
+             <p className="text-muted-foreground">No products match your criteria.</p>
         </div>
       )}
     </div>
