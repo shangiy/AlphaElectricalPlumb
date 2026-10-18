@@ -26,6 +26,7 @@ export default function ProductList({ products: initialProducts }: ProductListPr
     return list.filter(p => {
       if (!p) return false;
       
+      // Robust searching with safety checks for null/undefined fields
       const name = (p.name ?? '').toLowerCase();
       const desc = (p.description ?? p.longDescription ?? '').toLowerCase();
       const cat = (p.category ?? '').toLowerCase();

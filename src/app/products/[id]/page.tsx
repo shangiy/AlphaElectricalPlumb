@@ -105,7 +105,7 @@ function ProductContent({ productId }: { productId: string }) {
                 />
             </div>
             
-            {/* Thumbnails Window */}
+            {/* Multi-view Thumbnails Window */}
             {uniqueImages.length > 1 && (
                 <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
                     {product.imageUrls.map((img, index) => {

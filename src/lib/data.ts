@@ -103,9 +103,9 @@ export async function getProducts(): Promise<Product[]> {
     if (!supabase) return [];
 
     const excludedIds = [
-      '06f51dd1-9c33-457a-b06c-af49c1017377',
-      '12f2b128-b21e-4c85-8c9d-2e636bf03719',
-      '66b8671c-5d1f-4203-b234-f7b4accc5904'
+      '06f51dd1-9c33-457a-b06c-af49c1017377', // Test Musical Chandelier
+      '12f2b128-b21e-4c85-8c9d-2e636bf03719', // Old Solar
+      '66b8671c-5d1f-4203-b234-f7b4accc5904'  // Dupe Tank
     ];
 
     const { data, error } = await supabase
