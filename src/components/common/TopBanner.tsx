@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Clock } from 'lucide-react';
@@ -9,10 +8,18 @@ export default function TopBanner() {
   const offerContent = (
     <>
       OFFER! <span className="text-red-500">OFFER!</span> <span className="text-green-500">OFFER!</span> MIDYEAR FLASH SALE,{" "}
-      <span className="inline-flex font-black tracking-tighter drop-shadow-md bg-white/20 px-2 rounded-md mx-1 border border-white/10">
-        <span className="text-black">MAS</span>
-        <span className="text-[#BB0000]">HUJ</span>
-        <span className="text-[#006600]">AA</span>
+      <span className="inline-flex font-black tracking-tighter drop-shadow-md bg-white px-2 rounded-sm mx-1 border border-white/20 overflow-hidden">
+        <span 
+          style={{
+            background: 'linear-gradient(to bottom, black 33.3%, #BB0000 33.3% 66.6%, #006600 66.6%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            display: 'inline-block',
+            lineHeight: '1'
+          }}
+        >
+          MASHUJAA
+        </span>
       </span>{" "}
       DAY OFFER!
     </>
