@@ -66,7 +66,7 @@ function ProductContent({ productId }: { productId: string }) {
         next.add(index);
         return next;
     });
-    // If the active image failed, try to show the next available one
+    // If the active image failed, automatically shift to the first working one
     if (index === activeImageIndex) {
         const firstWorking = product.imageUrls.findIndex((_, i) => !failedImages.has(i) && i !== index);
         if (firstWorking !== -1) setActiveImageIndex(firstWorking);
@@ -81,7 +81,7 @@ function ProductContent({ productId }: { productId: string }) {
 
   const technicalLabel = "text-[10px] font-black tracking-[0.3em] uppercase text-muted-foreground";
 
-  // Filter thumbnails to only show working ones
+  // Filter thumbnails to only show unique working ones
   const validThumbnails = product.imageUrls.filter((_, i) => !failedImages.has(i));
 
   return (
@@ -99,9 +99,11 @@ function ProductContent({ productId }: { productId: string }) {
                     onError={() => handleImageError(activeImageIndex)}
                 />
             </div>
-            {validThumbnails.length > 1 && (
+            {/* Show view window if more than one candidate/image path exists */}
+            {product.imageUrls.length > 1 && (
                 <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
                     {product.imageUrls.map((img, index) => {
+                        // Hide broken candidates, but keep the window visible for working ones
                         if (failedImages.has(index)) return null;
                         return (
                             <button 

@@ -3,48 +3,46 @@ import { supabase } from './supabase';
 
 /**
  * Image URL Resolver:
- * Supports single strings, JSON arrays, or dedicated URL columns.
- * It resolves paths against the 'product-images' bucket and 'product-images' subfolder.
+ * Supports single strings or JSON arrays of paths.
+ * Generates both "Nested" and "Root" candidate URLs for every path to ensure "Self-Healing"
+ * visibility if folders were moved in Supabase.
  */
 const resolveProductImages = (product: any): string[] => {
   if (!supabase) return ["/placeholder.jpg"];
 
-  // 1. Prioritize a dedicated array of full URLs if it exists
-  const explicitUrls = product.image_urls || product.imageUrls;
-  if (Array.isArray(explicitUrls) && explicitUrls.length > 0) {
-    return explicitUrls.map((url: string) => url.startsWith('http') ? url : "/placeholder.jpg");
-  }
-
-  // 2. Process the image_path column (supports single string or JSON array)
+  // 1. Get raw paths from database
   const rawPath = product.image_path?.trim() ?? '';
   if (!rawPath) return ["/placeholder.jpg"];
 
-  let paths: string[] = [];
+  let basePaths: string[] = [];
   try {
     // Check if the string is a JSON array (e.g. ["img1.webp", "img2.webp"])
     if (rawPath.startsWith('[') && rawPath.endsWith(']')) {
-      paths = JSON.parse(rawPath);
+      basePaths = JSON.parse(rawPath);
     } else {
-      paths = [rawPath];
+      basePaths = [rawPath];
     }
   } catch (e) {
-    paths = [rawPath];
+    basePaths = [rawPath];
   }
 
-  // 3. Map every path to a valid public URL
-  return paths.map(path => {
+  // 2. Generate candidates for EACH base path to ensure maximum visibility
+  const allCandidates: string[] = [];
+  basePaths.forEach(path => {
     const cleanPath = path
       .replace(/^product-images[\\\/]/, '')
       .replace(/^Saved Pictures[\\\/]/, '')
       .replace(/\\/g, '/')
       .replace(/^\/+/, '');
 
-    /**
-     * We resolve to the 'product-images' subfolder within the 'product-images' bucket
-     * to match the structure revealed in your working links.
-     */
-    return supabase.storage.from('product-images').getPublicUrl(`product-images/${cleanPath}`).data.publicUrl;
+    // Candidate A: Nested folder structure (Found in working links)
+    allCandidates.push(supabase.storage.from('product-images').getPublicUrl(`product-images/${cleanPath}`).data.publicUrl);
+    
+    // Candidate B: Root level bucket access (Standard fallback)
+    allCandidates.push(supabase.storage.from('product-images').getPublicUrl(cleanPath).data.publicUrl);
   });
+
+  return allCandidates.length > 0 ? allCandidates : ["/placeholder.jpg"];
 };
 
 export const categories: Category[] = [
