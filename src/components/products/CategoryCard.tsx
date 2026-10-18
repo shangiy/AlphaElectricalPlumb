@@ -2,6 +2,7 @@
 
 import { supabase } from '@/lib/supabaseClient';
 import Link from 'next/link';
+import { useState, useMemo } from 'react';
 
 interface Category {
   id: string;
@@ -21,29 +22,49 @@ const categoryImageMap: Record<string, string> = {
 };
 
 export default function CategoryCard({ category }: { category: Category }) {
-  // 1. Check if the category has an image_path in the DB, otherwise use the map or name fallback
-  let rawPath = category.image_path || `collections/${categoryImageMap[category.name.trim()] || `${category.name.trim()}.webp`}`;
+  const [imgIndex, setImgIndex] = useState(0);
 
-  // 2. Clean path to remove duplicate bucket names like 'product-images/' or 'product-images/product-images/'
-  const cleanPath = rawPath
-    .replace(/^(product-images\/)+/g, '')
-    .replace(/^(Saved Pictures\/)+/g, '')
-    .replace(/^\/+/, '');
+  // Self-Healing Logic: Generate multiple candidate URLs to find the correct path in Supabase
+  const candidateUrls = useMemo(() => {
+    if (!supabase) return ['/placeholder.jpg'];
 
-  const imageUrl = supabase.storage
-    .from('product-images')
-    .getPublicUrl(cleanPath).data.publicUrl;
+    const filename = categoryImageMap[category.name.trim()] || `${category.name.trim()}.webp`;
+    const cleanFilename = filename.replace(/\\/g, '/').replace(/^\/+/, '');
+    
+    // Candidates cover different possible storage structures (Root vs Nested folders)
+    const paths = [
+      `collections/${cleanFilename}`,
+      `product-images/collections/${cleanFilename}`,
+      `product-images/product-images/collections/${cleanFilename}`,
+      cleanFilename
+    ];
+
+    return paths.map(path => 
+      supabase.storage.from('product-images').getPublicUrl(path).data.publicUrl
+    );
+  }, [category.name]);
+
+  const handleImageError = () => {
+    // If Candidate 1 fails, try Candidate 2, and so on.
+    if (imgIndex < candidateUrls.length - 1) {
+      setImgIndex(imgIndex + 1);
+    } else {
+      setImgIndex(-1); // Final fallback to placeholder
+    }
+  };
+
+  const currentImageUrl = imgIndex === -1 
+    ? `https://placehold.co/400x500?text=${encodeURIComponent(category.name)}`
+    : candidateUrls[imgIndex];
 
   return (
     <Link href={category.href || '#'} className="block group">
       <div className="relative rounded-[2rem] overflow-hidden shadow-md aspect-[4/5] bg-muted border border-white/25 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
         <img
-          src={imageUrl}
+          src={currentImageUrl}
           alt={category.name}
           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-          onError={(e) => {
-            (e.target as HTMLImageElement).src = 'https://placehold.co/400x500?text=' + encodeURIComponent(category.name);
-          }}
+          onError={handleImageError}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-6">
           <h3 className="text-white font-bold text-xl font-headline leading-tight">{category.name}</h3>
