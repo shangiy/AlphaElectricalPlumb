@@ -15,11 +15,11 @@ interface Category {
 const categoryImageMap: Record<string, string> = {
   'Roofing & Construction': 'Corrugated Roofing Sheet collection.webp',
   'Tanks': 'Alpha tanks Collections.webp',
-  'Plumbing': 'plumbing pipes and fittings PPH PPR collection.webp',
+  'Plumbing': 'plumbing pipes and fittings collections.webp',
   'Electricals and Cables': 'Electric Socket Collection.webp',
   'Home & Decor': 'Bird Art Lights fixture Collection.webp',
-  'Toilets & Sinks':'Hand-wash Basin and  Pedestal Sink Collection.webp',
-  'Solar category':'Seven SS Stars 150 Liters Non-Pressurized  Solar Water Heater 4.webp'
+  'Toilets & Sinks': 'Hand-wash Basin and Pedestal Sink Collection.webp',
+  'Solar category': 'Seven SS Stars 150 Liters Non-Pressurized Solar Water Heater 4.webp',
 };
 
 export default function CategoryCard({ category }: { category: Category }) {
@@ -35,6 +35,7 @@ export default function CategoryCard({ category }: { category: Category }) {
     const cleanPath = rawPath
       .replace(/^(product-images\/)+/g, '')
       .replace(/^(Saved Pictures\/)+/g, '')
+      .replace(/\\/g, '/')
       .replace(/^\/+/, '');
 
     return [
@@ -62,7 +63,7 @@ export default function CategoryCard({ category }: { category: Category }) {
         <img
           src={imageUrl || `https://placehold.co/400x500?text=${encodeURIComponent(category.name)}`}
           alt={category.name}
-          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
           onError={handleImageError}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-6">
