@@ -1,3 +1,4 @@
+
 import { getProducts } from '@/lib/data';
 import ProductCard from '@/components/products/ProductCard';
 import Link from 'next/link';

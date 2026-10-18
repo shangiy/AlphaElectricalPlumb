@@ -4,7 +4,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, ShoppingCart } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/lib/supabaseClient';
 
@@ -30,11 +30,12 @@ export default function ProductCard({ product }: { product: Product }) {
     setFailedIndices(new Set());
   }, [product.id]);
 
-  // Robust Path Cleaning & Parsing
+  // Robust Path Cleaning & Parsing for Multi-View Support
   const activeImages = useMemo(() => {
     let rawPaths: string[] = [];
     try {
       if (product.image_path) {
+        // Handle JSON strings (e.g. multi-image arrays from database)
         if (product.image_path.trim().startsWith('[')) {
           rawPaths = JSON.parse(product.image_path.replace(/[\r\n]/g, ''));
         } else {
@@ -48,19 +49,25 @@ export default function ProductCard({ product }: { product: Product }) {
     const candidates: string[] = [];
     rawPaths.forEach(path => {
       if (!path) return;
-      const clean = path.replace(/^(product-images\/)+/i, '').replace(/^(Saved Pictures\/)+/i, '').replace(/^\/+/, '');
       
-      // Candidate 1: Direct path
+      // Strip redundant bucket prefixes or local prefixes to get the pure filename/path
+      const clean = path
+        .replace(/^(product-images\/)+/i, '')
+        .replace(/^(Saved Pictures\/)+/i, '')
+        .replace(/\\/g, '/')
+        .replace(/^\/+/, '');
+      
+      // Candidate 1: Direct public URL from Supabase storage
       candidates.push(supabase.storage.from('product-images').getPublicUrl(clean).data.publicUrl);
-      // Candidate 2: Prefixed path (SQL update fallback)
-      candidates.push(supabase.storage.from('product-images').getPublicUrl(`product-images/${clean}`).data.publicUrl);
     });
 
+    // Filtering out indices that have previously failed to load
     const valid = candidates.filter((_, i) => !failedIndices.has(i));
+    
     if (valid.length === 0) {
       return [`https://placehold.co/400x400?text=${encodeURIComponent(product.name)}`];
     }
-    return valid.slice(0, 10);
+    return valid.slice(0, 10); // Performance cap
   }, [product.image_path, failedIndices, product.name]);
 
   const safeIndex = currentIndex >= activeImages.length ? 0 : currentIndex;
@@ -107,6 +114,7 @@ export default function ProductCard({ product }: { product: Product }) {
           ))}
         </Link>
 
+        {/* Seattle Side Slide-Buttons */}
         {activeImages.length > 1 && (
           <div className={cn(
             "absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-between px-3 transition-opacity duration-300",
@@ -129,6 +137,7 @@ export default function ProductCard({ product }: { product: Product }) {
           </div>
         )}
 
+        {/* Modern Dash Indicators */}
         {activeImages.length > 1 && (
           <div className={cn(
             "absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1 px-2 py-1 rounded-full bg-black/20 backdrop-blur-sm transition-opacity duration-300",
