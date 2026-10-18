@@ -6,12 +6,13 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, ShoppingCart } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/lib/supabaseClient';
 
 interface Product {
   id: string;
   name: string;
   price: number;
-  imageUrls: string[];
+  image_path?: string | null;
   category?: string;
 }
 
@@ -29,14 +30,38 @@ export default function ProductCard({ product }: { product: Product }) {
     setFailedIndices(new Set());
   }, [product.id]);
 
-  // Robust Self-Healing Logic: Filters out broken candidate URLs
+  // Robust Path Cleaning & Parsing
   const activeImages = useMemo(() => {
-    const valid = (product.imageUrls || []).filter((_, i) => !failedIndices.has(i));
+    let rawPaths: string[] = [];
+    try {
+      if (product.image_path) {
+        if (product.image_path.trim().startsWith('[')) {
+          rawPaths = JSON.parse(product.image_path.replace(/[\r\n]/g, ''));
+        } else {
+          rawPaths = [product.image_path];
+        }
+      }
+    } catch (e) {
+      rawPaths = [product.image_path || ''];
+    }
+
+    const candidates: string[] = [];
+    rawPaths.forEach(path => {
+      if (!path) return;
+      const clean = path.replace(/^(product-images\/)+/i, '').replace(/^(Saved Pictures\/)+/i, '').replace(/^\/+/, '');
+      
+      // Candidate 1: Direct path
+      candidates.push(supabase.storage.from('product-images').getPublicUrl(clean).data.publicUrl);
+      // Candidate 2: Prefixed path (SQL update fallback)
+      candidates.push(supabase.storage.from('product-images').getPublicUrl(`product-images/${clean}`).data.publicUrl);
+    });
+
+    const valid = candidates.filter((_, i) => !failedIndices.has(i));
     if (valid.length === 0) {
       return [`https://placehold.co/400x400?text=${encodeURIComponent(product.name)}`];
     }
-    return valid.slice(0, 12);
-  }, [product.imageUrls, failedIndices, product.name]);
+    return valid.slice(0, 10);
+  }, [product.image_path, failedIndices, product.name]);
 
   const safeIndex = currentIndex >= activeImages.length ? 0 : currentIndex;
 

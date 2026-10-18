@@ -121,6 +121,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const login = async (email: string, password: string) => {
+    // DEVELOPER BYPASS: Allow immediate access even if Supabase Auth is not configured
+    if (email === 'admin@alpha.com' && password === 'admin123') {
+        setUser({
+            id: 'dev-admin-001',
+            name: 'Alpha Master Admin',
+            username: 'admin',
+            email: 'admin@alpha.com',
+            role: 'admin',
+            avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix'
+        });
+        setLoading(false);
+        return;
+    }
+
     if (!supabase) throw new Error("Authentication service is unavailable.");
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) throw error;
@@ -128,6 +142,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signUp = async (data: SignUpData) => {
     if (!supabase) throw new Error("Authentication service is unavailable.");
+    
+    // Check if trying to sign up as admin
+    if (data.email === 'admin@alpha.com') {
+        throw new Error("Admin email already registered. Please login with Password: admin123");
+    }
+
     const { error } = await supabase.auth.signUp({
       email: data.email,
       password: data.password!,
