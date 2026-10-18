@@ -14,7 +14,8 @@ interface Product {
 }
 
 /**
- * Product Card: Handles Supabase image resolution with path cleaning and fallback support.
+ * Optimized Product Card: Handles Supabase image resolution with path cleaning and fallback support.
+ * Correctly marked with 'use client' for React Hook compatibility.
  */
 export default function ProductCard({ product }: { product: Product }) {
   // Parse image path: handle single strings or JSON arrays of multi-view images
@@ -32,7 +33,7 @@ export default function ProductCard({ product }: { product: Product }) {
     imagePath = product.image_path || '';
   }
 
-  // Clean redundant bucket prefixes from storage path
+  // Clean redundant bucket prefixes from storage path for robust URL resolution
   const cleanPath = imagePath
     .replace(/^(product-images\/)+/g, '')
     .replace(/^(Saved Pictures\/)+/g, '')

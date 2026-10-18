@@ -53,47 +53,51 @@ export const categories: Category[] = [
     { id: 'Collections', name: 'Our Collections' },
 ];
 
+/**
+ * Synchronized Carousel Categories: 
+ * Every collection card now points to a dynamic /category/[slug] route.
+ */
 export const carouselCategories: CarouselCategory[] = [
     { 
         id: 'Tanks category', 
         name: 'Tanks', 
-        href: `/category/${encodeURIComponent('Tanks category')}`, 
+        href: `/category/tanks`, 
         image: '' 
     },
     { 
         id: 'Plumbing', 
         name: 'Plumbing', 
-        href: `/category/${encodeURIComponent('Plumbing')}`, 
+        href: `/category/plumbing`, 
         image: ''
     },
     { 
         id: 'Decorative Lighting and chandeliers', 
         name: 'Electricals and Cables', 
-        href: `/category/${encodeURIComponent('Decorative Lighting and chandeliers')}`, 
+        href: `/category/lighting`, 
         image: ''
     },
     { 
         id: 'Collections', 
         name: 'Home & Decor', 
-        href: `/category/${encodeURIComponent('Collections')}`, 
+        href: `/category/decor`, 
         image: ''
     },
     { 
         id: 'Sanitary Ware Toilets & Bathroom Fixtures', 
         name: 'Toilets & Sinks', 
-        href: `/category/${encodeURIComponent('Sanitary Ware Toilets & Bathroom Fixtures')}`, 
+        href: `/category/toilets`, 
         image: ''
     },
     { 
         id: 'Solar panels & accessories', 
         name: 'Solar category', 
-        href: `/category/${encodeURIComponent('Solar panels & accessories')}`, 
+        href: `/category/solar`, 
         image: ''
     },
     { 
         id: 'Mabati and Roofing', 
         name: 'Roofing & Construction', 
-        href: `/category/${encodeURIComponent('Mabati and Roofing')}`, 
+        href: `/category/roofing`, 
         image: ''
     },
 ];

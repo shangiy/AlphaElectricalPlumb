@@ -11,6 +11,9 @@ interface Category {
   href: string;
 }
 
+/**
+ * Locked Category Image Map: Permanent mapping for your collection visuals.
+ */
 const categoryImageMap: Record<string, string> = {
   'Roofing & Construction': 'Corrugated Roofing Sheet collection.webp',
   'Tanks': 'Alpha tanks Collections.webp',
@@ -31,7 +34,7 @@ export default function CategoryCard({ category }: { category: Category }) {
     const filename = categoryImageMap[category.name.trim()] || `${category.name.trim()}.webp`;
     const cleanFilename = filename.replace(/\\/g, '/').replace(/^\/+/, '');
     
-    // Candidates cover different possible storage structures (Root vs Nested folders)
+    // Candidates cover different possible storage structures
     const paths = [
       `collections/${cleanFilename}`,
       `product-images/collections/${cleanFilename}`,
@@ -45,11 +48,10 @@ export default function CategoryCard({ category }: { category: Category }) {
   }, [category.name]);
 
   const handleImageError = () => {
-    // If Candidate 1 fails, try Candidate 2, and so on.
     if (imgIndex < candidateUrls.length - 1) {
       setImgIndex(imgIndex + 1);
     } else {
-      setImgIndex(-1); // Final fallback to placeholder
+      setImgIndex(-1); // Final fallback
     }
   };
 
