@@ -3,10 +3,12 @@
 import { useProducts } from '@/context/ProductProvider';
 import ProductCard from './ProductCard';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Package, Search } from 'lucide-react';
+import { Package, Search, ArrowRight } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { useMemo } from 'react';
 import type { Product } from '@/lib/types';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 interface ProductListProps {
   products?: Product[];
@@ -110,9 +112,17 @@ export default function ProductList({ products: initialProducts }: ProductListPr
           ))}
         </div>
       ) : (
-        <div className="text-center py-20 bg-muted/5 rounded-3xl border-2 border-dashed">
-             <Search className="h-12 w-12 text-muted-foreground mb-4 mx-auto opacity-20" />
-             <p className="text-muted-foreground">No products match your criteria.</p>
+        <div className="flex flex-col items-center justify-center py-24 bg-muted/5 rounded-[3rem] border-2 border-dashed border-muted-foreground/20">
+             <Search className="h-16 w-16 text-muted-foreground mb-4 opacity-20" />
+             <p className="text-muted-foreground text-lg mb-8 font-medium italic">"Oops! It looks like we don't have that in stock yet..."</p>
+             
+             <Button asChild size="lg" className="relative group overflow-hidden bg-[#28235f] text-white px-10 py-8 rounded-full font-black text-xl transition-all duration-300 hover:scale-110 hover:shadow-[0_0_40px_rgba(40,35,95,0.4)] active:scale-95 animate-pulse hover:animate-none">
+                <Link href="/search" className="flex items-center gap-3">
+                    VIEW OTHER PRODUCTS
+                    <ArrowRight className="h-6 w-6 group-hover:translate-x-2 transition-transform" />
+                </Link>
+             </Button>
+             <p className="mt-4 text-[10px] uppercase tracking-widest font-bold text-muted-foreground/60 animate-bounce">Click to explore our full 100+ inventory</p>
         </div>
       )}
     </div>
