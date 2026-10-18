@@ -48,10 +48,10 @@ const resolveProductImages = (product: any): string[] => {
 };
 
 export const categories: Category[] = [
-    { id: 'Decorative Lighting and chandeliers', name: 'Lighting & Chandeliers' },
+    { id: 'Decorative Lighting and chandeliers', name: 'Electricals and Cables' },
     { id: 'Electrical items', name: 'Electrical Items' },
     { id: 'Plumbing', name: 'Plumbing' },
-    { id: 'Sanitary Ware Toilets & Bathroom Fixtures', name: 'Sanitary & Bathroom' },
+    { id: 'Sanitary Ware Toilets & Bathroom Fixtures', name: 'Toilets & Sinks' },
     { id: 'Shower Category', name: 'Showers' },
     { id: 'Solar panels & accessories', name: 'Solar Solutions' },
     { id: 'Tanks category', name: 'Water Tanks' },
@@ -83,6 +83,18 @@ export const carouselCategories: CarouselCategory[] = [
         id: 'Collections', 
         name: 'Home & Decor', 
         href: '/decor', 
+        image: ''
+    },
+    { 
+        id: 'Sanitary Ware Toilets & Bathroom Fixtures', 
+        name: 'Toilets & Sinks', 
+        href: '/plumbing', 
+        image: ''
+    },
+    { 
+        id: 'Solar panels & accessories', 
+        name: 'Solar category', 
+        href: '/plumbing', 
         image: ''
     },
     { 

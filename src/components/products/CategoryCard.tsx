@@ -13,7 +13,7 @@ interface Category {
 }
 
 const categoryImageMap: Record<string, string> = {
-  'Roofing & Construction': 'Brick Red Tile Profile Versatile - Alloy-Zinc Color-Coated Roofing Sheets.webp',
+  'Roofing & Construction': 'Corrugated Roofing Sheet collection.webp',
   'Tanks': 'Alpha tanks Collections.webp',
   'Plumbing': 'plumbing pipes and fittings PPH PPR collection.webp',
   'Electricals and Cables': 'Electric Socket Collection.webp',
