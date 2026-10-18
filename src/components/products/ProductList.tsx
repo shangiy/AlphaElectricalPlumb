@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useProducts } from '@/context/ProductProvider';
@@ -30,8 +31,7 @@ export default function ProductList({ products: initialProducts }: ProductListPr
     
     return list.filter(p => {
       // Robust defensive coding: 
-      // 1. Ensure item p exists
-      // 2. Safely access fields with optional chaining and fallback to empty strings
+      // Safely handle missing or malformed product data to prevent TypeError crashes.
       if (!p) return false;
       
       const name = (p.name || '').toLowerCase();
