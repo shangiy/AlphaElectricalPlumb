@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -38,7 +39,7 @@ const productCategories = [
   { name: 'Tanks Collection', href: '/tanks', icon: '/kentank 2000l.png' },
   { name: 'Plumbing Equipment', href: '/plumbing', icon: '/ppr pipes.png' },
   {
-    name: 'Lighting & Electrical',
+    name: 'Electricals and Cables',
     href: '/lighting',
     icon: '/decor lighting design.png',
   },

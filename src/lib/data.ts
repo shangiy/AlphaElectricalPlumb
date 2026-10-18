@@ -75,7 +75,7 @@ export const carouselCategories: CarouselCategory[] = [
     },
     { 
         id: 'Decorative Lighting and chandeliers', 
-        name: 'Lighting & Electrical', 
+        name: 'Electricals and Cables', 
         href: '/lighting', 
         image: ''
     },

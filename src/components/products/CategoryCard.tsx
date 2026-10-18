@@ -15,9 +15,11 @@ interface Category {
 const categoryImageMap: Record<string, string> = {
   'Roofing & Construction': 'Brick Red Tile Profile Versatile - Alloy-Zinc Color-Coated Roofing Sheets.webp',
   'Tanks': 'Alpha tanks Collections.webp',
-  'Plumbing': 'Alpha plumbing pipe collection.webp',
-  'Lighting & Electrical': 'Electric Socket Collection.webp',
-  'Home & Decor': 'Alpha chandelier collection.webp',
+  'Plumbing': 'plumbing pipes and fittings PPH PPR collection.webp',
+  'Electricals and Cables': 'Electric Socket Collection.webp',
+  'Home & Decor': 'Bird Art Lights fixture Collection.webp',
+  'Toilets & Sinks':'Hand-wash Basin and Pedestal Sink Collection.webp',
+  'Solar category':'Seven SS Stars 150 Liters Non-Pressurized  Solar Water Heater 4.webp'
 };
 
 export default function CategoryCard({ category }: { category: Category }) {
