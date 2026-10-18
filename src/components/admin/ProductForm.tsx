@@ -96,7 +96,6 @@ export default function ProductForm({ product }: ProductFormProps) {
     const handleAddNewCategory = () => {
         if (!newCategoryName.trim()) return;
         const catName = newCategoryName.trim();
-        // Add to local state for immediate selection
         setCategories(prev => [...prev, { id: catName, name: catName }]);
         form.setValue('category', catName);
         setIsAddingNewCategory(false);
@@ -207,7 +206,7 @@ export default function ProductForm({ product }: ProductFormProps) {
                                             </Button>
                                         </div>
                                     )}
-                                    <FormDescription>Select a category or add a new one. Comma-separate for multiple.</FormDescription>
+                                    <FormDescription>Select a category or add a new one. This will sync with Supabase.</FormDescription>
                                     <FormMessage />
                                 </FormItem>
                             )}

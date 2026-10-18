@@ -113,76 +113,38 @@ export default function LoginForm() {
         setRecaptchaToken(token);
     };
 
-    const unlockUI = () => {
-        try {
-            document.body.style.pointerEvents = 'auto';
-            document.body.style.overflow = 'auto';
-            document.documentElement.style.pointerEvents = 'auto';
-            document.documentElement.style.overflow = 'auto';
-            document.body.removeAttribute('data-pointer-events-none');
-            document.body.removeAttribute('data-scroll-locked');
-        } catch (e) {}
-    };
-
     async function onLogin(data: LoginFormValues) {
         setIsProcessing(true);
         try {
             await login(data.email, data.password);
-            toast({ title: "Login Successful!", description: "Welcome back!" });
-            unlockUI();
-            setTimeout(() => router.push(redirectUrl), 150);
+            toast({ title: "Login Successful!", description: "Welcome back to Alpha Electricals." });
         } catch (error: any) {
-            console.error("Login error:", error);
             setIsProcessing(false);
-            const message = error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found' 
-                ? "Invalid email or password." 
-                : "An unexpected error occurred.";
+            const message = error.message?.includes('Invalid login credentials') 
+                ? "Invalid email or password. If you don't have an account, please use the Sign Up tab." 
+                : (error.message || "An unexpected error occurred.");
             toast({ variant: "destructive", title: "Login Failed", description: message });
         }
     }
 
     async function onSignUp(data: SignUpFormValues) {
         const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
-        
         if (siteKey && !recaptchaToken) {
-            toast({
-                variant: "destructive",
-                title: "Verification Required",
-                description: "Please complete the reCAPTCHA verification.",
-            });
+            toast({ variant: "destructive", title: "Verification Required", description: "Please complete reCAPTCHA." });
             return;
         }
 
         setIsProcessing(true);
-
         try {
             if (siteKey && recaptchaToken) {
                 const verification = await verifyRecaptcha(recaptchaToken);
-                if (!verification.success) {
-                    toast({
-                        variant: "destructive",
-                        title: "Verification Failed",
-                        description: verification.message,
-                    });
-                    recaptchaRef.current?.reset();
-                    setRecaptchaToken(null);
-                    setIsProcessing(false);
-                    return;
-                }
+                if (!verification.success) throw new Error(verification.message);
             }
-
             await signUp(data);
-            toast({ title: "Account Created!", description: "Welcome! You are now logged in." });
-            unlockUI();
-            setTimeout(() => router.push(redirectUrl), 500);
-
+            toast({ title: "Account Created!", description: "Welcome! Your account is ready." });
         } catch (error: any) {
             setIsProcessing(false);
-            toast({
-                variant: "destructive",
-                title: "Sign-Up Failed",
-                description: error.message || "An error occurred. Please try again.",
-            });
+            toast({ variant: "destructive", title: "Sign-Up Failed", description: error.message });
         }
     }
 
@@ -190,18 +152,9 @@ export default function LoginForm() {
         setSocialLoading(provider);
         try {
             const signInMethod = provider === 'google' ? signInWithGoogle : signInWithFacebook;
-            const user = await signInMethod();
-            if (user) {
-                toast({ title: "Login Successful!", description: `Welcome, ${user.name}!` });
-                unlockUI();
-                setTimeout(() => router.push(redirectUrl), 100);
-            }
+            await signInMethod();
         } catch (error: any) {
-            toast({
-                variant: "destructive",
-                title: "Social Login Failed",
-                description: error.message || "Could not sign in. Please try again.",
-            });
+            toast({ variant: "destructive", title: "Social Login Failed", description: error.message });
         } finally {
             setSocialLoading(null);
         }
@@ -221,9 +174,7 @@ export default function LoginForm() {
                 <Card>
                     <CardHeader>
                         <CardTitle>Welcome Back</CardTitle>
-                        <CardDescription>
-                            Enter your credentials to access your account.
-                        </CardDescription>
+                        <CardDescription>Enter your credentials to access your account.</CardDescription>
                     </CardHeader>
                     <CardContent>
                        <Form {...loginForm}>
@@ -235,7 +186,7 @@ export default function LoginForm() {
                                         <FormItem>
                                             <FormLabel>Email</FormLabel>
                                             <FormControl>
-                                                <Input type="email" placeholder="you@example.com" {...field} autoComplete="email" />
+                                                <Input type="email" placeholder="admin@alpha.com" {...field} autoComplete="email" />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -254,46 +205,30 @@ export default function LoginForm() {
                                         </FormItem>
                                     )}
                                 />
-                                <Button type="submit" className="w-full" disabled={isProcessing || loginForm.formState.isSubmitting}>
-                                    {isProcessing ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : null}
+                                <Button type="submit" className="w-full" disabled={isProcessing}>
+                                    {isProcessing && <Loader2 className="animate-spin mr-2 h-4 w-4" />}
                                     Log In
                                 </Button>
                                 
-                                <div className="text-sm">
-                                    <Link href="#" className="font-medium text-primary hover:underline">
-                                        Forgot password?
-                                    </Link>
-                                </div>
-
                                 <div className="relative">
-                                    <div className="absolute inset-0 flex items-center">
-                                        <span className="w-full border-t" />
-                                    </div>
+                                    <div className="absolute inset-0 flex items-center"><span className="w-full border-t" /></div>
                                     <div className="relative flex justify-center text-xs uppercase">
                                         <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
                                     </div>
                                 </div>
                                 
                                 <div className="grid grid-cols-2 gap-4">
-                                     <Button variant="outline" type="button" onClick={() => handleSocialSignIn('google')} disabled={!!socialLoading || isProcessing}>
-                                        {socialLoading === 'google' ? <Loader2 className="animate-spin" /> : <GoogleIcon/>}
-                                        Google
+                                     <Button variant="outline" type="button" onClick={() => handleSocialSignIn('google')} disabled={!!socialLoading}>
+                                        {socialLoading === 'google' ? <Loader2 className="animate-spin" /> : <GoogleIcon/>} Google
                                      </Button>
-                                     <Button variant="outline" type="button" onClick={() => handleSocialSignIn('facebook')} disabled={!!socialLoading || isProcessing} className="text-[#1877F2] hover:text-[#1877F2]">
-                                        {socialLoading === 'facebook' ? <Loader2 className="animate-spin" /> : <FacebookIcon/>}
-                                        Facebook
+                                     <Button variant="outline" type="button" onClick={() => handleSocialSignIn('facebook')} disabled={!!socialLoading}>
+                                        {socialLoading === 'facebook' ? <Loader2 className="animate-spin" /> : <FacebookIcon/>} Facebook
                                      </Button>
                                 </div>
 
                                 <p className="text-center text-sm text-muted-foreground">
-                                    Don&apos;t have an account?{' '}
-                                    <Link
-                                      href={`/auth/login?tab=signup${redirectQuery}`}
-                                      scroll={false}
-                                      className="font-medium text-primary hover:underline"
-                                    >
-                                      Sign up
-                                    </Link>
+                                    Don't have an account?{' '}
+                                    <Link href={`/auth/login?tab=signup${redirectQuery}`} scroll={false} className="font-medium text-primary hover:underline">Sign up</Link>
                                 </p>
                             </form>
                         </Form>
@@ -304,123 +239,66 @@ export default function LoginForm() {
                  <Card>
                     <CardHeader>
                         <CardTitle>Create an Account</CardTitle>
-                        <CardDescription>
-                           Enter your details below to create your account.
-                        </CardDescription>
+                        <CardDescription>Enter your details below to create your account.</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <Form {...signUpForm}>
                             <form onSubmit={signUpForm.handleSubmit(onSignUp)} className="space-y-6">
-                                 <FormField
-                                    control={signUpForm.control}
-                                    name="name"
-                                    render={({ field }) => (
+                                 <FormField control={signUpForm.control} name="name" render={({ field }) => (
                                         <FormItem>
                                             <FormLabel>Full Name</FormLabel>
-                                            <FormControl>
-                                                <Input placeholder="John Doe" {...field} />
-                                            </FormControl>
+                                            <FormControl><Input placeholder="John Doe" {...field} /></FormControl>
                                             <FormMessage />
                                         </FormItem>
                                     )}
                                 />
-                                 <FormField
-                                    control={signUpForm.control}
-                                    name="username"
-                                    render={({ field }) => (
+                                <FormField control={signUpForm.control} name="username" render={({ field }) => (
                                         <FormItem>
                                             <FormLabel>Username</FormLabel>
-                                            <FormControl>
-                                                <Input placeholder="johndoe99" {...field} />
-                                            </FormControl>
+                                            <FormControl><Input placeholder="johndoe99" {...field} /></FormControl>
                                             <FormMessage />
                                         </FormItem>
                                     )}
                                 />
-                                <FormField
-                                    control={signUpForm.control}
-                                    name="email"
-                                    render={({ field }) => (
+                                <FormField control={signUpForm.control} name="email" render={({ field }) => (
                                         <FormItem>
                                             <FormLabel>Email</FormLabel>
-                                            <FormControl>
-                                                <Input type="email" placeholder="you@example.com" {...field} />
-                                            </FormControl>
+                                            <FormControl><Input type="email" placeholder="you@example.com" {...field} /></FormControl>
                                             <FormMessage />
                                         </FormItem>
                                     )}
                                 />
-                                <FormField
-                                    control={signUpForm.control}
-                                    name="password"
-                                    render={({ field }) => (
+                                <FormField control={signUpForm.control} name="password" render={({ field }) => (
                                         <FormItem>
                                             <FormLabel>Password</FormLabel>
-                                            <FormControl>
-                                                <PasswordInput field={field} placeholder="••••••••" />
-                                            </FormControl>
+                                            <FormControl><PasswordInput field={field} placeholder="••••••••" /></FormControl>
                                             <FormMessage />
                                         </FormItem>
                                     )}
                                 />
-                                <FormField
-                                    control={signUpForm.control}
-                                    name="confirmPassword"
-                                    render={({ field }) => (
+                                <FormField control={signUpForm.control} name="confirmPassword" render={({ field }) => (
                                         <FormItem>
                                             <FormLabel>Confirm Password</FormLabel>
-                                            <FormControl>
-                                                 <PasswordInput field={field} placeholder="••••••••" />
-                                            </FormControl>
+                                            <FormControl><PasswordInput field={field} placeholder="••••••••" /></FormControl>
                                             <FormMessage />
                                         </FormItem>
                                     )}
                                 />
 
                                 {isMounted && recaptchaSiteKey && activeTab === 'signup' && (
-                                    <FormItem className="flex flex-col items-center justify-center p-2 min-h-[78px]">
-                                        <ReCAPTCHA
-                                            ref={recaptchaRef}
-                                            sitekey={recaptchaSiteKey}
-                                            onChange={handleRecaptchaChange}
-                                        />
-                                    </FormItem>
+                                    <div className="flex justify-center p-2">
+                                        <ReCAPTCHA ref={recaptchaRef} sitekey={recaptchaSiteKey} onChange={handleRecaptchaChange} />
+                                    </div>
                                 )}
 
-                                <Button type="submit" className="w-full" disabled={isProcessing || signUpForm.formState.isSubmitting}>
-                                    {isProcessing ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : null}
-                                    {isProcessing ? "Processing..." : "Create Account"}
+                                <Button type="submit" className="w-full" disabled={isProcessing}>
+                                    {isProcessing && <Loader2 className="animate-spin mr-2 h-4 w-4" />}
+                                    Create Account
                                 </Button>
                                 
-                                <div className="relative">
-                                    <div className="absolute inset-0 flex items-center">
-                                        <span className="w-full border-t" />
-                                    </div>
-                                    <div className="relative flex justify-center text-xs uppercase">
-                                        <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
-                                    </div>
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-4">
-                                     <Button variant="outline" type="button" onClick={() => handleSocialSignIn('google')} disabled={!!socialLoading || isProcessing}>
-                                        {socialLoading === 'google' ? <Loader2 className="animate-spin" /> : <GoogleIcon/>}
-                                        Google
-                                     </Button>
-                                     <Button variant="outline" type="button" onClick={() => handleSocialSignIn('facebook')} disabled={!!socialLoading || isProcessing} className="text-[#1877F2] hover:text-[#1877F2]">
-                                        {socialLoading === 'facebook' ? <Loader2 className="animate-spin" /> : <FacebookIcon/>}
-                                        Facebook
-                                     </Button>
-                                </div>
-
-                                 <p className="text-center text-sm text-muted-foreground">
+                                <p className="text-center text-sm text-muted-foreground">
                                     Already have an account?{' '}
-                                    <Link
-                                      href={`/auth/login?tab=login${redirectQuery}`}
-                                      scroll={false}
-                                      className="font-medium text-primary hover:underline"
-                                    >
-                                      Login
-                                    </Link>
+                                    <Link href={`/auth/login?tab=login${redirectQuery}`} scroll={false} className="font-medium text-primary hover:underline">Login</Link>
                                 </p>
                             </form>
                         </Form>
