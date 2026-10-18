@@ -69,7 +69,6 @@ export default function ProductCard({ product }: { product: Product }) {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => {
         setIsHovered(false);
-        // We don't reset index immediately on leave to allow smooth re-entry
       }}
     >
       {/* Interactive Image Gallery Area */}

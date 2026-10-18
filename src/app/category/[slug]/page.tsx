@@ -1,6 +1,8 @@
-import { supabase } from '@/lib/supabaseClient';
+import { getProducts } from '@/lib/data';
 import ProductCard from '@/components/products/ProductCard';
 import Link from 'next/link';
+import { ArrowRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface PageProps {
   params: Promise<{ slug: string }> | { slug: string };
@@ -8,24 +10,18 @@ interface PageProps {
 
 /**
  * Robust Category Page: 
+ * Uses the central getProducts utility to ensure images are correctly resolved.
  * Implements flexible filtering that matches by name, description, category field, or storage path.
- * Supports multi-category display and provides navigation to the full catalog.
  */
 export default async function CategoryPage({ params }: PageProps) {
   const resolvedParams = await Promise.resolve(params);
   const slug = decodeURIComponent(resolvedParams.slug || '').replace(/-/g, ' ');
 
-  // Fetch all products from Supabase to apply flexible local filtering
-  const { data: products, error } = await supabase
-    .from('products')
-    .select('*');
-
-  if (error) {
-    console.error('Error fetching products for category:', error);
-  }
+  // Fetch all products via the helper to ensure self-healing image URLs are populated
+  const allProducts = await getProducts();
 
   // Flexible filtering: matches product name, description, category field, or image path folder
-  const filteredProducts = products?.filter((product) => {
+  const filteredProducts = allProducts.filter((product) => {
     const searchSlug = slug.toLowerCase();
     
     // Check various fields for a match to support multi-category and descriptive tagging
@@ -35,7 +31,7 @@ export default async function CategoryPage({ params }: PageProps) {
     const pathMatch = product.image_path?.toLowerCase().includes(searchSlug);
     
     return nameMatch || descMatch || catMatch || pathMatch;
-  }) || [];
+  });
 
   return (
     <div className="bg-background min-h-screen">
@@ -66,18 +62,20 @@ export default async function CategoryPage({ params }: PageProps) {
             ))}
           </div>
         ) : (
-          <div className="text-center py-24 bg-muted/20 rounded-[3rem] border-2 border-dashed border-muted-foreground/20">
-            <div className="max-w-md mx-auto">
-              <p className="text-muted-foreground text-lg mb-6">
-                No products found in "{slug}" yet.
-              </p>
-              <Link
-                href="/search"
-                className="inline-block px-8 py-4 bg-[#28235f] text-white rounded-full font-bold transition-all hover:scale-105"
-              >
-                View Other Products
+          <div className="flex flex-col items-center justify-center py-24 bg-muted/5 rounded-[3rem] border-2 border-dashed border-muted-foreground/20 text-center">
+            <p className="text-muted-foreground text-lg mb-8 font-medium italic">
+              "Oops! We don't have any items in the {slug} collection right now."
+            </p>
+            
+            <Button asChild size="lg" className="relative group overflow-hidden bg-[#28235f] text-white px-10 py-8 rounded-full font-black text-xl transition-all duration-300 hover:scale-110 hover:shadow-[0_0_40px_rgba(40,35,95,0.4)] active:scale-95 animate-pulse hover:animate-none">
+              <Link href="/search" className="flex items-center gap-3">
+                VIEW OTHER PRODUCTS
+                <ArrowRight className="h-6 w-6 group-hover:translate-x-2 transition-transform" />
               </Link>
-            </div>
+            </Button>
+            <p className="mt-4 text-[10px] uppercase tracking-widest font-bold text-muted-foreground/60">
+              Click to explore our full 100+ inventory
+            </p>
           </div>
         )}
       </div>
