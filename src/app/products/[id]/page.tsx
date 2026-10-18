@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useParams, notFound, useRouter } from 'next/navigation';
@@ -27,13 +28,6 @@ function ProductContent({ productId }: { productId: string }) {
     setActiveImageIndex(0);
     setFailedImages(new Set());
   }, [productId]);
-
-  // Determine working unique thumbnails
-  const workingImages = useMemo(() => {
-    if (!product) return [];
-    // Filter out indices that have failed to load
-    return product.imageUrls.filter((_, i) => !failedImages.has(i));
-  }, [product, failedImages]);
 
   if (loading) {
     return <ProductDetailSkeleton />;
@@ -73,11 +67,6 @@ function ProductContent({ productId }: { productId: string }) {
         next.add(index);
         return next;
     });
-    // If the active image failed, try to find the next available working one
-    if (index === activeImageIndex) {
-        const firstWorking = product.imageUrls.findIndex((_, i) => !failedImages.has(i) && i !== index);
-        if (firstWorking !== -1) setActiveImageIndex(firstWorking);
-    }
   };
 
   const isMeasurable = product.unit && product.unit !== 'item' && product.unit !== 'roll' && product.unit !== 'pack';
@@ -92,7 +81,7 @@ function ProductContent({ productId }: { productId: string }) {
     <div className="bg-background">
       <div className="container mx-auto px-4 py-12 lg:py-20">
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-2">
-          {/* Image Gallery Column - Restored Multiple View Window */}
+          {/* Image Gallery Column */}
           <div className="space-y-6">
              <div className="aspect-square overflow-hidden rounded-[2.5rem] bg-secondary/20 shadow-2xl border border-white/20 relative">
                 <img
@@ -104,11 +93,10 @@ function ProductContent({ productId }: { productId: string }) {
                 />
             </div>
             
-            {/* Thumbnails Window - Restored for side-views */}
+            {/* Thumbnails Window */}
             {product.imageUrls.length > 1 && (
                 <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
                     {product.imageUrls.map((img, index) => {
-                        // Don't render thumbnails that failed to load
                         if (failedImages.has(index)) return null;
                         
                         return (

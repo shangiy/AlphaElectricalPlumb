@@ -18,7 +18,7 @@ const categoryImageMap: Record<string, string> = {
   'Plumbing': 'plumbing pipes and fittings PPH PPR collection.webp',
   'Electricals and Cables': 'Electric Socket Collection.webp',
   'Home & Decor': 'Bird Art Lights fixture Collection.webp',
-  'Toilets & Sinks':'Hand-wash Basin and Pedestal Sink Collection.webp',
+  'Toilets & Sinks':'Hand-wash Basin and  Pedestal Sink Collection.webp',
   'Solar category':'Seven SS Stars 150 Liters Non-Pressurized  Solar Water Heater 4.webp'
 };
 
