@@ -14,7 +14,7 @@ export default function CategoryCard({ category }: { category: Category }) {
   const categoryImageMap: Record<string, string> = {
     'Roofing & Construction': 'Brick Red Tile Profile Versatile - Alloy-Zinc Color-Coated Roofing Sheets.webp',
     'Tanks': 'Tanks.webp',
-    'Plumbing': 'Plumbing.webp',
+    'Plumbing': 'Alpha plumbing pipe collection.webp',
     'Lighting & Electrical': 'Lighting & Electrical.webp',
     'Home & Decor': 'Home & Decor.webp',
   };
