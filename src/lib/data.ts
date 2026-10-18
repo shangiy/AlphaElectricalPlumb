@@ -1,3 +1,4 @@
+
 import type { Product, Category, MockUser, Transaction, CarouselCategory } from './types';
 import { supabase } from './supabase';
 
@@ -60,7 +61,8 @@ export const categories: Category[] = [
 
 const getCollectionImageUrl = (filename: string) => {
   if (!supabase) return "/placeholder.jpg";
-  return supabase.storage.from('product-images').getPublicUrl(`product-images/collections/${filename}`).data.publicUrl;
+  // The user requested images from the 'COLLECTION' folder in Supabase
+  return supabase.storage.from('product-images').getPublicUrl(`COLLECTION/${filename}`).data.publicUrl;
 }
 
 export const carouselCategories: CarouselCategory[] = [
@@ -68,31 +70,31 @@ export const carouselCategories: CarouselCategory[] = [
         id: 'Tanks category', 
         name: 'Tanks', 
         href: '/tanks', 
-        image: getCollectionImageUrl('tanks.webp')
+        image: getCollectionImageUrl('Tanks.webp')
     },
     { 
         id: 'Plumbing', 
         name: 'Plumbing', 
         href: '/plumbing', 
-        image: getCollectionImageUrl('plumbing.webp')
+        image: getCollectionImageUrl('Plumbing.webp')
     },
     { 
         id: 'Decorative Lighting and chandeliers', 
         name: 'Lighting & Electrical', 
         href: '/lighting', 
-        image: getCollectionImageUrl('lighting.webp')
+        image: getCollectionImageUrl('Lighting & Electrical.webp')
     },
     { 
         id: 'Collections', 
         name: 'Home & Decor', 
         href: '/decor', 
-        image: getCollectionImageUrl('decor.webp')
+        image: getCollectionImageUrl('Home & Decor.webp')
     },
     { 
         id: 'Mabati and Roofing', 
         name: 'Roofing & Construction', 
         href: '/roofing', 
-        image: getCollectionImageUrl('roofing.webp')
+        image: getCollectionImageUrl('Roofing & Construction.webp')
     },
 ];
 

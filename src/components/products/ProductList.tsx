@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useProducts } from '@/context/ProductProvider';

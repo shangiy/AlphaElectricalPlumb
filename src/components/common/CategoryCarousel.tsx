@@ -1,10 +1,10 @@
+
 'use client';
 
 import * as React from 'react';
-import Link from 'next/link';
 import { carouselCategories } from '@/lib/data';
 import type { CarouselCategory } from '@/lib/types';
-import { Card, CardContent } from '@/components/ui/card';
+import CategoryCard from '@/components/products/CategoryCard';
 import { Skeleton } from '../ui/skeleton';
 
 export default function CategoryCarousel() {
@@ -21,7 +21,7 @@ export default function CategoryCarousel() {
 
   return (
     <section id="categories" className="py-16 bg-secondary overflow-hidden">
-      <div className="container mx-auto px-4 mb-8">
+      <div className="container mx-auto px-4 mb-10">
         <h2 className="text-3xl font-bold font-headline text-center text-[#2b235f]">Browse by Category</h2>
       </div>
       
@@ -44,32 +44,7 @@ export default function CategoryCarousel() {
           <div className="flex w-fit items-center flex-nowrap animate-scroll hover:[animation-play-state:paused] py-4">
             {duplicatedCategories.map((category, index) => (
               <div key={`${category.id}-${index}`} className="flex-shrink-0 w-72 px-4">
-                <Link href={category.href} passHref>
-                  <Card className="h-80 overflow-hidden transition-all duration-300 border-none shadow-md hover:shadow-xl hover:-translate-y-1 group relative rounded-2xl bg-white">
-                    <div className="relative w-full h-full">
-                      {/* Using standard img tag for direct Storage fetching on custom domains */}
-                      <img
-                        src={category.image}
-                        alt={category.name}
-                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src = "https://placehold.co/600x800?text=" + encodeURIComponent(category.name);
-                        }}
-                      />
-                      {/* Gradient overlay for text readability */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                      
-                      <CardContent className="absolute bottom-0 w-full p-6 text-left">
-                        <h3 className="text-xl font-bold text-white font-headline">
-                          {category.name}
-                        </h3>
-                        <p className="text-white/80 text-sm mt-1 transform translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
-                          Explore Collection →
-                        </p>
-                      </CardContent>
-                    </div>
-                  </Card>
-                </Link>
+                <CategoryCard category={category} />
               </div>
             ))}
           </div>
