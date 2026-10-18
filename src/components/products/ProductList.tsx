@@ -20,7 +20,7 @@ interface ProductListProps {
 export default function ProductList({ products: initialProducts }: ProductListProps) {
   const { products: contextProducts, loading } = useProducts();
   const searchParams = useSearchParams();
-  const query = (searchParams.get('q') || '').toLowerCase();
+  const query = (searchParams.get('q') || '').toLowerCase().trim();
 
   const products = initialProducts || contextProducts;
 
@@ -29,12 +29,22 @@ export default function ProductList({ products: initialProducts }: ProductListPr
     if (!query) return list;
     
     return list.filter(p => {
-      // Robust defensive coding: Ensure fields are checked for null/undefined before string operations
-      const name = (p?.name ?? '').toLowerCase();
-      const desc = (p?.description ?? p?.longDescription ?? '').toLowerCase();
-      const cat = (p?.category ?? '').toLowerCase();
+      // Robust defensive coding: 
+      // 1. Ensure item p exists
+      // 2. Safely access fields with optional chaining and fallback to empty strings
+      if (!p) return false;
       
-      return name.includes(query) || desc.includes(query) || cat.includes(query);
+      const name = (p.name || '').toLowerCase();
+      const desc = (p.description || p.longDescription || '').toLowerCase();
+      const cat = (p.category || '').toLowerCase();
+      const brand = (p.brand || '').toLowerCase();
+      
+      return (
+        name.includes(query) || 
+        desc.includes(query) || 
+        cat.includes(query) ||
+        brand.includes(query)
+      );
     });
   }, [products, query]);
 
