@@ -15,23 +15,31 @@ const resolveProductImages = (product: any): string[] => {
 
   let basePaths: string[] = [];
   try {
+    // Handle JSON strings (e.g. multi-image arrays)
     if (rawPath.startsWith('[') && rawPath.endsWith(']')) {
-      basePaths = JSON.parse(rawPath);
+      // Pre-clean standard JSON artifacts like carriage returns to ensure successful parsing
+      const cleanedJson = rawPath.replace(/[\r\n]/g, '').trim();
+      basePaths = JSON.parse(cleanedJson);
     } else {
       basePaths = [rawPath];
     }
   } catch (e) {
+    console.warn("Path parsing error for product:", product.id, e);
     basePaths = [rawPath];
   }
 
   const allCandidates: string[] = [];
   basePaths.forEach(path => {
+    if (!path) return;
+    
+    // Normalize path by stripping redundant prefixes
     const cleanPath = path
       .replace(/^product-images[\\\/]/, '')
       .replace(/^Saved Pictures[\\\/]/, '')
       .replace(/\\/g, '/')
       .replace(/^\/+/, '');
 
+    // Try both candidate paths: with folder and root
     allCandidates.push(supabase.storage.from('product-images').getPublicUrl(`product-images/${cleanPath}`).data.publicUrl);
     allCandidates.push(supabase.storage.from('product-images').getPublicUrl(cleanPath).data.publicUrl);
   });
@@ -55,7 +63,7 @@ export const categories: Category[] = [
 
 /**
  * Synchronized Carousel Categories: 
- * Every collection card now points to a dynamic /category/[slug] route.
+ * Every collection card points to a dynamic /category/[slug] route.
  */
 export const carouselCategories: CarouselCategory[] = [
     { 
