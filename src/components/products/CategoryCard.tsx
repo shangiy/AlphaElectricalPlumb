@@ -12,23 +12,23 @@ interface Category {
 
 export default function CategoryCard({ category }: { category: Category }) {
   // Use database image_path if available, otherwise fallback to matching the category name in collections
-  // We use the 'product-images/' prefix to match your working storage pattern
+  // Based on your link, images are in 'product-images/collections'
   const rawPath = category.image_path || `product-images/collections/${category.name.trim()}.webp`;
   
-  // Clean path to remove any leading bucket or redundant folder duplications
+  // Clean path to remove any leading bucket or folder duplications as per your requirement
   const cleanPath = rawPath
     .replace(/^product-images\//, '')
     .replace(/^Saved Pictures\//, '')
     .replace(/^\/+/, '');
 
-  // Prepend 'product-images/' to match the nested folder structure revealed in your working links
-  const finalPath = `product-images/${cleanPath}`;
+  // Prepend 'product-images/' if it's missing, since your storage structure is nested
+  const finalPath = cleanPath.startsWith('product-images/') ? cleanPath : `product-images/${cleanPath}`;
 
   const imageUrl = supabase.storage
     .from('product-images')
     .getPublicUrl(finalPath).data.publicUrl;
 
-  console.log("Category:", category.name, "Final Path:", finalPath);
+  console.log("Category:", category.name, "Final Storage Path:", finalPath);
 
   return (
     <Link href={category.href} className="block w-full h-full">

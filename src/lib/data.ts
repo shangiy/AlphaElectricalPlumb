@@ -42,7 +42,8 @@ const resolveProductImages = (product: any): string[] => {
     allCandidates.push(supabase.storage.from('product-images').getPublicUrl(cleanPath).data.publicUrl);
   });
 
-  return allCandidates.length > 0 ? allCandidates : ["/placeholder.jpg"];
+  // Filter out duplicates that might occur if path was already clean
+  return Array.from(new Set(allCandidates)).length > 0 ? Array.from(new Set(allCandidates)) : ["/placeholder.jpg"];
 };
 
 export const categories: Category[] = [
@@ -63,7 +64,7 @@ export const carouselCategories: CarouselCategory[] = [
         id: 'Tanks category', 
         name: 'Tanks', 
         href: '/tanks', 
-        image: '' // Resolved in CategoryCard using collections folder
+        image: '' 
     },
     { 
         id: 'Plumbing', 
