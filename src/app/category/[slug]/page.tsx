@@ -59,10 +59,10 @@ export default async function CategoryPage({ params }: PageProps) {
                 No products found in the "{displayName}" category yet.
               </p>
               <Link
-                href="/"
+                href="/search"
                 className="inline-block px-8 py-4 bg-[#28235f] text-white rounded-full font-bold transition-all hover:scale-105"
               >
-                Return to Shop
+                View Other Products
               </Link>
             </div>
           </div>
