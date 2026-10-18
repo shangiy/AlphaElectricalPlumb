@@ -106,23 +106,25 @@ export async function getProducts(): Promise<Product[]> {
     const { data, error } = await supabase
       .from('products')
       .select('*')
-      .not('id', 'in', `(${excludedIds.join(',')})`)
       .order('name', { ascending: true });
 
     if (error) throw error;
 
-    return (data || []).map(p => ({
-      ...p,
-      name: p.name || "Unnamed Product",
-      category: p.category || "Uncategorized",
-      description: p.description || p.longDescription || "",
-      imageUrls: resolveProductImages(p),
-      price: Number(p.price) || 0,
-      stockCount: Number(p.stock_count || p.stockCount || 0),
-      rating: Number(p.rating || 5),
-      reviews: Number(p.reviews || 0),
-      longDescription: p.longDescription || p.description || ""
-    })) as Product[];
+    // Filter list locally to ensure safety
+    return (data || [])
+      .filter(p => p && p.id && !excludedIds.includes(p.id))
+      .map(p => ({
+        ...p,
+        name: p.name || "Unnamed Product",
+        category: p.category || "Uncategorized",
+        description: p.description || p.longDescription || "",
+        imageUrls: resolveProductImages(p),
+        price: Number(p.price) || 0,
+        stockCount: Number(p.stock_count || p.stockCount || 0),
+        rating: Number(p.rating || 5),
+        reviews: Number(p.reviews || 0),
+        longDescription: p.longDescription || p.description || ""
+      })) as Product[];
   } catch (error) {
     console.error("Error fetching products from Supabase:", error);
     return [];

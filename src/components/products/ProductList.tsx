@@ -20,18 +20,19 @@ interface ProductListProps {
 export default function ProductList({ products: initialProducts }: ProductListProps) {
   const { products: contextProducts, loading } = useProducts();
   const searchParams = useSearchParams();
-  const query = searchParams.get('q')?.toLowerCase() || '';
+  const query = (searchParams.get('q') || '').toLowerCase();
 
   const products = initialProducts || contextProducts;
 
   const filteredProducts = useMemo(() => {
-    if (!query) return products;
+    const list = products || [];
+    if (!query) return list;
     
-    return (products || []).filter(p => {
-      // Defensive coding: Ensure strings exist before calling toLowerCase() to prevent crashes
-      const name = (p?.name || '').toLowerCase();
-      const desc = (p?.description || p?.longDescription || '').toLowerCase();
-      const cat = (p?.category || '').toLowerCase();
+    return list.filter(p => {
+      // Robust defensive coding: Ensure fields are checked for null/undefined before string operations
+      const name = (p?.name ?? '').toLowerCase();
+      const desc = (p?.description ?? p?.longDescription ?? '').toLowerCase();
+      const cat = (p?.category ?? '').toLowerCase();
       
       return name.includes(query) || desc.includes(query) || cat.includes(query);
     });
