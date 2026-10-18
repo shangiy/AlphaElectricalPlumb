@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useForm, Controller } from 'react-hook-form';
@@ -23,7 +22,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
 import { CardContent, CardFooter } from '@/components/ui/card';
 import { useProducts, type ProductFormData } from '@/context/ProductProvider';
 import { getCategories } from '@/lib/data';
@@ -31,9 +29,8 @@ import type { Category, Product } from '@/lib/types';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { useEffect, useState } from 'react';
-import { Checkbox } from '@/components/ui/checkbox';
 import ImageUpload from '@/components/admin/ImageUpload';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Plus } from 'lucide-react';
 
 const productFormSchema = z.object({
   name: z.string().min(3, 'Product name must be at least 3 characters.'),
@@ -50,13 +47,13 @@ interface ProductFormProps {
     product?: Product;
 }
 
-const availableColors = ['Black', 'White', 'Silver', 'Red', 'Blue', 'Green', 'Brass', 'Wood'];
-
 export default function ProductForm({ product }: ProductFormProps) {
     const { addProduct, updateProduct, submitting } = useProducts();
     const router = useRouter();
     const { toast } = useToast();
     const [categories, setCategories] = useState<Category[]>([]);
+    const [isAddingNewCategory, setIsAddingNewCategory] = useState(false);
+    const [newCategoryName, setNewCategoryName] = useState('');
 
     useEffect(() => {
         async function loadCategories() {
@@ -95,6 +92,16 @@ export default function ProductForm({ product }: ProductFormProps) {
             toast({ variant: 'destructive', title: 'Save Failed', description: 'An error occurred while saving.' });
         }
     }
+
+    const handleAddNewCategory = () => {
+        if (!newCategoryName.trim()) return;
+        const catName = newCategoryName.trim();
+        // Add to local state for immediate selection
+        setCategories(prev => [...prev, { id: catName, name: catName }]);
+        form.setValue('category', catName);
+        setIsAddingNewCategory(false);
+        setNewCategoryName('');
+    };
 
     return (
        <Form {...form}>
@@ -154,30 +161,58 @@ export default function ProductForm({ product }: ProductFormProps) {
                             )}
                         />
                     </div>
-                    <FormField
-                        control={form.control}
-                        name="category"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Category</FormLabel>
-                                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                    <FormControl>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select a category" />
-                                    </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                    {categories.map((category) => (
-                                        <SelectItem key={category.id} value={category.id}>
-                                        {category.name}
-                                        </SelectItem>
-                                    ))}
-                                    </SelectContent>
-                                </Select>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
+
+                    <div className="space-y-4">
+                        <FormField
+                            control={form.control}
+                            name="category"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Category</FormLabel>
+                                    {isAddingNewCategory ? (
+                                        <div className="flex gap-2">
+                                            <Input 
+                                                placeholder="Enter new category name..." 
+                                                value={newCategoryName}
+                                                onChange={(e) => setNewCategoryName(e.target.value)}
+                                                autoFocus
+                                            />
+                                            <Button type="button" onClick={handleAddNewCategory}>Add</Button>
+                                            <Button type="button" variant="ghost" onClick={() => setIsAddingNewCategory(false)}>Cancel</Button>
+                                        </div>
+                                    ) : (
+                                        <div className="flex gap-2">
+                                            <Select onValueChange={field.onChange} value={field.value}>
+                                                <FormControl>
+                                                <SelectTrigger className="flex-1">
+                                                    <SelectValue placeholder="Select a category" />
+                                                </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                {categories.map((category) => (
+                                                    <SelectItem key={category.id} value={category.name}>
+                                                        {category.name}
+                                                    </SelectItem>
+                                                ))}
+                                                </SelectContent>
+                                            </Select>
+                                            <Button 
+                                                type="button" 
+                                                variant="outline" 
+                                                size="icon" 
+                                                title="Add New Category"
+                                                onClick={() => setIsAddingNewCategory(true)}
+                                            >
+                                                <Plus className="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                    )}
+                                    <FormDescription>Select a category or add a new one. Comma-separate for multiple.</FormDescription>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </div>
                     
                     <Controller
                         control={form.control}

@@ -149,7 +149,34 @@ export async function getProducts(): Promise<Product[]> {
 }
 
 export async function getCategories(): Promise<Category[]> {
-  return Promise.resolve(categories);
+  try {
+    if (!supabase) return categories;
+
+    // Fetch existing categories from the database to ensure we include custom ones
+    const { data, error } = await supabase
+      .from('products')
+      .select('category')
+      .not('category', 'is', null);
+
+    if (error) throw error;
+
+    const uniqueDbCategories = Array.from(new Set(data.map(p => p.category)))
+      .filter(Boolean)
+      .map(cat => ({ id: cat, name: cat }));
+
+    // Merge hardcoded defaults with whatever is in the database
+    const merged = [...categories];
+    uniqueDbCategories.forEach(dbCat => {
+        if (!merged.find(m => m.id === dbCat.id || m.name === dbCat.name)) {
+            merged.push(dbCat);
+        }
+    });
+
+    return merged;
+  } catch (e) {
+    console.error("Error in getCategories:", e);
+    return categories;
+  }
 }
 
 export async function getUsers(): Promise<MockUser[]> {
