@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { supabase } from '@/lib/supabaseClient';
 import type { Product } from '@/lib/types';
 
 /**
@@ -21,58 +20,16 @@ export default function ProductCard({ product }: { product: Product }) {
   useEffect(() => {
     setCurrentIndex(0);
     setFailedIndices(new Set());
-  }, [product.id]);
+  }, [product.id, product.imageUrls]);
 
-  // Multi-Candidate Image Resolver with Carousel Support
+  // The imageUrls are already resolved in lib/data.ts, so we just filter broken ones here
   const activeImages = useMemo(() => {
-    // Priority 1: Full URLs (if they aren't poisoned by encoded brackets)
-    if (Array.isArray(product.imageUrls) && product.imageUrls.length > 0) {
-      const validUrls = product.imageUrls.filter(u => u.startsWith('http') && !u.includes('%5B'));
-      if (validUrls.length > 0) return validUrls;
-    }
-
-    let rawPaths: string[] = [];
-    if (product.image_path) {
-      const trimmed = product.image_path.trim();
-      if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
-        try {
-          const cleaned = trimmed.replace(/[\r\n]/g, '').trim();
-          rawPaths = JSON.parse(cleaned);
-        } catch (e) {
-          const inner = trimmed.slice(1, -1);
-          rawPaths = inner.split(',')
-            .map(p => p.trim())
-            .filter(p => p.length > 0 && p !== '[' && p !== ']');
-        }
-      } else {
-        rawPaths = [trimmed];
-      }
-    }
-
-    const allCandidates: string[] = [];
-    rawPaths.forEach(path => {
-      if (!path || path === '[' || path === ']') return;
-      
-      const clean = path
-        .replace(/[\[\]]/g, '')
-        .replace(/^(product-images\/)+/i, '')
-        .replace(/^(Saved Pictures\/)+/i, '')
-        .replace(/\\/g, '/')
-        .replace(/^\/+/, '');
-      
-      if (supabase) {
-        allCandidates.push(supabase.storage.from('product-images').getPublicUrl(`product-images/${clean}`).data.publicUrl);
-        allCandidates.push(supabase.storage.from('product-images').getPublicUrl(clean).data.publicUrl);
-      }
-    });
-
-    const valid = allCandidates.filter((_, i) => !failedIndices.has(i));
-    
+    const valid = (product.imageUrls || []).filter((_, i) => !failedIndices.has(i));
     if (valid.length === 0) {
       return [`https://placehold.co/400x400?text=${encodeURIComponent(product.name)}`];
     }
-    return Array.from(new Set(valid)).slice(0, 10);
-  }, [product.image_path, product.imageUrls, failedIndices, product.name]);
+    return valid;
+  }, [product.imageUrls, failedIndices, product.name]);
 
   const safeIndex = currentIndex >= activeImages.length ? 0 : currentIndex;
 

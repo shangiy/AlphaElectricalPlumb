@@ -10,7 +10,23 @@ import { supabase } from './supabase';
 const resolveProductImages = (product: any): string[] => {
   if (!supabase) return ["/placeholder.jpg"];
 
-  // 1. Initial URL check - Filter out "poisoned" URLs (encoded brackets)
+  // 1. Specific Prototype Overrides for premium items
+  const PRODUCT_OVERRIDES: Record<string, string[]> = {
+    '00bb9955-c08d-4688-b3fb-db00637459c6': [
+      'frosted glass globe shade on a polished chrome curved arm withwooden mounting base (2).webp',
+      'frosted glass globe shade on a polished chrome curved arm withwooden mounting base.webp'
+    ]
+  };
+
+  if (PRODUCT_OVERRIDES[product.id]) {
+    return PRODUCT_OVERRIDES[product.id].map(path => {
+        const clean = path.replace(/\\/g, '/').replace(/^\/+/, '');
+        // Try multiple folder candidates for the override images
+        return supabase.storage.from('product-images').getPublicUrl(`product images/${clean}`).data.publicUrl;
+    });
+  }
+
+  // 2. Initial URL check - Filter out "poisoned" URLs (encoded brackets)
   if (Array.isArray(product.imageUrls) && product.imageUrls.length > 0) {
       const firstUrl = product.imageUrls[0];
       if (firstUrl.startsWith('http') && !firstUrl.includes('%5B') && !firstUrl.includes('%5D')) {
@@ -20,7 +36,7 @@ const resolveProductImages = (product: any): string[] => {
 
   const rawPath = (product.image_path || '').trim();
   
-  // 2. If no valid image_path or existing URLs, try to reconstruct from relative paths
+  // 3. If no valid image_path or existing URLs, try to reconstruct from relative paths
   if (!rawPath) {
       if (Array.isArray(product.imageUrls) && product.imageUrls.length > 0) {
           return product.imageUrls.map((path: string) => {
@@ -34,7 +50,7 @@ const resolveProductImages = (product: any): string[] => {
 
   let basePaths: string[] = [];
   
-  // 3. Robust Array Parsing for [path1, path2]
+  // 4. Robust Array Parsing for [path1, path2]
   if (rawPath.startsWith('[') && rawPath.endsWith(']')) {
     try {
       // Try strict JSON parse first
@@ -64,6 +80,8 @@ const resolveProductImages = (product: any): string[] => {
       .replace(/^\/+/, '');
 
     // Return multiple candidates to ensure "Self-Healing"
+    // Including "product images/" with space as requested
+    allCandidates.push(supabase.storage.from('product-images').getPublicUrl(`product images/${cleanPath}`).data.publicUrl);
     allCandidates.push(supabase.storage.from('product-images').getPublicUrl(`product-images/${cleanPath}`).data.publicUrl);
     allCandidates.push(supabase.storage.from('product-images').getPublicUrl(cleanPath).data.publicUrl);
     allCandidates.push(supabase.storage.from('product-images').getPublicUrl(`uploads/${cleanPath}`).data.publicUrl);
