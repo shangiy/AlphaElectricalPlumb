@@ -188,7 +188,7 @@ export default function Header() {
                             {link.name}
                         </Link>
                     ))}
-                    {/* Highly visible Admin link for administrators */}
+                    {/* Admin link visible for verified roles */}
                     {(user?.role === 'admin' || user?.role === 'staff') && (
                       <Link href="/admin" className={cn(navAndIconClasses, "text-primary border border-primary/20 bg-primary/5 px-4")}>
                         <LayoutDashboard className="mr-1 h-4 w-4 inline-block" />

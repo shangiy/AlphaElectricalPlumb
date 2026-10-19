@@ -11,7 +11,7 @@ import type { Product } from '@/lib/types';
 /**
  * Premium Interactive Product Card:
  * Features a modern hover-triggered carousel and real-time self-healing image resolver.
- * Synchronized with the latest SQL updates to handle missing prefixes.
+ * Handles both JSON arrays and single path strings from Supabase.
  */
 export default function ProductCard({ product }: { product: Product }) {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -31,10 +31,14 @@ export default function ProductCard({ product }: { product: Product }) {
         const trimmed = product.image_path.trim();
         // Handle JSON strings or single paths
         if (trimmed.startsWith('[')) {
-          rawPaths = JSON.parse(trimmed.replace(/[\r\n]/g, '').trim());
+          // Clean common DB artifacts like \r\n
+          const cleaned = trimmed.replace(/[\r\n]/g, '').trim();
+          rawPaths = JSON.parse(cleaned);
         } else {
           rawPaths = [trimmed];
         }
+      } else if (product.imageUrls && product.imageUrls.length > 0) {
+          return product.imageUrls;
       }
     } catch (e) {
       rawPaths = [product.image_path || ''];
@@ -51,13 +55,14 @@ export default function ProductCard({ product }: { product: Product }) {
         .replace(/^\/+/, '');
       
       if (supabase) {
-        // Generate candidates for every view to ensure self-healing
-        allCandidates.push(supabase.storage.from('product-images').getPublicUrl(`product-images/${clean}`).data.publicUrl);
+        // Candidate 1: Direct path
         allCandidates.push(supabase.storage.from('product-images').getPublicUrl(clean).data.publicUrl);
+        // Candidate 2: Nested path
+        allCandidates.push(supabase.storage.from('product-images').getPublicUrl(`product-images/${clean}`).data.publicUrl);
       }
     });
 
-    // Filtering out indices that have previously failed to load
+    // Filtering out indices that have previously failed to load (Self-Healing)
     const valid = allCandidates.filter((_, i) => !failedIndices.has(i));
     
     if (valid.length === 0) {
@@ -65,7 +70,7 @@ export default function ProductCard({ product }: { product: Product }) {
     }
     // Limit unique candidates to prevent excessive carousel length
     return Array.from(new Set(valid)).slice(0, 10);
-  }, [product.image_path, failedIndices, product.name]);
+  }, [product.image_path, product.imageUrls, failedIndices, product.name]);
 
   const safeIndex = currentIndex >= activeImages.length ? 0 : currentIndex;
 

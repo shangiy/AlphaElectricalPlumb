@@ -12,6 +12,7 @@ interface PageProps {
  * Robust Category Page: 
  * Uses the central getProducts utility to ensure images are correctly resolved.
  * Implements flexible filtering that matches by name, description, category field, or storage path.
+ * Supports multi-category assignment through content-based matching.
  */
 export default async function CategoryPage({ params }: PageProps) {
   const resolvedParams = await Promise.resolve(params);
@@ -24,7 +25,6 @@ export default async function CategoryPage({ params }: PageProps) {
   const filteredProducts = allProducts.filter((product) => {
     const searchSlug = slug.toLowerCase();
     
-    // Check various fields for a match to support multi-category and descriptive tagging
     const nameMatch = product.name?.toLowerCase().includes(searchSlug);
     const descMatch = (product.description || product.longDescription)?.toLowerCase().includes(searchSlug);
     const catMatch = product.category?.toLowerCase().includes(searchSlug);
@@ -63,7 +63,7 @@ export default async function CategoryPage({ params }: PageProps) {
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-24 bg-muted/5 rounded-[3rem] border-2 border-dashed border-muted-foreground/20 text-center">
-            <p className="text-muted-foreground text-lg mb-8 font-medium italic">
+             <p className="text-muted-foreground text-lg mb-8 font-medium italic">
               "Oops! We don't have any items in the {slug} collection right now."
             </p>
             

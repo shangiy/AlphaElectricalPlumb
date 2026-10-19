@@ -6,7 +6,7 @@ import Image from 'next/image';
 
 /**
  * TopBanner: Featuring artistically enhanced promotional text.
- * The "MASHUJAA" text is divided horizontally into three stripes matching the Kenyan flag.
+ * The "MASHUJAA" text is divided horizontally into three stripes matching the Kenyan flag (Black, Red, Green).
  */
 export default function TopBanner() {
   const offerContent = (
