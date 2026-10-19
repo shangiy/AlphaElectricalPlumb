@@ -11,7 +11,7 @@ import type { Product } from '@/lib/types';
 /**
  * Premium Interactive Product Card:
  * Features a modern hover-triggered carousel and real-time self-healing image resolver.
- * Handles both JSON arrays and single path strings from Supabase.
+ * Handles JSON arrays, single strings, and malformed bracketed paths from Supabase.
  */
 export default function ProductCard({ product }: { product: Product }) {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -26,22 +26,25 @@ export default function ProductCard({ product }: { product: Product }) {
   // Multi-Candidate Image Resolver with Carousel Support
   const activeImages = useMemo(() => {
     let rawPaths: string[] = [];
-    try {
-      if (product.image_path) {
-        const trimmed = product.image_path.trim();
-        // Handle JSON strings or single paths
-        if (trimmed.startsWith('[')) {
-          // Clean common DB artifacts like \r\n
+    if (product.image_path) {
+      const trimmed = product.image_path.trim();
+      if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
+        try {
+          // 1. Try strict JSON parse
           const cleaned = trimmed.replace(/[\r\n]/g, '').trim();
           rawPaths = JSON.parse(cleaned);
-        } else {
-          rawPaths = [trimmed];
+        } catch (e) {
+          // 2. Manual fallback for malformed arrays [path1, path2]
+          const inner = trimmed.slice(1, -1);
+          rawPaths = inner.split(',')
+            .map(p => p.trim())
+            .filter(p => p.length > 0);
         }
-      } else if (product.imageUrls && product.imageUrls.length > 0) {
-          return product.imageUrls;
+      } else {
+        rawPaths = [trimmed];
       }
-    } catch (e) {
-      rawPaths = [product.image_path || ''];
+    } else if (product.imageUrls && product.imageUrls.length > 0) {
+      return product.imageUrls;
     }
 
     const allCandidates: string[] = [];

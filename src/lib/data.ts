@@ -3,7 +3,7 @@ import { supabase } from './supabase';
 
 /**
  * Image URL Resolver:
- * Supports single strings or JSON arrays of paths.
+ * Supports single strings, JSON arrays, and "pseudo-arrays" [path1, path2].
  * Generates candidate URLs for every path to ensure "Self-Healing"
  * visibility if folders were moved in Supabase.
  */
@@ -14,16 +14,20 @@ const resolveProductImages = (product: any): string[] => {
   if (!rawPath) return ["/placeholder.jpg"];
 
   let basePaths: string[] = [];
-  try {
-    // Handle JSON strings (e.g. multi-image arrays)
-    if (rawPath.startsWith('[') && rawPath.endsWith(']')) {
+  
+  if (rawPath.startsWith('[') && rawPath.endsWith(']')) {
+    try {
+      // 1. Try strict JSON parse for valid arrays ["path1", "path2"]
       const cleanedJson = rawPath.replace(/[\r\n]/g, '').trim();
       basePaths = JSON.parse(cleanedJson);
-    } else {
-      basePaths = [rawPath];
+    } catch (e) {
+      // 2. Manual fallback for malformed arrays [path1, path2]
+      const inner = rawPath.slice(1, -1);
+      basePaths = inner.split(',')
+        .map(p => p.trim())
+        .filter(p => p.length > 0);
     }
-  } catch (e) {
-    console.warn("Path parsing error for product:", product.id, e);
+  } else {
     basePaths = [rawPath];
   }
 
