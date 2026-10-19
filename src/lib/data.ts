@@ -5,22 +5,26 @@ import { supabase } from './supabase';
  * Robust Image URL Resolver:
  * Now supports hybrid inputs: full URLs (for new Supabase uploads) and paths (for legacy catalog).
  * Handles strict JSON arrays, single strings, and malformed "pseudo-arrays" [path1, path2].
+ * Fixed to skip "poisoned" URLs that include encoded brackets.
  */
 const resolveProductImages = (product: any): string[] => {
   if (!supabase) return ["/placeholder.jpg"];
 
-  // 1. Check if we already have full HTTP URLs (populated by new Supabase Storage uploads)
-  if (Array.isArray(product.imageUrls) && product.imageUrls.length > 0 && product.imageUrls[0].startsWith('http')) {
-      return product.imageUrls;
+  // 1. Initial URL check - Filter out "poisoned" URLs (encoded brackets)
+  if (Array.isArray(product.imageUrls) && product.imageUrls.length > 0) {
+      const firstUrl = product.imageUrls[0];
+      if (firstUrl.startsWith('http') && !firstUrl.includes('%5B') && !firstUrl.includes('%5D')) {
+          return product.imageUrls;
+      }
   }
 
-  const rawPath = product.image_path?.trim() ?? '';
+  const rawPath = (product.image_path || '').trim();
   
-  // 2. If no image_path, fallback to imageUrls if they exist as relative paths
+  // 2. If no valid image_path or existing URLs, try to reconstruct from relative paths
   if (!rawPath) {
       if (Array.isArray(product.imageUrls) && product.imageUrls.length > 0) {
-          // Process relative paths in imageUrls
           return product.imageUrls.map((path: string) => {
+              if (path.startsWith('http')) return path;
               const clean = path.replace(/\\/g, '/').replace(/^\/+/, '');
               return supabase.storage.from('product-images').getPublicUrl(clean).data.publicUrl;
           });
@@ -30,7 +34,7 @@ const resolveProductImages = (product: any): string[] => {
 
   let basePaths: string[] = [];
   
-  // 3. Robust Array Parsing
+  // 3. Robust Array Parsing for [path1, path2]
   if (rawPath.startsWith('[') && rawPath.endsWith(']')) {
     try {
       // Try strict JSON parse first
@@ -41,7 +45,7 @@ const resolveProductImages = (product: any): string[] => {
       const inner = rawPath.slice(1, -1);
       basePaths = inner.split(',')
         .map(p => p.trim())
-        .filter(p => p.length > 0);
+        .filter(p => p.length > 0 && p !== '[' && p !== ']');
     }
   } else {
     basePaths = [rawPath];
@@ -49,21 +53,19 @@ const resolveProductImages = (product: any): string[] => {
 
   const allCandidates: string[] = [];
   basePaths.forEach(path => {
-    if (!path) return;
+    if (!path || path === '[' || path === ']') return;
     
-    // Normalize path by stripping redundant prefixes that might exist in DB
+    // Clean path of encoded or literal brackets
     const cleanPath = path
+      .replace(/[\[\]]/g, '')
       .replace(/^(product-images\/)+/i, '')
       .replace(/^(Saved Pictures\/)+/i, '')
       .replace(/\\/g, '/')
       .replace(/^\/+/, '');
 
     // Return multiple candidates to ensure "Self-Healing"
-    // Candidate 1: Nested in folder (most common)
     allCandidates.push(supabase.storage.from('product-images').getPublicUrl(`product-images/${cleanPath}`).data.publicUrl);
-    // Candidate 2: Root of bucket
     allCandidates.push(supabase.storage.from('product-images').getPublicUrl(cleanPath).data.publicUrl);
-    // Candidate 3: New uploads folder
     allCandidates.push(supabase.storage.from('product-images').getPublicUrl(`uploads/${cleanPath}`).data.publicUrl);
   });
 

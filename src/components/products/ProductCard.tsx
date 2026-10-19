@@ -25,53 +25,52 @@ export default function ProductCard({ product }: { product: Product }) {
 
   // Multi-Candidate Image Resolver with Carousel Support
   const activeImages = useMemo(() => {
+    // Priority 1: Full URLs (if they aren't poisoned by encoded brackets)
+    if (Array.isArray(product.imageUrls) && product.imageUrls.length > 0) {
+      const validUrls = product.imageUrls.filter(u => u.startsWith('http') && !u.includes('%5B'));
+      if (validUrls.length > 0) return validUrls;
+    }
+
     let rawPaths: string[] = [];
     if (product.image_path) {
       const trimmed = product.image_path.trim();
       if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
         try {
-          // 1. Try strict JSON parse
           const cleaned = trimmed.replace(/[\r\n]/g, '').trim();
           rawPaths = JSON.parse(cleaned);
         } catch (e) {
-          // 2. Manual fallback for malformed arrays [path1, path2]
           const inner = trimmed.slice(1, -1);
           rawPaths = inner.split(',')
             .map(p => p.trim())
-            .filter(p => p.length > 0);
+            .filter(p => p.length > 0 && p !== '[' && p !== ']');
         }
       } else {
         rawPaths = [trimmed];
       }
-    } else if (product.imageUrls && product.imageUrls.length > 0) {
-      return product.imageUrls;
     }
 
     const allCandidates: string[] = [];
     rawPaths.forEach(path => {
-      if (!path) return;
+      if (!path || path === '[' || path === ']') return;
       
       const clean = path
+        .replace(/[\[\]]/g, '')
         .replace(/^(product-images\/)+/i, '')
         .replace(/^(Saved Pictures\/)+/i, '')
         .replace(/\\/g, '/')
         .replace(/^\/+/, '');
       
       if (supabase) {
-        // Candidate 1: Direct path
-        allCandidates.push(supabase.storage.from('product-images').getPublicUrl(clean).data.publicUrl);
-        // Candidate 2: Nested path
         allCandidates.push(supabase.storage.from('product-images').getPublicUrl(`product-images/${clean}`).data.publicUrl);
+        allCandidates.push(supabase.storage.from('product-images').getPublicUrl(clean).data.publicUrl);
       }
     });
 
-    // Filtering out indices that have previously failed to load (Self-Healing)
     const valid = allCandidates.filter((_, i) => !failedIndices.has(i));
     
     if (valid.length === 0) {
       return [`https://placehold.co/400x400?text=${encodeURIComponent(product.name)}`];
     }
-    // Limit unique candidates to prevent excessive carousel length
     return Array.from(new Set(valid)).slice(0, 10);
   }, [product.image_path, product.imageUrls, failedIndices, product.name]);
 
@@ -119,7 +118,6 @@ export default function ProductCard({ product }: { product: Product }) {
           ))}
         </Link>
 
-        {/* Seattle Side Slide-Buttons */}
         {activeImages.length > 1 && (
           <div className={cn(
             "absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-between px-3 transition-opacity duration-300",
@@ -142,7 +140,6 @@ export default function ProductCard({ product }: { product: Product }) {
           </div>
         )}
 
-        {/* Modern Dash Indicators */}
         {activeImages.length > 1 && (
           <div className={cn(
             "absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1 px-2 py-1 rounded-full bg-black/20 backdrop-blur-sm transition-opacity duration-300",
