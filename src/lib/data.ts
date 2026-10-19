@@ -39,7 +39,9 @@ const resolveProductImages = (product: any): string[] => {
       .replace(/^\/+/, '');
 
     // Return multiple candidates to ensure "Self-Healing"
+    // Candidate 1: Nested in folder
     allCandidates.push(supabase.storage.from('product-images').getPublicUrl(`product-images/${cleanPath}`).data.publicUrl);
+    // Candidate 2: Root of bucket
     allCandidates.push(supabase.storage.from('product-images').getPublicUrl(cleanPath).data.publicUrl);
   });
 

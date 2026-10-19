@@ -6,18 +6,12 @@ import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/lib/supabaseClient';
-
-interface Product {
-  id: string;
-  name: string;
-  price: number;
-  image_path?: string | null;
-  category?: string;
-}
+import type { Product } from '@/lib/types';
 
 /**
  * Premium Interactive Product Card:
  * Features a modern hover-triggered carousel and real-time self-healing image resolver.
+ * Synchronized with the latest SQL updates to handle missing prefixes.
  */
 export default function ProductCard({ product }: { product: Product }) {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -29,15 +23,15 @@ export default function ProductCard({ product }: { product: Product }) {
     setFailedIndices(new Set());
   }, [product.id]);
 
-  // Robust Path Cleaning & Parsing for Multi-View Support
+  // Multi-Candidate Image Resolver with Carousel Support
   const activeImages = useMemo(() => {
     let rawPaths: string[] = [];
     try {
       if (product.image_path) {
         const trimmed = product.image_path.trim();
-        // Handle JSON strings (e.g. multi-image arrays from database)
+        // Handle JSON strings or single paths
         if (trimmed.startsWith('[')) {
-          rawPaths = JSON.parse(trimmed.replace(/[\r\n]/g, ''));
+          rawPaths = JSON.parse(trimmed.replace(/[\r\n]/g, '').trim());
         } else {
           rawPaths = [trimmed];
         }
@@ -46,30 +40,31 @@ export default function ProductCard({ product }: { product: Product }) {
       rawPaths = [product.image_path || ''];
     }
 
-    const candidates: string[] = [];
+    const allCandidates: string[] = [];
     rawPaths.forEach(path => {
       if (!path) return;
       
-      // Strip redundant bucket prefixes or local prefixes to get the pure filename/path
       const clean = path
         .replace(/^(product-images\/)+/i, '')
         .replace(/^(Saved Pictures\/)+/i, '')
         .replace(/\\/g, '/')
         .replace(/^\/+/, '');
       
-      // Candidate 1: Direct public URL from Supabase storage
       if (supabase) {
-        candidates.push(supabase.storage.from('product-images').getPublicUrl(clean).data.publicUrl);
+        // Generate candidates for every view to ensure self-healing
+        allCandidates.push(supabase.storage.from('product-images').getPublicUrl(`product-images/${clean}`).data.publicUrl);
+        allCandidates.push(supabase.storage.from('product-images').getPublicUrl(clean).data.publicUrl);
       }
     });
 
     // Filtering out indices that have previously failed to load
-    const valid = candidates.filter((_, i) => !failedIndices.has(i));
+    const valid = allCandidates.filter((_, i) => !failedIndices.has(i));
     
     if (valid.length === 0) {
       return [`https://placehold.co/400x400?text=${encodeURIComponent(product.name)}`];
     }
-    return valid.slice(0, 10); // Performance cap
+    // Limit unique candidates to prevent excessive carousel length
+    return Array.from(new Set(valid)).slice(0, 10);
   }, [product.image_path, failedIndices, product.name]);
 
   const safeIndex = currentIndex >= activeImages.length ? 0 : currentIndex;

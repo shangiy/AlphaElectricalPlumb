@@ -34,24 +34,25 @@ export default function CategoryCard({ category }: { category: Category }) {
     const filename = categoryImageMap[category.name.trim()] || `${category.name.trim()}.webp`;
     const cleanFilename = filename.replace(/\\/g, '/').replace(/^\/+/, '');
     
-    // Candidates cover different possible storage structures
+    // Candidates cover different possible storage structures (with and without prefix)
     const paths = [
       `collections/${cleanFilename}`,
       `product-images/collections/${cleanFilename}`,
       `product-images/product-images/collections/${cleanFilename}`,
+      `product-images/${cleanFilename}`,
       cleanFilename
     ];
 
-    return paths.map(path => 
+    return Array.from(new Set(paths.map(path => 
       supabase.storage.from('product-images').getPublicUrl(path).data.publicUrl
-    );
+    )));
   }, [category.name]);
 
   const handleImageError = () => {
     if (imgIndex < candidateUrls.length - 1) {
       setImgIndex(imgIndex + 1);
     } else {
-      setImgIndex(-1); // Final fallback
+      setImgIndex(-1); // Final fallback to placeholder
     }
   };
 
