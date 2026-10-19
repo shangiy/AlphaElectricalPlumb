@@ -2,26 +2,42 @@ import type { Product, Category, MockUser, Transaction, CarouselCategory } from 
 import { supabase } from './supabase';
 
 /**
- * Image URL Resolver:
- * Supports single strings, JSON arrays, and "pseudo-arrays" [path1, path2].
- * Generates candidate URLs for every path to ensure "Self-Healing"
- * visibility if folders were moved in Supabase.
+ * Robust Image URL Resolver:
+ * Now supports hybrid inputs: full URLs (for new Supabase uploads) and paths (for legacy catalog).
+ * Handles strict JSON arrays, single strings, and malformed "pseudo-arrays" [path1, path2].
  */
 const resolveProductImages = (product: any): string[] => {
   if (!supabase) return ["/placeholder.jpg"];
 
+  // 1. Check if we already have full HTTP URLs (populated by new Supabase Storage uploads)
+  if (Array.isArray(product.imageUrls) && product.imageUrls.length > 0 && product.imageUrls[0].startsWith('http')) {
+      return product.imageUrls;
+  }
+
   const rawPath = product.image_path?.trim() ?? '';
-  if (!rawPath) return ["/placeholder.jpg"];
+  
+  // 2. If no image_path, fallback to imageUrls if they exist as relative paths
+  if (!rawPath) {
+      if (Array.isArray(product.imageUrls) && product.imageUrls.length > 0) {
+          // Process relative paths in imageUrls
+          return product.imageUrls.map((path: string) => {
+              const clean = path.replace(/\\/g, '/').replace(/^\/+/, '');
+              return supabase.storage.from('product-images').getPublicUrl(clean).data.publicUrl;
+          });
+      }
+      return ["/placeholder.jpg"];
+  }
 
   let basePaths: string[] = [];
   
+  // 3. Robust Array Parsing
   if (rawPath.startsWith('[') && rawPath.endsWith(']')) {
     try {
-      // 1. Try strict JSON parse for valid arrays ["path1", "path2"]
+      // Try strict JSON parse first
       const cleanedJson = rawPath.replace(/[\r\n]/g, '').trim();
       basePaths = JSON.parse(cleanedJson);
     } catch (e) {
-      // 2. Manual fallback for malformed arrays [path1, path2]
+      // Manual fallback for malformed pseudo-arrays like [path1, path2]
       const inner = rawPath.slice(1, -1);
       basePaths = inner.split(',')
         .map(p => p.trim())
@@ -35,7 +51,7 @@ const resolveProductImages = (product: any): string[] => {
   basePaths.forEach(path => {
     if (!path) return;
     
-    // Normalize path by stripping redundant prefixes
+    // Normalize path by stripping redundant prefixes that might exist in DB
     const cleanPath = path
       .replace(/^(product-images\/)+/i, '')
       .replace(/^(Saved Pictures\/)+/i, '')
@@ -43,10 +59,12 @@ const resolveProductImages = (product: any): string[] => {
       .replace(/^\/+/, '');
 
     // Return multiple candidates to ensure "Self-Healing"
-    // Candidate 1: Nested in folder
+    // Candidate 1: Nested in folder (most common)
     allCandidates.push(supabase.storage.from('product-images').getPublicUrl(`product-images/${cleanPath}`).data.publicUrl);
     // Candidate 2: Root of bucket
     allCandidates.push(supabase.storage.from('product-images').getPublicUrl(cleanPath).data.publicUrl);
+    // Candidate 3: New uploads folder
+    allCandidates.push(supabase.storage.from('product-images').getPublicUrl(`uploads/${cleanPath}`).data.publicUrl);
   });
 
   const unique = Array.from(new Set(allCandidates));
