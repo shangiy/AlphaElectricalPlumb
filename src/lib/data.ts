@@ -21,7 +21,6 @@ const resolveProductImages = (product: any): string[] => {
   if (PRODUCT_OVERRIDES[product.id]) {
     return PRODUCT_OVERRIDES[product.id].map(path => {
         const clean = path.replace(/\\/g, '/').replace(/^\/+/, '');
-        // Try multiple folder candidates for the override images
         return supabase.storage.from('product-images').getPublicUrl(`product images/${clean}`).data.publicUrl;
     });
   }
@@ -29,18 +28,18 @@ const resolveProductImages = (product: any): string[] => {
   // 2. Initial URL check - Filter out "poisoned" URLs (encoded brackets)
   if (Array.isArray(product.imageUrls) && product.imageUrls.length > 0) {
       const firstUrl = product.imageUrls[0];
-      if (firstUrl.startsWith('http') && !firstUrl.includes('%5B') && !firstUrl.includes('%5D')) {
+      if (firstUrl && firstUrl.startsWith('http') && !firstUrl.includes('%5B') && !firstUrl.includes('%5D')) {
           return product.imageUrls;
       }
   }
 
   const rawPath = (product.image_path || '').trim();
   
-  // 3. If no valid image_path or existing URLs, try to reconstruct from relative paths
+  // 3. If no valid image_path, try to clean existing relative paths in imageUrls
   if (!rawPath) {
       if (Array.isArray(product.imageUrls) && product.imageUrls.length > 0) {
           return product.imageUrls.map((path: string) => {
-              if (path.startsWith('http')) return path;
+              if (path && path.startsWith('http')) return path;
               const clean = path.replace(/\\/g, '/').replace(/^\/+/, '');
               return supabase.storage.from('product-images').getPublicUrl(clean).data.publicUrl;
           });
@@ -71,16 +70,16 @@ const resolveProductImages = (product: any): string[] => {
   basePaths.forEach(path => {
     if (!path || path === '[' || path === ']') return;
     
-    // Clean path of encoded or literal brackets
+    // Clean path of encoded or literal brackets and redundant prefixes
     const cleanPath = path
       .replace(/[\[\]]/g, '')
       .replace(/^(product-images\/)+/i, '')
+      .replace(/^(product images\/)+/i, '')
       .replace(/^(Saved Pictures\/)+/i, '')
       .replace(/\\/g, '/')
       .replace(/^\/+/, '');
 
     // Return multiple candidates to ensure "Self-Healing"
-    // Including "product images/" with space as requested
     allCandidates.push(supabase.storage.from('product-images').getPublicUrl(`product images/${cleanPath}`).data.publicUrl);
     allCandidates.push(supabase.storage.from('product-images').getPublicUrl(`product-images/${cleanPath}`).data.publicUrl);
     allCandidates.push(supabase.storage.from('product-images').getPublicUrl(cleanPath).data.publicUrl);

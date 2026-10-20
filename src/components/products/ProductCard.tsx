@@ -15,21 +15,21 @@ import type { Product } from '@/lib/types';
 export default function ProductCard({ product }: { product: Product }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
-  const [failedIndices, setFailedIndices] = useState<Set<number>>(new Set());
+  const [failedUrls, setFailedUrls] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     setCurrentIndex(0);
-    setFailedIndices(new Set());
+    setFailedUrls(new Set());
   }, [product.id, product.imageUrls]);
 
-  // The imageUrls are already resolved in lib/data.ts, so we just filter broken ones here
+  // Self-healing: filter out URLs that have failed to load
   const activeImages = useMemo(() => {
-    const valid = (product.imageUrls || []).filter((_, i) => !failedIndices.has(i));
+    const valid = (product.imageUrls || []).filter((url) => !failedUrls.has(url));
     if (valid.length === 0) {
       return [`https://placehold.co/400x400?text=${encodeURIComponent(product.name)}`];
     }
     return valid;
-  }, [product.imageUrls, failedIndices, product.name]);
+  }, [product.imageUrls, failedUrls, product.name]);
 
   const safeIndex = currentIndex >= activeImages.length ? 0 : currentIndex;
 
@@ -45,11 +45,11 @@ export default function ProductCard({ product }: { product: Product }) {
     setCurrentIndex((prev) => (prev - 1 + activeImages.length) % activeImages.length);
   };
 
-  const handleImageError = (index: number) => {
-    setFailedIndices(prev => {
-      const next = new Set(prev);
-      next.add(index);
-      return next;
+  const handleImageError = (url: string) => {
+    setFailedUrls(prev => {
+        const next = new Set(prev);
+        next.add(url);
+        return next;
     });
   };
 
@@ -70,7 +70,7 @@ export default function ProductCard({ product }: { product: Product }) {
                 "absolute inset-0 object-cover w-full h-full transition-all duration-700 ease-in-out",
                 idx === safeIndex ? "opacity-100 scale-100" : "opacity-0 scale-105 pointer-events-none"
               )}
-              onError={() => handleImageError(idx)}
+              onError={() => handleImageError(url)}
             />
           ))}
         </Link>

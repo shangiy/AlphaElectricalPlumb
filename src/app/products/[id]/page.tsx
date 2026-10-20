@@ -20,23 +20,24 @@ function ProductContent({ productId }: { productId: string }) {
   const product = getProductById(productId);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
-  const [failedImages, setFailedImages] = useState<Set<number>>(new Set());
+  const [failedUrls, setFailedUrls] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     setActiveImageIndex(0);
-    setFailedImages(new Set());
+    setFailedUrls(new Set());
   }, [productId]);
 
+  // Robust unique image list: skips broken URLs
   const uniqueImages = useMemo(() => {
     if (!product) return [];
     const seen = new Set<string>();
-    return product.imageUrls.filter((url, index) => {
+    return (product.imageUrls || []).filter((url) => {
       const lower = url.toLowerCase();
-      if (seen.has(lower) || failedImages.has(index)) return false;
+      if (seen.has(lower) || failedUrls.has(url)) return false;
       seen.add(lower);
       return true;
     });
-  }, [product, failedImages]);
+  }, [product, failedUrls]);
 
   if (loading) {
     return <ProductDetailSkeleton />;
@@ -70,14 +71,15 @@ function ProductContent({ productId }: { productId: string }) {
     window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank');
   };
 
-  const handleImageError = (index: number) => {
-    setFailedImages(prev => {
+  const handleImageError = (url: string) => {
+    setFailedUrls(prev => {
         const next = new Set(prev);
-        next.add(index);
+        next.add(url);
         return next;
     });
-    if (activeImageIndex === index) {
-        setActiveImageIndex(prev => prev + 1);
+    // If the current large image failed, reset index to first available
+    if (uniqueImages[activeImageIndex] === url) {
+        setActiveImageIndex(0);
     }
   };
 
@@ -98,37 +100,32 @@ function ProductContent({ productId }: { productId: string }) {
              <div className="aspect-square overflow-hidden rounded-[2.5rem] bg-secondary/20 shadow-2xl border border-white/20 relative">
                 <img
                     key={activeImageIndex}
-                    src={product.imageUrls[activeImageIndex] || '/placeholder.jpg'}
+                    src={uniqueImages[activeImageIndex] || '/placeholder.jpg'}
                     alt={product.name}
                     className="h-full w-full object-cover transition-all duration-500 hover:scale-105"
-                    onError={() => handleImageError(activeImageIndex)}
+                    onError={() => handleImageError(uniqueImages[activeImageIndex])}
                 />
             </div>
             
             {/* Multi-view Thumbnails Window */}
             {uniqueImages.length > 1 && (
                 <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
-                    {product.imageUrls.map((img, index) => {
-                        if (failedImages.has(index)) return null;
-                        
-                        return (
-                            <button 
-                                key={index} 
-                                onClick={() => setActiveImageIndex(index)}
-                                className={cn(
-                                    "relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-[1.5rem] border-2 transition-all duration-300",
-                                    activeImageIndex === index ? "border-primary shadow-lg scale-105" : "border-transparent opacity-60 hover:opacity-100"
-                                )}
-                            >
-                                <img
-                                    src={img}
-                                    alt={`${product.name} view ${index + 1}`}
-                                    className="h-full w-full object-cover"
-                                    onError={() => handleImageError(index)}
-                                />
-                            </button>
-                        );
-                    })}
+                    {uniqueImages.map((img, index) => (
+                        <button 
+                            key={`${img}-${index}`} 
+                            onClick={() => setActiveImageIndex(index)}
+                            className={cn(
+                                "relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-[1.5rem] border-2 transition-all duration-300",
+                                activeImageIndex === index ? "border-primary shadow-lg scale-105" : "border-transparent opacity-60 hover:opacity-100"
+                            )}
+                        >
+                            <img
+                                src={img}
+                                alt={`${product.name} view ${index + 1}`}
+                                className="h-full w-full object-cover"
+                            />
+                        </button>
+                    ))}
                 </div>
             )}
           </div>
