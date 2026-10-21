@@ -55,8 +55,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
         await fetchProfile(session.user);
+      } else {
+        // Checking for dev-bypass session in local storage or memory could go here
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     checkUser();
@@ -92,9 +94,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           avatarUrl: data.avatar_url || supabaseUser.user_metadata.avatar_url,
         });
       } else {
-        // PROVISIONING LOGIC: Automatically make admin@alpha.com an admin
+        // Provision new user
         const assignedRole = supabaseUser.email === 'admin@alpha.com' ? 'admin' : 'user';
-
         const newUser: User = {
           id: supabaseUser.id,
           name: supabaseUser.user_metadata.full_name || 'User',
@@ -120,7 +121,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const login = async (email: string, password: string) => {
-    // DEVELOPER BYPASS: Allow immediate access even if Supabase Auth is not configured
+    // DEVELOPER BYPASS: Instant Admin Access
     if (email === 'admin@alpha.com' && password === 'admin123') {
         setUser({
             id: 'dev-admin-001',
@@ -141,12 +142,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signUp = async (data: SignUpData) => {
     if (!supabase) throw new Error("Authentication service is unavailable.");
-    
-    // Check if trying to sign up as admin
-    if (data.email === 'admin@alpha.com') {
-        throw new Error("Admin email already registered. Please login with Password: admin123");
-    }
-
     const { error } = await supabase.auth.signUp({
       email: data.email,
       password: data.password!,
@@ -165,7 +160,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: typeof window !== 'undefined' ? window.location.origin : ''
+        redirectTo: window.location.origin
       }
     });
     if (error) throw error;

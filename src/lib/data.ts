@@ -3,64 +3,34 @@ import { supabase } from './supabase';
 
 /**
  * Robust Image URL Resolver:
- * Now supports hybrid inputs: full URLs (for new Supabase uploads) and paths (for legacy catalog).
- * Handles strict JSON arrays, single strings, and malformed "pseudo-arrays" [path1, path2].
- * Fixed to skip "poisoned" URLs that include encoded brackets.
+ * Centralized logic used by all product cards and detail pages.
+ * Handles existing paths, new Supabase URLs, and malformed bracketed path arrays.
  */
 const resolveProductImages = (product: any): string[] => {
   if (!supabase) return ["/placeholder.jpg"];
 
-  // 1. Specific Prototype Overrides for premium items
-  const PRODUCT_OVERRIDES: Record<string, string[]> = {
-    '00bb9955-c08d-4688-b3fb-db00637459c6': [
-      'frosted glass globe shade on a polished chrome curved arm withwooden mounting base (2).webp',
-      'frosted glass globe shade on a polished chrome curved arm withwooden mounting base.webp'
-    ]
-  };
-
-  if (PRODUCT_OVERRIDES[product.id]) {
-    return PRODUCT_OVERRIDES[product.id].map(path => {
-        const clean = path.replace(/\\/g, '/').replace(/^\/+/, '');
-        return supabase.storage.from('product-images').getPublicUrl(`product images/${clean}`).data.publicUrl;
-    });
-  }
-
-  // 2. Initial URL check - Filter out "poisoned" URLs (encoded brackets)
-  if (Array.isArray(product.imageUrls) && product.imageUrls.length > 0) {
-      const firstUrl = product.imageUrls[0];
-      if (firstUrl && firstUrl.startsWith('http') && !firstUrl.includes('%5B') && !firstUrl.includes('%5D')) {
-          return product.imageUrls;
+  // 1. Direct URL check: if it's already a full link and not "poisoned" by brackets, use it.
+  if (Array.isArray(product.image_urls) && product.image_urls.length > 0) {
+      const firstUrl = product.image_urls[0];
+      if (firstUrl && firstUrl.startsWith('http') && !firstUrl.includes('%5B')) {
+          return product.image_urls;
       }
   }
 
+  // 2. Path-based resolution for legacy catalog
   const rawPath = (product.image_path || '').trim();
-  
-  // 3. If no valid image_path, try to clean existing relative paths in imageUrls
   if (!rawPath) {
-      if (Array.isArray(product.imageUrls) && product.imageUrls.length > 0) {
-          return product.imageUrls.map((path: string) => {
-              if (path && path.startsWith('http')) return path;
-              const clean = path.replace(/\\/g, '/').replace(/^\/+/, '');
-              return supabase.storage.from('product-images').getPublicUrl(clean).data.publicUrl;
-          });
-      }
-      return ["/placeholder.jpg"];
+      return ["https://placehold.co/400x400?text=No+Image"];
   }
 
   let basePaths: string[] = [];
   
-  // 4. Robust Array Parsing for [path1, path2]
+  // Robust parsing for dirty bracketed strings like [path1, path2]
   if (rawPath.startsWith('[') && rawPath.endsWith(']')) {
     try {
-      // Try strict JSON parse first
-      const cleanedJson = rawPath.replace(/[\r\n]/g, '').trim();
-      basePaths = JSON.parse(cleanedJson);
+      basePaths = JSON.parse(rawPath.replace(/[\r\n]/g, '').trim());
     } catch (e) {
-      // Manual fallback for malformed pseudo-arrays like [path1, path2]
-      const inner = rawPath.slice(1, -1);
-      basePaths = inner.split(',')
-        .map(p => p.trim())
-        .filter(p => p.length > 0 && p !== '[' && p !== ']');
+      basePaths = rawPath.slice(1, -1).split(',').map(p => p.trim()).filter(Boolean);
     }
   } else {
     basePaths = [rawPath];
@@ -68,50 +38,21 @@ const resolveProductImages = (product: any): string[] => {
 
   const allCandidates: string[] = [];
   basePaths.forEach(path => {
-    if (!path || path === '[' || path === ']') return;
-    
-    // Clean path of encoded or literal brackets and redundant prefixes
     const cleanPath = path
       .replace(/[\[\]]/g, '')
       .replace(/^(product-images\/)+/i, '')
       .replace(/^(product images\/)+/i, '')
-      .replace(/^(Saved Pictures\/)+/i, '')
       .replace(/\\/g, '/')
       .replace(/^\/+/, '');
 
-    // Return multiple candidates to ensure "Self-Healing"
+    // Generate candidates for different nesting levels
     allCandidates.push(supabase.storage.from('product-images').getPublicUrl(`product images/${cleanPath}`).data.publicUrl);
     allCandidates.push(supabase.storage.from('product-images').getPublicUrl(`product-images/${cleanPath}`).data.publicUrl);
     allCandidates.push(supabase.storage.from('product-images').getPublicUrl(cleanPath).data.publicUrl);
-    allCandidates.push(supabase.storage.from('product-images').getPublicUrl(`uploads/${cleanPath}`).data.publicUrl);
   });
 
-  const unique = Array.from(new Set(allCandidates));
-  return unique.length > 0 ? unique : ["/placeholder.jpg"];
+  return Array.from(new Set(allCandidates));
 };
-
-export const categories: Category[] = [
-    { id: 'Decorative Lighting and chandeliers', name: 'Electricals and Cables' },
-    { id: 'Electrical items', name: 'Electrical Items' },
-    { id: 'Plumbing', name: 'Plumbing' },
-    { id: 'Sanitary Ware Toilets & Bathroom Fixtures', name: 'Toilets & Sinks' },
-    { id: 'Shower Category', name: 'Showers' },
-    { id: 'Solar panels & accessories', name: 'Solar Solutions' },
-    { id: 'Tanks category', name: 'Water Tanks' },
-    { id: 'Mabati and Roofing', name: 'Roofing & Mabati' },
-    { id: 'Construction and Fencing equip\'nts', name: 'Construction' },
-    { id: 'Collections', name: 'Our Collections' },
-];
-
-export const carouselCategories: CarouselCategory[] = [
-    { id: 'Tanks category', name: 'Tanks', href: `/category/tanks`, image: '' },
-    { id: 'Plumbing', name: 'Plumbing', href: `/category/plumbing`, image: ''},
-    { id: 'Decorative Lighting and chandeliers', name: 'Electricals and Cables', href: `/category/lighting`, image: ''},
-    { id: 'Collections', name: 'Home & Decor', href: `/category/decor`, image: ''},
-    { id: 'Sanitary Ware Toilets & Bathroom Fixtures', name: 'Toilets & Sinks', href: `/category/toilets`, image: ''},
-    { id: 'Solar panels & accessories', name: 'Solar category', href: `/category/solar`, image: ''},
-    { id: 'Mabati and Roofing', name: 'Roofing & Construction', href: `/category/roofing`, image: ''},
-];
 
 export async function getProducts(): Promise<Product[]> {
   try {
@@ -124,16 +65,18 @@ export async function getProducts(): Promise<Product[]> {
     if (error) throw error;
 
     return (data || []).map(p => ({
-        ...p,
+        id: p.id,
         name: p.name || "Unnamed Product",
         category: p.category || "Uncategorized",
-        description: p.description || p.longDescription || "",
+        description: p.description || p.long_description || "",
+        longDescription: p.long_description || p.description || "",
         imageUrls: resolveProductImages(p),
         price: Number(p.price) || 0,
-        stockCount: Number(p.stock_count || p.stockCount || 0),
+        stockCount: Number(p.stock_count || 0),
         rating: Number(p.rating || 5),
         reviews: Number(p.reviews || 0),
-        longDescription: p.longDescription || p.description || ""
+        isFeatured: !!p.is_featured,
+        barcode: p.barcode || ""
       })) as Product[];
   } catch (error) {
     console.error("Error fetching products:", error);
@@ -141,56 +84,43 @@ export async function getProducts(): Promise<Product[]> {
   }
 }
 
-/**
- * Dynamic Categories Fetcher:
- * Gets unique categories from the database and merges them with defaults.
- */
 export async function getCategories(): Promise<Category[]> {
   try {
-    if (!supabase) return categories;
-
-    const { data, error } = await supabase
-      .from('products')
-      .select('category')
-      .not('category', 'is', null);
-
+    if (!supabase) return defaultCategories;
+    const { data, error } = await supabase.from('products').select('category').not('category', 'is', null);
     if (error) throw error;
-
-    const uniqueDbCategories = Array.from(new Set(data.map(p => p.category)))
-      .filter(Boolean)
-      .map(cat => ({ id: cat, name: cat }));
-
-    const merged = [...categories];
-    uniqueDbCategories.forEach(dbCat => {
-        if (!merged.find(m => m.name === dbCat.name)) {
-            merged.push(dbCat);
-        }
-    });
-
-    return merged;
+    
+    const unique = Array.from(new Set(data.map(p => p.category))).map(c => ({ id: c, name: c }));
+    return unique.length > 0 ? unique : defaultCategories;
   } catch (e) {
-    return categories;
+    return defaultCategories;
   }
 }
 
+const defaultCategories: Category[] = [
+    { id: 'Tanks category', name: 'Water Tanks' },
+    { id: 'Plumbing', name: 'Plumbing' },
+    { id: 'Decorative Lighting and chandeliers', name: 'Electricals' },
+];
+
+export const carouselCategories: CarouselCategory[] = [
+    { id: 'Tanks', name: 'Tanks', href: `/category/tanks`, image: '' },
+    { id: 'Plumbing', name: 'Plumbing', href: `/category/plumbing`, image: ''},
+    { id: 'Electricals', name: 'Electricals', href: `/category/lighting`, image: ''},
+    { id: 'Decor', name: 'Home & Decor', href: `/category/decor`, image: ''},
+];
+
 export async function getUsers(): Promise<MockUser[]> {
-  try {
-    if (!supabase) return [];
-    const { data, error } = await supabase.from('profiles').select('*');
-    if (error) throw error;
-    return data as any[];
-  } catch (error) {
-    return [];
-  }
+  if (!supabase) return [];
+  const { data } = await supabase.from('profiles').select('*');
+  return (data || []) as any[];
 }
 
 export async function getTransactions(): Promise<Transaction[]> {
-  return Promise.resolve([]);
+  return [];
 }
 
 export const availableAvatars = [
     { url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix', alt: 'Avatar 1' },
     { url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka', alt: 'Avatar 2' },
-    { url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Milo', alt: 'Avatar 3' },
-    { url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Casper', alt: 'Avatar 4' },
 ];

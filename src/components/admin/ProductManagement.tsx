@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from '@/components/ui/badge';
-import { MoreHorizontal, PlusCircle, CheckCircle, XCircle, Package, AlertTriangle, Minus, Plus } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, CheckCircle, XCircle, Package, AlertTriangle, Minus, Plus, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import {
@@ -26,10 +26,14 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/context/AuthProvider';
 
 export default function ProductManagement() {
     const { products, loading, toggleFeatured, updateStock } = useProducts();
+    const { user } = useAuth();
     const router = useRouter();
+
+    const canEdit = user?.role === 'admin' || user?.role === 'staff';
 
     const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat('en-KE', {
@@ -46,7 +50,12 @@ export default function ProductManagement() {
     }
 
     if (loading) {
-        return <div className="p-12 text-center">Loading products catalog...</div>;
+        return (
+            <div className="p-12 flex flex-col items-center justify-center gap-4">
+                <Loader2 className="h-10 w-10 animate-spin text-primary" />
+                <p className="text-muted-foreground font-medium">Syncing with Supabase...</p>
+            </div>
+        );
     }
 
     return (
@@ -58,7 +67,7 @@ export default function ProductManagement() {
                     </CardHeader>
                     <CardContent>
                         <div className="text-3xl font-bold">{products.length}</div>
-                        <p className="text-xs text-muted-foreground mt-1">Verified unique products</p>
+                        <p className="text-xs text-muted-foreground mt-1">Managed via Supabase</p>
                     </CardContent>
                 </Card>
                 <Card className="bg-yellow-500/5 border-yellow-200">
@@ -67,7 +76,7 @@ export default function ProductManagement() {
                     </CardHeader>
                     <CardContent>
                         <div className="text-3xl font-bold">{products.filter(p => p.stockCount <= 10 && p.stockCount > 0).length}</div>
-                        <p className="text-xs text-muted-foreground mt-1">Items requiring restock soon</p>
+                        <p className="text-xs text-muted-foreground mt-1">Requires attention</p>
                     </CardContent>
                 </Card>
                 <Card className="bg-blue-500/5 border-blue-200">
@@ -76,7 +85,7 @@ export default function ProductManagement() {
                     </CardHeader>
                     <CardContent>
                         <div className="text-3xl font-bold">{products.filter(p => p.isFeatured).length}</div>
-                        <p className="text-xs text-muted-foreground mt-1">Currently shown on homepage</p>
+                        <p className="text-xs text-muted-foreground mt-1">Visible on home page</p>
                     </CardContent>
                 </Card>
             </div>
@@ -85,19 +94,21 @@ export default function ProductManagement() {
                 <CardHeader>
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                         <div>
-                            <CardTitle>Inventory Management</CardTitle>
-                            <CardDescription>Monitor stock levels and control storefront visibility.</CardDescription>
+                            <CardTitle>Inventory Master</CardTitle>
+                            <CardDescription>Bidirectional database sync enabled. ({user?.role} access)</CardDescription>
                         </div>
-                        <Button asChild>
-                            <Link href="/admin/products/add">
-                                <PlusCircle className="mr-2 h-4 w-4" />
-                                Add New Item
-                            </Link>
-                        </Button>
+                        {canEdit && (
+                            <Button asChild>
+                                <Link href="/admin/products/add">
+                                    <PlusCircle className="mr-2 h-4 w-4" />
+                                    Add New Item
+                                </Link>
+                            </Button>
+                        )}
                     </div>
                 </CardHeader>
                 <CardContent>
-                    <div className="rounded-md border">
+                    <div className="rounded-md border overflow-hidden">
                         <Table>
                             <TableHeader>
                                 <TableRow className="bg-muted/50">
@@ -117,12 +128,10 @@ export default function ProductManagement() {
                                             <TableCell>
                                                 <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center overflow-hidden border">
                                                     {product.imageUrls?.[0] ? (
-                                                        <Image
+                                                        <img
                                                             alt={product.name}
                                                             className="aspect-square object-cover"
-                                                            height="48"
                                                             src={product.imageUrls[0]}
-                                                            width="48"
                                                         />
                                                     ) : (
                                                         <Package className="h-6 w-6 text-muted-foreground" />
@@ -130,7 +139,7 @@ export default function ProductManagement() {
                                                 </div>
                                             </TableCell>
                                             <TableCell>
-                                                <div className="font-bold text-sm">{product.name}</div>
+                                                <div className="font-bold text-sm truncate max-w-[200px]">{product.name}</div>
                                                 <div className="text-[10px] text-muted-foreground uppercase tracking-wider">{product.category}</div>
                                             </TableCell>
                                             <TableCell className="hidden md:table-cell">
@@ -147,6 +156,7 @@ export default function ProductManagement() {
                                                             variant="outline" 
                                                             size="icon" 
                                                             className="h-6 w-6" 
+                                                            disabled={!canEdit}
                                                             onClick={() => updateStock(product.id, (product.stockCount || 0) - 1)}
                                                         >
                                                             <Minus className="h-3 w-3" />
@@ -155,6 +165,7 @@ export default function ProductManagement() {
                                                             variant="outline" 
                                                             size="icon" 
                                                             className="h-6 w-6" 
+                                                            disabled={!canEdit}
                                                             onClick={() => updateStock(product.id, (product.stockCount || 0) + 1)}
                                                         >
                                                             <Plus className="h-3 w-3" />
@@ -165,6 +176,7 @@ export default function ProductManagement() {
                                             <TableCell className="text-center">
                                                 <Switch 
                                                     checked={product.isFeatured} 
+                                                    disabled={!canEdit}
                                                     onCheckedChange={() => toggleFeatured(product.id, !!product.isFeatured)} 
                                                 />
                                             </TableCell>
@@ -183,7 +195,7 @@ export default function ProductManagement() {
                                                         <DropdownMenuItem onClick={() => router.push(`/admin/products/edit/${product.id}`)}>Edit Details</DropdownMenuItem>
                                                         <DropdownMenuItem onClick={() => router.push(`/products/${product.id}`)}>Preview on Site</DropdownMenuItem>
                                                         <DropdownMenuSeparator />
-                                                        <DropdownMenuItem className="text-destructive">Delete Permanently</DropdownMenuItem>
+                                                        <DropdownMenuItem className="text-destructive" disabled={user?.role !== 'admin'}>Delete Record</DropdownMenuItem>
                                                     </DropdownMenuContent>
                                                 </DropdownMenu>
                                             </TableCell>
