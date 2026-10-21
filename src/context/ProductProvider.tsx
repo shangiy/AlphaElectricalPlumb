@@ -1,3 +1,4 @@
+
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
@@ -17,6 +18,7 @@ interface ProductContextType {
   submitting: boolean;
   addProduct: (productData: ProductFormData) => Promise<void>;
   updateProduct: (productId: string, productData: Partial<ProductFormData>) => Promise<void>;
+  deleteProduct: (productId: string) => Promise<void>;
   toggleFeatured: (productId: string, currentStatus: boolean) => Promise<void>;
   updateStock: (productId: string, newCount: number) => Promise<void>;
   getProductById: (productId: string) => Product | undefined;
@@ -111,6 +113,18 @@ export function ProductProvider({ children }: ProductProviderProps) {
     }
   }, [fetchProducts]);
 
+  const deleteProduct = useCallback(async (productId: string) => {
+    if (!supabase) throw new Error("Database service is unavailable.");
+    setSubmitting(true);
+    try {
+      const { error } = await supabase.from('products').delete().eq('id', productId);
+      if (error) throw error;
+      await fetchProducts();
+    } finally {
+      setSubmitting(false);
+    }
+  }, [fetchProducts]);
+
   const toggleFeatured = useCallback(async (productId: string, currentStatus: boolean) => {
     if (!supabase) return;
     try {
@@ -143,6 +157,7 @@ export function ProductProvider({ children }: ProductProviderProps) {
     submitting,
     addProduct,
     updateProduct,
+    deleteProduct,
     toggleFeatured,
     updateStock,
     getProductById

@@ -1,3 +1,4 @@
+
 import type { Product, Category, MockUser, Transaction, CarouselCategory } from './types';
 import { supabase } from './supabase';
 
@@ -64,7 +65,9 @@ export async function getProducts(): Promise<Product[]> {
 
     if (error) throw error;
 
-    return (data || []).map(p => ({
+    return (data || [])
+      .filter(p => p.id !== '8b4af5ab-e423-4f9e-bb93-0621679938b1') // REMOVE DUPLICATE PRODUCT AS REQUESTED
+      .map(p => ({
         id: p.id,
         name: p.name || "Unnamed Product",
         category: p.category || "Uncategorized",

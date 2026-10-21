@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useProducts } from '@/context/ProductProvider';
@@ -27,11 +28,13 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/context/AuthProvider';
+import { useToast } from '@/hooks/use-toast';
 
 export default function ProductManagement() {
-    const { products, loading, toggleFeatured, updateStock } = useProducts();
+    const { products, loading, toggleFeatured, updateStock, deleteProduct } = useProducts();
     const { user } = useAuth();
     const router = useRouter();
+    const { toast } = useToast();
 
     const canEdit = user?.role === 'admin' || user?.role === 'staff';
 
@@ -42,6 +45,24 @@ export default function ProductManagement() {
           currencyDisplay: 'code',
         }).format(amount);
     }
+
+    const handleDelete = async (id: string, name: string) => {
+        if (!confirm(`Are you sure you want to delete "${name}"? This action cannot be undone.`)) return;
+        
+        try {
+            await deleteProduct(id);
+            toast({
+                title: "Product Deleted",
+                description: `"${name}" has been removed from the database.`,
+            });
+        } catch (error) {
+            toast({
+                variant: "destructive",
+                title: "Deletion Failed",
+                description: "Could not remove the product. Please try again.",
+            });
+        }
+    };
 
     const getStockStatus = (count: number) => {
         if (count > 10) return { label: 'In Stock', color: 'bg-green-500/10 text-green-600 border-green-200', icon: <CheckCircle className="h-3 w-3" /> };
@@ -195,7 +216,13 @@ export default function ProductManagement() {
                                                         <DropdownMenuItem onClick={() => router.push(`/admin/products/edit/${product.id}`)}>Edit Details</DropdownMenuItem>
                                                         <DropdownMenuItem onClick={() => router.push(`/products/${product.id}`)}>Preview on Site</DropdownMenuItem>
                                                         <DropdownMenuSeparator />
-                                                        <DropdownMenuItem className="text-destructive" disabled={user?.role !== 'admin'}>Delete Record</DropdownMenuItem>
+                                                        <DropdownMenuItem 
+                                                            className="text-destructive focus:bg-destructive focus:text-destructive-foreground" 
+                                                            disabled={user?.role !== 'admin'}
+                                                            onClick={() => handleDelete(product.id, product.name)}
+                                                        >
+                                                            Delete Record
+                                                        </DropdownMenuItem>
                                                     </DropdownMenuContent>
                                                 </DropdownMenu>
                                             </TableCell>
