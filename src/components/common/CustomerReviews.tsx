@@ -56,7 +56,7 @@ export default function CustomerReviews() {
             
             setReviews((data || []).map(r => ({
                 id: r.id,
-                userName: r.user_name,
+                userName: r.author_name || r.user_name || 'Valued Customer',
                 rating: r.rating,
                 comment: r.comment,
                 createdAt: r.created_at
@@ -89,7 +89,7 @@ export default function CustomerReviews() {
     }, [user, form]);
 
     const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, align: 'start' }, [
-        Autoplay({ delay: 5000, stopOnInteraction: false })
+        Autoplay({ delay: 5000, stopOnInteraction: false, stopOnMouseEnter: true })
     ]);
 
     const scrollPrev = useCallback(() => emblaApi && emblaApi.scrollPrev(), [emblaApi]);
@@ -97,10 +97,16 @@ export default function CustomerReviews() {
 
     const onSubmit = async (values: ReviewFormValues) => {
         if (!supabase) return;
+        
+        if (!user) {
+            toast({ title: "Login Required", description: "You must be logged in to post a review.", variant: "destructive" });
+            return;
+        }
 
         try {
             const { error } = await supabase.from('reviews').insert([{
-                user_name: values.userName,
+                author_name: values.userName,
+                user_id: user.id,
                 rating: values.rating,
                 comment: values.comment
             }]);
@@ -119,11 +125,11 @@ export default function CustomerReviews() {
             });
             setIsDialogOpen(false);
             fetchReviews();
-        } catch (error) {
+        } catch (error: any) {
             toast({
                 variant: "destructive",
                 title: "Error",
-                description: "Could not submit review. Please try again.",
+                description: error.message || "Could not submit review. Please try again.",
             });
         }
     };
