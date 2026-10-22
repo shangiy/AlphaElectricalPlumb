@@ -1,5 +1,9 @@
-import AdminWelcome from '@/components/admin/AdminWelcome';
+import AdminProductManager from '@/components/admin/AdminProductManager';
 
 export default function AdminDashboardPage() {
-    return <AdminWelcome />;
+    return (
+        <div className="container mx-auto">
+            <AdminProductManager />
+        </div>
+    );
 }
