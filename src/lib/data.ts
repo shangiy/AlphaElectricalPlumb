@@ -13,7 +13,12 @@ const resolveProductImages = (product: any): string[] => {
       return product.image_urls.filter(url => typeof url === 'string' && url.startsWith('http'));
   }
 
-  // 2. Path-based resolution for legacy catalog
+  // 2. Direct single URL fallback
+  if (product.image_url && typeof product.image_url === 'string' && product.image_url.startsWith('http')) {
+      return [product.image_url];
+  }
+
+  // 3. Path-based resolution for legacy catalog
   const rawPath = (product.image_path || '').trim();
   if (!rawPath) {
       return ["https://placehold.co/400x400?text=No+Image"];
@@ -21,7 +26,6 @@ const resolveProductImages = (product: any): string[] => {
 
   let basePaths: string[] = [];
   
-  // Handle bracketed pseudo-arrays often found in migration scripts
   if (rawPath.startsWith('[') && rawPath.endsWith(']')) {
     try {
       basePaths = JSON.parse(rawPath.replace(/[\r\n]/g, '').trim());
@@ -45,6 +49,7 @@ const resolveProductImages = (product: any): string[] => {
     allCandidates.push(supabase.storage.from('product-images').getPublicUrl(`product images/${cleanPath}`).data.publicUrl);
     allCandidates.push(supabase.storage.from('product-images').getPublicUrl(`product-images/${cleanPath}`).data.publicUrl);
     allCandidates.push(supabase.storage.from('product-images').getPublicUrl(cleanPath).data.publicUrl);
+    allCandidates.push(supabase.storage.from('product-images').getPublicUrl(`uploads/${cleanPath}`).data.publicUrl);
   });
 
   return Array.from(new Set(allCandidates));
@@ -65,7 +70,7 @@ export async function getProducts(): Promise<Product[]> {
     if (error) throw error;
 
     return (data || [])
-      .filter(p => p.id !== '8b4af5ab-e423-4f9e-bb93-0621679938b1') // Removed duplicate as requested
+      .filter(p => p.id !== '8b4af5ab-e423-4f9e-bb93-0621679938b1') 
       .map(p => ({
         id: p.id,
         name: p.name || "Unnamed Product",
@@ -121,7 +126,6 @@ export async function getUsers(): Promise<MockUser[]> {
 }
 
 export async function getTransactions(): Promise<Transaction[]> {
-  // In a full implementation, this would fetch from a 'transactions' table
   return [];
 }
 

@@ -9,7 +9,8 @@ import { useToast } from '@/hooks/use-toast';
 
 /**
  * Unified Admin Product & Storage Manager
- * Fresh start: Handles direct Supabase Storage uploads and Products table sync.
+ * Fully integrated with Supabase Storage ('product-images' bucket) 
+ * and the 'products' table.
  */
 export default function AdminProductManager() {
   const { toast } = useToast();
@@ -89,16 +90,14 @@ export default function AdminProductManager() {
     e.preventDefault();
     setLoading(true);
 
-    // Prepare data for Supabase table structure
     const productData = {
       name,
       price: parseFloat(price),
       category,
       description,
       long_description: description,
-      // Store in both formats for maximum compatibility with existing code
       image_url: imageUrl,
-      image_urls: [imageUrl], 
+      image_urls: [imageUrl], // Store in array format for compatibility
       updated_at: new Date().toISOString()
     };
 
@@ -116,7 +115,7 @@ export default function AdminProductManager() {
 
       toast({ 
         title: selectedProduct ? 'Product Updated' : 'Product Created', 
-        description: `"${name}" has been saved to the database.` 
+        description: `"${name}" has been saved to Supabase.` 
       });
       
       resetForm();
@@ -139,7 +138,7 @@ export default function AdminProductManager() {
       const { error } = await supabase.from('products').delete().eq('id', id);
       if (error) throw error;
       
-      toast({ title: 'Deleted', description: 'Product removed successfully.' });
+      toast({ title: 'Deleted', description: 'Product removed from database.' });
       fetchProducts();
     } catch (err: any) {
       toast({ variant: 'destructive', title: 'Delete Error', description: err.message });
@@ -170,11 +169,11 @@ export default function AdminProductManager() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b pb-6">
         <div>
           <h2 className="text-3xl font-black font-headline text-accent tracking-tighter">Inventory Master</h2>
-          <p className="text-muted-foreground text-sm font-medium">Fully integrated with Supabase Storage & Postgres</p>
+          <p className="text-muted-foreground text-sm font-medium">Synced with 'product-images' bucket and Products table</p>
         </div>
         <div className="flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full border border-primary/20">
           <CheckCircle className="h-4 w-4" />
-          <span className="text-xs font-bold uppercase tracking-widest">Real-time Sync Active</span>
+          <span className="text-xs font-bold uppercase tracking-widest">Bidirectional Sync Active</span>
         </div>
       </div>
 
@@ -210,7 +209,7 @@ export default function AdminProductManager() {
                   value={description} 
                   onChange={(e) => setDescription(e.target.value)} 
                   className="w-full min-h-[100px] p-3 rounded-xl border bg-background text-sm focus:ring-2 focus:ring-primary outline-none transition-all"
-                  placeholder="Technical specs and features..."
+                  placeholder="Technical specs..."
                 />
               </div>
 
@@ -239,7 +238,7 @@ export default function AdminProductManager() {
                   ) : (
                     <div className="flex flex-col items-center gap-2 py-8 text-muted-foreground">
                       <Upload className="h-8 w-8 opacity-50" />
-                      <span className="text-[10px] font-bold uppercase tracking-tighter">Click or Drag Image</span>
+                      <span className="text-[10px] font-bold uppercase tracking-tighter">Click to Upload</span>
                     </div>
                   )}
                 </div>
@@ -316,13 +315,6 @@ export default function AdminProductManager() {
                       </td>
                     </tr>
                   ))}
-                  {!loading && products.length === 0 && (
-                    <tr>
-                      <td colSpan={5} className="p-12 text-center text-muted-foreground italic">
-                        No items found in your catalog.
-                      </td>
-                    </tr>
-                  )}
                 </tbody>
               </table>
             </div>
@@ -331,8 +323,8 @@ export default function AdminProductManager() {
           <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-r-xl flex gap-3">
              <AlertCircle className="h-5 w-5 text-yellow-600 shrink-0" />
              <div className="text-xs text-yellow-800">
-                <p className="font-bold uppercase tracking-wider mb-1">Developer Notice</p>
-                <p>This manager directly mutates your Supabase production database. All image deletions should be handled manually via the Supabase Storage dashboard to preserve historical audit logs.</p>
+                <p className="font-bold uppercase tracking-wider mb-1">Security Notice</p>
+                <p>All uploads require Admin or Staff role permissions in Supabase. Your public bucket allows instant client viewing.</p>
              </div>
           </div>
         </div>
