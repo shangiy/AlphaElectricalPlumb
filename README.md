@@ -14,10 +14,9 @@ You must provide the following environment variables in your Vercel Dashboard (*
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Your Supabase Anonymous Key.
 
 ### 📂 Image Management
-To save costs on Cloud Storage, images can now be served from the `public` folder.
-1. Place your product images in `public/product-images/`.
-2. In your Supabase `products` table, set the `imageUrls` to use the filenames (e.g., `["tank-2000l.jpg"]`).
-3. The app will automatically resolve these to `/product-images/tank-2000l.jpg`.
+To save costs on Cloud Storage, images are served from Supabase Storage or the `public` folder.
+1. The app features a **Self-Healing Image Resolver** that automatically finds working links in your Supabase bucket.
+2. New images uploaded via the Admin Dashboard go directly to the Supabase `product-images` bucket.
 
 ## Technology Stack
 
@@ -28,9 +27,9 @@ To save costs on Cloud Storage, images can now be served from the `public` folde
 - **AI**: Firebase Genkit + Google Gemini
 - **Payments**: Paystack Integration
 
-## 🚀 Pushing Changes to GitHub
+## 🚀 Deployment Commands (Recommended)
 
-To update your live site on Vercel, run these commands:
+To update your live site on Vercel with the latest synchronization and visual fixes:
 
 1. **Stage changes**: 
    ```bash
@@ -38,7 +37,7 @@ To update your live site on Vercel, run these commands:
    ```
 2. **Commit**: 
    ```bash
-   git commit -m "feat: migrate backend to supabase for cost efficiency"
+   git commit -m "feat: align category visuals with subfolder assets and sync Supabase role-based architecture"
    ```
 3. **Push**: 
    ```bash

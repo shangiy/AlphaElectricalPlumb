@@ -35,12 +35,12 @@ export default function CategoryCard({ category }: { category: Category }) {
     const filename = categoryImageMap[category.name.trim()] || `${category.name.trim()}.webp`;
     const cleanFilename = filename.replace(/\\/g, '/').replace(/^\/+/, '');
     
-    // Candidates cover different possible storage structures (with and without prefix)
+    // Candidates cover different possible storage structures (prioritizing category subfolder)
     const paths = [
-      `category/${cleanFilename}`, // Specific candidate for category subfolder requested
+      `category/${cleanFilename}`,
       `collections/${cleanFilename}`,
       `product-images/collections/${cleanFilename}`,
-      `product-images/product-images/collections/${cleanFilename}`,
+      `product-images/category/${cleanFilename}`,
       `product-images/${cleanFilename}`,
       cleanFilename
     ];
