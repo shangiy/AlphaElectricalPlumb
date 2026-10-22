@@ -19,6 +19,7 @@ const categoryImageMap: Record<string, string> = {
   'Tanks': 'Alpha tanks Collections.webp',
   'Plumbing': 'plumbing pipes and fittings collections.webp',
   'Electricals and Cables': 'Electric Socket Collection.webp',
+  'Electricals': 'Electric Socket Collection.webp',
   'Home & Decor': 'Bird Art Lights fixture Collection.webp',
   'Toilets & Sinks': 'Hand-wash Basin and  Pedestal Sink Collection.webp',
   'Solar category': 'Solar items collection.webp',
@@ -36,6 +37,7 @@ export default function CategoryCard({ category }: { category: Category }) {
     
     // Candidates cover different possible storage structures (with and without prefix)
     const paths = [
+      `category/${cleanFilename}`, // Specific candidate for category subfolder requested
       `collections/${cleanFilename}`,
       `product-images/collections/${cleanFilename}`,
       `product-images/product-images/collections/${cleanFilename}`,
