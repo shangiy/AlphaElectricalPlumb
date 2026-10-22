@@ -1,0 +1,130 @@
+
+'use client';
+
+import { useState } from 'react';
+import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/context/AuthProvider';
+import { useToast } from '@/hooks/use-toast';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Star, Loader2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
+
+export default function ReviewForm({ productId, onReviewSubmitted }: { productId: string; onReviewSubmitted: () => void }) {
+  const [rating, setRating] = useState(5);
+  const [title, setTitle] = useState('');
+  const [comment, setComment] = useState('');
+  const [loading, setLoading] = useState(false);
+  
+  const { user } = useAuth();
+  const { toast } = useToast();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!user) {
+      toast({
+        variant: "destructive",
+        title: "Login Required",
+        description: "Please log in to leave a review.",
+      });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { error } = await supabase.from('reviews').insert({
+        product_id: productId,
+        user_id: user.id,
+        rating,
+        title, // Assumes user added title column as per snippet
+        comment,
+        author_name: user.name || user.username || 'Valued Customer'
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Review Posted!",
+        description: "Your feedback has been saved successfully.",
+      });
+      
+      setTitle('');
+      setComment('');
+      setRating(5);
+      onReviewSubmitted();
+    } catch (error: any) {
+      console.error("Review error:", error);
+      toast({
+        variant: "destructive",
+        title: "Submission Failed",
+        description: error.message || "Could not save your review.",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="p-8 bg-card rounded-[2.5rem] shadow-xl border border-primary/5 space-y-6">
+      <h3 className="text-2xl font-bold font-headline text-accent">Leave a Review</h3>
+      
+      <div className="space-y-3">
+        <Label className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Your Rating</Label>
+        <div className="flex gap-2">
+          {[1, 2, 3, 4, 5].map((star) => (
+            <button
+              key={star}
+              type="button"
+              onClick={() => setRating(star)}
+              className="focus:outline-none transition-transform active:scale-90"
+            >
+              <Star 
+                className={cn(
+                  "h-8 w-8 transition-colors",
+                  star <= rating ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground/30"
+                )} 
+              />
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="title">Review Title</Label>
+        <Input 
+          id="title"
+          value={title} 
+          onChange={(e) => setTitle(e.target.value)} 
+          required
+          placeholder="e.g., Excellent quality plumbing fittings"
+          className="rounded-xl border-muted-foreground/20 focus:ring-primary"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="comment">Comments</Label>
+        <Textarea 
+          id="comment"
+          value={comment} 
+          onChange={(e) => setComment(e.target.value)} 
+          rows={4} 
+          required
+          placeholder="Share your experience with this product..."
+          className="rounded-xl border-muted-foreground/20 focus:ring-primary resize-none"
+        />
+      </div>
+
+      <Button 
+        type="submit" 
+        disabled={loading}
+        className="w-full h-12 rounded-full font-bold text-lg bg-primary hover:bg-primary/90"
+      >
+        {loading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : null}
+        {loading ? 'Submitting...' : 'Post Review'}
+      </Button>
+    </form>
+  );
+}

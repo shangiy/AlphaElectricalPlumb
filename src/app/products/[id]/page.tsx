@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useParams, notFound, useRouter } from 'next/navigation';
@@ -12,6 +13,8 @@ import { Button } from '@/components/ui/button';
 import { useState, useEffect, useMemo } from 'react';
 import QuantitySelector from '@/components/products/QuantitySelector';
 import { cn } from '@/lib/utils';
+import ReviewForm from '@/components/reviews/ReviewForm';
+import ReviewCarousel from '@/components/reviews/ReviewCarousel';
 
 function ProductContent({ productId }: { productId: string }) {
   const { getProductById, loading } = useProducts();
@@ -21,6 +24,7 @@ function ProductContent({ productId }: { productId: string }) {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [failedUrls, setFailedUrls] = useState<Set<string>>(new Set());
+  const [reviewsKey, setReviewsKey] = useState(0); // For refreshing carousel
 
   useEffect(() => {
     setActiveImageIndex(0);
@@ -77,10 +81,13 @@ function ProductContent({ productId }: { productId: string }) {
         next.add(url);
         return next;
     });
-    // If the current large image failed, reset index to first available
     if (uniqueImages[activeImageIndex] === url) {
         setActiveImageIndex(0);
     }
+  };
+
+  const handleReviewSubmitted = () => {
+    setReviewsKey(prev => prev + 1);
   };
 
   const priceDisplay = product.unit && product.unit !== 'item' 
@@ -105,7 +112,6 @@ function ProductContent({ productId }: { productId: string }) {
                 />
             </div>
             
-            {/* Multi-view Thumbnails Window */}
             {uniqueImages.length > 1 && (
                 <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
                     {uniqueImages.map((img, index) => (
@@ -205,6 +211,24 @@ function ProductContent({ productId }: { productId: string }) {
                 </div>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Reviews Section */}
+      <div className="bg-secondary/5 py-20 border-t border-white/10">
+        <div className="container mx-auto px-4">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 items-start">
+                <div className="lg:col-span-1">
+                    <ReviewForm productId={product.id} onReviewSubmitted={handleReviewSubmitted} />
+                </div>
+                <div className="lg:col-span-2 space-y-8">
+                    <div>
+                        <h2 className="text-3xl font-bold font-headline text-accent mb-2">Customer Feedback</h2>
+                        <p className="text-muted-foreground">Real reviews from verified Alpha customers.</p>
+                    </div>
+                    <ReviewCarousel key={reviewsKey} productId={product.id} />
+                </div>
+            </div>
         </div>
       </div>
 
