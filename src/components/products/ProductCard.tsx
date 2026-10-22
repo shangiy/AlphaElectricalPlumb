@@ -12,7 +12,7 @@ import { useCart } from '@/context/CartProvider';
 /**
  * Premium Interactive Product Card:
  * Re-designed to match the user-provided reference.
- * Features: Dual buttons, hover carousel, wishlist heart, and dynamic pricing.
+ * Features: Dual buttons, hover carousel, wishlist heart, and dynamic pricing with units.
  */
 export default function ProductCard({ product }: { product: Product }) {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -60,6 +60,14 @@ export default function ProductCard({ product }: { product: Product }) {
     e.preventDefault();
     e.stopPropagation();
     addToCart(product, true, 1);
+  };
+
+  const formatPrice = (amount: number) => {
+    return new Intl.NumberFormat('en-KE', {
+      style: 'currency',
+      currency: 'KES',
+      currencyDisplay: 'code',
+    }).format(amount);
   };
 
   return (
@@ -158,15 +166,15 @@ export default function ProductCard({ product }: { product: Product }) {
         <div className="mt-auto mb-4">
             <div className="flex items-baseline gap-2 flex-wrap">
                 <p className="text-lg font-black text-foreground">
-                    KES {product.price?.toLocaleString()}
+                    {formatPrice(product.price)}
                 </p>
                 {product.oldPrice && product.oldPrice > product.price && (
                     <p className="text-xs text-muted-foreground line-through decoration-muted-foreground/50">
-                        KES {product.oldPrice.toLocaleString()}
+                        {formatPrice(product.oldPrice)}
                     </p>
                 )}
                 {product.unit && product.unit !== 'item' && (
-                    <span className="text-xs text-muted-foreground">/ {product.unit}</span>
+                    <span className="text-xs text-muted-foreground font-medium">/ {product.unit}</span>
                 )}
             </div>
         </div>

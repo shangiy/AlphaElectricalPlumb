@@ -83,8 +83,6 @@ function ProductContent({ productId }: { productId: string }) {
     }
   };
 
-  const isMeasurable = product.unit && product.unit !== 'item' && product.unit !== 'roll' && product.unit !== 'pack';
-
   const priceDisplay = product.unit && product.unit !== 'item' 
     ? `${formatPrice(product.price)} / ${product.unit}`
     : formatPrice(product.price);
@@ -150,7 +148,7 @@ function ProductContent({ productId }: { productId: string }) {
 
             <div className="p-8 rounded-[2.5rem] bg-primary/5 border border-primary/10 shadow-sm">
                 <p className="text-4xl font-bold font-headline text-primary mb-2">{priceDisplay}</p>
-                {product.oldPrice && (
+                {product.oldPrice && product.oldPrice > product.price && (
                     <p className="text-lg text-muted-foreground line-through opacity-50">{formatPrice(product.oldPrice)}</p>
                 )}
             </div>
@@ -158,11 +156,9 @@ function ProductContent({ productId }: { productId: string }) {
             <div className="space-y-6">
                 <p className="text-lg leading-relaxed text-muted-foreground/80">{product.longDescription}</p>
                 
-                {isMeasurable && (
-                    <div className="p-6 rounded-[2rem] bg-secondary/10 border border-white/20">
-                        <QuantitySelector unit={product.unit!} onQuantityChange={setQuantity} />
-                    </div>
-                )}
+                <div className="p-6 rounded-[2rem] bg-secondary/10 border border-white/20">
+                    <QuantitySelector unit={product.unit || 'item'} onQuantityChange={setQuantity} />
+                </div>
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="flex items-center gap-4 p-4 rounded-[1.5rem] bg-white border shadow-sm">

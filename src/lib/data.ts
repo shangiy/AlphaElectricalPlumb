@@ -1,4 +1,3 @@
-
 import type { Product, Category, MockUser, Transaction, CarouselCategory } from './types';
 import { supabase } from './supabase';
 
@@ -75,6 +74,8 @@ export async function getProducts(): Promise<Product[]> {
         longDescription: p.long_description || p.description || "",
         imageUrls: resolveProductImages(p),
         price: Number(p.price) || 0,
+        oldPrice: Number(p.old_price) || 0,
+        unit: p.unit || "item",
         stockCount: Number(p.stock_count || 0),
         rating: Number(p.rating || 5),
         reviews: Number(p.reviews || 0),
