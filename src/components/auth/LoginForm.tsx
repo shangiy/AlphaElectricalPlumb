@@ -74,7 +74,6 @@ export default function LoginForm() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const { toast } = useToast();
-    const redirectUrl = searchParams.get('redirect') || '/';
     const [socialLoading, setSocialLoading] = useState<null | 'google' | 'facebook'>(null);
     const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
     const [isMounted, setIsMounted] = useState(false);
@@ -89,9 +88,19 @@ export default function LoginForm() {
 
     useEffect(() => {
         if (isMounted && user) {
-            router.push(redirectUrl);
+            const redirectUrl = searchParams.get('redirect');
+            
+            // ADMIN HANGING PLACE: Redirect admins/staff to the admin dashboard by default
+            if (!redirectUrl || redirectUrl === '/') {
+                if (user.role === 'admin' || user.role === 'staff') {
+                    router.push('/admin');
+                    return;
+                }
+            }
+            
+            router.push(redirectUrl || '/');
         }
-    }, [isMounted, user, router, redirectUrl]);
+    }, [isMounted, user, router, searchParams]);
 
     const loginForm = useForm<LoginFormValues>({
         resolver: zodResolver(loginSchema),
@@ -160,6 +169,7 @@ export default function LoginForm() {
         }
     }
 
+    const redirectUrl = searchParams.get('redirect') || '/';
     const redirectQuery = redirectUrl !== '/' ? `&redirect=${encodeURIComponent(redirectUrl)}` : '';
     const recaptchaSiteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
 
