@@ -12,7 +12,8 @@ interface Category {
 }
 
 /**
- * Locked Category Image Map: Permanent mapping for your collection visuals.
+ * Professional Category Card:
+ * Re-designed to be navigate-able and visually consistent with the new product cards.
  */
 const categoryImageMap: Record<string, string> = {
   'Roofing & Construction': 'Corrugated Roofing Sheet collection.webp',
@@ -28,18 +29,16 @@ const categoryImageMap: Record<string, string> = {
 export default function CategoryCard({ category }: { category: Category }) {
   const [imgIndex, setImgIndex] = useState(0);
 
-  // Self-Healing Logic: Generate multiple candidate URLs to find the correct path in Supabase
+  // Self-Healing Logic: Priority for category subfolder
   const candidateUrls = useMemo(() => {
     if (!supabase) return ['/placeholder.jpg'];
 
     const filename = categoryImageMap[category.name.trim()] || `${category.name.trim()}.webp`;
     const cleanFilename = filename.replace(/\\/g, '/').replace(/^\/+/, '');
     
-    // Candidates cover different possible storage structures (prioritizing category subfolder)
     const paths = [
       `category/${cleanFilename}`,
       `collections/${cleanFilename}`,
-      `product-images/collections/${cleanFilename}`,
       `product-images/category/${cleanFilename}`,
       `product-images/${cleanFilename}`,
       cleanFilename
@@ -54,7 +53,7 @@ export default function CategoryCard({ category }: { category: Category }) {
     if (imgIndex < candidateUrls.length - 1) {
       setImgIndex(imgIndex + 1);
     } else {
-      setImgIndex(-1); // Final fallback to placeholder
+      setImgIndex(-1);
     }
   };
 
@@ -64,17 +63,21 @@ export default function CategoryCard({ category }: { category: Category }) {
 
   return (
     <Link href={category.href || '#'} className="block group">
-      <div className="relative rounded-[2rem] overflow-hidden shadow-md aspect-[4/5] bg-muted border border-white/25 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
-        <img
-          src={currentImageUrl}
-          alt={category.name}
-          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-          onError={handleImageError}
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-6">
-          <h3 className="text-white font-bold text-xl font-headline leading-tight">{category.name}</h3>
-          <p className="text-white/70 text-sm mt-1 opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300">
-            Explore Collection →
+      <div className="relative rounded-2xl overflow-hidden shadow-sm bg-white border border-border transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+        <div className="aspect-[4/5] overflow-hidden bg-muted/20">
+            <img
+              src={currentImageUrl}
+              alt={category.name}
+              className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+              onError={handleImageError}
+            />
+        </div>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent flex flex-col justify-end p-6">
+          <h3 className="text-white font-bold text-lg md:text-xl font-headline leading-tight group-hover:text-primary transition-colors">
+            {category.name}
+          </h3>
+          <p className="text-white/70 text-xs font-bold mt-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300">
+            EXPLORE COLLECTION <span className="text-lg">→</span>
           </p>
         </div>
       </div>

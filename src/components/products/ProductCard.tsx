@@ -3,19 +3,22 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Heart, ShoppingCart } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Product } from '@/lib/types';
+import { Rating } from '@/components/ui/rating';
+import { useCart } from '@/context/CartProvider';
 
 /**
  * Premium Interactive Product Card:
- * Features a modern hover-triggered carousel and real-time self-healing image resolver.
- * Handles JSON arrays, single strings, and malformed bracketed paths from Supabase.
+ * Re-designed to match the user-provided reference.
+ * Features: Dual buttons, hover carousel, wishlist heart, and dynamic pricing.
  */
 export default function ProductCard({ product }: { product: Product }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
   const [failedUrls, setFailedUrls] = useState<Set<string>>(new Set());
+  const { addToCart } = useCart();
 
   useEffect(() => {
     setCurrentIndex(0);
@@ -53,13 +56,20 @@ export default function ProductCard({ product }: { product: Product }) {
     });
   };
 
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    addToCart(product, true, 1);
+  };
+
   return (
     <div 
-      className="group relative rounded-2xl border bg-card overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 flex flex-col h-full"
+      className="group relative rounded-2xl border bg-white overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col h-full"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <div className="relative aspect-square overflow-hidden bg-muted">
+      {/* Top Image Section */}
+      <div className="relative aspect-square overflow-hidden bg-muted/30">
         <Link href={`/products/${product.id}`} className="block h-full w-full">
           {activeImages.map((url, idx) => (
             <img
@@ -67,7 +77,7 @@ export default function ProductCard({ product }: { product: Product }) {
               src={url}
               alt={`${product.name} - view ${idx + 1}`}
               className={cn(
-                "absolute inset-0 object-cover w-full h-full transition-all duration-700 ease-in-out",
+                "absolute inset-0 object-cover w-full h-full transition-all duration-500 ease-in-out",
                 idx === safeIndex ? "opacity-100 scale-100" : "opacity-0 scale-105 pointer-events-none"
               )}
               onError={() => handleImageError(url)}
@@ -75,31 +85,39 @@ export default function ProductCard({ product }: { product: Product }) {
           ))}
         </Link>
 
+        {/* Wishlist Heart Icon */}
+        <button 
+          className="absolute top-3 right-3 p-2 rounded-full bg-white/80 backdrop-blur-sm text-muted-foreground hover:text-red-500 transition-colors shadow-sm z-10"
+          aria-label="Add to wishlist"
+        >
+          <Heart className="h-4 w-4" />
+        </button>
+
+        {/* Hover Navigation Arrows */}
         {activeImages.length > 1 && (
           <div className={cn(
-            "absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-between px-3 transition-opacity duration-300",
+            "absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-between px-2 transition-opacity duration-300",
             isHovered ? "opacity-100" : "opacity-0 pointer-events-none"
           )}>
             <button 
               onClick={handlePrev}
-              className="h-8 w-8 rounded-full bg-black/30 hover:bg-primary backdrop-blur-md text-white flex items-center justify-center transition-all hover:scale-110 active:scale-90"
-              aria-label="Previous"
+              className="h-7 w-7 rounded-full bg-white/90 text-accent flex items-center justify-center shadow-md hover:bg-primary hover:text-white transition-all"
             >
-              <ChevronLeft className="h-5 w-5" />
+              <ChevronLeft className="h-4 w-4" />
             </button>
             <button 
               onClick={handleNext}
-              className="h-8 w-8 rounded-full bg-black/30 hover:bg-primary backdrop-blur-md text-white flex items-center justify-center transition-all hover:scale-110 active:scale-90"
-              aria-label="Next"
+              className="h-7 w-7 rounded-full bg-white/90 text-accent flex items-center justify-center shadow-md hover:bg-primary hover:text-white transition-all"
             >
-              <ChevronRight className="h-5 w-5" />
+              <ChevronRight className="h-4 w-4" />
             </button>
           </div>
         )}
 
+        {/* Image Dots Indicator */}
         {activeImages.length > 1 && (
           <div className={cn(
-            "absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1 px-2 py-1 rounded-full bg-black/20 backdrop-blur-sm transition-opacity duration-300",
+            "absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1 transition-opacity duration-300",
             isHovered ? "opacity-100" : "opacity-0"
           )}>
             {activeImages.map((_, idx) => (
@@ -107,7 +125,7 @@ export default function ProductCard({ product }: { product: Product }) {
                 key={idx}
                 className={cn(
                   "h-1 rounded-full transition-all duration-300",
-                  idx === safeIndex ? "bg-white w-4" : "bg-white/40 w-1"
+                  idx === safeIndex ? "bg-primary w-4" : "bg-black/20 w-1"
                 )}
               />
             ))}
@@ -115,27 +133,61 @@ export default function ProductCard({ product }: { product: Product }) {
         )}
       </div>
 
-      <div className="p-4 flex flex-col flex-1 justify-between">
-        <div>
-          <Link href={`/products/${product.id}`}>
-            <h3 className="font-bold text-accent line-clamp-2 hover:text-primary transition-colors min-h-[2.5rem]">
-              {product.name}
-            </h3>
-          </Link>
-          <div className="flex items-end justify-between mt-3">
-             <p className="text-xl font-black text-primary">
-                KES {product.price?.toLocaleString()}
-             </p>
-             <span className="text-[9px] uppercase tracking-widest font-black text-muted-foreground bg-muted px-2 py-0.5 rounded">
-                Verified
-             </span>
-          </div>
+      {/* Content Section */}
+      <div className="p-4 flex flex-col flex-1">
+        <div className="space-y-1 mb-2">
+            <Link href={`/products/${product.id}`} className="block">
+                <h3 className="font-bold text-accent text-sm md:text-base line-clamp-1 hover:text-primary transition-colors">
+                    {product.name}
+                </h3>
+            </Link>
+            <Link href={`/category/${encodeURIComponent(product.category.toLowerCase().replace(/\s+/g, '-'))}`} className="block">
+                <p className="text-xs text-muted-foreground line-clamp-1 hover:underline">
+                    {product.description || product.category}
+                </p>
+            </Link>
+        </div>
+
+        {/* Rating Row */}
+        <div className="flex items-center gap-2 mb-3">
+            <Rating rating={product.rating || 5} size={14} />
+            <span className="text-[10px] text-muted-foreground">({product.reviews || 0})</span>
+        </div>
+
+        {/* Price Section */}
+        <div className="mt-auto mb-4">
+            <div className="flex items-baseline gap-2 flex-wrap">
+                <p className="text-lg font-black text-foreground">
+                    KES {product.price?.toLocaleString()}
+                </p>
+                {product.oldPrice && product.oldPrice > product.price && (
+                    <p className="text-xs text-muted-foreground line-through decoration-muted-foreground/50">
+                        KES {product.oldPrice.toLocaleString()}
+                    </p>
+                )}
+                {product.unit && product.unit !== 'item' && (
+                    <span className="text-xs text-muted-foreground">/ {product.unit}</span>
+                )}
+            </div>
         </div>
         
-        <div className="mt-4 pt-4 border-t border-dashed">
-          <Button variant="outline" size="sm" className="w-full rounded-xl font-bold border-primary/20 text-accent hover:bg-primary hover:text-white" asChild>
-            <Link href={`/products/${product.id}`}>View Details</Link>
-          </Button>
+        {/* Actions Section */}
+        <div className="flex items-center gap-2">
+            <Button 
+                variant="outline" 
+                size="sm" 
+                className="flex-1 rounded-xl text-xs font-bold border-muted-foreground/20 text-accent h-9" 
+                asChild
+            >
+                <Link href={`/products/${product.id}`}>View More</Link>
+            </Button>
+            <Button 
+                size="sm" 
+                className="flex-1 rounded-xl text-xs font-bold bg-[#3b82f6] hover:bg-[#2563eb] h-9"
+                onClick={handleAddToCart}
+            >
+                Add to Cart
+            </Button>
         </div>
       </div>
     </div>
