@@ -8,6 +8,7 @@ import AuthGuard from '@/components/auth/AuthGuard';
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthProvider';
+import Link from 'next/link';
 
 function WishlistContent() {
   const [wishlistItems, setWishlistItems] = useState<Product[]>([]);
@@ -18,7 +19,7 @@ function WishlistContent() {
     if (!user || !supabase) return;
     setLoading(true);
     try {
-      // 1. Fetch user's wishlist IDs
+      // 1. Fetch user's wishlist IDs from the dedicated table
       const { data: wishlistData, error: wishlistError } = await supabase
         .from('wishlists')
         .select('product_id')
@@ -33,9 +34,10 @@ function WishlistContent() {
         return;
       }
 
-      // 2. Fetch full product details for those IDs
+      // 2. Fetch full product details for those IDs from our central inventory
       const allProducts = await getProducts();
-      const filtered = allProducts.filter(p => productIds.includes(p.id));
+      // Use inclusive matching for IDs to ensure items show up regardless of string/UUID format
+      const filtered = allProducts.filter(p => productIds.some(id => String(id) === String(p.id)));
       setWishlistItems(filtered);
     } catch (err) {
       console.error("Error loading wishlist:", err);
@@ -52,13 +54,13 @@ function WishlistContent() {
     return (
        <div className="container mx-auto px-4 py-24 flex flex-col items-center justify-center min-h-[60vh]">
           <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
-          <p className="text-lg font-medium text-muted-foreground">Syncing your wishlist...</p>
+          <p className="text-lg font-medium text-muted-foreground">Syncing your saved items...</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-white">
+    <div className="bg-white min-h-screen">
         <div className="container mx-auto px-4 py-12">
         <div className="mb-12 text-center">
             <h1 className="text-4xl font-bold font-headline text-primary">My Wishlist</h1>
@@ -66,10 +68,10 @@ function WishlistContent() {
         </div>
 
         {wishlistItems.length > 0 ? (
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {wishlistItems.map((product) => (
-                <ProductCard key={product.id} product={product} />
-            ))}
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+              {wishlistItems.map((product) => (
+                  <ProductCard key={product.id} product={product} />
+              ))}
             </div>
         ) : (
             <div className="flex flex-col items-center justify-center rounded-[3rem] border-2 border-dashed border-border bg-card py-24 text-center">
@@ -79,7 +81,7 @@ function WishlistContent() {
                     Start exploring our catalog and click the heart icon on items you love!
                 </p>
                 <div className="mt-8">
-                  <Link href="/search" className="bg-primary text-white px-8 py-3 rounded-full font-bold hover:bg-primary/90 transition-all">
+                  <Link href="/search" className="bg-primary text-white px-8 py-3 rounded-full font-bold hover:bg-primary/90 transition-all shadow-md">
                     Browse Products
                   </Link>
                 </div>
@@ -89,8 +91,6 @@ function WishlistContent() {
     </div>
   );
 }
-
-import Link from 'next/link';
 
 export default function WishlistPage() {
     return (

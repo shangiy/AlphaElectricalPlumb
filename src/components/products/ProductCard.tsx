@@ -3,99 +3,28 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, Heart, ShoppingCart, Loader2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ShoppingCart } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Product } from '@/lib/types';
 import { Rating } from '@/components/ui/rating';
 import { useCart } from '@/context/CartProvider';
-import { useAuth } from '@/context/AuthProvider';
-import { supabase } from '@/lib/supabase';
-import { useToast } from '@/hooks/use-toast';
+import WishlistButton from './WishlistButton';
 
 /**
- * Premium Interactive Product Card v2.4.1:
- * Features: Supabase Wishlist Sync, dual buttons, hover carousel, and refined pricing.
+ * Premium Interactive Product Card v2.5.0:
+ * Features: Live Supabase Wishlist integration, dynamic units, and hover carousel.
  */
 export default function ProductCard({ product }: { product: Product }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
   const [failedUrls, setFailedUrls] = useState<Set<string>>(new Set());
-  const [isInWishlist, setIsInWishlist] = useState(false);
-  const [isWishlistLoading, setIsWishlistLoading] = useState(false);
   
   const { addToCart } = useCart();
-  const { user } = useAuth();
-  const { toast } = useToast();
 
   useEffect(() => {
     setCurrentIndex(0);
     setFailedUrls(new Set());
   }, [product.id, product.imageUrls]);
-
-  // Check if item is in user's Supabase wishlist
-  useEffect(() => {
-    const checkWishlistStatus = async () => {
-      if (!user || !supabase) return;
-      try {
-        const { data, error } = await supabase
-          .from('wishlists')
-          .select('id')
-          .eq('user_id', user.id)
-          .eq('product_id', product.id)
-          .maybeSingle();
-
-        if (data) setIsInWishlist(true);
-      } catch (e) {
-        console.error("Wishlist status check failed:", e);
-      }
-    };
-    checkWishlistStatus();
-  }, [user, product.id]);
-
-  const handleWishlistToggle = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    if (!user) {
-      toast({
-        title: "Login Required",
-        description: "Please sign in to save items to your wishlist.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!supabase) return;
-
-    setIsWishlistLoading(true);
-    try {
-      if (isInWishlist) {
-        const { error } = await supabase
-          .from('wishlists')
-          .delete()
-          .eq('user_id', user.id)
-          .eq('product_id', product.id);
-        
-        if (!error) {
-          setIsInWishlist(false);
-          toast({ description: "Removed from wishlist." });
-        }
-      } else {
-        const { error } = await supabase
-          .from('wishlists')
-          .insert([{ user_id: user.id, product_id: product.id }]);
-        
-        if (!error) {
-          setIsInWishlist(true);
-          toast({ description: "Added to wishlist!" });
-        }
-      }
-    } catch (err) {
-      toast({ variant: "destructive", description: "Could not update wishlist." });
-    } finally {
-      setIsWishlistLoading(false);
-    }
-  };
 
   // Self-healing: filter out URLs that have failed to load
   const activeImages = useMemo(() => {
@@ -165,18 +94,11 @@ export default function ProductCard({ product }: { product: Product }) {
           ))}
         </Link>
 
-        {/* Wishlist Heart Icon - Supabase Linked */}
-        <button 
-          onClick={handleWishlistToggle}
-          disabled={isWishlistLoading}
-          className={cn(
-            "absolute top-3 right-3 p-2 rounded-full backdrop-blur-sm transition-all shadow-sm z-10",
-            isInWishlist ? "bg-red-50 text-red-500" : "bg-white/80 text-muted-foreground hover:text-red-500"
-          )}
-          aria-label={isInWishlist ? "Remove from wishlist" : "Add to wishlist"}
-        >
-          {isWishlistLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Heart className={cn("h-4 w-4", isInWishlist && "fill-current")} />}
-        </button>
+        {/* Live Wishlist Sync Button */}
+        <WishlistButton 
+          productId={product.id} 
+          className="absolute top-3 right-3 z-10" 
+        />
 
         {/* Hover Navigation Arrows */}
         {activeImages.length > 1 && (
@@ -271,7 +193,8 @@ export default function ProductCard({ product }: { product: Product }) {
                 className="flex-1 rounded-xl text-xs font-bold bg-[#3b82f6] hover:bg-[#2563eb] h-9"
                 onClick={handleAddToCart}
             >
-                Add to Cart
+                <ShoppingCart className="mr-1 h-3.5 w-3.5" />
+                Add
             </Button>
         </div>
       </div>
