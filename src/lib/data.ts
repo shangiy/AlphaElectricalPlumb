@@ -4,17 +4,13 @@ import { supabase } from './supabase';
 /**
  * Robust Image URL Resolver:
  * Centralized logic used by all product cards and detail pages.
- * Handles existing paths, new Supabase URLs, and malformed bracketed path arrays.
  */
 const resolveProductImages = (product: any): string[] => {
   if (!supabase) return ["/placeholder.jpg"];
 
-  // 1. Direct URL check: if it's already a full link and not "poisoned" by brackets, use it.
+  // 1. Direct URL check: if it's already a full Supabase link, use it.
   if (Array.isArray(product.image_urls) && product.image_urls.length > 0) {
-      const firstUrl = product.image_urls[0];
-      if (firstUrl && firstUrl.startsWith('http') && !firstUrl.includes('%5B')) {
-          return product.image_urls;
-      }
+      return product.image_urls.filter(url => typeof url === 'string' && url.startsWith('http'));
   }
 
   // 2. Path-based resolution for legacy catalog
@@ -25,12 +21,12 @@ const resolveProductImages = (product: any): string[] => {
 
   let basePaths: string[] = [];
   
-  // Robust parsing for dirty bracketed strings like [path1, path2]
+  // Handle bracketed pseudo-arrays often found in migration scripts
   if (rawPath.startsWith('[') && rawPath.endsWith(']')) {
     try {
       basePaths = JSON.parse(rawPath.replace(/[\r\n]/g, '').trim());
     } catch (e) {
-      basePaths = rawPath.slice(1, -1).split(',').map(p => p.trim()).filter(Boolean);
+      basePaths = rawPath.slice(1, -1).split(',').map((p: string) => p.trim()).filter(Boolean);
     }
   } else {
     basePaths = [rawPath];
@@ -45,7 +41,7 @@ const resolveProductImages = (product: any): string[] => {
       .replace(/\\/g, '/')
       .replace(/^\/+/, '');
 
-    // Generate candidates for different nesting levels
+    // Check common Supabase folder patterns
     allCandidates.push(supabase.storage.from('product-images').getPublicUrl(`product images/${cleanPath}`).data.publicUrl);
     allCandidates.push(supabase.storage.from('product-images').getPublicUrl(`product-images/${cleanPath}`).data.publicUrl);
     allCandidates.push(supabase.storage.from('product-images').getPublicUrl(cleanPath).data.publicUrl);
@@ -54,6 +50,10 @@ const resolveProductImages = (product: any): string[] => {
   return Array.from(new Set(allCandidates));
 };
 
+/**
+ * Fetches the complete catalog from Supabase.
+ * This is the single source of truth for both Studio and Vercel.
+ */
 export async function getProducts(): Promise<Product[]> {
   try {
     if (!supabase) return [];
@@ -65,7 +65,7 @@ export async function getProducts(): Promise<Product[]> {
     if (error) throw error;
 
     return (data || [])
-      .filter(p => p.id !== '8b4af5ab-e423-4f9e-bb93-0621679938b1') // REMOVE DUPLICATE PRODUCT AS REQUESTED
+      .filter(p => p.id !== '8b4af5ab-e423-4f9e-bb93-0621679938b1') // Removed duplicate as requested
       .map(p => ({
         id: p.id,
         name: p.name || "Unnamed Product",
@@ -83,7 +83,7 @@ export async function getProducts(): Promise<Product[]> {
         barcode: p.barcode || ""
       })) as Product[];
   } catch (error) {
-    console.error("Error fetching products:", error);
+    console.error("Supabase Sync Error:", error);
     return [];
   }
 }
@@ -102,9 +102,9 @@ export async function getCategories(): Promise<Category[]> {
 }
 
 const defaultCategories: Category[] = [
-    { id: 'Tanks category', name: 'Water Tanks' },
+    { id: 'Tanks', name: 'Water Tanks' },
     { id: 'Plumbing', name: 'Plumbing' },
-    { id: 'Decorative Lighting and chandeliers', name: 'Electricals' },
+    { id: 'Electricals', name: 'Electricals' },
 ];
 
 export const carouselCategories: CarouselCategory[] = [
@@ -121,10 +121,13 @@ export async function getUsers(): Promise<MockUser[]> {
 }
 
 export async function getTransactions(): Promise<Transaction[]> {
+  // In a full implementation, this would fetch from a 'transactions' table
   return [];
 }
 
 export const availableAvatars = [
     { url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix', alt: 'Avatar 1' },
     { url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka', alt: 'Avatar 2' },
+    { url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alpha', alt: 'Avatar 3' },
+    { url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Staff', alt: 'Avatar 4' },
 ];
