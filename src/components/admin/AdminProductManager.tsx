@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Loader2, Upload, Edit, Package, Trash2, CheckCircle, AlertCircle } from 'lucide-react';
+import { Loader2, Upload, Edit, Package, Trash2, CheckCircle, AlertCircle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
@@ -94,7 +94,7 @@ export default function AdminProductManager() {
       name,
       price: parseFloat(price),
       category,
-      description,
+      description: description,
       long_description: description,
       image_url: imageUrl,
       image_urls: [imageUrl], // Store in array format for compatibility
@@ -104,9 +104,11 @@ export default function AdminProductManager() {
     try {
       let error;
       if (selectedProduct) {
+        // Update existing record
         const res = await supabase.from('products').update(productData).eq('id', selectedProduct.id);
         error = res.error;
       } else {
+        // Create new record
         const res = await supabase.from('products').insert([productData]);
         error = res.error;
       }
@@ -115,7 +117,7 @@ export default function AdminProductManager() {
 
       toast({ 
         title: selectedProduct ? 'Product Updated' : 'Product Created', 
-        description: `"${name}" has been saved to Supabase.` 
+        description: `"${name}" has been synchronized with Supabase.` 
       });
       
       resetForm();
@@ -132,17 +134,43 @@ export default function AdminProductManager() {
   };
 
   const handleDelete = async (id: string, productName: string) => {
-    if (!confirm(`Are you sure you want to delete "${productName}"?`)) return;
+    if (!confirm(`Permanently delete "${productName}" from inventory and Supabase?`)) return;
     
+    setLoading(true);
     try {
       const { error } = await supabase.from('products').delete().eq('id', id);
       if (error) throw error;
       
-      toast({ title: 'Deleted', description: 'Product removed from database.' });
+      toast({ title: 'Item Deleted', description: 'Product removed from Supabase database.' });
+      
+      // If we were editing this product, clear the form
+      if (selectedProduct?.id === id) {
+          resetForm();
+      }
+      
       fetchProducts();
     } catch (err: any) {
       toast({ variant: 'destructive', title: 'Delete Error', description: err.message });
+    } finally {
+      setLoading(false);
     }
+  };
+
+  const handleEdit = (p: any) => {
+    setSelectedProduct(p);
+    setName(p.name || '');
+    setPrice(p.price?.toString() || '');
+    setCategory(p.category || '');
+    setDescription(p.description || p.long_description || '');
+    setImageUrl(p.image_url || (p.image_urls && p.image_urls[0]) || '');
+    
+    // Smooth scroll to top form
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    
+    toast({
+        title: "Edit Mode Active",
+        description: `Updating details for "${p.name}".`,
+    });
   };
 
   const resetForm = () => {
@@ -154,26 +182,22 @@ export default function AdminProductManager() {
     setImageUrl('');
   };
 
-  const handleEdit = (p: any) => {
-    setSelectedProduct(p);
-    setName(p.name || '');
-    setPrice(p.price?.toString() || '');
-    setCategory(p.category || '');
-    setDescription(p.description || p.long_description || '');
-    setImageUrl(p.image_url || (p.image_urls && p.image_urls[0]) || '');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b pb-6">
         <div>
           <h2 className="text-3xl font-black font-headline text-accent tracking-tighter">Inventory Master</h2>
-          <p className="text-muted-foreground text-sm font-medium">Synced with 'product-images' bucket and Products table</p>
+          <p className="text-muted-foreground text-sm font-medium">Synchronized with Supabase Products and 'product-images' bucket</p>
         </div>
-        <div className="flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full border border-primary/20">
-          <CheckCircle className="h-4 w-4" />
-          <span className="text-xs font-bold uppercase tracking-widest">Bidirectional Sync Active</span>
+        <div className="flex items-center gap-3">
+            <Button variant="outline" size="sm" className="rounded-full" onClick={fetchProducts} disabled={loading}>
+                <RefreshCw className={loading ? "animate-spin mr-2 h-4 w-4" : "mr-2 h-4 w-4"} />
+                Sync Now
+            </Button>
+            <div className="flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full border border-primary/20">
+              <CheckCircle className="h-4 w-4" />
+              <span className="text-xs font-bold uppercase tracking-widest">Live Integration</span>
+            </div>
         </div>
       </div>
 
@@ -181,25 +205,30 @@ export default function AdminProductManager() {
         {/* Form Column */}
         <div className="lg:col-span-1">
           <form onSubmit={handleSaveProduct} className="sticky top-24 bg-card p-6 rounded-3xl border shadow-xl space-y-6">
-            <h3 className="text-xl font-bold font-headline text-primary flex items-center gap-2">
-              {selectedProduct ? <Edit className="h-5 w-5" /> : <Package className="h-5 w-5" />}
-              {selectedProduct ? 'Edit Product' : 'Add New Item'}
-            </h3>
+            <div className="flex justify-between items-center">
+                <h3 className="text-xl font-bold font-headline text-primary flex items-center gap-2">
+                {selectedProduct ? <Edit className="h-5 w-5" /> : <Package className="h-5 w-5" />}
+                {selectedProduct ? 'Update Item' : 'New Catalog Item'}
+                </h3>
+                {selectedProduct && (
+                    <span className="text-[10px] font-black uppercase bg-blue-100 text-blue-700 px-2 py-1 rounded">Edit ID: {selectedProduct.id.slice(0, 8)}</span>
+                )}
+            </div>
             
             <div className="space-y-4">
               <div className="space-y-2">
                 <label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Product Name</label>
-                <Input value={name} onChange={(e) => setName(e.target.value)} required placeholder="e.g., Kentank 5000L" className="rounded-xl" />
+                <Input value={name} onChange={(e) => setName(e.target.value)} required placeholder="e.g., Kentank 5000L" className="rounded-xl border-muted-foreground/20" />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Price (KES)</label>
-                  <Input type="number" value={price} onChange={(e) => setPrice(e.target.value)} required placeholder="0.00" className="rounded-xl" />
+                  <Input type="number" value={price} onChange={(e) => setPrice(e.target.value)} required placeholder="0.00" className="rounded-xl border-muted-foreground/20" />
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Category</label>
-                  <Input value={category} onChange={(e) => setCategory(e.target.value)} required placeholder="e.g., Tanks" className="rounded-xl" />
+                  <Input value={category} onChange={(e) => setCategory(e.target.value)} required placeholder="e.g., Tanks" className="rounded-xl border-muted-foreground/20" />
                 </div>
               </div>
 
@@ -208,13 +237,13 @@ export default function AdminProductManager() {
                 <textarea 
                   value={description} 
                   onChange={(e) => setDescription(e.target.value)} 
-                  className="w-full min-h-[100px] p-3 rounded-xl border bg-background text-sm focus:ring-2 focus:ring-primary outline-none transition-all"
-                  placeholder="Technical specs..."
+                  className="w-full min-h-[100px] p-3 rounded-xl border border-muted-foreground/20 bg-background text-sm focus:ring-2 focus:ring-primary outline-none transition-all"
+                  placeholder="Technical specifications and details..."
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Media Upload</label>
+                <label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Image Media</label>
                 <div className="relative group cursor-pointer border-2 border-dashed rounded-2xl p-4 hover:border-primary transition-colors bg-muted/30">
                   <input 
                     type="file" 
@@ -226,19 +255,20 @@ export default function AdminProductManager() {
                   {uploading ? (
                     <div className="flex flex-col items-center gap-2 py-4">
                       <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                      <span className="text-[10px] font-bold text-primary uppercase">Uploading...</span>
+                      <span className="text-[10px] font-bold text-primary uppercase">Uploading to Supabase...</span>
                     </div>
                   ) : imageUrl ? (
-                    <div className="relative aspect-video rounded-lg overflow-hidden border bg-white">
+                    <div className="relative aspect-video rounded-lg overflow-hidden border bg-white shadow-inner">
                       <img src={imageUrl} alt="Preview" className="w-full h-full object-contain" />
-                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center transition-opacity">
                          <Upload className="text-white h-8 w-8" />
+                         <span className="text-[10px] text-white font-bold uppercase mt-2">Change Image</span>
                       </div>
                     </div>
                   ) : (
                     <div className="flex flex-col items-center gap-2 py-8 text-muted-foreground">
                       <Upload className="h-8 w-8 opacity-50" />
-                      <span className="text-[10px] font-bold uppercase tracking-tighter">Click to Upload</span>
+                      <span className="text-[10px] font-bold uppercase tracking-tighter">Click to Upload New Asset</span>
                     </div>
                   )}
                 </div>
@@ -246,7 +276,7 @@ export default function AdminProductManager() {
             </div>
 
             <div className="flex gap-3 pt-4">
-              <Button type="submit" disabled={loading || uploading} className="flex-1 rounded-full font-bold h-12 shadow-lg">
+              <Button type="submit" disabled={loading || uploading} className="flex-1 rounded-full font-bold h-12 shadow-lg transition-transform active:scale-95">
                 {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
                 {selectedProduct ? 'Update Product' : 'Create Product'}
               </Button>
@@ -262,18 +292,19 @@ export default function AdminProductManager() {
         {/* List Column */}
         <div className="lg:col-span-2 space-y-4">
           <div className="bg-card rounded-3xl border shadow-xl overflow-hidden">
-            <div className="p-6 border-b bg-muted/30">
-              <h3 className="text-lg font-bold font-headline text-accent">Active Inventory ({products.length} items)</h3>
+            <div className="p-6 border-b bg-muted/30 flex justify-between items-center">
+              <h3 className="text-lg font-bold font-headline text-accent uppercase tracking-tighter">Active Supabase Catalog ({products.length})</h3>
+              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Real-time Table Data</p>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-muted/50 border-b text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                    <th className="p-4 w-[80px]">Image</th>
-                    <th className="p-4">Details</th>
+                    <th className="p-4 w-[80px]">Media</th>
+                    <th className="p-4">Product Details</th>
                     <th className="p-4 hidden sm:table-cell">Category</th>
-                    <th className="p-4 text-right">Price</th>
-                    <th className="p-4 text-right">Actions</th>
+                    <th className="p-4 text-right">Price (KES)</th>
+                    <th className="p-4 text-right">Operations</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y">
@@ -287,16 +318,16 @@ export default function AdminProductManager() {
                   ) : products.map((p) => (
                     <tr key={p.id} className="hover:bg-primary/5 transition-colors group">
                       <td className="p-4">
-                        <div className="w-16 h-16 rounded-xl overflow-hidden border bg-white shadow-sm">
+                        <div className="w-14 h-14 rounded-xl overflow-hidden border bg-white shadow-sm ring-1 ring-black/5">
                           <img src={p.image_url || (p.image_urls && p.image_urls[0]) || '/placeholder.jpg'} alt="" className="w-full h-full object-cover transition-transform group-hover:scale-110" />
                         </div>
                       </td>
                       <td className="p-4">
                         <p className="font-bold text-sm text-accent leading-tight line-clamp-1">{p.name}</p>
-                        <p className="text-[10px] text-muted-foreground mt-1 line-clamp-1 italic">{p.description || 'No description'}</p>
+                        <p className="text-[10px] text-muted-foreground mt-1 line-clamp-1 italic">{p.description || 'No description provided'}</p>
                       </td>
                       <td className="p-4 hidden sm:table-cell">
-                        <span className="text-[10px] font-black uppercase tracking-wider bg-muted px-2 py-1 rounded-md border text-muted-foreground">
+                        <span className="text-[10px] font-black uppercase tracking-wider bg-white px-2 py-1 rounded-md border text-muted-foreground">
                           {p.category}
                         </span>
                       </td>
@@ -305,10 +336,18 @@ export default function AdminProductManager() {
                       </td>
                       <td className="p-4 text-right">
                         <div className="flex justify-end gap-2">
-                          <button onClick={() => handleEdit(p)} className="p-2 hover:bg-blue-100 text-blue-600 rounded-lg transition-colors" title="Edit Item">
+                          <button 
+                            onClick={() => handleEdit(p)} 
+                            className="p-2 hover:bg-blue-100 text-blue-600 rounded-lg transition-colors border border-transparent hover:border-blue-200" 
+                            title="Edit Item"
+                          >
                             <Edit className="h-4 w-4" />
                           </button>
-                          <button onClick={() => handleDelete(p.id, p.name)} className="p-2 hover:bg-red-100 text-red-600 rounded-lg transition-colors" title="Delete Item">
+                          <button 
+                            onClick={() => handleDelete(p.id, p.name)} 
+                            className="p-2 hover:bg-red-100 text-red-600 rounded-lg transition-colors border border-transparent hover:border-red-200" 
+                            title="Delete Item"
+                          >
                             <Trash2 className="h-4 w-4" />
                           </button>
                         </div>
@@ -320,11 +359,11 @@ export default function AdminProductManager() {
             </div>
           </div>
           
-          <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-r-xl flex gap-3">
-             <AlertCircle className="h-5 w-5 text-yellow-600 shrink-0" />
-             <div className="text-xs text-yellow-800">
-                <p className="font-bold uppercase tracking-wider mb-1">Security Notice</p>
-                <p>All uploads require Admin or Staff role permissions in Supabase. Your public bucket allows instant client viewing.</p>
+          <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-xl flex gap-3 shadow-sm">
+             <AlertCircle className="h-5 w-5 text-blue-600 shrink-0" />
+             <div className="text-xs text-blue-800">
+                <p className="font-black uppercase tracking-wider mb-1">Bidirectional Access</p>
+                <p>Changes made here reflect instantly on the public website and in the Supabase Table Editor. Role-based policies (Admin/Staff) are active for all mutations.</p>
              </div>
           </div>
         </div>
