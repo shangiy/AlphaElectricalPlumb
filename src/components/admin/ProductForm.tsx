@@ -30,16 +30,18 @@ import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { useEffect, useState } from 'react';
 import ImageUpload from '@/components/admin/ImageUpload';
-import { Loader2, Plus } from 'lucide-react';
+import { Loader2, Plus, Save, ArrowLeft } from 'lucide-react';
 
 const productFormSchema = z.object({
   name: z.string().min(3, 'Product name must be at least 3 characters.'),
   description: z.string().min(10, 'Description must be at least 10 characters.'),
+  longDescription: z.string().min(20, 'Long description is required for details page.'),
   price: z.coerce.number().min(0, 'Price must be a positive number.'),
   category: z.string().min(1, 'Please select a category.'),
   barcode: z.string().optional(),
   isFeatured: z.boolean().default(false),
-  colors: z.array(z.string()).optional(),
+  stockCount: z.coerce.number().default(0),
+  unit: z.string().default('item'),
   imageUrls: z.array(z.string()).min(1, 'Please add at least one image.'),
 });
 
@@ -52,8 +54,6 @@ export default function ProductForm({ product }: ProductFormProps) {
     const router = useRouter();
     const { toast } = useToast();
     const [categories, setCategories] = useState<Category[]>([]);
-    const [isAddingNewCategory, setIsAddingNewCategory] = useState(false);
-    const [newCategoryName, setNewCategoryName] = useState('');
 
     useEffect(() => {
         async function loadCategories() {
@@ -67,173 +67,225 @@ export default function ProductForm({ product }: ProductFormProps) {
         resolver: zodResolver(productFormSchema),
         defaultValues: {
             name: product?.name || '',
-            description: product?.longDescription || '',
+            description: product?.description || '',
+            longDescription: product?.longDescription || '',
             price: product?.price || 0,
             category: product?.category || '',
             barcode: product?.barcode || '',
             isFeatured: product?.isFeatured || false,
-            colors: product?.colors || [],
+            stockCount: product?.stockCount || 50,
+            unit: product?.unit || 'item',
             imageUrls: product?.imageUrls || [],
         },
     });
 
     async function onSubmit(data: z.infer<typeof productFormSchema>) {
-        const formData: ProductFormData = { ...data };
         try {
             if (product) {
-                await updateProduct(product.id, formData);
-                toast({ title: "Product Updated!", description: `"${data.name}" has been saved.` });
+                await updateProduct(product.id, data);
+                toast({ title: "Synchronized!", description: `"${data.name}" has been updated in Supabase.` });
             } else {
-                await addProduct(formData);
-                toast({ title: "Product Added!", description: `"${data.name}" has been created.` });
+                await addProduct(data);
+                toast({ title: "Product Created!", description: `"${data.name}" added to database.` });
             }
-            router.push('/admin/products');
-        } catch (error) {
-            toast({ variant: 'destructive', title: 'Save Failed', description: 'An error occurred while saving.' });
+            router.push('/admin');
+        } catch (error: any) {
+            toast({ variant: 'destructive', title: 'Sync Failed', description: error.message || 'An error occurred while saving.' });
         }
     }
 
-    const handleAddNewCategory = () => {
-        if (!newCategoryName.trim()) return;
-        const catName = newCategoryName.trim();
-        setCategories(prev => [...prev, { id: catName, name: catName }]);
-        form.setValue('category', catName);
-        setIsAddingNewCategory(false);
-        setNewCategoryName('');
-    };
-
     return (
        <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="animate-in fade-in duration-700">
                 <CardContent className="space-y-8 pt-6">
-                    <FormField
-                        control={form.control}
-                        name="name"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Product Name</FormLabel>
-                                <FormControl>
-                                    <Input placeholder="e.g., Kentank 2000L" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
+                    <div className="flex items-center justify-between border-b pb-4">
+                        <div className="flex items-center gap-4">
+                            <Button variant="ghost" type="button" onClick={() => router.push('/admin')} className="rounded-full">
+                                <ArrowLeft className="h-4 w-4 mr-2" /> Back
+                            </Button>
+                            <h2 className="text-2xl font-black font-headline text-accent uppercase tracking-tighter">
+                                {product ? `Editing: ${product.name}` : 'Create New Inventory'}
+                            </h2>
+                        </div>
+                        {product && (
+                            <span className="text-[10px] font-black uppercase bg-primary/10 text-primary px-3 py-1 rounded-full border border-primary/20">
+                                Product ID: {product.id.toString().slice(0, 8)}
+                            </span>
                         )}
-                    />
-                    <FormField
-                        control={form.control}
-                        name="description"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Product Description</FormLabel>
-                                <FormControl>
-                                    <Textarea placeholder="Describe the product..." {...field} rows={5} />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <FormField
-                            control={form.control}
-                            name="price"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Price (KES)</FormLabel>
-                                    <FormControl>
-                                        <Input type="number" placeholder="e.g., 15000" {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="barcode"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Barcode / SKU</FormLabel>
-                                    <FormControl>
-                                        <Input placeholder="e.g., ALPHA-TANK-001" {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
                     </div>
 
-                    <div className="space-y-4">
-                        <FormField
-                            control={form.control}
-                            name="category"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Category</FormLabel>
-                                    {isAddingNewCategory ? (
-                                        <div className="flex gap-2">
-                                            <Input 
-                                                placeholder="Enter new category name..." 
-                                                value={newCategoryName}
-                                                onChange={(e) => setNewCategoryName(e.target.value)}
-                                                autoFocus
-                                            />
-                                            <Button type="button" onClick={handleAddNewCategory}>Add</Button>
-                                            <Button type="button" variant="ghost" onClick={() => setIsAddingNewCategory(false)}>Cancel</Button>
-                                        </div>
-                                    ) : (
-                                        <div className="flex gap-2">
-                                            <Select onValueChange={field.onChange} value={field.value}>
-                                                <FormControl>
-                                                <SelectTrigger className="flex-1">
-                                                    <SelectValue placeholder="Select a category" />
-                                                </SelectTrigger>
-                                                </FormControl>
-                                                <SelectContent>
-                                                {categories.map((category) => (
-                                                    <SelectItem key={category.id} value={category.name}>
-                                                        {category.name}
-                                                    </SelectItem>
-                                                ))}
-                                                </SelectContent>
-                                            </Select>
-                                            <Button 
-                                                type="button" 
-                                                variant="outline" 
-                                                size="icon" 
-                                                title="Add New Category"
-                                                onClick={() => setIsAddingNewCategory(true)}
-                                            >
-                                                <Plus className="h-4 w-4" />
-                                            </Button>
-                                        </div>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                        <div className="space-y-6">
+                            <FormField
+                                control={form.control}
+                                name="name"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel className="text-xs font-black uppercase tracking-widest text-muted-foreground">Product Title</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="e.g., Kentank 2000L" {...field} className="h-12 text-lg font-bold rounded-xl" />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            
+                            <div className="grid grid-cols-2 gap-6">
+                                <FormField
+                                    control={form.control}
+                                    name="price"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className="text-xs font-black uppercase tracking-widest text-muted-foreground">Price (KES)</FormLabel>
+                                            <FormControl>
+                                                <Input type="number" {...field} className="h-12 font-mono font-bold rounded-xl" />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
                                     )}
-                                    <FormDescription>Select a category or add a new one. This will sync with Supabase.</FormDescription>
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="stockCount"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className="text-xs font-black uppercase tracking-widest text-muted-foreground">Current Stock</FormLabel>
+                                            <FormControl>
+                                                <Input type="number" {...field} className="h-12 font-mono rounded-xl" />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+
+                            <FormField
+                                control={form.control}
+                                name="category"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel className="text-xs font-black uppercase tracking-widest text-muted-foreground">Inventory Category</FormLabel>
+                                        <Select onValueChange={field.onChange} value={field.value}>
+                                            <FormControl>
+                                            <SelectTrigger className="h-12 rounded-xl">
+                                                <SelectValue placeholder="Select a category" />
+                                            </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                            {categories.map((category) => (
+                                                <SelectItem key={category.id} value={category.name}>
+                                                    {category.name}
+                                                </SelectItem>
+                                            ))}
+                                            </SelectContent>
+                                        </Select>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                             <div className="grid grid-cols-2 gap-6">
+                                <FormField
+                                    control={form.control}
+                                    name="unit"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className="text-xs font-black uppercase tracking-widest text-muted-foreground">Measurement Unit</FormLabel>
+                                            <FormControl>
+                                                <Input {...field} placeholder="e.g., item, meter, roll" className="rounded-xl" />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="barcode"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className="text-xs font-black uppercase tracking-widest text-muted-foreground">Barcode / SKU</FormLabel>
+                                            <FormControl>
+                                                <Input {...field} className="rounded-xl" />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+                        </div>
+
+                        <div className="space-y-6">
+                            <FormField
+                                control={form.control}
+                                name="description"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel className="text-xs font-black uppercase tracking-widest text-muted-foreground">Short Summary</FormLabel>
+                                        <FormControl>
+                                            <Textarea {...field} rows={3} className="rounded-xl resize-none" />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                            <FormField
+                                control={form.control}
+                                name="longDescription"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel className="text-xs font-black uppercase tracking-widest text-muted-foreground">Full Technical Description</FormLabel>
+                                        <FormControl>
+                                            <Textarea {...field} rows={6} className="rounded-xl resize-none" />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                            <FormField
+                                control={form.control}
+                                name="isFeatured"
+                                render={({ field }) => (
+                                    <div className="flex items-center gap-3 p-4 bg-muted/30 rounded-2xl border border-dashed">
+                                        <input 
+                                            type="checkbox" 
+                                            checked={field.value} 
+                                            onChange={field.onChange} 
+                                            className="w-5 h-5 accent-primary cursor-pointer"
+                                            id="featured-edit"
+                                        />
+                                        <label htmlFor="featured-edit" className="text-sm font-bold text-accent cursor-pointer">Promote this product on Homepage</label>
+                                    </div>
+                                )}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="pt-8 border-t">
+                        <Controller
+                            control={form.control}
+                            name="imageUrls"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel className="text-xs font-black uppercase tracking-widest text-muted-foreground">Gallery Management (Supabase Storage)</FormLabel>
+                                    <FormControl>
+                                        <ImageUpload value={field.value} onChange={field.onChange} />
+                                    </FormControl>
                                     <FormMessage />
                                 </FormItem>
                             )}
                         />
                     </div>
-                    
-                    <Controller
-                        control={form.control}
-                        name="imageUrls"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Product Images (Storage URLs)</FormLabel>
-                                <FormControl>
-                                    <ImageUpload value={field.value} onChange={field.onChange} />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-
                 </CardContent>
-                <CardFooter className="border-t px-6 py-4">
-                    <div className="flex justify-end gap-2 w-full">
-                        <Button variant="outline" type="button" onClick={() => router.push('/admin/products')}>Cancel</Button>
-                        <Button type="submit" disabled={submitting}>
-                            {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            Save Product
+                <CardFooter className="border-t px-6 py-6 bg-muted/10">
+                    <div className="flex justify-end gap-3 w-full max-w-4xl mx-auto">
+                        <Button variant="outline" type="button" onClick={() => router.push('/admin')} className="rounded-full h-12 px-8 font-bold">
+                            Discard Changes
+                        </Button>
+                        <Button type="submit" disabled={submitting} className="rounded-full h-12 px-12 font-black uppercase tracking-wider shadow-xl transition-all hover:scale-105 active:scale-95">
+                            {submitting ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Save className="mr-2 h-5 w-5" />}
+                            Sync with Supabase
                         </Button>
                     </div>
                 </CardFooter>

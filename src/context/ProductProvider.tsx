@@ -1,4 +1,3 @@
-
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
@@ -39,14 +38,11 @@ export function ProductProvider({ children }: ProductProviderProps) {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
-  /**
-   * Refreshes the local state from Supabase.
-   */
   const fetchProducts = useCallback(async () => {
     setLoading(true);
     try {
       const data = await getProducts();
-      setProducts(data);
+      setProducts(data || []);
     } catch (error) {
       console.error("Fetch products failed:", error);
     } finally {
@@ -59,10 +55,6 @@ export function ProductProvider({ children }: ProductProviderProps) {
 
     if (!supabase) return;
 
-    /**
-     * Real-time Synchronization:
-     * Listens for changes to the 'products' table and auto-refreshes.
-     */
     const channel = supabase
       .channel('public-products-sync')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => {
@@ -79,46 +71,58 @@ export function ProductProvider({ children }: ProductProviderProps) {
     if (!supabase) throw new Error("Database service is unavailable.");
     setSubmitting(true);
     try {
-      // Map frontend fields to common Supabase column names
-      const { error } = await supabase.from('products').insert([{
+      const payload: Record<string, any> = {
         name: productData.name,
         price: productData.price,
         category: productData.category,
         description: productData.description,
         long_description: productData.longDescription,
         image_urls: productData.imageUrls,
-        is_featured: productData.isFeatured,
-        stock_count: productData.stockCount,
-        barcode: productData.barcode,
+        image_url: productData.imageUrls?.[0] || '',
+        image: productData.imageUrls?.[0] || '',
+        is_featured: productData.isFeatured ?? false,
+        stock_count: productData.stockCount ?? 0,
         unit: productData.unit || 'item'
-      }]);
+      };
+
+      if (productData.barcode) payload.barcode = productData.barcode;
+
+      const { error } = await supabase.from('products').insert([payload]);
       if (error) throw error;
+      await fetchProducts();
     } finally {
       setSubmitting(false);
     }
-  }, []);
+  }, [fetchProducts]);
 
   const updateProduct = useCallback(async (productId: string, productData: Partial<ProductFormData>) => {
     if (!supabase) throw new Error("Database service is unavailable.");
     setSubmitting(true);
     try {
-      const { error } = await supabase.from('products').update({
-        name: productData.name,
-        price: productData.price,
-        category: productData.category,
-        description: productData.description,
-        long_description: productData.longDescription,
-        image_urls: productData.imageUrls,
-        is_featured: productData.isFeatured,
-        stock_count: productData.stockCount,
-        barcode: productData.barcode,
-        unit: productData.unit
-      }).eq('id', productId);
+      const payload: Record<string, any> = {};
+      if (productData.name !== undefined) payload.name = productData.name;
+      if (productData.price !== undefined) payload.price = productData.price;
+      if (productData.category !== undefined) payload.category = productData.category;
+      if (productData.description !== undefined) payload.description = productData.description;
+      if (productData.longDescription !== undefined) payload.long_description = productData.longDescription;
+      if (productData.imageUrls !== undefined) {
+        payload.image_urls = productData.imageUrls;
+        payload.image_url = productData.imageUrls[0] || '';
+        payload.image = productData.imageUrls[0] || '';
+      }
+      if (productData.isFeatured !== undefined) payload.is_featured = productData.isFeatured;
+      if (productData.stockCount !== undefined) payload.stock_count = productData.stockCount;
+      if (productData.barcode !== undefined) payload.barcode = productData.barcode;
+      if (productData.unit !== undefined) payload.unit = productData.unit;
+      payload.updated_at = new Date().toISOString();
+
+      const { error } = await supabase.from('products').update(payload).eq('id', productId);
       if (error) throw error;
+      await fetchProducts();
     } finally {
       setSubmitting(false);
     }
-  }, []);
+  }, [fetchProducts]);
 
   const deleteProduct = useCallback(async (productId: string) => {
     if (!supabase) throw new Error("Database service is unavailable.");
@@ -126,30 +130,33 @@ export function ProductProvider({ children }: ProductProviderProps) {
     try {
       const { error } = await supabase.from('products').delete().eq('id', productId);
       if (error) throw error;
+      await fetchProducts();
     } finally {
       setSubmitting(false);
     }
-  }, []);
+  }, [fetchProducts]);
 
   const toggleFeatured = useCallback(async (productId: string, currentStatus: boolean) => {
     if (!supabase) return;
     try {
       const { error } = await supabase.from('products').update({ is_featured: !currentStatus }).eq('id', productId);
       if (error) throw error;
+      await fetchProducts();
     } catch (e) {
       console.error("Toggle featured failed:", e);
     }
-  }, []);
+  }, [fetchProducts]);
 
   const updateStock = useCallback(async (productId: string, newCount: number) => {
     if (!supabase) return;
     try {
       const { error } = await supabase.from('products').update({ stock_count: Math.max(0, newCount) }).eq('id', productId);
       if (error) throw error;
+      await fetchProducts();
     } catch (e) {
       console.error("Update stock failed:", e);
     }
-  }, []);
+  }, [fetchProducts]);
 
   const getProductById = useCallback((productId: string): Product | undefined => {
       return products.find(p => p.id === productId);
