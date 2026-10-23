@@ -4,67 +4,51 @@ import { supabase } from './supabase';
 /**
  * Robust Image URL Resolver:
  * Centralized logic used by all product cards and detail pages.
- * Handles arrays, single strings, and legacy storage paths.
+ * Handles arrays, single strings, and various storage path patterns.
  */
 const resolveProductImages = (product: any): string[] => {
   if (!supabase) return ["/placeholder.jpg"];
 
   const urls: string[] = [];
 
-  // 1. Array check: if it's already a full Supabase link array, use it.
-  if (Array.isArray(product.image_urls) && product.image_urls.length > 0) {
-    product.image_urls.forEach((url: any) => {
-      if (typeof url === 'string' && url.startsWith('http')) urls.push(url);
+  // 1. Array check: handle common keys (image_urls, imageUrls, images, gallery)
+  const rawArray = product.image_urls || product.imageUrls || product.images || product.gallery;
+  if (Array.isArray(rawArray) && rawArray.length > 0) {
+    rawArray.forEach((val: any) => {
+      if (typeof val === 'string') {
+        if (val.startsWith('http')) {
+          urls.push(val);
+        } else {
+          // Resolve relative path from Supabase bucket
+          const cleanPath = val.replace(/\\/g, '/').replace(/^\/+/, '');
+          urls.push(supabase.storage.from('product-images').getPublicUrl(cleanPath).data.publicUrl);
+          // Fallback patterns
+          urls.push(supabase.storage.from('product-images').getPublicUrl(`product images/${cleanPath}`).data.publicUrl);
+          urls.push(supabase.storage.from('product-images').getPublicUrl(`uploads/${cleanPath}`).data.publicUrl);
+        }
+      }
     });
   }
 
-  // 2. Single URL check (image_url, image, or imageUrl columns)
-  const singleUrl = product.image_url || product.image || product.imageUrl;
-  if (singleUrl && typeof singleUrl === 'string' && singleUrl.startsWith('http')) {
-    urls.push(singleUrl);
-  }
-
-  if (urls.length > 0) return Array.from(new Set(urls));
-
-  // 3. Path-based resolution for legacy catalog or relative paths
-  const rawPath = (product.image_path || product.image || '').toString().trim();
-  if (!rawPath || rawPath.startsWith('http')) {
-      return urls.length > 0 ? urls : ["https://placehold.co/400x400?text=No+Image"];
-  }
-
-  let basePaths: string[] = [];
-  
-  if (rawPath.startsWith('[') && rawPath.endsWith(']')) {
-    try {
-      basePaths = JSON.parse(rawPath.replace(/[\r\n]/g, '').trim());
-    } catch (e) {
-      basePaths = rawPath.slice(1, -1).split(',').map((p: string) => p.trim()).filter(Boolean);
+  // 2. Single string check (image_url, image, imageUrl, image_path)
+  const singleVal = product.image_url || product.image || product.imageUrl || product.image_path || product.imagePath;
+  if (singleVal && typeof singleVal === 'string') {
+    if (singleVal.startsWith('http')) {
+      urls.push(singleVal);
+    } else {
+      const cleanPath = singleVal.replace(/\\/g, '/').replace(/^\/+/, '');
+      urls.push(supabase.storage.from('product-images').getPublicUrl(cleanPath).data.publicUrl);
+      urls.push(supabase.storage.from('product-images').getPublicUrl(`product images/${cleanPath}`).data.publicUrl);
     }
-  } else {
-    basePaths = [rawPath];
   }
 
-  basePaths.forEach(path => {
-    const cleanPath = path
-      .replace(/[\[\]]/g, '')
-      .replace(/^(product-images\/)+/i, '')
-      .replace(/^(product images\/)+/i, '')
-      .replace(/\\/g, '/')
-      .replace(/^\/+/, '');
-
-    // Check common Supabase folder patterns
-    urls.push(supabase.storage.from('product-images').getPublicUrl(`product images/${cleanPath}`).data.publicUrl);
-    urls.push(supabase.storage.from('product-images').getPublicUrl(`product-images/${cleanPath}`).data.publicUrl);
-    urls.push(supabase.storage.from('product-images').getPublicUrl(cleanPath).data.publicUrl);
-    urls.push(supabase.storage.from('product-images').getPublicUrl(`uploads/${cleanPath}`).data.publicUrl);
-  });
-
-  return Array.from(new Set(urls));
+  const uniqueUrls = Array.from(new Set(urls)).filter(url => url && !url.includes('undefined'));
+  return uniqueUrls.length > 0 ? uniqueUrls : ["https://placehold.co/400x400?text=No+Image"];
 };
 
 /**
  * Fetches the complete catalog from Supabase.
- * This is the single source of truth for both Studio and Vercel.
+ * Uses a robust mapping to ensure camelCase/snake_case compatibility.
  */
 export async function getProducts(): Promise<Product[]> {
   try {
@@ -79,19 +63,19 @@ export async function getProducts(): Promise<Product[]> {
     return (data || [])
       .map(p => ({
         id: p.id,
-        name: p.name || "Unnamed Product",
-        category: p.category || "Uncategorized",
-        description: p.description || p.long_description || "",
-        longDescription: p.long_description || p.description || "",
+        name: p.name || p.title || "Unnamed Product",
+        category: p.category || p.cat || "Uncategorized",
+        description: p.description || p.desc || p.short_description || "",
+        longDescription: p.long_description || p.longDescription || p.description || "",
         imageUrls: resolveProductImages(p),
         price: Number(p.price) || 0,
-        oldPrice: Number(p.old_price) || 0,
+        oldPrice: Number(p.old_price || p.oldPrice) || 0,
         unit: p.unit || "item",
-        stockCount: Number(p.stock_count || 0),
+        stockCount: Number(p.stock_count !== undefined ? p.stock_count : (p.stockCount !== undefined ? p.stockCount : 0)),
         rating: Number(p.rating || 5),
         reviews: Number(p.reviews || 0),
-        isFeatured: !!p.is_featured,
-        barcode: p.barcode || ""
+        isFeatured: !!(p.is_featured || p.isFeatured),
+        barcode: p.barcode || p.sku || ""
       })) as Product[];
   } catch (error) {
     console.error("Supabase Sync Error:", error);
