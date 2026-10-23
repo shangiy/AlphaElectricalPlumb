@@ -5,25 +5,30 @@ import nextDynamic from 'next/dynamic';
 import Hero from '@/components/common/Hero';
 import HomepageAbout from '@/components/common/HomepageAbout';
 
-// Dynamically import heavy sections using nextDynamic
+// Dynamically import heavy sections to split bundles and prevent ChunkLoadErrors
 const CategoryCarousel = nextDynamic(() => import('@/components/common/CategoryCarousel'), {
   loading: () => <div className="h-80 bg-muted/10 animate-pulse rounded-2xl mx-4 my-16" />
 });
+
 const FeaturedProducts = nextDynamic(() => import('@/components/products/FeaturedProducts'), {
   loading: () => <div className="h-96 bg-muted/10 animate-pulse rounded-2xl mx-4 my-16" />
 });
+
 const DeliveryServices = nextDynamic(() => import('@/components/common/DeliveryServices'));
+
 const ImpactSection = nextDynamic(() => import('@/components/common/ImpactSection'));
+
 const CustomerReviews = nextDynamic(() => import('@/components/common/CustomerReviews'));
+
 const ConnectWithUs = nextDynamic(() => import('@/components/common/ConnectWithUs'));
 
 export default function HomePage() {
   return (
     <div className="flex flex-col w-full">
       <Hero />
+      <HomepageAbout />
       <CategoryCarousel />
       <FeaturedProducts />
-      <HomepageAbout />
       <DeliveryServices />
       <ImpactSection />
       <CustomerReviews />
