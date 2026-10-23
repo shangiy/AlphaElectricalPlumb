@@ -12,17 +12,16 @@ import {
 } from '@/components/ui/sidebar';
 import Link from 'next/link';
 import Image from 'next/image';
-import { LayoutDashboard, LogOut, Package, BarChart, Home, Camera, Users, Receipt } from 'lucide-react';
+import { LayoutDashboard, LogOut, Package, Home, Camera, Receipt } from 'lucide-react';
 import AuthGuard from '@/components/auth/AuthGuard';
 import { useAuth } from '@/context/AuthProvider';
-import Footer from '@/components/common/Footer';
 
 export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { user, logout } = useAuth();
+  const { logout } = useAuth();
 
   return (
     <AuthGuard allowedRoles={['admin', 'staff']}>

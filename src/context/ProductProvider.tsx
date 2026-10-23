@@ -1,3 +1,4 @@
+
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
@@ -60,8 +61,7 @@ export function ProductProvider({ children }: ProductProviderProps) {
 
     /**
      * Real-time Synchronization:
-     * This channel listens for any change to the 'products' table and automatically
-     * refreshes the UI. This ensures Bidirectional Sync works flawlessly.
+     * Listens for changes to the 'products' table and auto-refreshes.
      */
     const channel = supabase
       .channel('public-products-sync')
@@ -79,6 +79,7 @@ export function ProductProvider({ children }: ProductProviderProps) {
     if (!supabase) throw new Error("Database service is unavailable.");
     setSubmitting(true);
     try {
+      // Map frontend fields to common Supabase column names
       const { error } = await supabase.from('products').insert([{
         name: productData.name,
         price: productData.price,
@@ -92,7 +93,6 @@ export function ProductProvider({ children }: ProductProviderProps) {
         unit: productData.unit || 'item'
       }]);
       if (error) throw error;
-      // Real-time listener handles the refresh
     } finally {
       setSubmitting(false);
     }
