@@ -1,39 +1,30 @@
-import dynamic from 'next/dynamic';
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
+import nextDynamic from 'next/dynamic';
 import Hero from '@/components/common/Hero';
 import HomepageAbout from '@/components/common/HomepageAbout';
-import ProductList from '@/components/products/ProductList';
 
-// Dynamically import heavy sections to split bundles and prevent ChunkLoadErrors
-const CategoryCarousel = dynamic(() => import('@/components/common/CategoryCarousel'), {
+// Dynamically import heavy sections using nextDynamic
+const CategoryCarousel = nextDynamic(() => import('@/components/common/CategoryCarousel'), {
   loading: () => <div className="h-80 bg-muted/10 animate-pulse rounded-2xl mx-4 my-16" />
 });
-const FeaturedProducts = dynamic(() => import('@/components/products/FeaturedProducts'), {
+const FeaturedProducts = nextDynamic(() => import('@/components/products/FeaturedProducts'), {
   loading: () => <div className="h-96 bg-muted/10 animate-pulse rounded-2xl mx-4 my-16" />
 });
-const DeliveryServices = dynamic(() => import('@/components/common/DeliveryServices'));
-const ImpactSection = dynamic(() => import('@/components/common/ImpactSection'));
-const CustomerReviews = dynamic(() => import('@/components/common/CustomerReviews'));
-const ConnectWithUs = dynamic(() => import('@/components/common/ConnectWithUs'));
+const DeliveryServices = nextDynamic(() => import('@/components/common/DeliveryServices'));
+const ImpactSection = nextDynamic(() => import('@/components/common/ImpactSection'));
+const CustomerReviews = nextDynamic(() => import('@/components/common/CustomerReviews'));
+const ConnectWithUs = nextDynamic(() => import('@/components/common/ConnectWithUs'));
 
-/**
- * Home Page - Server Component.
- * Optimized with Dynamic Imports to prevent ChunkLoadError timeouts
- * by splitting the client-side JavaScript into smaller, independent bundles.
- */
-export default function Home() {
+export default function HomePage() {
   return (
-    <div className="relative w-full">
+    <div className="flex flex-col w-full">
       <Hero />
       <CategoryCarousel />
       <FeaturedProducts />
-      
-      {/* Supabase Product Catalog Section */}
-      <section className="px-4 py-8">
-        <ProductList />
-      </section>
-
-      <DeliveryServices />
       <HomepageAbout />
+      <DeliveryServices />
       <ImpactSection />
       <CustomerReviews />
       <ConnectWithUs />
