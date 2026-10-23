@@ -21,6 +21,7 @@ interface ProductContextType {
   toggleFeatured: (productId: string, currentStatus: boolean) => Promise<void>;
   updateStock: (productId: string, newCount: number) => Promise<void>;
   getProductById: (productId: string) => Product | undefined;
+  refreshProducts: () => Promise<void>;
 }
 
 const ProductContext = createContext<ProductContextType | undefined>(undefined);
@@ -171,7 +172,8 @@ export function ProductProvider({ children }: ProductProviderProps) {
     deleteProduct,
     toggleFeatured,
     updateStock,
-    getProductById
+    getProductById,
+    refreshProducts: fetchProducts
   };
 
   return <ProductContext.Provider value={value}>{children}</ProductContext.Provider>;

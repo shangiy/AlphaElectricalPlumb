@@ -10,13 +10,19 @@ import { useProducts } from '@/context/ProductProvider';
 import { useRouter } from 'next/navigation';
 
 /**
- * Unified Admin Product Manager v3.1:
- * Features robust image resolution and instant Supabase synchronization.
+ * Unified Admin Product Manager v3.2:
+ * Features clean state refresh and robust image resolution.
  */
 export default function AdminProductManager() {
   const { toast } = useToast();
   const router = useRouter();
-  const { addProduct, deleteProduct, products, loading: productsLoading, getProductById } = useProducts();
+  const { 
+    addProduct, 
+    deleteProduct, 
+    products, 
+    loading: productsLoading, 
+    refreshProducts 
+  } = useProducts();
   
   const [categories, setCategories] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
@@ -110,6 +116,15 @@ export default function AdminProductManager() {
     }
   };
 
+  const handleForceSync = async () => {
+    try {
+      await refreshProducts();
+      toast({ title: 'Synced', description: 'Inventory refreshed from Supabase.' });
+    } catch (error) {
+      toast({ variant: 'destructive', title: 'Sync Failed', description: 'Could not connect to database.' });
+    }
+  };
+
   const filteredProducts = products.filter(p => 
     p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     p.category.toLowerCase().includes(searchTerm.toLowerCase())
@@ -124,8 +139,15 @@ export default function AdminProductManager() {
           <p className="text-muted-foreground text-sm font-medium">Full Access to Supabase Database & Storage</p>
         </div>
         <div className="flex items-center gap-4">
-            <Button variant="outline" size="sm" onClick={() => window.location.reload()} className="rounded-full">
-                <RefreshCw className="h-4 w-4 mr-2" /> Force Sync
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleForceSync} 
+              className="rounded-full"
+              disabled={productsLoading}
+            >
+                {productsLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <RefreshCw className="h-4 w-4 mr-2" />}
+                Force Sync
             </Button>
             <div className="flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full border border-primary/20">
                 <CheckCircle className="h-4 w-4" />

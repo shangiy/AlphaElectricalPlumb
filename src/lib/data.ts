@@ -2,16 +2,38 @@ import type { Product, Category, MockUser, Transaction, CarouselCategory } from 
 import { supabase } from './supabase';
 
 /**
- * Robust Image URL Resolver:
+ * Robust Image URL Resolver (Single String):
+ * Centralized utility for components or admin panels needing a direct string URL.
+ */
+export function getProductImageUrl(product: any): string {
+  const rawImage = product?.image_url || product?.image || (product?.image_urls && product.image_urls[0]) || (product?.imageUrls && product.imageUrls[0]);
+  
+  if (!rawImage) return '/placeholder.jpg';
+  
+  // If it's already a full HTTP URL, return it as-is
+  if (typeof rawImage === 'string' && (rawImage.startsWith('http://') || rawImage.startsWith('https://'))) {
+    return rawImage;
+  }
+  
+  // Otherwise, construct the full public Supabase storage URL dynamically
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+  if (supabaseUrl && typeof rawImage === 'string') {
+    const cleanPath = rawImage.replace(/\\/g, '/').replace(/^\/+/, '');
+    return `${supabaseUrl}/storage/v1/object/public/product-images/${cleanPath}`;
+  }
+  
+  return '/placeholder.jpg';
+}
+
+/**
+ * Robust Image URL Resolver (Array):
  * Centralized logic used by all product cards and detail pages.
- * Handles arrays, single strings, and various storage path patterns.
  */
 const resolveProductImages = (product: any): string[] => {
   if (!supabase) return ["/placeholder.jpg"];
 
   const urls: string[] = [];
 
-  // 1. Array check: handle common keys (image_urls, imageUrls, images, gallery)
   const rawArray = product.image_urls || product.imageUrls || product.images || product.gallery;
   if (Array.isArray(rawArray) && rawArray.length > 0) {
     rawArray.forEach((val: any) => {
@@ -19,10 +41,8 @@ const resolveProductImages = (product: any): string[] => {
         if (val.startsWith('http')) {
           urls.push(val);
         } else {
-          // Resolve relative path from Supabase bucket
           const cleanPath = val.replace(/\\/g, '/').replace(/^\/+/, '');
           urls.push(supabase.storage.from('product-images').getPublicUrl(cleanPath).data.publicUrl);
-          // Fallback patterns
           urls.push(supabase.storage.from('product-images').getPublicUrl(`product images/${cleanPath}`).data.publicUrl);
           urls.push(supabase.storage.from('product-images').getPublicUrl(`uploads/${cleanPath}`).data.publicUrl);
         }
@@ -30,7 +50,6 @@ const resolveProductImages = (product: any): string[] => {
     });
   }
 
-  // 2. Single string check (image_url, image, imageUrl, image_path)
   const singleVal = product.image_url || product.image || product.imageUrl || product.image_path || product.imagePath;
   if (singleVal && typeof singleVal === 'string') {
     if (singleVal.startsWith('http')) {
@@ -46,10 +65,6 @@ const resolveProductImages = (product: any): string[] => {
   return uniqueUrls.length > 0 ? uniqueUrls : ["https://placehold.co/400x400?text=No+Image"];
 };
 
-/**
- * Fetches the complete catalog from Supabase.
- * Uses a robust mapping to ensure camelCase/snake_case compatibility.
- */
 export async function getProducts(): Promise<Product[]> {
   try {
     if (!supabase) return [];
@@ -64,7 +79,7 @@ export async function getProducts(): Promise<Product[]> {
       .map(p => ({
         id: p.id,
         name: p.name || p.title || "Unnamed Product",
-        category: p.category || p.cat || "Uncategorized",
+        category: p.category || p.cat || p.cat_name || p.category_name || "UNCATEGORIZED",
         description: p.description || p.desc || p.short_description || "",
         longDescription: p.long_description || p.longDescription || p.description || "",
         imageUrls: resolveProductImages(p),
@@ -122,6 +137,6 @@ export async function getTransactions(): Promise<Transaction[]> {
 export const availableAvatars = [
     { url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix', alt: 'Avatar 1' },
     { url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka', alt: 'Avatar 2' },
-    { url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alpha', alt: 'Avatar 3' },
+    { url: 'https://api.dicebear.com/7.x/avataaars/slug?seed=Alpha', alt: 'Avatar 3' },
     { url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Staff', alt: 'Avatar 4' },
 ];
