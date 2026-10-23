@@ -4,24 +4,32 @@ import { supabase } from './supabase';
 /**
  * Robust Image URL Resolver:
  * Centralized logic used by all product cards and detail pages.
+ * Handles arrays, single strings, and legacy storage paths.
  */
 const resolveProductImages = (product: any): string[] => {
   if (!supabase) return ["/placeholder.jpg"];
 
-  // 1. Direct URL check: if it's already a full Supabase link, use it.
+  const urls: string[] = [];
+
+  // 1. Array check: if it's already a full Supabase link array, use it.
   if (Array.isArray(product.image_urls) && product.image_urls.length > 0) {
-      return product.image_urls.filter(url => typeof url === 'string' && url.startsWith('http'));
+    product.image_urls.forEach((url: any) => {
+      if (typeof url === 'string' && url.startsWith('http')) urls.push(url);
+    });
   }
 
-  // 2. Direct single URL fallback
-  if (product.image_url && typeof product.image_url === 'string' && product.image_url.startsWith('http')) {
-      return [product.image_url];
+  // 2. Single URL check (image_url, image, or imageUrl columns)
+  const singleUrl = product.image_url || product.image || product.imageUrl;
+  if (singleUrl && typeof singleUrl === 'string' && singleUrl.startsWith('http')) {
+    urls.push(singleUrl);
   }
 
-  // 3. Path-based resolution for legacy catalog
-  const rawPath = (product.image_path || '').trim();
-  if (!rawPath) {
-      return ["https://placehold.co/400x400?text=No+Image"];
+  if (urls.length > 0) return Array.from(new Set(urls));
+
+  // 3. Path-based resolution for legacy catalog or relative paths
+  const rawPath = (product.image_path || product.image || '').toString().trim();
+  if (!rawPath || rawPath.startsWith('http')) {
+      return urls.length > 0 ? urls : ["https://placehold.co/400x400?text=No+Image"];
   }
 
   let basePaths: string[] = [];
@@ -36,7 +44,6 @@ const resolveProductImages = (product: any): string[] => {
     basePaths = [rawPath];
   }
 
-  const allCandidates: string[] = [];
   basePaths.forEach(path => {
     const cleanPath = path
       .replace(/[\[\]]/g, '')
@@ -46,13 +53,13 @@ const resolveProductImages = (product: any): string[] => {
       .replace(/^\/+/, '');
 
     // Check common Supabase folder patterns
-    allCandidates.push(supabase.storage.from('product-images').getPublicUrl(`product images/${cleanPath}`).data.publicUrl);
-    allCandidates.push(supabase.storage.from('product-images').getPublicUrl(`product-images/${cleanPath}`).data.publicUrl);
-    allCandidates.push(supabase.storage.from('product-images').getPublicUrl(cleanPath).data.publicUrl);
-    allCandidates.push(supabase.storage.from('product-images').getPublicUrl(`uploads/${cleanPath}`).data.publicUrl);
+    urls.push(supabase.storage.from('product-images').getPublicUrl(`product images/${cleanPath}`).data.publicUrl);
+    urls.push(supabase.storage.from('product-images').getPublicUrl(`product-images/${cleanPath}`).data.publicUrl);
+    urls.push(supabase.storage.from('product-images').getPublicUrl(cleanPath).data.publicUrl);
+    urls.push(supabase.storage.from('product-images').getPublicUrl(`uploads/${cleanPath}`).data.publicUrl);
   });
 
-  return Array.from(new Set(allCandidates));
+  return Array.from(new Set(urls));
 };
 
 /**
@@ -70,7 +77,6 @@ export async function getProducts(): Promise<Product[]> {
     if (error) throw error;
 
     return (data || [])
-      .filter(p => p.id !== '8b4af5ab-e423-4f9e-bb93-0621679938b1') 
       .map(p => ({
         id: p.id,
         name: p.name || "Unnamed Product",
