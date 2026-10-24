@@ -28,11 +28,11 @@ function HomeContent() {
   return (
     <div className="flex flex-col w-full">
       <Hero />
-      <HomepageAbout />
       <CategoryCarousel />
       <FeaturedProducts />
       <DeliveryServices />
       <ImpactSection />
+      <HomepageAbout />
       <CustomerReviews />
       <ConnectWithUs />
     </div>

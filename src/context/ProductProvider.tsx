@@ -40,8 +40,8 @@ export function ProductProvider({ children }: ProductProviderProps) {
   const [submitting, setSubmitting] = useState(false);
 
   const fetchProducts = useCallback(async () => {
-    setLoading(true);
     try {
+      // Fetch fresh data from Supabase wrapper
       const data = await getProducts();
       setProducts(data || []);
     } catch (error) {
@@ -56,11 +56,17 @@ export function ProductProvider({ children }: ProductProviderProps) {
 
     if (!supabase) return;
 
+    // Realtime subscription setup
     const channel = supabase
       .channel('public-products-sync')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => {
-        fetchProducts();
-      })
+      .on(
+        'postgres_changes', 
+        { event: '*', schema: 'public', table: 'products' }, 
+        (payload) => {
+          console.log("Realtime change detected:", payload);
+          fetchProducts();
+        }
+      )
       .subscribe();
 
     return () => {
@@ -119,6 +125,7 @@ export function ProductProvider({ children }: ProductProviderProps) {
 
       const { error } = await supabase.from('products').update(payload).eq('id', productId);
       if (error) throw error;
+      
       await fetchProducts();
     } finally {
       setSubmitting(false);

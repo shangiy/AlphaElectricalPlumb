@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Loader2, Upload, Edit, Package, Trash2, CheckCircle, Plus, Search, RefreshCw } from 'lucide-react';
+import { Loader2, Upload, Edit, Trash2, CheckCircle, Plus, Search, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
@@ -21,7 +21,7 @@ export default function AdminProductManager() {
     deleteProduct, 
     products, 
     loading: productsLoading, 
-    refreshProducts 
+    fetchProducts 
   } = useProducts();
   
   const [categories, setCategories] = useState<string[]>([]);
@@ -118,7 +118,7 @@ export default function AdminProductManager() {
 
   const handleForceSync = async () => {
     try {
-      await refreshProducts();
+      await fetchProducts();
       toast({ title: 'Synced', description: 'Inventory refreshed from Supabase.' });
     } catch (error) {
       toast({ variant: 'destructive', title: 'Sync Failed', description: 'Could not connect to database.' });
