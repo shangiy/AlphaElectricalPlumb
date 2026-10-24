@@ -13,8 +13,8 @@ interface Category {
 }
 
 /**
- * Professional Category Card v4.0:
- * Features: Deep Storage Discovery - maps Supabase Table Editor names to storage bucket folders.
+ * Professional Category Card v4.5:
+ * Features: Deep Storage Discovery - maps Supabase Table Editor names to storage bucket subfolders.
  * Targeted Bucket: product-images
  */
 const categoryToStorageMap: Record<string, string> = {
@@ -26,7 +26,6 @@ const categoryToStorageMap: Record<string, string> = {
   'Electricals category': 'Electrical items/Electric Socket Collection.webp',
   'Collection category': 'Collections/Hand-wash Basin and Pedestal Sink Collection.webp',
   'Construction and Fencing': "Construction and Fencing equip'nts/Steel Reinforcement Rebars.webp",
-  'Construction and Fencing category': "Construction and Fencing equip'nts/Steel Reinforcement Rebars.webp",
   'Home & Decor category': 'Collections/Bird Art Lights fixture Collection.webp',
   'Solar category': 'Solar panels & accessories/Solar Water Heater System.webp',
   'Mabati category': 'Mabati and Roofing/Maasai Red Tile Profile roofing sheets.webp',
@@ -35,7 +34,7 @@ const categoryToStorageMap: Record<string, string> = {
 export default function CategoryCard({ category }: { category: Category }) {
   const [imgIndex, setImgIndex] = useState(0);
 
-  // Discovery Logic: Priority for Table Editor image_url, then Folder Map, then Global Fallbacks
+  // Discovery Logic: Priority for Table Editor image_url, then precise Folder Map, then Global Fallbacks
   const candidateUrls = useMemo(() => {
     const urls: string[] = [];
     
@@ -54,16 +53,15 @@ export default function CategoryCard({ category }: { category: Category }) {
         return urls;
     }
 
-    // 2. Map the Table Editor Name to specific Storage folder subpaths
+    // 2. Map the Table Editor Name to specific Storage folder subpaths from your screenshot
     const mappedPath = categoryToStorageMap[category.name.trim()];
     if (mappedPath) {
-        // Try exact path in product-images bucket
         urls.push(supabase.storage.from('product-images').getPublicUrl(mappedPath).data.publicUrl);
-        // Try with "product images/" prefix just in case it was migrated with the root folder name
+        // Fallback with prefix
         urls.push(supabase.storage.from('product-images').getPublicUrl(`product images/${mappedPath}`).data.publicUrl);
     }
 
-    // 3. Fallback high-quality local assets mapping based on keywords
+    // 3. Robust Keyword-based mapping for any new categories
     const lowerName = category.name.toLowerCase();
     if (lowerName.includes('tank')) urls.push(placeholderData.cat_tanks.url);
     if (lowerName.includes('plumb')) urls.push(placeholderData.cat_plumbing.url);
@@ -78,7 +76,7 @@ export default function CategoryCard({ category }: { category: Category }) {
     if (imgIndex < candidateUrls.length - 1) {
       setImgIndex(imgIndex + 1);
     } else {
-      setImgIndex(-1); // Final fallback to placeholder
+      setImgIndex(-1); // Final fallback to text-based placeholder
     }
   };
 

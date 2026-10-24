@@ -7,9 +7,9 @@ import { Skeleton } from '../ui/skeleton';
 import { supabase } from '@/lib/supabase';
 
 /**
- * Dynamic Category Carousel v4.0:
+ * Dynamic Category Carousel v4.5:
  * 100% Synchronized with Supabase Table Editor 'categories' table.
- * Features a seamless infinite marquee of live database categories.
+ * Features a seamless infinite marquee (animate-marquee) of live database categories.
  */
 export default function CategoryCarousel() {
   const [categories, setCategories] = React.useState<CarouselCategory[]>([]);
@@ -23,7 +23,7 @@ export default function CategoryCarousel() {
       }
 
       try {
-        // Query the categories table as seen in the user's Supabase screenshot
+        // Query the categories table matching your screenshot
         const { data, error } = await supabase
           .from('categories')
           .select('id, name, slug')
@@ -33,14 +33,13 @@ export default function CategoryCarousel() {
           const formatted = data.map((cat: any) => ({
             id: String(cat.id),
             name: cat.name || 'Category',
-            // Image is discovered in CategoryCard based on the name/folder mapping
-            image: '', 
-            href: `/category/${cat.slug || cat.name?.toLowerCase().replace(/\s+/g, '-')}`
+            image: '', // Images are resolved inside CategoryCard using the Storage discovery logic
+            href: `/category/${encodeURIComponent(cat.slug || cat.name?.toLowerCase().replace(/\s+/g, '-'))}`
           }));
           setCategories(formatted);
         } else {
-          // If table is empty or error, fallback to derived unique product categories
-          const { data: prodData } = await supabase.from('products').select('category');
+          // Fallback to deriving unique categories from products if table is empty or inaccessible
+          const { data: prodData } = await supabase.from('products').select('category').not('category', 'is', null);
           if (prodData && prodData.length > 0) {
             const uniqueNames = Array.from(new Set(prodData.map((p: any) => p.category))).filter(Boolean);
             const derived = uniqueNames.map(name => ({
@@ -62,7 +61,8 @@ export default function CategoryCarousel() {
     fetchDynamicCategories();
   }, []);
 
-  // SEAMLESS INFINITE LOOP: Triple the data for a perfect endless marquee
+  // SEAMLESS INFINITE LOOP: Triple the data for a perfect endless marquee effect
+  // Use animate-marquee (defined in tailwind.config.ts to shift -33.33%)
   const duplicatedCategories = categories.length > 0 
     ? [...categories, ...categories, ...categories] 
     : [];
@@ -73,13 +73,13 @@ export default function CategoryCarousel() {
     <section id="categories" className="py-16 bg-secondary overflow-hidden">
       <div className="container mx-auto px-4 mb-10">
         <h2 className="text-3xl font-bold font-headline text-center text-[#2b235f]">Browse by Category</h2>
-        <p className="text-center text-muted-foreground text-sm mt-2">Discover quality solutions from our verified catalog</p>
+        <p className="text-center text-muted-foreground text-sm mt-2">Discover high-quality solutions from our verified catalog</p>
       </div>
       
       {loading ? (
         <div className="container mx-auto px-4 flex space-x-4 overflow-hidden">
           {[...Array(5)].map((_, index) => (
-            <div key={index} className="w-64 flex-shrink-0 p-1">
+            <div key={index} className="w-72 flex-shrink-0 p-1">
               <Skeleton className="h-80 w-full rounded-2xl" />
             </div>
           ))}
@@ -92,7 +92,7 @@ export default function CategoryCarousel() {
             WebkitMaskImage: 'linear-gradient(to right, transparent, black 10%, black 90%, transparent)',
           }}
         >
-          <div className="flex w-fit items-center flex-nowrap animate-scroll hover:[animation-play-state:paused] py-4">
+          <div className="flex w-fit items-center flex-nowrap animate-marquee hover:[animation-play-state:paused] py-4">
             {duplicatedCategories.map((category, index) => (
               <div key={`${category.id}-${index}`} className="flex-shrink-0 w-72 px-4">
                 <CategoryCard category={category} />
