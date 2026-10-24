@@ -41,8 +41,10 @@ export interface Product {
 }
 
 export interface Category {
-  id:string;
+  id: string;
   name: string;
+  image_url?: string;
+  slug?: string;
 }
 
 export interface HomePageCategory {

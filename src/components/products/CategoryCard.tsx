@@ -1,19 +1,21 @@
+
 'use client';
 
-import { supabase } from '@/lib/supabaseClient';
+import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 import { useState, useMemo } from 'react';
 
 interface Category {
   id: string;
   name: string;
-  image_path?: string | null;
+  image?: string | null;
   href: string;
 }
 
 /**
  * Professional Category Card:
  * Re-designed to be navigate-able and visually consistent with the new product cards.
+ * Now prioritized database images from the 'categories' table.
  */
 const categoryImageMap: Record<string, string> = {
   'Roofing & Construction': 'Corrugated Roofing Sheet collection.webp',
@@ -29,10 +31,27 @@ const categoryImageMap: Record<string, string> = {
 export default function CategoryCard({ category }: { category: Category }) {
   const [imgIndex, setImgIndex] = useState(0);
 
-  // Self-Healing Logic: Priority for category subfolder
+  // Self-Healing Logic: Priority for database-provided image, then subfolders
   const candidateUrls = useMemo(() => {
-    if (!supabase) return ['/placeholder.jpg'];
+    const urls: string[] = [];
+    
+    // 1. Priority: Image URL directly from database
+    if (category.image) {
+        if (category.image.startsWith('http')) {
+            urls.push(category.image);
+        } else if (supabase) {
+            // Assume it's a storage path
+            const cleanPath = category.image.replace(/\\/g, '/').replace(/^\/+/, '');
+            urls.push(supabase.storage.from('product-images').getPublicUrl(cleanPath).data.publicUrl);
+        }
+    }
 
+    if (!supabase) {
+        urls.push('/placeholder.jpg');
+        return urls;
+    }
+
+    // 2. Secondary: Fallback mapping logic
     const filename = categoryImageMap[category.name.trim()] || `${category.name.trim()}.webp`;
     const cleanFilename = filename.replace(/\\/g, '/').replace(/^\/+/, '');
     
@@ -44,10 +63,12 @@ export default function CategoryCard({ category }: { category: Category }) {
       cleanFilename
     ];
 
-    return Array.from(new Set(paths.map(path => 
+    const mappedUrls = paths.map(path => 
       supabase.storage.from('product-images').getPublicUrl(path).data.publicUrl
-    )));
-  }, [category.name]);
+    );
+
+    return Array.from(new Set([...urls, ...mappedUrls]));
+  }, [category.name, category.image]);
 
   const handleImageError = () => {
     if (imgIndex < candidateUrls.length - 1) {

@@ -6,14 +6,45 @@ import { carouselCategories } from '@/lib/data';
 import type { CarouselCategory } from '@/lib/types';
 import CategoryCard from '@/components/products/CategoryCard';
 import { Skeleton } from '../ui/skeleton';
+import { supabase } from '@/lib/supabase';
 
 export default function CategoryCarousel() {
   const [categories, setCategories] = React.useState<CarouselCategory[]>([]);
   const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
-    setCategories(carouselCategories);
-    setLoading(false);
+    async function fetchDynamicCategories() {
+        if (!supabase) {
+            setCategories(carouselCategories);
+            setLoading(false);
+            return;
+        }
+
+        try {
+            const { data, error } = await supabase
+                .from('categories')
+                .select('*')
+                .order('name', { ascending: true });
+
+            if (error || !data || data.length === 0) {
+                setCategories(carouselCategories);
+            } else {
+                setCategories(data.map(cat => ({
+                    id: String(cat.id),
+                    name: cat.name,
+                    image: cat.image_url || '',
+                    href: `/category/${cat.slug || cat.name.toLowerCase().replace(/\s+/g, '-')}`
+                })));
+            }
+        } catch (err) {
+            console.error("Category fetch failed:", err);
+            setCategories(carouselCategories);
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    fetchDynamicCategories();
   }, []);
 
   // SEAMLESS INFINITE LOOP: Double the data so the row is twice as long

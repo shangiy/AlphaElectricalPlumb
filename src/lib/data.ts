@@ -1,3 +1,4 @@
+
 import type { Product, Category, MockUser, Transaction, CarouselCategory } from './types';
 import { supabase } from './supabase';
 
@@ -103,11 +104,23 @@ export async function getProducts(): Promise<Product[]> {
 export async function getCategories(): Promise<Category[]> {
   try {
     if (!supabase) return defaultCategories;
-    const { data, error } = await supabase.from('products').select('category').not('category', 'is', null);
-    if (error) throw error;
     
-    const unique = Array.from(new Set(data.map(p => p.category))).map(c => ({ id: c, name: c }));
-    return unique.length > 0 ? unique : defaultCategories;
+    // Try to fetch from dedicated categories table first
+    const { data, error } = await supabase.from('categories').select('*').order('name');
+    
+    if (error) {
+        // Fallback to getting categories from products if table doesn't exist
+        const { data: pData } = await supabase.from('products').select('category').not('category', 'is', null);
+        const unique = Array.from(new Set((pData || []).map(p => p.category))).map(c => ({ id: c, name: c }));
+        return unique.length > 0 ? unique : defaultCategories;
+    }
+    
+    return (data || []).map(cat => ({
+        id: String(cat.id),
+        name: cat.name,
+        image_url: cat.image_url,
+        slug: cat.slug
+    }));
   } catch (e) {
     return defaultCategories;
   }
