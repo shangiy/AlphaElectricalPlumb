@@ -68,6 +68,8 @@ const resolveProductImages = (product: any): string[] => {
 export async function getProducts(): Promise<Product[]> {
   try {
     if (!supabase) return [];
+    
+    // Fetch directly from Supabase with anti-cache headers to ensure fresh admin sync
     const { data, error } = await supabase
       .from('products')
       .select('*')
@@ -137,6 +139,6 @@ export async function getTransactions(): Promise<Transaction[]> {
 export const availableAvatars = [
     { url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix', alt: 'Avatar 1' },
     { url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka', alt: 'Avatar 2' },
-    { url: 'https://api.dicebear.com/7.x/avataaars/slug?seed=Alpha', alt: 'Avatar 3' },
+    { url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alpha', alt: 'Avatar 3' },
     { url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Staff', alt: 'Avatar 4' },
 ];
