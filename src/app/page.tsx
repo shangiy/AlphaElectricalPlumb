@@ -1,6 +1,8 @@
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
+import { Suspense } from 'react';
+import { Loader2 } from 'lucide-react';
 import nextDynamic from 'next/dynamic';
 import Hero from '@/components/common/Hero';
 import HomepageAbout from '@/components/common/HomepageAbout';
@@ -22,7 +24,7 @@ const CustomerReviews = nextDynamic(() => import('@/components/common/CustomerRe
 
 const ConnectWithUs = nextDynamic(() => import('@/components/common/ConnectWithUs'));
 
-export default function HomePage() {
+function HomeContent() {
   return (
     <div className="flex flex-col w-full">
       <Hero />
@@ -34,5 +36,17 @@ export default function HomePage() {
       <CustomerReviews />
       <ConnectWithUs />
     </div>
+  );
+}
+
+export default function HomePage() {
+  return (
+    <Suspense fallback={
+      <div className="flex h-[50vh] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    }>
+      <HomeContent />
+    </Suspense>
   );
 }
