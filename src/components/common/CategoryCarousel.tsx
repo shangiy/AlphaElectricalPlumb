@@ -10,7 +10,7 @@ import { supabase } from '@/lib/supabase';
 /**
  * Dynamic Category Carousel:
  * Fetches real-time category data from Supabase 'categories' table.
- * Implements a seamless infinite scroll loop.
+ * Implements a seamless infinite scroll loop with database-driven images.
  */
 export default function CategoryCarousel() {
   const [categories, setCategories] = React.useState<CarouselCategory[]>([]);
@@ -25,6 +25,7 @@ export default function CategoryCarousel() {
         }
 
         try {
+            // Specifically querying the 'categories' table in Supabase
             const { data, error } = await supabase
                 .from('categories')
                 .select('*')
@@ -37,7 +38,8 @@ export default function CategoryCarousel() {
                 setCategories(data.map(cat => ({
                     id: String(cat.id),
                     name: cat.name,
-                    image: cat.image_url || cat.image || '',
+                    // Check all likely column name variations for the image path/url
+                    image: cat.image_url || cat.image || cat.image_path || '',
                     href: `/category/${cat.slug || cat.name.toLowerCase().replace(/\s+/g, '-')}`
                 })));
             }
