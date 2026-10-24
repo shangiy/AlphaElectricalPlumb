@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -21,7 +22,7 @@ export default function AdminProductManager() {
     deleteProduct, 
     products, 
     loading: productsLoading, 
-    fetchProducts 
+    refreshProducts // Corrected from fetchProducts to match ProductProvider naming
   } = useProducts();
   
   const [categories, setCategories] = useState<string[]>([]);
@@ -118,7 +119,8 @@ export default function AdminProductManager() {
 
   const handleForceSync = async () => {
     try {
-      await fetchProducts();
+      // Corrected call to refreshProducts
+      await refreshProducts();
       toast({ title: 'Synced', description: 'Inventory refreshed from Supabase.' });
     } catch (error) {
       toast({ variant: 'destructive', title: 'Sync Failed', description: 'Could not connect to database.' });

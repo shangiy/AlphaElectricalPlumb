@@ -1,3 +1,4 @@
+
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
@@ -46,13 +47,15 @@ export function ProductProvider({ children }: ProductProviderProps) {
       setProducts(data || []);
     } catch (error) {
       console.error("Fetch products failed:", error);
+      // Re-throw so callers (like the Force Sync button) can handle the error UI
+      throw error;
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    fetchProducts();
+    fetchProducts().catch(err => console.error("Initial load failed:", err));
 
     if (!supabase) return;
 
@@ -64,7 +67,7 @@ export function ProductProvider({ children }: ProductProviderProps) {
         { event: '*', schema: 'public', table: 'products' }, 
         (payload) => {
           console.log("Realtime change detected:", payload);
-          fetchProducts();
+          fetchProducts().catch(() => {});
         }
       )
       .subscribe();
