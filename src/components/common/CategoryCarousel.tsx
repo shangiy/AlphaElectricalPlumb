@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -8,6 +7,11 @@ import CategoryCard from '@/components/products/CategoryCard';
 import { Skeleton } from '../ui/skeleton';
 import { supabase } from '@/lib/supabase';
 
+/**
+ * Dynamic Category Carousel:
+ * Fetches real-time category data from Supabase 'categories' table.
+ * Implements a seamless infinite scroll loop.
+ */
 export default function CategoryCarousel() {
   const [categories, setCategories] = React.useState<CarouselCategory[]>([]);
   const [loading, setLoading] = React.useState(true);
@@ -27,12 +31,13 @@ export default function CategoryCarousel() {
                 .order('name', { ascending: true });
 
             if (error || !data || data.length === 0) {
+                console.warn("Using fallback categories, database returned empty or error.");
                 setCategories(carouselCategories);
             } else {
                 setCategories(data.map(cat => ({
                     id: String(cat.id),
                     name: cat.name,
-                    image: cat.image_url || '',
+                    image: cat.image_url || cat.image || '',
                     href: `/category/${cat.slug || cat.name.toLowerCase().replace(/\s+/g, '-')}`
                 })));
             }
@@ -47,7 +52,7 @@ export default function CategoryCarousel() {
     fetchDynamicCategories();
   }, []);
 
-  // SEAMLESS INFINITE LOOP: Double the data so the row is twice as long
+  // SEAMLESS INFINITE LOOP: Double the data for smooth scrolling
   const duplicatedCategories = [...categories, ...categories];
 
   return (
