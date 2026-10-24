@@ -12,9 +12,8 @@ interface Category {
 }
 
 /**
- * Professional Category Card:
- * Re-designed to fetch images from Supabase Storage based on the database path.
- * Features aggressive "Asset Discovery" to find working links in storage buckets.
+ * Professional Category Card v3.5:
+ * Features an aggressive "Asset Discovery" engine to find working links in storage buckets.
  */
 const categoryImageMap: Record<string, string> = {
   'Tanks': 'Alpha tanks Collections.webp',
@@ -22,26 +21,25 @@ const categoryImageMap: Record<string, string> = {
   'Electricals': 'Electric Socket Collection.webp',
   'Lighting': 'Contemporary Gold Spiral Chandelier.webp',
   'Home & Decor': 'Bird Art Lights fixture Collection.webp',
+  'Roofing': 'Corrugated Roofing Sheet collection.webp',
   'Roofing & Construction': 'Corrugated Roofing Sheet collection.webp',
 };
 
 export default function CategoryCard({ category }: { category: Category }) {
   const [imgIndex, setImgIndex] = useState(0);
 
-  // Self-Healing Logic: Priority for database-provided image, then subfolder discovery
+  // Self-Healing Discovery Logic: Priority for DB image, then folder guessing
   const candidateUrls = useMemo(() => {
     const urls: string[] = [];
     
-    // 1. Priority: Image URL/Path directly from the categories table
-    if (category.image) {
+    // 1. Priority: Database Provided Value
+    if (category.image && category.image.length > 2) {
         if (category.image.startsWith('http')) {
             urls.push(category.image);
         } else if (supabase) {
             const cleanPath = category.image.replace(/\\/g, '/').replace(/^\/+/, '');
-            // Try different common paths for the database filename in storage
             urls.push(supabase.storage.from('product-images').getPublicUrl(cleanPath).data.publicUrl);
             urls.push(supabase.storage.from('product-images').getPublicUrl(`category/${cleanPath}`).data.publicUrl);
-            urls.push(supabase.storage.from('product-images').getPublicUrl(`collections/${cleanPath}`).data.publicUrl);
             urls.push(supabase.storage.from('product-images').getPublicUrl(`product images/Collections/${cleanPath}`).data.publicUrl);
         }
     }
@@ -51,14 +49,13 @@ export default function CategoryCard({ category }: { category: Category }) {
         return urls;
     }
 
-    // 2. Secondary: Fallback discovery logic based on category name mapping
+    // 2. Secondary: Name-based mapping for static fallbacks
     const filename = categoryImageMap[category.name.trim()] || `${category.name.trim()}.webp`;
     const cleanFilename = filename.replace(/\\/g, '/').replace(/^\/+/, '');
     
     const paths = [
       `category/${cleanFilename}`,
-      `collections/${cleanFilename}`,
-      `product-images/category/${cleanFilename}`,
+      `Collections/${cleanFilename}`,
       `product images/Collections/${cleanFilename}`,
       cleanFilename
     ];
@@ -67,7 +64,6 @@ export default function CategoryCard({ category }: { category: Category }) {
       supabase.storage.from('product-images').getPublicUrl(path).data.publicUrl
     );
 
-    // Filter unique and return valid candidates
     return Array.from(new Set([...urls, ...mappedUrls])).filter(url => url && !url.includes('undefined'));
   }, [category.name, category.image]);
 
@@ -75,7 +71,7 @@ export default function CategoryCard({ category }: { category: Category }) {
     if (imgIndex < candidateUrls.length - 1) {
       setImgIndex(imgIndex + 1);
     } else {
-      setImgIndex(-1); // Switch to placeholder if all candidates fail
+      setImgIndex(-1); // Final fallback to placeholder
     }
   };
 
@@ -85,8 +81,8 @@ export default function CategoryCard({ category }: { category: Category }) {
 
   return (
     <Link href={category.href || '#'} className="block group">
-      <div className="relative rounded-2xl overflow-hidden shadow-sm bg-white border border-border transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
-        <div className="aspect-[4/5] overflow-hidden bg-muted/20 relative">
+      <div className="relative rounded-2xl overflow-hidden shadow-sm bg-white border border-border transition-all duration-300 hover:shadow-xl hover:-translate-y-1 h-[400px]">
+        <div className="absolute inset-0 bg-muted/20">
             <img
               src={currentImageUrl}
               alt={category.name}

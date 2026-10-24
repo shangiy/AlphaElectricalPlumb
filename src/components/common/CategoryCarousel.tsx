@@ -1,51 +1,57 @@
 'use client';
 
 import * as React from 'react';
-import { carouselCategories } from '@/lib/data';
 import type { CarouselCategory } from '@/lib/types';
 import CategoryCard from '@/components/products/CategoryCard';
 import { Skeleton } from '../ui/skeleton';
 import { supabase } from '@/lib/supabase';
+import placeholderData from '@/app/lib/placeholder-images.json';
 
 /**
- * Dynamic Category Carousel:
- * Fetches real-time category data from Supabase 'categories' table.
- * Implements a seamless infinite scroll loop with database-driven images.
+ * Dynamic Category Carousel v3.5:
+ * Uses placeholder-images.json as a robust fallback and fetches real-time data from Supabase.
  */
 export default function CategoryCarousel() {
   const [categories, setCategories] = React.useState<CarouselCategory[]>([]);
   const [loading, setLoading] = React.useState(true);
 
+  // Initializing with verified assets from placeholder-images.json
+  const fallbackCategories: CarouselCategory[] = [
+    { id: 'Tanks', name: 'Tanks', href: '/category/tanks', image: placeholderData.cat_tanks.url },
+    { id: 'Plumbing', name: 'Plumbing', href: '/category/plumbing', image: placeholderData.cat_plumbing.url },
+    { id: 'Lighting', name: 'Lighting', href: '/category/lighting', image: placeholderData.cat_lighting.url },
+    { id: 'Decor', name: 'Home & Decor', href: '/category/decor', image: placeholderData.cat_decor.url },
+    { id: 'Roofing', name: 'Roofing', href: '/category/roofing', image: placeholderData.cat_roofing.url },
+  ];
+
   React.useEffect(() => {
     async function fetchDynamicCategories() {
         if (!supabase) {
-            setCategories(carouselCategories);
+            setCategories(fallbackCategories);
             setLoading(false);
             return;
         }
 
         try {
-            // Specifically querying the 'categories' table in Supabase
             const { data, error } = await supabase
                 .from('categories')
                 .select('*')
                 .order('name', { ascending: true });
 
             if (error || !data || data.length === 0) {
-                console.warn("Using fallback categories, database returned empty or error.");
-                setCategories(carouselCategories);
+                setCategories(fallbackCategories);
             } else {
                 setCategories(data.map(cat => ({
                     id: String(cat.id),
                     name: cat.name,
-                    // Check all likely column name variations for the image path/url
-                    image: cat.image_url || cat.image || cat.image_path || '',
+                    // Robust field mapping for Supabase columns
+                    image: cat.image_url || cat.imageUrl || cat.image || cat.image_path || '',
                     href: `/category/${cat.slug || cat.name.toLowerCase().replace(/\s+/g, '-')}`
                 })));
             }
         } catch (err) {
             console.error("Category fetch failed:", err);
-            setCategories(carouselCategories);
+            setCategories(fallbackCategories);
         } finally {
             setLoading(false);
         }
@@ -54,8 +60,8 @@ export default function CategoryCarousel() {
     fetchDynamicCategories();
   }, []);
 
-  // SEAMLESS INFINITE LOOP: Double the data for smooth scrolling
-  const duplicatedCategories = [...categories, ...categories];
+  // SEAMLESS INFINITE LOOP: Triple the data for a perfect endless marquee
+  const duplicatedCategories = [...categories, ...categories, ...categories];
 
   return (
     <section id="categories" className="py-16 bg-secondary overflow-hidden">
