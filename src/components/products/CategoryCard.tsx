@@ -13,8 +13,9 @@ interface Category {
 }
 
 /**
- * Professional Category Card v3.6:
+ * Professional Category Card v4.0:
  * Features: Deep Storage Discovery - maps Supabase Table Editor names to storage bucket folders.
+ * Targeted Bucket: product-images
  */
 const categoryToStorageMap: Record<string, string> = {
   'Chandelier category': 'Decorative Lighting and chandeliers/Contemporary Gold Spiral Chandelier.webp',
@@ -25,24 +26,16 @@ const categoryToStorageMap: Record<string, string> = {
   'Electricals category': 'Electrical items/Electric Socket Collection.webp',
   'Collection category': 'Collections/Hand-wash Basin and Pedestal Sink Collection.webp',
   'Construction and Fencing': "Construction and Fencing equip'nts/Steel Reinforcement Rebars.webp",
+  'Construction and Fencing category': "Construction and Fencing equip'nts/Steel Reinforcement Rebars.webp",
   'Home & Decor category': 'Collections/Bird Art Lights fixture Collection.webp',
   'Solar category': 'Solar panels & accessories/Solar Water Heater System.webp',
   'Mabati category': 'Mabati and Roofing/Maasai Red Tile Profile roofing sheets.webp',
 };
 
-// Fallback high-quality local assets mapping
-const fallbackMap: Record<string, string> = {
-  'Tanks': placeholderData.cat_tanks.url,
-  'Plumbing': placeholderData.cat_plumbing.url,
-  'Lighting': placeholderData.cat_lighting.url,
-  'Home & Decor': placeholderData.cat_decor.url,
-  'Roofing': placeholderData.cat_roofing.url,
-};
-
 export default function CategoryCard({ category }: { category: Category }) {
   const [imgIndex, setImgIndex] = useState(0);
 
-  // Discovery Logic: Priority for DB image, then Folder Map, then Global Fallbacks
+  // Discovery Logic: Priority for Table Editor image_url, then Folder Map, then Global Fallbacks
   const candidateUrls = useMemo(() => {
     const urls: string[] = [];
     
@@ -61,19 +54,16 @@ export default function CategoryCard({ category }: { category: Category }) {
         return urls;
     }
 
-    // 2. Map the Name to specific Storage folder subpaths
+    // 2. Map the Table Editor Name to specific Storage folder subpaths
     const mappedPath = categoryToStorageMap[category.name.trim()];
     if (mappedPath) {
+        // Try exact path in product-images bucket
         urls.push(supabase.storage.from('product-images').getPublicUrl(mappedPath).data.publicUrl);
-        // Try without 'product images/' prefix just in case the bucket root is used
+        // Try with "product images/" prefix just in case it was migrated with the root folder name
         urls.push(supabase.storage.from('product-images').getPublicUrl(`product images/${mappedPath}`).data.publicUrl);
     }
 
-    // 3. Try to find a simple filename-based match
-    const filename = `${category.name.split(' ')[0].trim()}.webp`;
-    urls.push(supabase.storage.from('product-images').getPublicUrl(`category/${filename}`).data.publicUrl);
-
-    // 4. Add high-quality placeholder-images.json fallback based on keywords
+    // 3. Fallback high-quality local assets mapping based on keywords
     const lowerName = category.name.toLowerCase();
     if (lowerName.includes('tank')) urls.push(placeholderData.cat_tanks.url);
     if (lowerName.includes('plumb')) urls.push(placeholderData.cat_plumbing.url);

@@ -5,12 +5,11 @@ import type { CarouselCategory } from '@/lib/types';
 import CategoryCard from '@/components/products/CategoryCard';
 import { Skeleton } from '../ui/skeleton';
 import { supabase } from '@/lib/supabase';
-import placeholderData from '@/app/lib/placeholder-images.json';
 
 /**
- * Dynamic Category Carousel v3.7:
- * Direct synchronization with Supabase 'categories' table editor.
- * Uses images from Storage bucket 'product-images'.
+ * Dynamic Category Carousel v4.0:
+ * 100% Synchronized with Supabase Table Editor 'categories' table.
+ * Features a seamless infinite marquee of live database categories.
  */
 export default function CategoryCarousel() {
   const [categories, setCategories] = React.useState<CarouselCategory[]>([]);
@@ -24,7 +23,7 @@ export default function CategoryCarousel() {
       }
 
       try {
-        // Query the categories table as seen in the user's screenshot
+        // Query the categories table as seen in the user's Supabase screenshot
         const { data, error } = await supabase
           .from('categories')
           .select('id, name, slug')
@@ -35,12 +34,12 @@ export default function CategoryCarousel() {
             id: String(cat.id),
             name: cat.name || 'Category',
             // Image is discovered in CategoryCard based on the name/folder mapping
-            image: null, 
+            image: '', 
             href: `/category/${cat.slug || cat.name?.toLowerCase().replace(/\s+/g, '-')}`
           }));
           setCategories(formatted);
         } else {
-          // If table is empty, derive from unique product categories to ensure the UI isn't blank
+          // If table is empty or error, fallback to derived unique product categories
           const { data: prodData } = await supabase.from('products').select('category');
           if (prodData && prodData.length > 0) {
             const uniqueNames = Array.from(new Set(prodData.map((p: any) => p.category))).filter(Boolean);
@@ -48,7 +47,7 @@ export default function CategoryCarousel() {
               id: name as string,
               name: name as string,
               href: `/category/${(name as string).toLowerCase().replace(/\s+/g, '-')}`,
-              image: null
+              image: ''
             }));
             setCategories(derived);
           }
