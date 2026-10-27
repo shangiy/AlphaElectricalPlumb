@@ -1,4 +1,3 @@
-
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
@@ -10,7 +9,11 @@ interface ProductProviderProps {
   children: ReactNode;
 }
 
-export type ProductFormData = Omit<Product, 'id'>;
+export type ProductFormData = Omit<Product, 'id' | 'rating' | 'reviews'>;
+
+/** URL-safe slug; the random suffix keeps it unique (products.slug is NOT NULL UNIQUE). */
+const makeSlug = (name: string) =>
+  `${name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 80)}-${Math.random().toString(36).slice(2, 7)}`;
 
 interface ProductContextType {
   products: Product[];
@@ -40,22 +43,21 @@ export function ProductProvider({ children }: ProductProviderProps) {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
-  const fetchProducts = useCallback(async () => {
+  const refreshProducts = useCallback(async () => {
     try {
       // Fetch fresh data from Supabase wrapper
       const data = await getProducts();
       setProducts(data || []);
     } catch (error) {
       console.error("Fetch products failed:", error);
-      // Re-throw so callers (like the Force Sync button) can handle the error UI
-      throw error;
+      throw error; // Throw so UI can catch it
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    fetchProducts().catch(err => console.error("Initial load failed:", err));
+    refreshProducts().catch(() => {});
 
     if (!supabase) return;
 
@@ -67,7 +69,7 @@ export function ProductProvider({ children }: ProductProviderProps) {
         { event: '*', schema: 'public', table: 'products' }, 
         (payload) => {
           console.log("Realtime change detected:", payload);
-          fetchProducts().catch(() => {});
+          refreshProducts().catch(() => {});
         }
       )
       .subscribe();
@@ -75,7 +77,7 @@ export function ProductProvider({ children }: ProductProviderProps) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [fetchProducts]);
+  }, [refreshProducts]);
 
   const addProduct = useCallback(async (productData: ProductFormData) => {
     if (!supabase) throw new Error("Database service is unavailable.");
@@ -83,6 +85,7 @@ export function ProductProvider({ children }: ProductProviderProps) {
     try {
       const payload: Record<string, any> = {
         name: productData.name,
+        slug: makeSlug(productData.name),
         price: productData.price,
         category: productData.category,
         description: productData.description,
@@ -99,11 +102,11 @@ export function ProductProvider({ children }: ProductProviderProps) {
 
       const { error } = await supabase.from('products').insert([payload]);
       if (error) throw error;
-      await fetchProducts();
+      await refreshProducts();
     } finally {
       setSubmitting(false);
     }
-  }, [fetchProducts]);
+  }, [refreshProducts]);
 
   const updateProduct = useCallback(async (productId: string, productData: Partial<ProductFormData>) => {
     if (!supabase) throw new Error("Database service is unavailable.");
@@ -129,11 +132,11 @@ export function ProductProvider({ children }: ProductProviderProps) {
       const { error } = await supabase.from('products').update(payload).eq('id', productId);
       if (error) throw error;
       
-      await fetchProducts();
+      await refreshProducts();
     } finally {
       setSubmitting(false);
     }
-  }, [fetchProducts]);
+  }, [refreshProducts]);
 
   const deleteProduct = useCallback(async (productId: string) => {
     if (!supabase) throw new Error("Database service is unavailable.");
@@ -141,33 +144,33 @@ export function ProductProvider({ children }: ProductProviderProps) {
     try {
       const { error } = await supabase.from('products').delete().eq('id', productId);
       if (error) throw error;
-      await fetchProducts();
+      await refreshProducts();
     } finally {
       setSubmitting(false);
     }
-  }, [fetchProducts]);
+  }, [refreshProducts]);
 
   const toggleFeatured = useCallback(async (productId: string, currentStatus: boolean) => {
     if (!supabase) return;
     try {
       const { error } = await supabase.from('products').update({ is_featured: !currentStatus }).eq('id', productId);
       if (error) throw error;
-      await fetchProducts();
+      await refreshProducts();
     } catch (e) {
       console.error("Toggle featured failed:", e);
     }
-  }, [fetchProducts]);
+  }, [refreshProducts]);
 
   const updateStock = useCallback(async (productId: string, newCount: number) => {
     if (!supabase) return;
     try {
       const { error } = await supabase.from('products').update({ stock_count: Math.max(0, newCount) }).eq('id', productId);
       if (error) throw error;
-      await fetchProducts();
+      await refreshProducts();
     } catch (e) {
       console.error("Update stock failed:", e);
     }
-  }, [fetchProducts]);
+  }, [refreshProducts]);
 
   const getProductById = useCallback((productId: string): Product | undefined => {
       return products.find(p => p.id === productId);
@@ -183,7 +186,7 @@ export function ProductProvider({ children }: ProductProviderProps) {
     toggleFeatured,
     updateStock,
     getProductById,
-    refreshProducts: fetchProducts
+    refreshProducts
   };
 
   return <ProductContext.Provider value={value}>{children}</ProductContext.Provider>;

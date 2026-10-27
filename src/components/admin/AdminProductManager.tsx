@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -11,8 +10,8 @@ import { useProducts } from '@/context/ProductProvider';
 import { useRouter } from 'next/navigation';
 
 /**
- * Unified Admin Product Manager v3.2:
- * Features clean state refresh and robust image resolution.
+ * Unified Admin Product Manager v3.3:
+ * Features clean state refresh and standardized sync logic.
  */
 export default function AdminProductManager() {
   const { toast } = useToast();
@@ -22,7 +21,7 @@ export default function AdminProductManager() {
     deleteProduct, 
     products, 
     loading: productsLoading, 
-    refreshProducts // Corrected from fetchProducts to match ProductProvider naming
+    refreshProducts 
   } = useProducts();
   
   const [categories, setCategories] = useState<string[]>([]);
@@ -119,10 +118,11 @@ export default function AdminProductManager() {
 
   const handleForceSync = async () => {
     try {
-      // Corrected call to refreshProducts
+      // Correctly call the function provided by ProductProvider
       await refreshProducts();
       toast({ title: 'Synced', description: 'Inventory refreshed from Supabase.' });
     } catch (error) {
+      console.error("Manual sync failed:", error);
       toast({ variant: 'destructive', title: 'Sync Failed', description: 'Could not connect to database.' });
     }
   };
