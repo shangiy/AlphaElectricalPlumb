@@ -16,25 +16,22 @@ interface Category {
 }
 
 /**
- * Updated Storage Bucket File Mapping for v2.4.6:
- * Maps category keywords to specific high-resolution curated assets in `product-images/collections/`.
+ * High-Resolution Collection Mapping for v2.4.8:
+ * Prioritizes curated collection assets from the Supabase Storage bucket.
  */
 const collectionFileNameMap: Record<string, string> = {
   toilets: 'collections/Hand-wash Basin and Pedestal Sink Collection.webp',
-  sinks: 'collections/Hand-wash Basin and Pedestal Sink Collection.webp',
-  tanks: 'collections/Durable TopTank Vertical Water Tank collection.webp',
-  electrical: 'collections/Electric Socket Collection.webp',
+  sink: 'collections/Hand-wash Basin and Pedestal Sink Collection.webp',
+  tank: 'collections/Durable TopTank Vertical Water Tank collection.webp',
   electric: 'collections/Electric Socket Collection.webp',
   chandelier: 'collections/Alpha chanderlier collection.webp',
   construction: 'collections/granite and quartz slabs collection.webp',
   fencing: 'collections/granite and quartz slabs collection.webp',
   plumbing: 'collections/Alpha plumbing pipe collection.webp',
-  lighting: 'collections/Alpha chanderlier collection.webp',
+  lighting: 'collections/rustic woven rope pendant lights collection.webp',
   decor: 'collections/Bird Art Lights fixture Collection.webp',
-  roofing: 'collections/Corrugated Roofing Sheet collection.webp',
   mabati: 'collections/Corrugated Roofing Sheet collection.webp',
   solar: 'collections/Solar items collection.webp',
-  shower: 'collections/shower utility collection.webp',
 };
 
 /**
@@ -47,7 +44,7 @@ function getStoragePublicUrl(rawPath: string): string {
   }
   if (!supabase) return '';
 
-  // Clean path: remove leading slashes and any leading 'product-images/' prefix
+  // Clean path: remove leading slashes and redundant prefixes
   let cleanPath = rawPath.replace(/\\/g, '/').replace(/^\/+/, '');
   if (cleanPath.startsWith('product-images/')) {
     cleanPath = cleanPath.substring('product-images/'.length);
@@ -66,7 +63,16 @@ export default function CategoryCard({ category }: { category: Category }) {
   const candidateUrls = useMemo(() => {
     const urls: string[] = [];
 
-    // 1. Check explicit raw image fields passed in the category object
+    // 1. Exact collection path resolution based on name (User requested priority)
+    const lowerName = category.name.toLowerCase().trim();
+    for (const [key, path] of Object.entries(collectionFileNameMap)) {
+      if (lowerName.includes(key)) {
+        const mappedUrl = getStoragePublicUrl(path);
+        if (mappedUrl) urls.push(mappedUrl);
+      }
+    }
+
+    // 2. Explicit raw image fields passed in the category object
     const rawVal =
       category.image ||
       category.imageUrl ||
@@ -79,16 +85,7 @@ export default function CategoryCard({ category }: { category: Category }) {
       if (url) urls.push(url);
     }
 
-    // 2. Try exact collection path resolution based on category name (Highest Priority for design alignment)
-    const lowerName = category.name.toLowerCase().trim();
-    for (const [key, path] of Object.entries(collectionFileNameMap)) {
-      if (lowerName.includes(key)) {
-        const mappedUrl = getStoragePublicUrl(path);
-        if (mappedUrl) urls.push(mappedUrl);
-      }
-    }
-
-    // 3. Static JSON fallbacks for resilience
+    // 3. Fallback discovery logic for common category types
     if (lowerName.includes('tank')) urls.push(placeholderData.cat_tanks.url);
     if (lowerName.includes('plumb')) urls.push(placeholderData.cat_plumbing.url);
     if (lowerName.includes('light') || lowerName.includes('chandelier')) urls.push(placeholderData.cat_lighting.url);
