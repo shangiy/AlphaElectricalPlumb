@@ -98,15 +98,24 @@ export default function CustomerReviews() {
     const onSubmit = async (values: ReviewFormValues) => {
         if (!supabase) return;
         
-        if (!user) {
-            toast({ title: "Login Required", description: "You must be logged in to post a review.", variant: "destructive" });
+        // 1. Get the currently authenticated user directly from Supabase Auth
+        // This ensures we get the real UUID string instead of any mock IDs.
+        const { data: { user: authUser }, error: userError } = await supabase.auth.getUser();
+
+        if (userError || !authUser) {
+            toast({ 
+                title: "Login Required", 
+                description: "You must be logged in to post a review.", 
+                variant: "destructive" 
+            });
             return;
         }
 
         try {
+            // 2. Insert the review using the real UUID
             const { error } = await supabase.from('reviews').insert([{
                 author_name: values.userName,
-                user_id: user.id,
+                user_id: authUser.id, // Real Supabase Auth UUID
                 rating: values.rating,
                 comment: values.comment
             }]);
