@@ -4,6 +4,13 @@ import { createContext, useContext, useState, useEffect, ReactNode, useCallback 
 import type { Product } from '@/lib/types';
 import { supabase } from '@/lib/supabase';
 import { getProducts } from '@/lib/data';
+import { 
+  addProductAdmin, 
+  updateProductAdmin, 
+  deleteProductAdmin, 
+  toggleFeaturedAdmin, 
+  updateStockAdmin 
+} from '@/app/actions/product-actions';
 
 interface ProductProviderProps {
   children: ReactNode;
@@ -45,12 +52,11 @@ export function ProductProvider({ children }: ProductProviderProps) {
 
   const refreshProducts = useCallback(async () => {
     try {
-      // Fetch fresh data from Supabase wrapper
       const data = await getProducts();
       setProducts(data || []);
     } catch (error) {
       console.error("Fetch products failed:", error);
-      throw error; // Throw so UI can catch it
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -61,14 +67,12 @@ export function ProductProvider({ children }: ProductProviderProps) {
 
     if (!supabase) return;
 
-    // Realtime subscription setup
     const channel = supabase
       .channel('public-products-sync')
       .on(
         'postgres_changes', 
         { event: '*', schema: 'public', table: 'products' }, 
         (payload) => {
-          console.log("Realtime change detected:", payload);
           refreshProducts().catch(() => {});
         }
       )
@@ -80,7 +84,6 @@ export function ProductProvider({ children }: ProductProviderProps) {
   }, [refreshProducts]);
 
   const addProduct = useCallback(async (productData: ProductFormData) => {
-    if (!supabase) throw new Error("Database service is unavailable.");
     setSubmitting(true);
     try {
       const payload: Record<string, any> = {
@@ -100,8 +103,8 @@ export function ProductProvider({ children }: ProductProviderProps) {
 
       if (productData.barcode) payload.barcode = productData.barcode;
 
-      const { error } = await supabase.from('products').insert([payload]);
-      if (error) throw error;
+      // Use Server Action to bypass RLS via Service Role Key
+      await addProductAdmin(payload);
       await refreshProducts();
     } finally {
       setSubmitting(false);
@@ -109,7 +112,6 @@ export function ProductProvider({ children }: ProductProviderProps) {
   }, [refreshProducts]);
 
   const updateProduct = useCallback(async (productId: string, productData: Partial<ProductFormData>) => {
-    if (!supabase) throw new Error("Database service is unavailable.");
     setSubmitting(true);
     try {
       const payload: Record<string, any> = {};
@@ -129,9 +131,8 @@ export function ProductProvider({ children }: ProductProviderProps) {
       if (productData.unit !== undefined) payload.unit = productData.unit;
       payload.updated_at = new Date().toISOString();
 
-      const { error } = await supabase.from('products').update(payload).eq('id', productId);
-      if (error) throw error;
-      
+      // Use Server Action to bypass RLS via Service Role Key
+      await updateProductAdmin(productId, payload);
       await refreshProducts();
     } finally {
       setSubmitting(false);
@@ -139,11 +140,10 @@ export function ProductProvider({ children }: ProductProviderProps) {
   }, [refreshProducts]);
 
   const deleteProduct = useCallback(async (productId: string) => {
-    if (!supabase) throw new Error("Database service is unavailable.");
     setSubmitting(true);
     try {
-      const { error } = await supabase.from('products').delete().eq('id', productId);
-      if (error) throw error;
+      // Use Server Action to bypass RLS via Service Role Key
+      await deleteProductAdmin(productId);
       await refreshProducts();
     } finally {
       setSubmitting(false);
@@ -151,10 +151,8 @@ export function ProductProvider({ children }: ProductProviderProps) {
   }, [refreshProducts]);
 
   const toggleFeatured = useCallback(async (productId: string, currentStatus: boolean) => {
-    if (!supabase) return;
     try {
-      const { error } = await supabase.from('products').update({ is_featured: !currentStatus }).eq('id', productId);
-      if (error) throw error;
+      await toggleFeaturedAdmin(productId, currentStatus);
       await refreshProducts();
     } catch (e) {
       console.error("Toggle featured failed:", e);
@@ -162,10 +160,8 @@ export function ProductProvider({ children }: ProductProviderProps) {
   }, [refreshProducts]);
 
   const updateStock = useCallback(async (productId: string, newCount: number) => {
-    if (!supabase) return;
     try {
-      const { error } = await supabase.from('products').update({ stock_count: Math.max(0, newCount) }).eq('id', productId);
-      if (error) throw error;
+      await updateStockAdmin(productId, newCount);
       await refreshProducts();
     } catch (e) {
       console.error("Update stock failed:", e);
