@@ -44,7 +44,7 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 type SignUpFormValues = z.infer<typeof signUpSchema>;
 
 const GoogleIcon = () => (
-    <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" aria-hidden="true">
+    <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 fill-current" aria-hidden="true">
         <path d="M12.48 10.92v3.28h7.84c-.24 1.84-.85 3.18-1.73 4.1-1.02 1.02-2.62 1.62-4.55 1.62-3.87 0-7.02-3.15-7.02-7.02s3.15-7.02 7.02-7.02c2.21 0 3.66.86 4.5 1.69l2.5-2.5C18.16 3.15 15.66 2 12.48 2 6.94 2 2.53 6.4 2.53 12s4.41 10 9.95 10c2.82 0 5.16-1 6.9-2.72 1.83-1.83 2.36-4.49 2.36-6.52 0-.6-.05-1.15-.15-1.7H12.48z"/>
     </svg>
 );
@@ -52,6 +52,18 @@ const GoogleIcon = () => (
 const FacebookIcon = () => (
     <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 fill-current" aria-hidden="true">
         <path d="M22.675 0H1.325C.593 0 0 .593 0 1.325v21.35C0 23.407.593 24 1.325 24H12.82v-9.29h-3.128v-3.622h3.128V8.413c0-3.1 1.893-4.788 4.658-4.788 1.325 0 2.463.099 2.795.143v3.24l-1.918.001c-1.504 0-1.795.715-1.795 1.763v2.313h3.587l-.467 3.622h-3.12V24h6.116c.732 0 1.325-.593 1.325-1.325V1.325C24 .593 23.407 0 22.675 0z"/>
+    </svg>
+);
+
+const AppleIcon = () => (
+    <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 fill-current" aria-hidden="true">
+        <path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.702z"/>
+    </svg>
+);
+
+const GithubIcon = () => (
+    <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 fill-current" aria-hidden="true">
+        <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/>
     </svg>
 );
 
@@ -74,11 +86,19 @@ const PasswordInput = ({ field, ...props }: any) => {
 };
 
 export default function LoginForm() {
-    const { user, login, signUp, signInWithGoogle, signInWithFacebook } = useAuth();
+    const { 
+        user, 
+        login, 
+        signUp, 
+        signInWithGoogle, 
+        signInWithFacebook, 
+        signInWithApple, 
+        signInWithGithub 
+    } = useAuth();
     const router = useRouter();
     const searchParams = useSearchParams();
     const { toast } = useToast();
-    const [socialLoading, setSocialLoading] = useState<null | 'google' | 'facebook'>(null);
+    const [socialLoading, setSocialLoading] = useState<null | 'google' | 'facebook' | 'apple' | 'github'>(null);
     const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
     const [isMounted, setIsMounted] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
@@ -161,10 +181,16 @@ export default function LoginForm() {
         }
     }
 
-    const handleSocialSignIn = async (provider: 'google' | 'facebook') => {
+    const handleSocialSignIn = async (provider: 'google' | 'facebook' | 'apple' | 'github') => {
         setSocialLoading(provider);
         try {
-            const signInMethod = provider === 'google' ? signInWithGoogle : signInWithFacebook;
+            let signInMethod;
+            switch(provider) {
+                case 'google': signInMethod = signInWithGoogle; break;
+                case 'facebook': signInMethod = signInWithFacebook; break;
+                case 'apple': signInMethod = signInWithApple; break;
+                case 'github': signInMethod = signInWithGithub; break;
+            }
             await signInMethod();
         } catch (error: any) {
             toast({ variant: "destructive", title: "Social Login Failed", description: error.message });
@@ -176,6 +202,36 @@ export default function LoginForm() {
     const redirectUrl = searchParams.get('redirect') || '/';
     const redirectQuery = redirectUrl !== '/' ? `&redirect=${encodeURIComponent(redirectUrl)}` : '';
     const recaptchaSiteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
+
+    const SocialLoginBlock = () => (
+        <div className="space-y-4">
+            <div className="relative">
+                <div className="absolute inset-0 flex items-center"><span className="w-full border-t" /></div>
+                <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
+                </div>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+                <Button variant="outline" type="button" onClick={() => handleSocialSignIn('google')} disabled={!!socialLoading}>
+                    {socialLoading === 'google' ? <Loader2 className="animate-spin h-4 w-4" /> : <GoogleIcon/>} 
+                    <span className="ml-2">Google</span>
+                </Button>
+                <Button variant="outline" type="button" onClick={() => handleSocialSignIn('facebook')} disabled={!!socialLoading}>
+                    {socialLoading === 'facebook' ? <Loader2 className="animate-spin h-4 w-4" /> : <FacebookIcon/>} 
+                    <span className="ml-2">Facebook</span>
+                </Button>
+                <Button variant="outline" type="button" onClick={() => handleSocialSignIn('apple')} disabled={!!socialLoading}>
+                    {socialLoading === 'apple' ? <Loader2 className="animate-spin h-4 w-4" /> : <AppleIcon/>} 
+                    <span className="ml-2">Apple</span>
+                </Button>
+                <Button variant="outline" type="button" onClick={() => handleSocialSignIn('github')} disabled={!!socialLoading}>
+                    {socialLoading === 'github' ? <Loader2 className="animate-spin h-4 w-4" /> : <GithubIcon/>} 
+                    <span className="ml-2">GitHub</span>
+                </Button>
+            </div>
+        </div>
+    );
 
   return (
     <div className="container mx-auto flex min-h-[80vh] items-center justify-center px-4 py-12">
@@ -224,25 +280,9 @@ export default function LoginForm() {
                                     Log In
                                 </Button>
                                 
-                                <div className="relative">
-                                    <div className="absolute inset-0 flex items-center"><span className="w-full border-t" /></div>
-                                    <div className="relative flex justify-center text-xs uppercase">
-                                        <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
-                                    </div>
-                                </div>
-                                
-                                <div className="grid grid-cols-2 gap-4">
-                                     <Button variant="outline" type="button" onClick={() => handleSocialSignIn('google')} disabled={!!socialLoading}>
-                                        {socialLoading === 'google' ? <Loader2 className="animate-spin h-4 w-4" /> : <GoogleIcon/>} 
-                                        <span className="ml-2">Google</span>
-                                     </Button>
-                                     <Button variant="outline" type="button" onClick={() => handleSocialSignIn('facebook')} disabled={!!socialLoading}>
-                                        {socialLoading === 'facebook' ? <Loader2 className="animate-spin h-4 w-4" /> : <FacebookIcon/>} 
-                                        <span className="ml-2">Facebook</span>
-                                     </Button>
-                                </div>
+                                <SocialLoginBlock />
 
-                                <p className="text-center text-sm text-muted-foreground">
+                                <p className="text-center text-sm text-muted-foreground mt-6">
                                     Don't have an account?{' '}
                                     <Link href={`/auth/login?tab=signup${redirectQuery}`} scroll={false} className="font-medium text-primary hover:underline">Sign up</Link>
                                 </p>
@@ -312,25 +352,9 @@ export default function LoginForm() {
                                     Create Account
                                 </Button>
 
-                                <div className="relative">
-                                    <div className="absolute inset-0 flex items-center"><span className="w-full border-t" /></div>
-                                    <div className="relative flex justify-center text-xs uppercase">
-                                        <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
-                                    </div>
-                                </div>
+                                <SocialLoginBlock />
                                 
-                                <div className="grid grid-cols-2 gap-4">
-                                     <Button variant="outline" type="button" onClick={() => handleSocialSignIn('google')} disabled={!!socialLoading}>
-                                        {socialLoading === 'google' ? <Loader2 className="animate-spin h-4 w-4" /> : <GoogleIcon/>} 
-                                        <span className="ml-2">Google</span>
-                                     </Button>
-                                     <Button variant="outline" type="button" onClick={() => handleSocialSignIn('facebook')} disabled={!!socialLoading}>
-                                        {socialLoading === 'facebook' ? <Loader2 className="animate-spin h-4 w-4" /> : <FacebookIcon/>} 
-                                        <span className="ml-2">Facebook</span>
-                                     </Button>
-                                </div>
-                                
-                                <p className="text-center text-sm text-muted-foreground">
+                                <p className="text-center text-sm text-muted-foreground mt-6">
                                     Already have an account?{' '}
                                     <Link href={`/auth/login?tab=login${redirectQuery}`} scroll={false} className="font-medium text-primary hover:underline">Login</Link>
                                 </p>

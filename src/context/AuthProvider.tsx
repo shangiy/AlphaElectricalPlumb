@@ -27,6 +27,8 @@ interface AuthContextType {
   signUp: (signUpData: SignUpData) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
   signInWithFacebook: () => Promise<void>;
+  signInWithApple: () => Promise<void>;
+  signInWithGithub: () => Promise<void>;
   updateUser: (updatedData: Partial<User>) => void;
   logout: () => void;
   loading: boolean;
@@ -177,6 +179,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (error) throw error;
   };
 
+  const signInWithApple = async () => {
+    if (!supabase) throw new Error("Authentication service is unavailable.");
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'apple',
+      options: {
+        redirectTo: typeof window !== 'undefined' ? window.location.origin : undefined
+      }
+    });
+    if (error) throw error;
+  };
+
+  const signInWithGithub = async () => {
+    if (!supabase) throw new Error("Authentication service is unavailable.");
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'github',
+      options: {
+        redirectTo: typeof window !== 'undefined' ? window.location.origin : undefined
+      }
+    });
+    if (error) throw error;
+  };
+
   const updateUser = (updatedData: Partial<User>) => {
     setUser(currentUser => {
         if (!currentUser) return null;
@@ -196,6 +220,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signUp,
     signInWithGoogle,
     signInWithFacebook,
+    signInWithApple,
+    signInWithGithub,
     updateUser,
     logout,
     loading,
