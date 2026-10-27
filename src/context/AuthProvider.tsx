@@ -26,6 +26,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   signUp: (signUpData: SignUpData) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
+  signInWithFacebook: () => Promise<void>;
   updateUser: (updatedData: Partial<User>) => void;
   logout: () => void;
   loading: boolean;
@@ -56,7 +57,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (session?.user) {
         await fetchProfile(session.user);
       } else {
-        // Checking for dev-bypass session in local storage or memory could go here
         setLoading(false);
       }
     };
@@ -160,7 +160,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: window.location.origin
+        redirectTo: typeof window !== 'undefined' ? window.location.origin : undefined
+      }
+    });
+    if (error) throw error;
+  };
+
+  const signInWithFacebook = async () => {
+    if (!supabase) throw new Error("Authentication service is unavailable.");
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'facebook',
+      options: {
+        redirectTo: typeof window !== 'undefined' ? window.location.origin : undefined
       }
     });
     if (error) throw error;
@@ -184,6 +195,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     login,
     signUp,
     signInWithGoogle,
+    signInWithFacebook,
     updateUser,
     logout,
     loading,

@@ -44,11 +44,15 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 type SignUpFormValues = z.infer<typeof signUpSchema>;
 
 const GoogleIcon = () => (
-    <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" className="h-5 w-5"><title>Google</title><path d="M12.48 10.92v3.28h7.84c-.24 1.84-.85 3.18-1.73 4.1-1.02 1.02-2.62 1.62-4.55 1.62-3.87 0-7.02-3.15-7.02-7.02s3.15-7.02 7.02-7.02c2.21 0 3.66.86 4.5 1.69l2.5-2.5C18.16 3.15 15.66 2 12.48 2 6.94 2 2.53 6.4 2.53 12s4.41 10 9.95 10c2.82 0 5.16-1 6.9-2.72 1.83-1.83 2.36-4.49 2.36-6.52 0-.6-.05-1.15-.15-1.7H12.48z"/></svg>
+    <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" aria-hidden="true">
+        <path d="M12.48 10.92v3.28h7.84c-.24 1.84-.85 3.18-1.73 4.1-1.02 1.02-2.62 1.62-4.55 1.62-3.87 0-7.02-3.15-7.02-7.02s3.15-7.02 7.02-7.02c2.21 0 3.66.86 4.5 1.69l2.5-2.5C18.16 3.15 15.66 2 12.48 2 6.94 2 2.53 6.4 2.53 12s4.41 10 9.95 10c2.82 0 5.16-1 6.9-2.72 1.83-1.83 2.36-4.49 2.36-6.52 0-.6-.05-1.15-.15-1.7H12.48z"/>
+    </svg>
 );
 
 const FacebookIcon = () => (
-    <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 fill-current"><title>Facebook</title><path d="M22.675 0H1.325C.593 0 0 .593 0 1.325v21.35C0 23.407.593 24 1.325 24H12.82v-9.29h-3.128v-3.622h3.128V8.413c0-3.1 1.893-4.788 4.658-4.788 1.325 0 2.463.099 2.795.143v3.24l-1.918.001c-1.504 0-1.795.715-1.795 1.763v2.313h3.587l-.467 3.622h-3.12V24h6.116c.732 0 1.325-.593 1.325-1.325V1.325C24 .593 23.407 0 22.675 0z"/></svg>
+    <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 fill-current" aria-hidden="true">
+        <path d="M22.675 0H1.325C.593 0 0 .593 0 1.325v21.35C0 23.407.593 24 1.325 24H12.82v-9.29h-3.128v-3.622h3.128V8.413c0-3.1 1.893-4.788 4.658-4.788 1.325 0 2.463.099 2.795.143v3.24l-1.918.001c-1.504 0-1.795.715-1.795 1.763v2.313h3.587l-.467 3.622h-3.12V24h6.116c.732 0 1.325-.593 1.325-1.325V1.325C24 .593 23.407 0 22.675 0z"/>
+    </svg>
 );
 
 const PasswordInput = ({ field, ...props }: any) => {
@@ -90,7 +94,7 @@ export default function LoginForm() {
         if (isMounted && user) {
             const redirectUrl = searchParams.get('redirect');
             
-            // ADMIN HANGING PLACE: Redirect admins/staff to the admin dashboard by default
+            // Redirect admins/staff to the admin dashboard by default
             if (!redirectUrl || redirectUrl === '/') {
                 if (user.role === 'admin' || user.role === 'staff') {
                     router.push('/admin');
@@ -229,10 +233,12 @@ export default function LoginForm() {
                                 
                                 <div className="grid grid-cols-2 gap-4">
                                      <Button variant="outline" type="button" onClick={() => handleSocialSignIn('google')} disabled={!!socialLoading}>
-                                        {socialLoading === 'google' ? <Loader2 className="animate-spin" /> : <GoogleIcon/>} Google
+                                        {socialLoading === 'google' ? <Loader2 className="animate-spin h-4 w-4" /> : <GoogleIcon/>} 
+                                        <span className="ml-2">Google</span>
                                      </Button>
                                      <Button variant="outline" type="button" onClick={() => handleSocialSignIn('facebook')} disabled={!!socialLoading}>
-                                        {socialLoading === 'facebook' ? <Loader2 className="animate-spin" /> : <FacebookIcon/>} Facebook
+                                        {socialLoading === 'facebook' ? <Loader2 className="animate-spin h-4 w-4" /> : <FacebookIcon/>} 
+                                        <span className="ml-2">Facebook</span>
                                      </Button>
                                 </div>
 
@@ -315,10 +321,12 @@ export default function LoginForm() {
                                 
                                 <div className="grid grid-cols-2 gap-4">
                                      <Button variant="outline" type="button" onClick={() => handleSocialSignIn('google')} disabled={!!socialLoading}>
-                                        {socialLoading === 'google' ? <Loader2 className="animate-spin" /> : <GoogleIcon/>} Google
+                                        {socialLoading === 'google' ? <Loader2 className="animate-spin h-4 w-4" /> : <GoogleIcon/>} 
+                                        <span className="ml-2">Google</span>
                                      </Button>
                                      <Button variant="outline" type="button" onClick={() => handleSocialSignIn('facebook')} disabled={!!socialLoading}>
-                                        {socialLoading === 'facebook' ? <Loader2 className="animate-spin" /> : <FacebookIcon/>} Facebook
+                                        {socialLoading === 'facebook' ? <Loader2 className="animate-spin h-4 w-4" /> : <FacebookIcon/>} 
+                                        <span className="ml-2">Facebook</span>
                                      </Button>
                                 </div>
                                 
