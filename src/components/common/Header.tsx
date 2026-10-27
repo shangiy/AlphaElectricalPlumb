@@ -160,6 +160,13 @@ export default function Header() {
 
             <div className="flex items-center justify-end">
                 <nav className='flex items-center gap-1'>
+                    {/* Admin link relocated to the top (first item in desktop nav) */}
+                    {(user?.role === 'admin' || user?.role === 'staff') && (
+                      <Link href="/admin" className={cn(navAndIconClasses, "text-primary border border-primary/20 bg-primary/5 px-4")}>
+                        <LayoutDashboard className="mr-1 h-4 w-4 inline-block" />
+                        Admin Panel
+                      </Link>
+                    )}
                     <div onMouseEnter={handleProductsMenuEnter} onMouseLeave={handleProductsMenuLeave} className="relative">
                       <DropdownMenu open={isProductsMenuOpen} onOpenChange={setProductsMenuOpen}>
                         <DropdownMenuTrigger asChild>
@@ -188,13 +195,6 @@ export default function Header() {
                             {link.name}
                         </Link>
                     ))}
-                    {/* Admin link visible for verified roles */}
-                    {(user?.role === 'admin' || user?.role === 'staff') && (
-                      <Link href="/admin" className={cn(navAndIconClasses, "text-primary border border-primary/20 bg-primary/5 px-4")}>
-                        <LayoutDashboard className="mr-1 h-4 w-4 inline-block" />
-                        Admin Panel
-                      </Link>
-                    )}
                 </nav>
                 <div className="flex items-center ml-2">
                     <ShoppingCart triggerClassName={cn(iconClasses, '[&_svg]:h-7 [&_svg]:w-7')} />
@@ -281,6 +281,16 @@ export default function Header() {
                         </SheetHeader>
                         <ScrollArea className="flex-1">
                             <nav className="flex flex-col p-4">
+                            {/* Admin link relocated to the top (first item in mobile drawer nav) */}
+                            {(user?.role === 'admin' || user?.role === 'staff') && (
+                              <SheetClose asChild>
+                                <Link href="/admin" className="flex items-center gap-4 px-3 py-3 text-base font-bold text-primary bg-primary/5 rounded-xl mb-4">
+                                    <LayoutDashboard className="h-6 w-6" />
+                                    <span>Admin Panel</span>
+                                </Link>
+                              </SheetClose>
+                            )}
+                            
                             <h3 className="px-3 py-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Catalog</h3>
                             {productCategories.map((category) => (
                                 <SheetClose asChild key={category.name}>
@@ -290,14 +300,7 @@ export default function Header() {
                                 </Link>
                                 </SheetClose>
                             ))}
-                            {(user?.role === 'admin' || user?.role === 'staff') && (
-                              <SheetClose asChild>
-                                <Link href="/admin" className="flex items-center gap-4 px-3 py-3 text-base font-bold text-primary bg-primary/5 rounded-xl mt-4">
-                                    <LayoutDashboard className="h-6 w-6" />
-                                    <span>Admin Panel</span>
-                                </Link>
-                              </SheetClose>
-                            )}
+                            
                             <div className="my-4 border-t" />
                             {navLinks.map((link) => (
                                 <SheetClose asChild key={link.name}>
