@@ -305,6 +305,22 @@ export default function LoginForm() {
                                     {isProcessing && <Loader2 className="animate-spin mr-2 h-4 w-4" />}
                                     Create Account
                                 </Button>
+
+                                <div className="relative">
+                                    <div className="absolute inset-0 flex items-center"><span className="w-full border-t" /></div>
+                                    <div className="relative flex justify-center text-xs uppercase">
+                                        <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
+                                    </div>
+                                </div>
+                                
+                                <div className="grid grid-cols-2 gap-4">
+                                     <Button variant="outline" type="button" onClick={() => handleSocialSignIn('google')} disabled={!!socialLoading}>
+                                        {socialLoading === 'google' ? <Loader2 className="animate-spin" /> : <GoogleIcon/>} Google
+                                     </Button>
+                                     <Button variant="outline" type="button" onClick={() => handleSocialSignIn('facebook')} disabled={!!socialLoading}>
+                                        {socialLoading === 'facebook' ? <Loader2 className="animate-spin" /> : <FacebookIcon/>} Facebook
+                                     </Button>
+                                </div>
                                 
                                 <p className="text-center text-sm text-muted-foreground">
                                     Already have an account?{' '}
