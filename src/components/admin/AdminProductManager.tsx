@@ -1,17 +1,17 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
 import { Loader2, Upload, Edit, Trash2, CheckCircle, Plus, Search, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { useProducts } from '@/context/ProductProvider';
 import { useRouter } from 'next/navigation';
+import { uploadImage } from '@/lib/storage';
 
 /**
- * Unified Admin Product Manager v3.3:
- * Features clean state refresh and standardized sync logic.
+ * Unified Admin Product Manager v3.4:
+ * Features server-side administrative uploads to bypass RLS constraints.
  */
 export default function AdminProductManager() {
   const { toast } = useToast();
@@ -50,22 +50,19 @@ export default function AdminProductManager() {
       if (!e.target.files || e.target.files.length === 0) return;
       
       const file = e.target.files[0];
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
-      const filePath = `uploads/${fileName}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('product-images')
-        .upload(filePath, file, { cacheControl: '3600', upsert: false });
-
-      if (uploadError) throw uploadError;
-
-      const { data } = supabase.storage.from('product-images').getPublicUrl(filePath);
-      setImageUrl(data.publicUrl);
       
-      toast({ title: 'Asset Ready', description: 'Image hosted in Supabase storage.' });
+      // Use the robust utility which routes through a Server Action (Admin Client)
+      const publicUrl = await uploadImage(file);
+      
+      setImageUrl(publicUrl);
+      toast({ title: 'Asset Ready', description: 'Image securely hosted in Supabase storage.' });
     } catch (error: any) {
-      toast({ variant: 'destructive', title: 'Upload Failed', description: error.message });
+      console.error("Admin upload failed:", error);
+      toast({ 
+        variant: 'destructive', 
+        title: 'Upload Failed', 
+        description: error.message || "Ensure RLS policies allow server-side admin uploads." 
+      });
     } finally {
       setUploading(false);
     }
@@ -118,7 +115,6 @@ export default function AdminProductManager() {
 
   const handleForceSync = async () => {
     try {
-      // Correctly call the function provided by ProductProvider
       await refreshProducts();
       toast({ title: 'Synced', description: 'Inventory refreshed from Supabase.' });
     } catch (error) {
@@ -129,7 +125,7 @@ export default function AdminProductManager() {
 
   const filteredProducts = products.filter(p => 
     p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    p.category.toLowerCase().includes(searchTerm.toLowerCase())
+    (p.category && p.category.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   return (
@@ -138,7 +134,7 @@ export default function AdminProductManager() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b pb-6">
         <div>
           <h2 className="text-3xl font-black font-headline text-accent tracking-tighter uppercase">Inventory Master</h2>
-          <p className="text-muted-foreground text-sm font-medium">Full Access to Supabase Database & Storage</p>
+          <p className="text-muted-foreground text-sm font-medium">Administrative Access via Supabase Service Role</p>
         </div>
         <div className="flex items-center gap-4">
             <Button 
@@ -153,7 +149,7 @@ export default function AdminProductManager() {
             </Button>
             <div className="flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full border border-primary/20">
                 <CheckCircle className="h-4 w-4" />
-                <span className="text-xs font-bold uppercase tracking-widest">Supabase Live</span>
+                <span className="text-xs font-bold uppercase tracking-widest">Admin Mode</span>
             </div>
         </div>
       </div>
@@ -196,7 +192,7 @@ export default function AdminProductManager() {
                   {uploading ? (
                     <div className="flex flex-col items-center gap-2">
                       <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                      <span className="text-[10px] font-bold text-primary uppercase">Pushing to Bucket...</span>
+                      <span className="text-[10px] font-bold text-primary uppercase">Bypassing RLS...</span>
                     </div>
                   ) : imageUrl ? (
                     <img src={imageUrl} alt="Preview" className="h-32 w-full object-contain rounded-lg border bg-white" />
