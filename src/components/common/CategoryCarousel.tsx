@@ -8,15 +8,14 @@ import { supabase } from '@/lib/supabase';
 import placeholderData from '@/app/lib/placeholder-images.json';
 
 /**
- * Dynamic Category Carousel v3.7:
- * Resolves images directly from the Supabase storage 'product-images' bucket 
- * and routes items to their respective category pages.
+ * Dynamic Category Carousel v3.8:
+ * Implements the resilience recommendation to strip redundant bucket prefixes
+ * during dynamic image resolution.
  */
 export default function CategoryCarousel() {
   const [categories, setCategories] = React.useState<CarouselCategory[]>([]);
   const [loading, setLoading] = React.useState(true);
 
-  // Initializing with verified assets from placeholder-images.json
   const fallbackCategories: CarouselCategory[] = [
     { id: 'Tanks', name: 'Tanks', href: '/category/tanks', image: placeholderData.cat_tanks.url },
     { id: 'Plumbing', name: 'Plumbing', href: '/category/plumbing', image: placeholderData.cat_plumbing.url },
@@ -34,7 +33,6 @@ export default function CategoryCarousel() {
       }
 
       try {
-        // Query the dedicated categories table in Supabase Table Editor
         const { data, error } = await supabase
           .from('categories')
           .select('*')
@@ -45,11 +43,17 @@ export default function CategoryCarousel() {
             const rawImg = cat.image_url || cat.imageUrl || cat.image || cat.image_path || '';
             let resolvedUrl = rawImg;
 
-            // Resolve storage bucket public URLs from 'product-images'
+            // Strip redundant bucket names/prefixes for clean Storage resolution
             if (rawImg && !rawImg.startsWith('http')) {
-              const cleanPath = rawImg.replace(/\\/g, '/').replace(/^\/+/, '');
+              const bucketName = 'product-images';
+              let cleanPath = rawImg.replace(/\\/g, '/').replace(/^\/+/, '');
+              
+              if (cleanPath.startsWith(`${bucketName}/`)) {
+                cleanPath = cleanPath.substring(bucketName.length + 1);
+              }
+              
               const { data: publicUrlData } = supabase.storage
-                .from('product-images')
+                .from(bucketName)
                 .getPublicUrl(cleanPath);
               resolvedUrl = publicUrlData.publicUrl;
             }
@@ -66,32 +70,7 @@ export default function CategoryCarousel() {
           });
           setCategories(formatted);
         } else {
-          // Fallback: derive categories and bucket image links dynamically from products table
-          const { data: prodData } = await supabase.from('products').select('category, image_url, image_urls');
-          if (prodData && prodData.length > 0) {
-            const categoryMap = new Map<string, string>();
-            prodData.forEach((p: any) => {
-              if (p.category && !categoryMap.has(p.category)) {
-                const img = p.image_url || (p.image_urls && p.image_urls[0]) || '';
-                let resolvedUrl = img;
-                if (img && !img.startsWith('http')) {
-                  const cleanPath = img.replace(/\\/g, '/').replace(/^\/+/, '');
-                  resolvedUrl = supabase.storage.from('product-images').getPublicUrl(cleanPath).data.publicUrl;
-                }
-                categoryMap.set(p.category, resolvedUrl || placeholderData.cat_tanks.url);
-              }
-            });
-
-            const derived = Array.from(categoryMap.entries()).map(([name, image]) => ({
-              id: name,
-              name,
-              href: `/category/${name.toLowerCase().replace(/\s+/g, '-')}`,
-              image
-            }));
-            setCategories(derived.length > 0 ? derived : fallbackCategories);
-          } else {
-            setCategories(fallbackCategories);
-          }
+          setCategories(fallbackCategories);
         }
       } catch (err) {
         console.error("Category fetch failed:", err);
@@ -104,7 +83,6 @@ export default function CategoryCarousel() {
     fetchDynamicCategories();
   }, []);
 
-  // SEAMLESS INFINITE LOOP: Triple the data for a continuous marquee animation
   const duplicatedCategories = [...categories, ...categories, ...categories];
 
   return (
@@ -129,7 +107,7 @@ export default function CategoryCarousel() {
             WebkitMaskImage: 'linear-gradient(to right, transparent, black 10%, black 90%, transparent)',
           }}
         >
-          <div className="flex w-fit items-center flex-nowrap animate-scroll hover:[animation-play-state:paused] py-4">
+          <div className="flex w-fit items-center flex-nowrap animate-marquee hover:[animation-play-state:paused] py-4">
             {duplicatedCategories.map((category, index) => (
               <div key={`${category.id}-${index}`} className="flex-shrink-0 w-72 px-4">
                 <CategoryCard category={category} />

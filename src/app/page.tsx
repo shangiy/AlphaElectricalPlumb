@@ -8,6 +8,7 @@ import Hero from '@/components/common/Hero';
 import HomepageAbout from '@/components/common/HomepageAbout';
 
 // Dynamically import heavy sections to split bundles and prevent ChunkLoadErrors
+// No 'ssr: false' inside Server Components to avoid build-time crashes.
 const CategoryCarousel = nextDynamic(() => import('@/components/common/CategoryCarousel'), {
   loading: () => <div className="h-80 bg-muted/10 animate-pulse rounded-2xl mx-4 my-16" />
 });
@@ -16,13 +17,21 @@ const FeaturedProducts = nextDynamic(() => import('@/components/products/Feature
   loading: () => <div className="h-96 bg-muted/10 animate-pulse rounded-2xl mx-4 my-16" />
 });
 
-const DeliveryServices = nextDynamic(() => import('@/components/common/DeliveryServices'));
+const DeliveryServices = nextDynamic(() => import('@/components/common/DeliveryServices'), {
+  loading: () => <div className="h-96 bg-muted/10 animate-pulse rounded-2xl mx-4" />
+});
 
-const ImpactSection = nextDynamic(() => import('@/components/common/ImpactSection'));
+const ImpactSection = nextDynamic(() => import('@/components/common/ImpactSection'), {
+  loading: () => <div className="h-64 bg-muted/10 animate-pulse rounded-2xl mx-4" />
+});
 
-const CustomerReviews = nextDynamic(() => import('@/components/common/CustomerReviews'));
+const CustomerReviews = nextDynamic(() => import('@/components/common/CustomerReviews'), {
+  loading: () => <div className="h-80 bg-muted/10 animate-pulse rounded-2xl mx-4" />
+});
 
-const ConnectWithUs = nextDynamic(() => import('@/components/common/ConnectWithUs'));
+const ConnectWithUs = nextDynamic(() => import('@/components/common/ConnectWithUs'), {
+  loading: () => <div className="h-64 bg-muted/10 animate-pulse rounded-2xl mx-4" />
+});
 
 function HomeContent() {
   return (

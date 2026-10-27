@@ -1,6 +1,35 @@
-
 import type { Product, Category, MockUser, Transaction, CarouselCategory } from './types';
 import { supabase } from './supabase';
+
+/**
+ * Robust Path Resolver:
+ * Strips redundant bucket names and common folder prefixes to ensure 
+ * Supabase Storage receives a clean relative path.
+ */
+function resolveStoragePath(rawPath: string): string {
+  if (!rawPath) return '';
+  if (rawPath.startsWith('http://') || rawPath.startsWith('https://')) return rawPath;
+
+  const bucketName = 'product-images';
+  let clean = rawPath.replace(/\\/g, '/').replace(/^\/+/, '');
+  
+  // Remove redundant bucket name if present in path
+  if (clean.startsWith(`${bucketName}/`)) {
+    clean = clean.substring(bucketName.length + 1);
+  }
+  
+  // Remove redundant 'product images/' folder name if present
+  if (clean.startsWith('product images/')) {
+    clean = clean.substring('product images/'.length);
+  }
+
+  // If we still have a path, ask Supabase for the public URL
+  if (clean && supabase) {
+    return supabase.storage.from(bucketName).getPublicUrl(clean).data.publicUrl;
+  }
+
+  return rawPath;
+}
 
 /**
  * Robust Image URL Resolver (Single String):
@@ -10,20 +39,7 @@ export function getProductImageUrl(product: any): string {
   const rawImage = product?.image_url || product?.image || (product?.image_urls && product.image_urls[0]) || (product?.imageUrls && product.imageUrls[0]);
   
   if (!rawImage) return '/placeholder.jpg';
-  
-  // If it's already a full HTTP URL, return it as-is
-  if (typeof rawImage === 'string' && (rawImage.startsWith('http://') || rawImage.startsWith('https://'))) {
-    return rawImage;
-  }
-  
-  // Otherwise, construct the full public Supabase storage URL dynamically
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-  if (supabaseUrl && typeof rawImage === 'string') {
-    const cleanPath = rawImage.replace(/\\/g, '/').replace(/^\/+/, '');
-    return `${supabaseUrl}/storage/v1/object/public/product-images/${cleanPath}`;
-  }
-  
-  return '/placeholder.jpg';
+  return resolveStoragePath(rawImage);
 }
 
 /**
@@ -39,27 +55,14 @@ const resolveProductImages = (product: any): string[] => {
   if (Array.isArray(rawArray) && rawArray.length > 0) {
     rawArray.forEach((val: any) => {
       if (typeof val === 'string') {
-        if (val.startsWith('http')) {
-          urls.push(val);
-        } else {
-          const cleanPath = val.replace(/\\/g, '/').replace(/^\/+/, '');
-          urls.push(supabase.storage.from('product-images').getPublicUrl(cleanPath).data.publicUrl);
-          urls.push(supabase.storage.from('product-images').getPublicUrl(`product images/${cleanPath}`).data.publicUrl);
-          urls.push(supabase.storage.from('product-images').getPublicUrl(`uploads/${cleanPath}`).data.publicUrl);
-        }
+        urls.push(resolveStoragePath(val));
       }
     });
   }
 
   const singleVal = product.image_url || product.image || product.imageUrl || product.image_path || product.imagePath;
   if (singleVal && typeof singleVal === 'string') {
-    if (singleVal.startsWith('http')) {
-      urls.push(singleVal);
-    } else {
-      const cleanPath = singleVal.replace(/\\/g, '/').replace(/^\/+/, '');
-      urls.push(supabase.storage.from('product-images').getPublicUrl(cleanPath).data.publicUrl);
-      urls.push(supabase.storage.from('product-images').getPublicUrl(`product images/${cleanPath}`).data.publicUrl);
-    }
+    urls.push(resolveStoragePath(singleVal));
   }
 
   const uniqueUrls = Array.from(new Set(urls)).filter(url => url && !url.includes('undefined'));

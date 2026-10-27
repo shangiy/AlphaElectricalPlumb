@@ -41,15 +41,20 @@ export default function CategoryCard({ category }: { category: Category }) {
 
     if (!supabase) return [placeholderData.cat_tanks.url];
 
-    // Helper to get public URL for a path in 'product-images'
+    // Robust Asset Resolver: Always pass clean relative paths to storage helper
     const getUrl = (path: string) => {
       if (!path) return '';
       if (path.startsWith('http://') || path.startsWith('https://')) return path;
+      
+      const bucketName = 'product-images';
       let clean = path.replace(/\\/g, '/').replace(/^\/+/, '');
-      if (clean.startsWith('product-images/')) {
-        clean = clean.substring('product-images/'.length);
+      
+      // Recommendation: Strip redundant bucket name prefix
+      if (clean.startsWith(`${bucketName}/`)) {
+        clean = clean.substring(bucketName.length + 1);
       }
-      return supabase.storage.from('product-images').getPublicUrl(clean).data.publicUrl;
+      
+      return supabase.storage.from(bucketName).getPublicUrl(clean).data.publicUrl;
     };
 
     // 1. Check explicit image paths/URLs passed from DB
