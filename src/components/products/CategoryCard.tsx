@@ -16,22 +16,49 @@ interface Category {
 }
 
 /**
- * Precise mapping from category names/slugs to exact files inside `collections/` folder in Supabase storage
+ * Updated Storage Bucket File Mapping for v2.4.6:
+ * Maps category keywords to specific high-resolution curated assets in `product-images/collections/`.
  */
-const collectionFileMap: Record<string, string> = {
-  tanks: 'collections/Alpha tanks Collections.webp',
-  tank: 'collections/Alpha tanks Collections.webp',
+const collectionFileNameMap: Record<string, string> = {
+  toilets: 'collections/Hand-wash Basin and Pedestal Sink Collection.webp',
+  sinks: 'collections/Hand-wash Basin and Pedestal Sink Collection.webp',
+  tanks: 'collections/Durable TopTank Vertical Water Tank collection.webp',
+  electrical: 'collections/Electric Socket Collection.webp',
+  electric: 'collections/Electric Socket Collection.webp',
+  chandelier: 'collections/Alpha chanderlier collection.webp',
+  construction: 'collections/granite and quartz slabs collection.webp',
+  fencing: 'collections/granite and quartz slabs collection.webp',
   plumbing: 'collections/Alpha plumbing pipe collection.webp',
-  pipe: 'collections/Alpha plumbing pipe collection.webp',
-  lighting: 'collections/rustic woven rope pendant lights collection.webp',
-  light: 'collections/rustic woven rope pendant lights collection.webp',
+  lighting: 'collections/Alpha chanderlier collection.webp',
   decor: 'collections/Bird Art Lights fixture Collection.webp',
   roofing: 'collections/Corrugated Roofing Sheet collection.webp',
   mabati: 'collections/Corrugated Roofing Sheet collection.webp',
-  toilet: 'collections/Alpha toilet collection.webp',
-  waterpump: 'collections/waterpump collection.webp',
-  pump: 'collections/waterpump collection.webp',
+  solar: 'collections/Solar items collection.webp',
+  shower: 'collections/shower utility collection.webp',
 };
+
+/**
+ * Helper to construct clean Supabase Storage URLs from the 'product-images' bucket
+ */
+function getStoragePublicUrl(rawPath: string): string {
+  if (!rawPath) return '';
+  if (rawPath.startsWith('http://') || rawPath.startsWith('https://')) {
+    return rawPath;
+  }
+  if (!supabase) return '';
+
+  // Clean path: remove leading slashes and any leading 'product-images/' prefix
+  let cleanPath = rawPath.replace(/\\/g, '/').replace(/^\/+/, '');
+  if (cleanPath.startsWith('product-images/')) {
+    cleanPath = cleanPath.substring('product-images/'.length);
+  }
+
+  const { data } = supabase.storage
+    .from('product-images')
+    .getPublicUrl(cleanPath);
+
+  return data?.publicUrl || '';
+}
 
 export default function CategoryCard({ category }: { category: Category }) {
   const [imgIndex, setImgIndex] = useState(0);
@@ -39,50 +66,37 @@ export default function CategoryCard({ category }: { category: Category }) {
   const candidateUrls = useMemo(() => {
     const urls: string[] = [];
 
-    if (!supabase) return [placeholderData.cat_tanks.url];
+    // 1. Check explicit raw image fields passed in the category object
+    const rawVal =
+      category.image ||
+      category.imageUrl ||
+      category.image_url ||
+      category.image_path ||
+      '';
 
-    // Robust Asset Resolver: Always pass clean relative paths to storage helper
-    const getUrl = (path: string) => {
-      if (!path) return '';
-      if (path.startsWith('http://') || path.startsWith('https://')) return path;
-      
-      const bucketName = 'product-images';
-      let clean = path.replace(/\\/g, '/').replace(/^\/+/, '');
-      
-      // Recommendation: Strip redundant bucket name prefix
-      if (clean.startsWith(`${bucketName}/`)) {
-        clean = clean.substring(bucketName.length + 1);
-      }
-      
-      return supabase.storage.from(bucketName).getPublicUrl(clean).data.publicUrl;
-    };
-
-    // 1. Check explicit image paths/URLs passed from DB
-    const rawVal = category.image || category.imageUrl || category.image_url || category.image_path || '';
-    if (rawVal) {
-      const resolved = getUrl(rawVal);
-      if (resolved) urls.push(resolved);
+    if (rawVal && rawVal.length > 2) {
+      const url = getStoragePublicUrl(rawVal);
+      if (url) urls.push(url);
     }
 
-    // 2. Map category name/slug to exact file in collections/
-    const lowerName = (category.name || '').toLowerCase().trim();
-    const lowerHref = (category.href || '').toLowerCase().trim();
-
-    for (const [key, filename] of Object.entries(collectionFileMap)) {
-      if (lowerName.includes(key) || lowerHref.includes(key)) {
-        const resolved = getUrl(filename);
-        if (resolved) urls.push(resolved);
+    // 2. Try exact collection path resolution based on category name (Highest Priority for design alignment)
+    const lowerName = category.name.toLowerCase().trim();
+    for (const [key, path] of Object.entries(collectionFileNameMap)) {
+      if (lowerName.includes(key)) {
+        const mappedUrl = getStoragePublicUrl(path);
+        if (mappedUrl) urls.push(mappedUrl);
       }
     }
 
-    // 3. Fallbacks from JSON placeholders
+    // 3. Static JSON fallbacks for resilience
     if (lowerName.includes('tank')) urls.push(placeholderData.cat_tanks.url);
     if (lowerName.includes('plumb')) urls.push(placeholderData.cat_plumbing.url);
-    if (lowerName.includes('light')) urls.push(placeholderData.cat_lighting.url);
+    if (lowerName.includes('light') || lowerName.includes('chandelier')) urls.push(placeholderData.cat_lighting.url);
     if (lowerName.includes('decor')) urls.push(placeholderData.cat_decor.url);
     if (lowerName.includes('roof') || lowerName.includes('mabati')) urls.push(placeholderData.cat_roofing.url);
 
-    return Array.from(new Set(urls)).filter(Boolean);
+    // Filter out duplicates and invalid strings
+    return Array.from(new Set(urls)).filter(url => url && !url.includes('undefined'));
   }, [category]);
 
   const handleImageError = () => {
@@ -95,7 +109,7 @@ export default function CategoryCard({ category }: { category: Category }) {
 
   const currentImageUrl =
     imgIndex === -1 || candidateUrls.length === 0
-      ? `https://placehold.co/400x500?text=${encodeURIComponent(category.name || 'Category')}`
+      ? `https://placehold.co/400x500?text=${encodeURIComponent(category.name)}`
       : candidateUrls[imgIndex];
 
   return (
@@ -104,7 +118,7 @@ export default function CategoryCard({ category }: { category: Category }) {
         <div className="absolute inset-0 bg-muted/20">
           <img
             src={currentImageUrl}
-            alt={category.name || 'Category'}
+            alt={category.name}
             className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
             onError={handleImageError}
           />
@@ -112,7 +126,7 @@ export default function CategoryCard({ category }: { category: Category }) {
         </div>
         <div className="absolute inset-0 flex flex-col justify-end p-6">
           <h3 className="text-white font-bold text-lg md:text-xl font-headline leading-tight group-hover:text-primary transition-colors drop-shadow-md">
-            {category.name || 'Category'}
+            {category.name}
           </h3>
           <p className="text-white/90 text-[10px] font-black uppercase tracking-widest mt-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300">
             EXPLORE COLLECTION <span className="text-lg">→</span>
