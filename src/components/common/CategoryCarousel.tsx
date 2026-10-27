@@ -8,9 +8,9 @@ import { supabase } from '@/lib/supabase';
 import placeholderData from '@/app/lib/placeholder-images.json';
 
 /**
- * Dynamic Category Carousel v3.8:
+ * Dynamic Category Carousel v3.9:
  * Resolves images directly from the Supabase storage 'product-images' bucket 
- * and filters out unwanted placeholder categories.
+ * and filters out unwanted placeholder categories like "Collection category".
  */
 export default function CategoryCarousel() {
   const [categories, setCategories] = React.useState<CarouselCategory[]>([]);

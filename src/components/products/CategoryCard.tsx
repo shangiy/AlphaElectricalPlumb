@@ -16,22 +16,23 @@ interface Category {
 }
 
 /**
- * High-Resolution Collection Mapping for v2.4.8:
+ * High-Resolution Collection Mapping for v2.4.9:
  * Prioritizes curated collection assets from the Supabase Storage bucket.
  */
 const collectionFileNameMap: Record<string, string> = {
-  toilets: 'collections/Hand-wash Basin and Pedestal Sink Collection.webp',
-  sink: 'collections/Hand-wash Basin and Pedestal Sink Collection.webp',
-  tank: 'collections/Durable TopTank Vertical Water Tank collection.webp',
-  electric: 'collections/Electric Socket Collection.webp',
-  chandelier: 'collections/Alpha chanderlier collection.webp',
-  construction: 'collections/granite and quartz slabs collection.webp',
-  fencing: 'collections/granite and quartz slabs collection.webp',
-  plumbing: 'collections/Alpha plumbing pipe collection.webp',
-  lighting: 'collections/rustic woven rope pendant lights collection.webp',
-  decor: 'collections/Bird Art Lights fixture Collection.webp',
-  mabati: 'collections/Corrugated Roofing Sheet collection.webp',
-  solar: 'collections/Solar items collection.webp',
+  'toilets & sinks': 'Hand-wash Basin and Pedestal Sink Collection.webp',
+  toilets: 'Hand-wash Basin and Pedestal Sink Collection.webp',
+  sink: 'Hand-wash Basin and Pedestal Sink Collection.webp',
+  tank: 'Durable TopTank Vertical Water Tank collection.webp',
+  electric: 'Electric Socket Collection.webp',
+  chandelier: 'Alpha chanderlier collection.webp',
+  construction: 'granite and quartz slabs collection.webp',
+  fencing: 'granite and quartz slabs collection.webp',
+  plumbing: 'Alpha plumbing pipe collection.webp',
+  lighting: 'rustic woven rope pendant lights collection.webp',
+  decor: 'Bird Art Lights fixture Collection.webp',
+  mabati: 'Corrugated Roofing Sheet collection.webp',
+  solar: 'Solar items collection.webp',
 };
 
 /**
@@ -65,10 +66,17 @@ export default function CategoryCard({ category }: { category: Category }) {
 
     // 1. Exact collection path resolution based on name (User requested priority)
     const lowerName = category.name.toLowerCase().trim();
-    for (const [key, path] of Object.entries(collectionFileNameMap)) {
+    
+    // Check for specific instruction: "toilets & sinks" specifically
+    for (const [key, filename] of Object.entries(collectionFileNameMap)) {
       if (lowerName.includes(key)) {
-        const mappedUrl = getStoragePublicUrl(path);
-        if (mappedUrl) urls.push(mappedUrl);
+        // Try root first as instructed
+        const rootUrl = getStoragePublicUrl(filename);
+        if (rootUrl) urls.push(rootUrl);
+        
+        // Try collections subfolder as a backup
+        const folderUrl = getStoragePublicUrl(`collections/${filename}`);
+        if (folderUrl) urls.push(folderUrl);
       }
     }
 
