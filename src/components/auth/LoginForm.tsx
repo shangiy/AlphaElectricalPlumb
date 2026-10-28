@@ -259,7 +259,7 @@ export default function LoginForm() {
                                         <FormItem>
                                             <FormLabel className="text-xs font-black uppercase tracking-widest text-muted-foreground">Email Address</FormLabel>
                                             <FormControl>
-                                                <Input type="email" placeholder="admin@alpha.com" {...field} autoComplete="email" className="h-12 rounded-xl" />
+                                                <Input type="email" placeholder="example@email.com" {...field} autoComplete="email" className="h-12 rounded-xl" />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
