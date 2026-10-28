@@ -6,17 +6,10 @@ import { Loader2 } from 'lucide-react';
 import nextDynamic from 'next/dynamic';
 import Hero from '@/components/common/Hero';
 import HomepageAbout from '@/components/common/HomepageAbout';
+import CategoryCarousel from '@/components/common/CategoryCarousel';
+import FeaturedProducts from '@/components/products/FeaturedProducts';
 
-// Dynamically import heavy sections to split bundles and prevent ChunkLoadErrors
-// No 'ssr: false' inside Server Components to avoid build-time crashes.
-const CategoryCarousel = nextDynamic(() => import('@/components/common/CategoryCarousel'), {
-  loading: () => <div className="h-80 bg-muted/10 animate-pulse rounded-2xl mx-4 my-16" />
-});
-
-const FeaturedProducts = nextDynamic(() => import('@/components/products/FeaturedProducts'), {
-  loading: () => <div className="h-96 bg-muted/10 animate-pulse rounded-2xl mx-4 my-16" />
-});
-
+// Keep lower-priority or heavy interactive sections dynamic to maintain performance
 const DeliveryServices = nextDynamic(() => import('@/components/common/DeliveryServices'), {
   loading: () => <div className="h-96 bg-muted/10 animate-pulse rounded-2xl mx-4" />
 });
