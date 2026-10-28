@@ -12,7 +12,7 @@ You must provide the following environment variables in your Vercel Dashboard (*
 
 - `NEXT_PUBLIC_SUPABASE_URL`: Your Supabase Project URL.
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Your Supabase Anonymous Key.
-- `SUPABASE_SERVICE_ROLE_KEY`: Your secret service role key (Required for Admin uploads).
+- `SUPABASE_SERVICE_ROLE_KEY`: Your secret service role key (Required for Admin uploads and role management).
 
 ### 📂 Storage Setup (Fix for RLS Errors)
 If you see "row-level security policy" errors when uploading images, run this in your Supabase SQL Editor:
@@ -23,6 +23,25 @@ CREATE POLICY "Public Access" ON storage.objects FOR SELECT USING (bucket_id = '
 CREATE POLICY "Allow Admin Uploads" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'product-images');
 CREATE POLICY "Allow Admin Updates" ON storage.objects FOR UPDATE USING (bucket_id = 'product-images');
 CREATE POLICY "Allow Admin Deletes" ON storage.objects FOR DELETE USING (bucket_id = 'product-images');
+```
+
+### 🛡️ Admin Security (Limit to 4 Admins)
+To enforce the maximum limit of 4 administrators in your database, run this SQL script:
+
+```sql
+create or replace function enforce_max_admins()
+returns trigger as $$
+begin
+  if new.role = 'admin' and (select count(*) from public.profiles where role = 'admin') >= 4 then
+    raise exception 'Maximum limit of 4 admins reached.';
+  end if;
+  return new;
+end;
+$$ language plpgsql;
+
+create trigger check_admin_limit
+before insert or update on public.profiles
+for each row execute procedure enforce_max_admins();
 ```
 
 ## Technology Stack
@@ -44,7 +63,7 @@ To update your live site on Vercel with the latest synchronization and visual fi
    ```
 2. **Commit**: 
    ```bash
-   git commit -m "feat: align category visuals with subfolder assets and sync Supabase role-based architecture"
+   git commit -m "feat: migrate to role-based auth and enforce admin security"
    ```
 3. **Push**: 
    ```bash

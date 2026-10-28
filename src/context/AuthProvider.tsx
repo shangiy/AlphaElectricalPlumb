@@ -105,7 +105,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         });
       } else {
         // Provision new user if profile doesn't exist
-        const assignedRole = supabaseUser.email === 'admin@alpha.com' ? 'admin' : 'user';
+        // Default role is 'user'. Admins must be promoted via DB or Admin Settings.
+        const assignedRole = 'user'; 
         const newUser: User = {
           id: supabaseUser.id,
           name: supabaseUser.user_metadata.full_name || 'User',
