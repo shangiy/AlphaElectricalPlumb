@@ -13,8 +13,9 @@ interface WishlistButtonProps {
 }
 
 /**
- * Reusable Wishlist Button v2.6.0:
+ * Reusable Wishlist Button v2.6.1:
  * Handles toggling items in/out of the Supabase 'wishlists' table.
+ * Now includes user_name synchronization.
  */
 export default function WishlistButton({ productId, className }: WishlistButtonProps) {
   const [isWishlisted, setIsWishlisted] = useState(false);
@@ -82,9 +83,14 @@ export default function WishlistButton({ productId, className }: WishlistButtonP
         }
       } else {
         // Add to wishlist
+        // Including user_name as requested for the new column
         const { error } = await supabase
           .from('wishlists')
-          .insert({ user_id: user.id, product_id: productId });
+          .insert({ 
+            user_id: user.id, 
+            product_id: productId,
+            user_name: user.name || user.username || 'Verified User'
+          });
 
         if (!error) {
           setIsWishlisted(true);
@@ -98,7 +104,7 @@ export default function WishlistButton({ productId, className }: WishlistButtonP
       toast({
         variant: "destructive",
         title: "Sync Error",
-        description: "Could not update your wishlist. Ensure you have run the database setup script.",
+        description: "Could not update your wishlist. Ensure your database column 'user_name' exists.",
       });
     } finally {
       setLoading(false);
