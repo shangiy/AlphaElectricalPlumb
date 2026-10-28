@@ -29,10 +29,10 @@
       "type": "object",
       "properties": {
         "id": { "type": "string" },
-        "imageUrl": { "type": "string", "format": "uri" },
-        "createdAt": { "type": "string", "format": "date-time" }
+        "image_url": { "type": "string", "format": "uri" },
+        "created_at": { "type": "string", "format": "date-time" }
       },
-      "required": ["imageUrl", "createdAt"]
+      "required": ["image_url", "created_at"]
     },
     "Review": {
       "title": "Review",
