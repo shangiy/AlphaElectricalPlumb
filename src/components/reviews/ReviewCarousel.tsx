@@ -19,7 +19,7 @@ interface Review {
 
 /**
  * 2027 Intelligent Review Stream:
- * Dynamically fetches and displays reviews based on ID or global type.
+ * Fetches and displays reviews based on review_type (homepage or product).
  */
 export default function ReviewCarousel({ productId }: { productId?: string }) {
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -29,14 +29,19 @@ export default function ReviewCarousel({ productId }: { productId?: string }) {
     if (!supabase) return;
     setLoading(true);
     try {
-      let query = supabase.from('reviews').select('*').order('created_at', { ascending: false });
+      let query = supabase
+        .from('reviews')
+        .select('*')
+        .order('created_at', { ascending: false });
       
       if (productId) {
-        // Fetch specific product reviews
-        query = query.eq('product_id', productId);
+        // Fetch strictly product-specific reviews
+        query = query
+          .eq('review_type', 'product')
+          .eq('product_id', productId);
       } else {
-        // Fetch general site reviews
-        query = query.eq('review_type', 'general');
+        // Fetch strictly storefront/homepage reviews
+        query = query.eq('review_type', 'homepage');
       }
 
       const { data, error } = await query;
@@ -66,21 +71,24 @@ export default function ReviewCarousel({ productId }: { productId?: string }) {
       <div className="p-20 text-center bg-secondary/10 rounded-[3rem] border-2 border-dashed border-muted-foreground/10">
         <MessageSquareQuote className="h-16 w-16 mx-auto text-muted-foreground/20 mb-6" />
         <p className="text-muted-foreground font-bold text-xl tracking-tight opacity-60">
-          Be the first professional to leave a review.
+          {productId ? 'Be the first to review this product.' : 'Be the first to share your experience with Alpha.'}
         </p>
       </div>
     );
   }
 
-  // Triple for infinite scroll smoothness
-  const displayReviews = [...reviews, ...reviews, ...reviews];
+  // Triple for infinite scroll smoothness if multiple reviews exist
+  const displayReviews = reviews.length > 1 ? [...reviews, ...reviews, ...reviews] : reviews;
 
   return (
     <div className="overflow-hidden relative w-full py-4 group">
         <div className="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none" />
         <div className="absolute inset-y-0 right-0 w-32 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none" />
         
-        <div className="flex w-fit space-x-8 animate-marquee hover:[animation-play-state:paused] py-4">
+        <div className={cn(
+          "flex w-fit space-x-8 py-4",
+          reviews.length > 1 && "animate-marquee hover:[animation-play-state:paused]"
+        )}>
             {displayReviews.map((review, i) => (
             <div 
                 key={`${review.id}-${i}`} 
@@ -114,7 +122,7 @@ export default function ReviewCarousel({ productId }: { productId?: string }) {
                         <span className="block text-sm font-black text-accent uppercase tracking-tighter">
                             {review.author_name || 'Anonymous Client'}
                         </span>
-                        <span className="text-[10px] font-bold text-muted-foreground uppercase opacity-40">Professional User</span>
+                        <span className="text-[10px] font-bold text-muted-foreground uppercase opacity-40">Verified User</span>
                     </div>
                 </div>
             </div>

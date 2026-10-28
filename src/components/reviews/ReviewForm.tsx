@@ -18,7 +18,7 @@ interface ReviewFormProps {
 
 /**
  * Modern Unified Review Form:
- * Handles both general and product-specific submissions using a unified table structure.
+ * Handles both Storefront (homepage) and Product-specific submissions.
  */
 export default function ReviewForm({ productId, onReviewSubmitted }: ReviewFormProps) {
   const [rating, setRating] = useState(5);
@@ -34,36 +34,29 @@ export default function ReviewForm({ productId, onReviewSubmitted }: ReviewFormP
     
     setLoading(true);
     try {
-      const { data: { user: authUser }, error: userError } = await supabase.auth.getUser();
+      // 1. Get the currently authenticated user
+      const { data: { user: authUser } } = await supabase.auth.getUser();
 
-      if (userError || !authUser) {
-        toast({
-          variant: "destructive",
-          title: "Session Expired",
-          description: "Please log in again to leave your review.",
-        });
-        setLoading(false);
-        return;
-      }
+      // 2. Determine review parameters based on context
+      const reviewType = productId ? 'product' : 'homepage';
+      const authorName = user?.name || user?.username || 'Verified Client';
 
-      // Determine the type: if productId exists, it's a product review, else it's a general customer review.
-      const reviewType = productId ? 'product' : 'general';
-
+      // 3. Insert into the unified reviews table
       const { error } = await supabase.from('reviews').insert({
-        product_id: productId || null,
-        user_id: authUser.id,
-        review_type: reviewType,
-        rating,
-        title, 
-        comment,
-        author_name: user?.name || user?.username || 'Verified Client'
+        review_type: reviewType,      // 'homepage' or 'product'
+        product_id: productId || null, // NULL if it's a homepage review
+        user_id: authUser?.id || null, // Linked UUID if logged in
+        author_name: authorName,       // Display name
+        rating: rating,                // Score 1-5
+        title: title,                  // Heading
+        comment: comment,              // Review text
       });
 
       if (error) throw error;
 
       toast({
         title: "Feedback Recorded",
-        description: "Your experience has been successfully synchronized with our servers.",
+        description: `Your ${reviewType} experience has been successfully synchronized.`,
       });
       
       setTitle('');
@@ -74,7 +67,7 @@ export default function ReviewForm({ productId, onReviewSubmitted }: ReviewFormP
       console.error("Submission error:", error);
       toast({
         variant: "destructive",
-        title: "Link Error",
+        title: "Submission Failed",
         description: error.message || "Cloud connection failed. Please try again.",
       });
     } finally {
@@ -89,7 +82,9 @@ export default function ReviewForm({ productId, onReviewSubmitted }: ReviewFormP
       </div>
 
       <div className="space-y-2 relative z-10">
-        <h3 className="text-3xl font-black font-headline text-accent tracking-tighter uppercase">Write a Review</h3>
+        <h3 className="text-3xl font-black font-headline text-accent tracking-tighter uppercase">
+            {productId ? 'Product Review' : 'Storefront Feedback'}
+        </h3>
         <p className="text-muted-foreground font-medium text-sm">Help others by sharing your professional experience.</p>
       </div>
       

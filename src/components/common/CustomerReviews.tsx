@@ -25,7 +25,7 @@ interface ReviewData {
 
 /**
  * 2027 Homepage Professional Review Section:
- * Filters strictly for 'general' feedback using the unified reviews table.
+ * Filters strictly for 'homepage' feedback using the unified reviews table.
  */
 export default function CustomerReviews() {
     const { user } = useAuth();
@@ -38,11 +38,11 @@ export default function CustomerReviews() {
         if (!supabase) return;
         setIsLoading(true);
         try {
-            // Fetch strictly 'general' site reviews
+            // Fetch strictly 'homepage' storefront testimonials
             const { data, error } = await supabase
                 .from('reviews')
                 .select('*')
-                .eq('review_type', 'general')
+                .eq('review_type', 'homepage')
                 .order('created_at', { ascending: false });
             
             if (error) throw error;
