@@ -9,19 +9,19 @@
         "id": { "type": "string" },
         "name": { "type": "string" },
         "description": { "type": "string" },
-        "longDescription": { "type": "string" },
+        "long_description": { "type": "string" },
         "price": { "type": "number" },
-        "oldPrice": { "type": "number" },
+        "old_price": { "type": "number" },
         "category": { "type": "string" },
-        "imageUrls": { "type": "array", "items": { "type": "string" } },
+        "image_urls": { "type": "array", "items": { "type": "string" } },
         "rating": { "type": "number" },
         "reviews": { "type": "number" },
         "barcode": { "type": "string" },
-        "isFeatured": { "type": "boolean" },
+        "is_featured": { "type": "boolean" },
         "unit": { "type": "string" },
-        "stockCount": { "type": "number", "description": "Current number of items in inventory" }
+        "stock_count": { "type": "number", "description": "Current number of items in inventory" }
       },
-      "required": ["name", "price", "category", "imageUrls"]
+      "required": ["name", "price", "category"]
     },
     "UserSelfie": {
       "title": "UserSelfie",
@@ -36,29 +36,31 @@
     },
     "Review": {
       "title": "Review",
-      "description": "A customer review for the company.",
+      "description": "A customer review for a product or the company.",
       "type": "object",
       "properties": {
         "id": { "type": "string" },
-        "userName": { "type": "string" },
+        "author_name": { "type": "string" },
         "rating": { "type": "number" },
         "comment": { "type": "string" },
-        "createdAt": { "type": "string", "format": "date-time" }
+        "review_type": { "type": "string", "enum": ["homepage", "product"] },
+        "product_id": { "type": "string", "format": "uuid" },
+        "created_at": { "type": "string", "format": "date-time" }
       },
-      "required": ["userName", "rating", "comment", "createdAt"]
+      "required": ["author_name", "rating", "comment", "review_type"]
     },
     "AppUser": {
       "title": "AppUser",
       "description": "User profile with role-based permissions.",
       "type": "object",
       "properties": {
-        "uid": { "type": "string" },
-        "name": { "type": "string" },
+        "id": { "type": "string" },
+        "full_name": { "type": "string" },
         "username": { "type": "string" },
         "email": { "type": "string", "format": "email" },
-        "avatarUrl": { "type": "string", "format": "uri" },
+        "avatar_url": { "type": "string", "format": "uri" },
         "role": { "type": "string", "enum": ["admin", "staff", "user"] },
-        "lastActive": { "type": "string", "format": "date-time" }
+        "last_active": { "type": "string", "format": "date-time" }
       }
     }
   },
@@ -70,15 +72,15 @@
       "schema": { "$ref": "#/backend/entities/Product" },
       "description": "Publicly readable collection of all shop products."
     },
-    "/userSelfies/{selfieId}": {
+    "/user_selfies/{selfieId}": {
       "schema": { "$ref": "#/backend/entities/UserSelfie" },
       "description": "Admin-viewable images uploaded via visual search."
     },
     "/reviews/{reviewId}": {
       "schema": { "$ref": "#/backend/entities/Review" },
-      "description": "Publicly readable and writable collection of customer reviews."
+      "description": "Unified reviews table for storefront feedback and product reviews."
     },
-    "/users/{userId}": {
+    "/profiles/{userId}": {
       "schema": { "$ref": "#/backend/entities/AppUser" },
       "description": "User profiles and role management."
     }

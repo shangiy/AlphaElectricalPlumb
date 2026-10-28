@@ -80,23 +80,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const fetchProfile = async (supabaseUser: SupabaseUser) => {
     if (!supabase) return;
     try {
-      const { data, error } = await supabase
+      // Fetch the role and full_name from the public.profiles table using the user's ID
+      const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', supabaseUser.id)
         .single();
 
-      if (data) {
+      if (profile) {
+        const role = profile.role || 'user';
+        const fullName = profile.full_name || profile.name || supabaseUser.user_metadata.full_name || 'User';
+
+        if (role === 'admin') {
+          console.log(`Welcome Admin, ${fullName}! (Supabase Sync Verified)`);
+        }
+
         setUser({
           id: supabaseUser.id,
-          name: data.name || supabaseUser.user_metadata.full_name || 'User',
-          username: data.username || supabaseUser.email?.split('@')[0] || 'user',
+          name: fullName,
+          username: profile.username || supabaseUser.email?.split('@')[0] || 'user',
           email: supabaseUser.email!,
-          role: data.role || 'user',
-          avatarUrl: data.avatar_url || supabaseUser.user_metadata.avatar_url,
+          role: role as 'admin' | 'staff' | 'user',
+          avatarUrl: profile.avatar_url || supabaseUser.user_metadata.avatar_url,
         });
       } else {
-        // Provision new user
+        // Provision new user if profile doesn't exist
         const assignedRole = supabaseUser.email === 'admin@alpha.com' ? 'admin' : 'user';
         const newUser: User = {
           id: supabaseUser.id,
@@ -109,10 +117,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         await supabase.from('profiles').insert({
           id: supabaseUser.id,
-          name: newUser.name,
+          full_name: newUser.name,
           username: newUser.username,
           role: assignedRole,
           avatar_url: newUser.avatarUrl,
+          email: newUser.email,
         });
         
         setUser(newUser);
@@ -123,20 +132,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const login = async (email: string, password: string) => {
-    // DEVELOPER BYPASS: Instant Admin Access
-    if (email === 'admin@alpha.com' && password === 'admin123') {
-        setUser({
-            id: 'dev-admin-001',
-            name: 'Alpha Master Admin',
-            username: 'admin',
-            email: 'admin@alpha.com',
-            role: 'admin',
-            avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix'
-        });
-        setLoading(false);
-        return;
-    }
-
     if (!supabase) throw new Error("Authentication service is unavailable.");
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) throw error;
@@ -162,7 +157,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: typeof window !== 'undefined' ? `${window.location.origin}/auth/login` : undefined
+        redirectTo: typeof window !== 'undefined' ? `${window.location.origin}/auth/callback` : undefined
       }
     });
     if (error) throw error;
@@ -173,7 +168,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'facebook',
       options: {
-        redirectTo: typeof window !== 'undefined' ? `${window.location.origin}/auth/login` : undefined
+        redirectTo: typeof window !== 'undefined' ? `${window.location.origin}/auth/callback` : undefined
       }
     });
     if (error) throw error;
@@ -184,7 +179,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'apple',
       options: {
-        redirectTo: typeof window !== 'undefined' ? `${window.location.origin}/auth/login` : undefined
+        redirectTo: typeof window !== 'undefined' ? `${window.location.origin}/auth/callback` : undefined
       }
     });
     if (error) throw error;
@@ -195,7 +190,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'github',
       options: {
-        redirectTo: typeof window !== 'undefined' ? `${window.location.origin}/auth/login` : undefined
+        redirectTo: typeof window !== 'undefined' ? `${window.location.origin}/auth/callback` : undefined
       }
     });
     if (error) throw error;

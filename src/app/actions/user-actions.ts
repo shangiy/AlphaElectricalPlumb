@@ -17,9 +17,10 @@ export async function promoteUserAdmin(email: string, role: 'admin' | 'staff' | 
   }
 
   // 1. Find the user in the profiles table by email
+  // Standardized on 'full_name' and 'email' for the admin sync
   const { data: userProfile, error: findError } = await supabaseAdmin
     .from('profiles')
-    .select('id, name')
+    .select('id, full_name, role')
     .eq('email', email)
     .single();
 
@@ -38,5 +39,5 @@ export async function promoteUserAdmin(email: string, role: 'admin' | 'staff' | 
   revalidatePath('/admin/users');
   revalidatePath('/admin/settings');
   
-  return { success: true, name: userProfile.name };
+  return { success: true, name: userProfile.full_name || 'Verified User' };
 }
