@@ -3,294 +3,155 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthProvider';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Rating } from '@/components/ui/rating';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, User, MessageSquareQuote, Star, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Loader2, MessageSquareQuote, ChevronLeft, ChevronRight, Star } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
 import { cn } from '@/lib/utils';
 import useEmblaCarousel from 'embla-carousel-react';
 import Autoplay from 'embla-carousel-autoplay';
-
-const reviewSchema = z.object({
-  userName: z.string().min(2, 'Name must be at least 2 characters.'),
-  rating: z.number().min(1).max(5),
-  comment: z.string().min(5, 'Review must be at least 5 characters.'),
-});
-
-type ReviewFormValues = z.infer<typeof reviewSchema>;
+import ReviewForm from '@/components/reviews/ReviewForm';
+import { Rating } from '@/components/ui/rating';
+import { formatDistanceToNow } from 'date-fns';
 
 interface ReviewData {
     id: string;
     userName: string;
     rating: number;
+    title: string;
     comment: string;
     createdAt: string;
 }
 
+/**
+ * 2027 Homepage Professional Review Section:
+ * Filters strictly for 'general' feedback using the unified reviews table.
+ */
 export default function CustomerReviews() {
     const { user } = useAuth();
     const { toast } = useToast();
     const [reviews, setReviews] = useState<ReviewData[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const [mounted, setMounted] = useState(false);
 
     const fetchReviews = useCallback(async () => {
         if (!supabase) return;
         setIsLoading(true);
         try {
+            // Fetch strictly 'general' site reviews
             const { data, error } = await supabase
                 .from('reviews')
                 .select('*')
+                .eq('review_type', 'general')
                 .order('created_at', { ascending: false });
             
             if (error) throw error;
             
             setReviews((data || []).map(r => ({
                 id: r.id,
-                userName: r.author_name || r.user_name || 'Valued Customer',
+                userName: r.author_name || 'Verified Client',
                 rating: r.rating,
+                title: r.title,
                 comment: r.comment,
                 createdAt: r.created_at
             })));
         } catch (error) {
-            console.error("Error fetching reviews:", error);
+            console.error("Fetch reviews error:", error);
         } finally {
             setIsLoading(false);
         }
     }, []);
 
     useEffect(() => {
-        setMounted(true);
         fetchReviews();
     }, [fetchReviews]);
 
-    const form = useForm<ReviewFormValues>({
-        resolver: zodResolver(reviewSchema),
-        defaultValues: {
-            userName: '',
-            rating: 5,
-            comment: '',
-        },
-    });
-
-    useEffect(() => {
-        if (user?.name && !form.getValues('userName')) {
-            form.setValue('userName', user.name);
-        }
-    }, [user, form]);
-
     const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, align: 'start' }, [
-        Autoplay({ delay: 5000, stopOnInteraction: false, stopOnMouseEnter: true })
+        Autoplay({ delay: 6000, stopOnInteraction: false })
     ]);
 
     const scrollPrev = useCallback(() => emblaApi && emblaApi.scrollPrev(), [emblaApi]);
     const scrollNext = useCallback(() => emblaApi && emblaApi.scrollNext(), [emblaApi]);
 
-    const onSubmit = async (values: ReviewFormValues) => {
-        if (!supabase) return;
-        
-        // 1. Get the currently authenticated user directly from Supabase Auth
-        // This ensures we get the real UUID string instead of any mock IDs.
-        const { data: { user: authUser }, error: userError } = await supabase.auth.getUser();
-
-        if (userError || !authUser) {
-            toast({ 
-                title: "Login Required", 
-                description: "You must be logged in to post a review.", 
-                variant: "destructive" 
-            });
-            return;
-        }
-
-        try {
-            // 2. Insert the review using the real UUID
-            const { error } = await supabase.from('reviews').insert([{
-                author_name: values.userName,
-                user_id: authUser.id, // Real Supabase Auth UUID
-                rating: values.rating,
-                comment: values.comment
-            }]);
-
-            if (error) throw error;
-
-            toast({
-                title: "Review Submitted!",
-                description: "Thank you for your feedback.",
-            });
-            
-            form.reset({
-                userName: user?.name || '',
-                rating: 5,
-                comment: '',
-            });
-            setIsDialogOpen(false);
-            fetchReviews();
-        } catch (error: any) {
-            toast({
-                variant: "destructive",
-                title: "Error",
-                description: error.message || "Could not submit review. Please try again.",
-            });
-        }
+    const handleSuccess = () => {
+        setIsDialogOpen(false);
+        fetchReviews();
     };
-
-    const formatDate = (dateString: string) => {
-        if (!dateString) return 'Just now';
-        return new Date(dateString).toLocaleDateString('en-KE', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-        });
-    };
-
-    const leaveReviewButton = (
-        <Button size="lg" className="rounded-full shadow-lg hover:scale-105 transition-transform bg-[#28235f] hover:bg-[#28235f]/90">
-            <MessageSquareQuote className="mr-2 h-5 w-5" />
-            Leave a Review
-        </Button>
-    );
 
     return (
-        <section className="py-20 bg-secondary/30 overflow-hidden">
+        <section className="py-32 bg-background overflow-hidden border-t">
             <div className="container mx-auto px-4">
-                <div className="flex flex-col md:flex-row justify-between items-center mb-12 gap-6 text-center md:text-left">
-                    <div>
-                        <h2 className="text-4xl font-bold font-headline text-primary">Customer Reviews</h2>
-                        <p className="text-muted-foreground mt-2">What our clients say about Alpha Electricals</p>
+                <div className="flex flex-col lg:flex-row justify-between items-end mb-20 gap-10">
+                    <div className="max-w-2xl">
+                        <h2 className="text-6xl font-black font-headline text-accent tracking-tighter leading-[0.8] mb-6 uppercase">Professional <br/>Feedback</h2>
+                        <p className="text-xl text-muted-foreground font-medium">Discover what our community of engineers, plumbers, and developers are saying about Alpha's ecosystem.</p>
                     </div>
                     
-                    <div className="flex items-center gap-4">
-                        <div className="hidden sm:flex gap-2">
-                            <Button variant="outline" size="icon" className="rounded-full h-10 w-10" onClick={scrollPrev}>
-                                <ChevronLeft className="h-5 w-5" />
+                    <div className="flex items-center gap-6">
+                        <div className="flex gap-2">
+                            <Button variant="outline" size="icon" className="h-14 w-14 rounded-full border-2" onClick={scrollPrev}>
+                                <ChevronLeft size={24} />
                             </Button>
-                            <Button variant="outline" size="icon" className="rounded-full h-10 w-10" onClick={scrollNext}>
-                                <ChevronRight className="h-5 w-5" />
+                            <Button variant="outline" size="icon" className="h-14 w-14 rounded-full border-2" onClick={scrollNext}>
+                                <ChevronRight size={24} />
                             </Button>
                         </div>
                         
-                        {mounted ? (
-                            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                                <DialogTrigger asChild>
-                                    {leaveReviewButton}
-                                </DialogTrigger>
-                                <DialogContent className="sm:max-w-[425px]">
-                                    <DialogHeader>
-                                        <DialogTitle>Submit Your Review</DialogTitle>
-                                    </DialogHeader>
-                                    <Form {...form}>
-                                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                                            <FormField
-                                                control={form.control}
-                                                name="userName"
-                                                render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormLabel>Name to display</FormLabel>
-                                                        <FormControl>
-                                                            <Input placeholder="Enter your preferred name" {...field} />
-                                                        </FormControl>
-                                                        <FormMessage />
-                                                    </FormItem>
-                                                )}
-                                            />
-                                            <FormField
-                                                control={form.control}
-                                                name="rating"
-                                                render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormLabel>Rating</FormLabel>
-                                                        <div className="flex items-center gap-2">
-                                                            {[1, 2, 3, 4, 5].map((star) => (
-                                                                <button
-                                                                    key={star}
-                                                                    type="button"
-                                                                    onClick={() => field.onChange(star)}
-                                                                    className="focus:outline-none"
-                                                                >
-                                                                    <Star 
-                                                                        className={cn(
-                                                                            "h-8 w-8 transition-colors",
-                                                                            star <= field.value ? "fill-yellow-500 text-yellow-500" : "text-muted-foreground"
-                                                                        )} 
-                                                                    />
-                                                                </button>
-                                                            ))}
-                                                        </div>
-                                                        <FormMessage />
-                                                    </FormItem>
-                                                )}
-                                            />
-                                            <FormField
-                                                control={form.control}
-                                                name="comment"
-                                                render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormLabel>Review</FormLabel>
-                                                        <FormControl>
-                                                            <Textarea 
-                                                                placeholder="Share your experience..." 
-                                                                className="resize-none" 
-                                                                rows={4}
-                                                                {...field} 
-                                                            />
-                                                        </FormControl>
-                                                        <FormMessage />
-                                                    </FormItem>
-                                                )}
-                                            />
-                                            <Button type="submit" className="w-full bg-primary hover:bg-primary/90">Post Review</Button>
-                                        </form>
-                                    </Form>
-                                </DialogContent>
-                            </Dialog>
-                        ) : leaveReviewButton}
+                        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                            <DialogTrigger asChild>
+                                <Button size="lg" className="h-14 rounded-full px-10 bg-primary font-black uppercase tracking-tighter text-lg shadow-2xl hover:scale-105 transition-transform">
+                                    <MessageSquareQuote className="mr-3 h-6 w-6" />
+                                    Post Feedback
+                                </Button>
+                            </DialogTrigger>
+                            <DialogContent className="sm:max-w-[500px] p-0 border-none bg-transparent shadow-none">
+                                <ReviewForm onReviewSubmitted={handleSuccess} />
+                            </DialogContent>
+                        </Dialog>
                     </div>
                 </div>
 
                 {isLoading ? (
-                    <div className="flex justify-center py-12">
-                        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+                    <div className="flex justify-center py-24">
+                        <Loader2 className="h-12 w-12 animate-spin text-primary" />
                     </div>
                 ) : reviews && reviews.length > 0 ? (
                     <div className="embla" ref={emblaRef}>
-                        <div className="embla__container flex gap-6">
+                        <div className="embla__container flex gap-8">
                             {reviews.map((review) => (
-                                <div key={review.id} className="embla__slide flex-[0_0_100%] sm:flex-[0_0_50%] lg:flex-[0_0_33.333%] min-w-0">
-                                    <Card className="bg-card h-full hover:shadow-xl transition-all border-primary/10 rounded-2xl overflow-hidden group">
-                                        <CardHeader className="flex flex-row items-center gap-4 pb-4">
-                                            <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-colors">
-                                                <User size={24} />
+                                <div key={review.id} className="embla__slide flex-[0_0_100%] md:flex-[0_0_45%] lg:flex-[0_0_30%] min-w-0">
+                                    <div className="bg-secondary/10 p-12 rounded-[3.5rem] h-full flex flex-col transition-all hover:bg-secondary/20 group">
+                                        <div className="flex justify-between items-start mb-8">
+                                            <Rating rating={review.rating} size={20} />
+                                            <span className="text-[10px] font-black uppercase text-muted-foreground/30">
+                                                {formatDistanceToNow(new Date(review.createdAt))} ago
+                                            </span>
+                                        </div>
+                                        <h4 className="text-2xl font-black text-accent tracking-tighter uppercase mb-4 line-clamp-1">
+                                            {review.title || 'Exceptional Quality'}
+                                        </h4>
+                                        <p className="text-lg text-muted-foreground font-medium italic leading-relaxed opacity-80 mb-10 line-clamp-4">
+                                            "{review.comment}"
+                                        </p>
+                                        <div className="mt-auto flex items-center gap-4">
+                                            <div className="h-12 w-12 rounded-2xl bg-accent text-white flex items-center justify-center font-black text-xl group-hover:scale-110 transition-transform">
+                                                {review.userName.charAt(0).toUpperCase()}
                                             </div>
-                                            <div className="flex flex-col min-w-0">
-                                                <CardTitle className="text-lg font-bold truncate">{review.userName}</CardTitle>
-                                                <CardDescription className="text-xs">{formatDate(review.createdAt)}</CardDescription>
+                                            <div>
+                                                <span className="block text-sm font-black text-accent uppercase tracking-tighter">{review.userName}</span>
+                                                <span className="text-[10px] font-bold text-muted-foreground uppercase opacity-40">Verified Business User</span>
                                             </div>
-                                        </CardHeader>
-                                        <CardContent className="space-y-3">
-                                            <Rating rating={review.rating} size={16} />
-                                            <p className="text-muted-foreground italic leading-relaxed line-clamp-4">
-                                                "{review.comment}"
-                                            </p>
-                                        </CardContent>
-                                    </Card>
+                                        </div>
+                                    </div>
                                 </div>
                             ))}
                         </div>
                     </div>
                 ) : (
-                    <div className="text-center py-20 border-2 border-dashed rounded-3xl bg-background/50 border-primary/20">
-                        <MessageSquareQuote className="mx-auto h-16 w-16 text-muted-foreground opacity-30" />
-                        <h3 className="mt-4 text-2xl font-bold text-muted-foreground">No reviews yet</h3>
-                        <p className="text-muted-foreground mt-2 max-w-sm mx-auto">Be the first to share your experience with Alpha Electricals & Plumbing Ltd!</p>
+                    <div className="text-center py-32 rounded-[4rem] bg-secondary/5 border-2 border-dashed border-muted-foreground/10">
+                        <MessageSquareQuote className="mx-auto h-20 w-20 text-muted-foreground opacity-10 mb-6" />
+                        <h3 className="text-4xl font-black text-muted-foreground uppercase tracking-tighter opacity-30">Silence in the Cloud</h3>
+                        <p className="text-muted-foreground mt-4 text-lg font-medium max-w-md mx-auto">Our database is ready for your professional feedback. Start the conversation today.</p>
                     </div>
                 )}
             </div>

@@ -1,11 +1,11 @@
-
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Rating } from '@/components/ui/rating';
-import { Loader2, MessageSquareQuote } from 'lucide-react';
+import { Loader2, MessageSquareQuote, CheckCircle } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import { Badge } from '@/components/ui/badge';
 
 interface Review {
   id: string;
@@ -13,9 +13,14 @@ interface Review {
   rating: number;
   title: string;
   comment: string;
+  review_type: string;
   created_at: string;
 }
 
+/**
+ * 2027 Intelligent Review Stream:
+ * Dynamically fetches and displays reviews based on ID or global type.
+ */
 export default function ReviewCarousel({ productId }: { productId?: string }) {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
@@ -25,9 +30,15 @@ export default function ReviewCarousel({ productId }: { productId?: string }) {
     setLoading(true);
     try {
       let query = supabase.from('reviews').select('*').order('created_at', { ascending: false });
+      
       if (productId) {
+        // Fetch specific product reviews
         query = query.eq('product_id', productId);
+      } else {
+        // Fetch general site reviews
+        query = query.eq('review_type', 'general');
       }
+
       const { data, error } = await query;
       if (error) throw error;
       setReviews(data || []);
@@ -44,57 +55,67 @@ export default function ReviewCarousel({ productId }: { productId?: string }) {
 
   if (loading) {
     return (
-      <div className="flex justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="flex justify-center py-20">
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
       </div>
     );
   }
 
   if (reviews.length === 0) {
     return (
-      <div className="p-12 text-center bg-secondary/20 rounded-[2.5rem] border-2 border-dashed border-muted-foreground/20">
-        <MessageSquareQuote className="h-12 w-12 mx-auto text-muted-foreground/30 mb-4" />
-        <p className="text-muted-foreground font-medium italic">
-          No reviews yet. Be the first to share your experience with Alpha Electricals & Plumbing!
+      <div className="p-20 text-center bg-secondary/10 rounded-[3rem] border-2 border-dashed border-muted-foreground/10">
+        <MessageSquareQuote className="h-16 w-16 mx-auto text-muted-foreground/20 mb-6" />
+        <p className="text-muted-foreground font-bold text-xl tracking-tight opacity-60">
+          Be the first professional to leave a review.
         </p>
       </div>
     );
   }
 
-  // Double the reviews for a seamless marquee loop
+  // Triple for infinite scroll smoothness
   const displayReviews = [...reviews, ...reviews, ...reviews];
 
   return (
-    <div className="overflow-hidden relative w-full py-8 group">
-        {/* Gradient overlays for the edges */}
-        <div className="absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none" />
-        <div className="absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none" />
+    <div className="overflow-hidden relative w-full py-4 group">
+        <div className="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none" />
+        <div className="absolute inset-y-0 right-0 w-32 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none" />
         
-        <div className="flex w-fit space-x-6 animate-marquee hover:[animation-play-state:paused] py-4">
+        <div className="flex w-fit space-x-8 animate-marquee hover:[animation-play-state:paused] py-4">
             {displayReviews.map((review, i) => (
             <div 
                 key={`${review.id}-${i}`} 
-                className="min-w-[320px] max-w-[400px] bg-white p-8 rounded-[2rem] shadow-lg border border-primary/5 shrink-0 flex flex-col transition-all hover:scale-105 hover:shadow-xl"
+                className="min-w-[360px] max-w-[420px] bg-white p-10 rounded-[3rem] shadow-xl border border-muted-foreground/5 shrink-0 flex flex-col transition-all hover:scale-105 hover:shadow-2xl hover:border-primary/20"
             >
-                <div className="flex justify-between items-start mb-4">
-                    <Rating rating={review.rating} size={16} />
-                    <span className="text-[10px] font-black uppercase text-muted-foreground/40">
+                <div className="flex justify-between items-start mb-6">
+                    <Rating rating={review.rating} size={20} />
+                    <span className="text-[10px] font-black uppercase text-muted-foreground/30 tracking-widest">
                         {formatDistanceToNow(new Date(review.created_at))} ago
                     </span>
                 </div>
-                <h4 className="font-bold text-accent text-lg mb-2 truncate">
-                    {review.title || 'Verified Review'}
-                </h4>
-                <p className="text-muted-foreground text-sm leading-relaxed whitespace-normal line-clamp-4 italic">
+                
+                <div className="flex items-center gap-2 mb-4">
+                    <h4 className="font-black text-accent text-xl tracking-tighter uppercase truncate flex-1">
+                        {review.title || 'Exceptional Quality'}
+                    </h4>
+                    <Badge className="bg-green-500/10 text-green-600 hover:bg-green-500/10 border-none px-2 rounded-full">
+                        <CheckCircle size={10} className="mr-1" /> Verified
+                    </Badge>
+                </div>
+
+                <p className="text-muted-foreground text-base leading-relaxed line-clamp-4 font-medium italic opacity-80">
                     "{review.comment}"
                 </p>
-                <div className="mt-auto pt-6 flex items-center gap-3">
-                    <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-black text-xs">
+
+                <div className="mt-auto pt-8 flex items-center gap-4">
+                    <div className="h-12 w-12 rounded-2xl bg-accent text-white flex items-center justify-center font-black text-lg shadow-lg">
                         {review.author_name?.charAt(0).toUpperCase()}
                     </div>
-                    <span className="text-xs font-bold text-muted-foreground">
-                        {review.author_name || 'Anonymous Customer'}
-                    </span>
+                    <div>
+                        <span className="block text-sm font-black text-accent uppercase tracking-tighter">
+                            {review.author_name || 'Anonymous Client'}
+                        </span>
+                        <span className="text-[10px] font-bold text-muted-foreground uppercase opacity-40">Professional User</span>
+                    </div>
                 </div>
             </div>
             ))}
