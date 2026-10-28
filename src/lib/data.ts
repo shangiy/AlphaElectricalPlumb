@@ -69,6 +69,28 @@ const resolveProductImages = (product: any): string[] => {
   return uniqueUrls.length > 0 ? uniqueUrls : ["https://placehold.co/400x400?text=No+Image"];
 };
 
+/**
+ * Maps raw Supabase product data to the standard Product type.
+ */
+export function mapProduct(p: any): Product {
+  return {
+    id: p.id,
+    name: p.name || p.title || "Unnamed Product",
+    category: p.category || p.cat || p.cat_name || p.category_name || "UNCATEGORIZED",
+    description: p.description || p.desc || p.short_description || "",
+    longDescription: p.long_description || p.longDescription || p.description || "",
+    imageUrls: resolveProductImages(p),
+    price: Number(p.price) || 0,
+    oldPrice: Number(p.old_price || p.oldPrice) || 0,
+    unit: p.unit || "item",
+    stockCount: Number(p.stock_count !== undefined ? p.stock_count : (p.stockCount !== undefined ? p.stockCount : 0)),
+    rating: Number(p.rating || 5),
+    reviews: Number(p.reviews || 0),
+    isFeatured: !!(p.is_featured || p.isFeatured),
+    barcode: p.barcode || p.sku || ""
+  };
+}
+
 export async function getProducts(): Promise<Product[]> {
   try {
     if (!supabase) return [];
@@ -81,23 +103,7 @@ export async function getProducts(): Promise<Product[]> {
 
     if (error) throw error;
 
-    return (data || [])
-      .map(p => ({
-        id: p.id,
-        name: p.name || p.title || "Unnamed Product",
-        category: p.category || p.cat || p.cat_name || p.category_name || "UNCATEGORIZED",
-        description: p.description || p.desc || p.short_description || "",
-        longDescription: p.long_description || p.longDescription || p.description || "",
-        imageUrls: resolveProductImages(p),
-        price: Number(p.price) || 0,
-        oldPrice: Number(p.old_price || p.oldPrice) || 0,
-        unit: p.unit || "item",
-        stockCount: Number(p.stock_count !== undefined ? p.stock_count : (p.stockCount !== undefined ? p.stockCount : 0)),
-        rating: Number(p.rating || 5),
-        reviews: Number(p.reviews || 0),
-        isFeatured: !!(p.is_featured || p.isFeatured),
-        barcode: p.barcode || p.sku || ""
-      })) as Product[];
+    return (data || []).map(mapProduct) as Product[];
   } catch (error) {
     console.error("Supabase Sync Error:", error);
     return [];

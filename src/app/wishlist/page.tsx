@@ -1,6 +1,6 @@
 'use client';
 
-import { getProducts } from '@/lib/data';
+import { mapProduct } from '@/lib/data';
 import ProductCard from '@/components/products/ProductCard';
 import type { Product } from '@/lib/types';
 import { Heart, Loader2, ArrowRight } from 'lucide-react';
@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 
 /**
  * Enhanced Wishlist Page:
- * Fetches user's saved product IDs from Supabase and hydates them with current inventory data.
+ * Fetches user's saved items along with full product details in a single joined query.
  */
 function WishlistContent() {
   const [wishlistItems, setWishlistItems] = useState<Product[]>([]);
@@ -24,25 +24,31 @@ function WishlistContent() {
     if (!user || !supabase) return;
     setLoading(true);
     try {
-      // 1. Fetch user's wishlist associations from Supabase
+      // Fetch wishlist items with nested product info using relational join
       const { data: wishlistData, error: wishlistError } = await supabase
         .from('wishlists')
-        .select('product_id')
+        .select(`
+          id,
+          product_id,
+          products (
+            *
+          )
+        `)
         .eq('user_id', user.id);
 
       if (wishlistError) throw wishlistError;
 
-      const productIds = wishlistData.map(w => w.product_id);
-      
-      if (productIds.length === 0) {
+      if (!wishlistData || wishlistData.length === 0) {
         setWishlistItems([]);
         return;
       }
 
-      // 2. Hydrate with full product data from our central provider
-      const allProducts = await getProducts();
-      const filtered = allProducts.filter(p => productIds.some(id => String(id) === String(p.id)));
-      setWishlistItems(filtered);
+      // Map nested product objects to the standard Product type
+      const hydratedProducts = wishlistData
+        .filter(item => item.products) // Filter out any orphaned records
+        .map(item => mapProduct(item.products));
+
+      setWishlistItems(hydratedProducts);
     } catch (err) {
       console.error("Error loading wishlist items:", err);
     } finally {
