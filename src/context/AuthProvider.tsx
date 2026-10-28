@@ -162,7 +162,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: typeof window !== 'undefined' ? window.location.origin : undefined
+        redirectTo: typeof window !== 'undefined' ? `${window.location.origin}/auth/login` : undefined
       }
     });
     if (error) throw error;
@@ -173,7 +173,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'facebook',
       options: {
-        redirectTo: typeof window !== 'undefined' ? window.location.origin : undefined
+        redirectTo: typeof window !== 'undefined' ? `${window.location.origin}/auth/login` : undefined
       }
     });
     if (error) throw error;
@@ -184,7 +184,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'apple',
       options: {
-        redirectTo: typeof window !== 'undefined' ? window.location.origin : undefined
+        redirectTo: typeof window !== 'undefined' ? `${window.location.origin}/auth/login` : undefined
       }
     });
     if (error) throw error;
@@ -195,7 +195,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'github',
       options: {
-        redirectTo: typeof window !== 'undefined' ? window.location.origin : undefined
+        redirectTo: typeof window !== 'undefined' ? `${window.location.origin}/auth/login` : undefined
       }
     });
     if (error) throw error;
