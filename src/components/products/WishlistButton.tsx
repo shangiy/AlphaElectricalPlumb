@@ -12,6 +12,10 @@ interface WishlistButtonProps {
   className?: string;
 }
 
+/**
+ * Reusable Wishlist Button v2.6.0:
+ * Handles toggling items in/out of the Supabase 'wishlists' table.
+ */
 export default function WishlistButton({ productId, className }: WishlistButtonProps) {
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -52,8 +56,8 @@ export default function WishlistButton({ productId, className }: WishlistButtonP
     
     if (!user) {
       toast({
-        title: 'Login Required',
-        description: 'Please log in to manage your wishlist.',
+        title: 'Authentication Required',
+        description: 'Please log in to save items to your wishlist.',
         variant: 'destructive',
       });
       return;
@@ -64,6 +68,7 @@ export default function WishlistButton({ productId, className }: WishlistButtonP
     setLoading(true);
     try {
       if (isWishlisted) {
+        // Remove from wishlist
         const { error } = await supabase
           .from('wishlists')
           .delete()
@@ -71,18 +76,19 @@ export default function WishlistButton({ productId, className }: WishlistButtonP
 
         if (!error) {
           setIsWishlisted(false);
-          toast({ description: "Removed from wishlist." });
+          toast({ description: "Removed from your wishlist collection." });
         } else {
           throw error;
         }
       } else {
+        // Add to wishlist
         const { error } = await supabase
           .from('wishlists')
           .insert({ user_id: user.id, product_id: productId });
 
         if (!error) {
           setIsWishlisted(true);
-          toast({ description: "Added to wishlist!" });
+          toast({ description: "Added to your wishlist!" });
         } else {
           throw error;
         }
@@ -91,8 +97,8 @@ export default function WishlistButton({ productId, className }: WishlistButtonP
       console.error("Wishlist toggle failed:", err);
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "Could not update wishlist. Please try again.",
+        title: "Sync Error",
+        description: "Could not update your wishlist. Ensure you have run the database setup script.",
       });
     } finally {
       setLoading(false);
@@ -112,8 +118,10 @@ export default function WishlistButton({ productId, className }: WishlistButtonP
       onClick={toggleWishlist} 
       disabled={loading}
       className={cn(
-        "p-2 rounded-full backdrop-blur-sm transition-all shadow-sm hover:scale-110 active:scale-95",
-        isWishlisted ? "bg-red-50 text-red-500" : "bg-white/80 text-muted-foreground hover:text-red-500",
+        "p-2 rounded-full backdrop-blur-md transition-all duration-300 shadow-sm hover:scale-110 active:scale-95",
+        isWishlisted 
+          ? "bg-red-50 text-red-500 border border-red-100" 
+          : "bg-white/80 text-muted-foreground hover:bg-white hover:text-red-500 border border-transparent",
         className
       )}
       aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
