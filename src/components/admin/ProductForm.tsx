@@ -28,9 +28,11 @@ import { getCategories } from '@/lib/data';
 import type { Category, Product } from '@/lib/types';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import ImageUpload from '@/components/admin/ImageUpload';
-import { Loader2, Plus, Save, ArrowLeft } from 'lucide-react';
+import { Loader2, Plus, Save, ArrowLeft, Camera, Sparkles, X } from 'lucide-react';
+import { identifyProductVisually } from '@/ai/flows/visual-identity-flow';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from '@/components/ui/dialog';
 
 const productFormSchema = z.object({
   name: z.string().min(3, 'Product name must be at least 3 characters.'),
@@ -54,6 +56,13 @@ export default function ProductForm({ product }: ProductFormProps) {
     const router = useRouter();
     const { toast } = useToast();
     const [categories, setCategories] = useState<Category[]>([]);
+    
+    // Scanner State
+    const [isScannerOpen, setIsScannerOpen] = useState(false);
+    const [isProcessingScan, setIsProcessingScan] = useState(false);
+    const videoRef = useRef<HTMLVideoElement>(null);
+    const canvasRef = useRef<HTMLCanvasElement>(null);
+    const [stream, setStream] = useState<MediaStream | null>(null);
 
     useEffect(() => {
         async function loadCategories() {
@@ -78,6 +87,56 @@ export default function ProductForm({ product }: ProductFormProps) {
             imageUrls: product?.imageUrls || [],
         },
     });
+
+    const startScanner = async () => {
+        setIsScannerOpen(true);
+        try {
+            const mediaStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+            setStream(mediaStream);
+            if (videoRef.current) videoRef.current.srcObject = mediaStream;
+        } catch (err) {
+            toast({ variant: 'destructive', title: 'Camera Error', description: 'Could not access camera for scanning.' });
+        }
+    };
+
+    const stopScanner = () => {
+        if (stream) stream.getTracks().forEach(t => t.stop());
+        setStream(null);
+        setIsScannerOpen(false);
+    };
+
+    const handleScan = async () => {
+        if (!videoRef.current || !canvasRef.current) return;
+        setIsProcessingScan(true);
+
+        const canvas = canvasRef.current;
+        const video = videoRef.current;
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        canvas.getContext('2d')?.drawImage(video, 0, 0);
+
+        const dataUri = canvas.toDataURL('image/jpeg', 0.8);
+
+        try {
+            const result = await identifyProductVisually({ imageDataUri: dataUri });
+            
+            // Populate form fields with AI results
+            form.setValue('name', result.suggestedName);
+            if (result.detectedBarcode) form.setValue('barcode', result.detectedBarcode);
+            if (result.suggestedCategory) {
+                const found = categories.find(c => c.name.toLowerCase().includes(result.suggestedCategory!.toLowerCase()));
+                if (found) form.setValue('category', found.name);
+            }
+            form.setValue('description', `Extracted features: ${result.technicalFeatures.join(', ')}`);
+
+            toast({ title: 'AI Identification Complete', description: `Detected: ${result.suggestedName}` });
+            stopScanner();
+        } catch (err) {
+            toast({ variant: 'destructive', title: 'Scan Error', description: 'AI failed to identify the item. Try again.' });
+        } finally {
+            setIsProcessingScan(false);
+        }
+    };
 
     async function onSubmit(data: z.infer<typeof productFormSchema>) {
         try {
@@ -107,11 +166,16 @@ export default function ProductForm({ product }: ProductFormProps) {
                                 {product ? `Editing: ${product.name}` : 'Create New Inventory'}
                             </h2>
                         </div>
-                        {product && (
-                            <span className="text-[10px] font-black uppercase bg-primary/10 text-primary px-3 py-1 rounded-full border border-primary/20">
-                                Product ID: {product.id.toString().slice(0, 8)}
-                            </span>
-                        )}
+                        <div className="flex items-center gap-2">
+                             <Button type="button" variant="outline" onClick={startScanner} className="rounded-full border-primary/40 text-primary hover:bg-primary/5">
+                                <Camera className="h-4 w-4 mr-2" /> Scan Item
+                            </Button>
+                            {product && (
+                                <span className="text-[10px] font-black uppercase bg-primary/10 text-primary px-3 py-1 rounded-full border border-primary/20">
+                                    ID: {product.id.toString().slice(0, 8)}
+                                </span>
+                            )}
+                        </div>
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
@@ -205,7 +269,7 @@ export default function ProductForm({ product }: ProductFormProps) {
                                         <FormItem>
                                             <FormLabel className="text-xs font-black uppercase tracking-widest text-muted-foreground">Barcode / SKU</FormLabel>
                                             <FormControl>
-                                                <Input {...field} className="rounded-xl" />
+                                                <Input {...field} className="rounded-xl font-mono" placeholder="Scan or type code" />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -290,6 +354,39 @@ export default function ProductForm({ product }: ProductFormProps) {
                     </div>
                 </CardFooter>
             </form>
+
+            <Dialog open={isScannerOpen} onOpenChange={setIsScannerOpen}>
+                <DialogContent className="sm:max-w-[600px] p-0 rounded-[2.5rem] overflow-hidden border-none">
+                    <DialogHeader className="p-8 bg-accent text-white">
+                        <DialogTitle className="flex items-center gap-3 text-2xl">
+                            <Sparkles className="h-6 w-6 text-primary" />
+                            Inventory AI Scanner
+                        </DialogTitle>
+                    </DialogHeader>
+                    <div className="p-8 space-y-6">
+                        <div className="aspect-video bg-black rounded-[2rem] overflow-hidden relative shadow-2xl">
+                             <video ref={videoRef} className="w-full h-full object-cover" autoPlay playsInline muted />
+                             <canvas ref={canvasRef} className="hidden" />
+                             {isProcessingScan && (
+                                <div className="absolute inset-0 bg-black/60 backdrop-blur-md flex flex-col items-center justify-center text-white gap-4">
+                                    <Loader2 className="h-10 w-10 animate-spin text-primary" />
+                                    <p className="font-bold tracking-widest text-sm uppercase">Mapping Visual Features...</p>
+                                </div>
+                             )}
+                        </div>
+                        <div className="text-center">
+                            <p className="text-sm font-bold text-accent">Registration Mode Active</p>
+                            <p className="text-xs text-muted-foreground">Scan labels, barcodes, or parts to auto-fill technical specs.</p>
+                        </div>
+                    </div>
+                    <DialogFooter className="p-8 bg-muted/30 gap-3">
+                        <Button variant="ghost" onClick={stopScanner} className="rounded-full px-8">Cancel</Button>
+                        <Button onClick={handleScan} disabled={isProcessingScan} className="rounded-full px-12 bg-primary font-black uppercase tracking-widest shadow-xl">
+                           IDENTIFY & IMPORT
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
        </Form>
     );
 }

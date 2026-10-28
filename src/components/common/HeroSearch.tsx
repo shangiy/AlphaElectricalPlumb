@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search, Camera, Video, AlertCircle, Loader2 } from 'lucide-react';
+import { Search, Camera, Video, AlertCircle, Loader2, Sparkles } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import {
@@ -20,6 +20,7 @@ import { AnimatedPlaceholder } from './AnimatedPlaceholder';
 import { cn } from '@/lib/utils';
 import { uploadImage } from '@/lib/storage';
 import { supabase } from '@/lib/supabase';
+import { identifyProductVisually } from '@/ai/flows/visual-identity-flow';
 
 interface HeroSearchProps {
   isCompact?: boolean;
@@ -51,7 +52,9 @@ export default function HeroSearch({ isCompact = false }: HeroSearchProps) {
     }
     setHasCameraPermission(null);
     try {
-      const mediaStream = await navigator.mediaDevices.getUserMedia({ video: true });
+      const mediaStream = await navigator.mediaDevices.getUserMedia({ 
+        video: { facingMode: 'environment' } // Prefer back camera for product scanning
+      });
       setStream(mediaStream);
       setHasCameraPermission(true);
       if (videoRef.current) {
@@ -62,7 +65,7 @@ export default function HeroSearch({ isCompact = false }: HeroSearchProps) {
       toast({
         variant: 'destructive',
         title: 'Camera Access Denied',
-        description: 'Please enable camera permissions in your browser settings.',
+        description: 'Please enable camera permissions to scan products.',
       });
     }
   };
@@ -77,45 +80,44 @@ export default function HeroSearch({ isCompact = false }: HeroSearchProps) {
       const context = canvas.getContext('2d');
       context?.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
       
-      const imageDataUrl = canvas.toDataURL('image/jpeg', 0.9);
+      const imageDataUrl = canvas.toDataURL('image/jpeg', 0.8);
       
       try {
-        // Upload image (Helper still uses storage bucket logic which should be checked)
-        const downloadURL = await uploadImage(imageDataUrl);
+        // 1. AI Analysis for identification
+        const analysis = await identifyProductVisually({ imageDataUri: imageDataUrl });
         
-        if (!supabase) throw new Error("Supabase not available");
-
-        const { error } = await supabase.from('user_selfies').insert([{
-            image_url: downloadURL,
-        }]);
-
-        if (error) throw error;
+        // 2. Log for admin auditing (Selfies)
+        const downloadURL = await uploadImage(imageDataUrl);
+        if (supabase) {
+            await supabase.from('user_selfies').insert([{
+                image_url: downloadURL,
+            }]);
+        }
 
         toast({
-            title: 'Image Uploaded!',
-            description: 'Your image has been saved and will be reviewed by an admin.',
+            title: 'Scan Successful!',
+            description: `Searching for: ${analysis.suggestedName}`,
         });
+
+        setIsCameraDialogOpen(false);
+
+        // 3. Redirect to search with either barcode or suggested query
+        if (analysis.detectedBarcode) {
+            router.push(`/search?barcode=${encodeURIComponent(analysis.detectedBarcode)}`);
+        } else {
+            router.push(`/search?q=${encodeURIComponent(analysis.searchQuery)}`);
+        }
 
       } catch (error) {
         console.error("Capture error:", error);
         toast({
             variant: "destructive",
-            title: "Upload Failed",
-            description: "Could not save the image. Please check your connection.",
+            title: "Analysis Failed",
+            description: "Could not identify the item. Please try again with better lighting.",
         });
       } finally {
         setIsProcessing(false);
-        setIsCameraDialogOpen(false);
       }
-    }
-  };
-
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (query.trim()) {
-      router.push(`/search?q=${encodeURIComponent(query.trim())}`);
-    } else {
-      router.push('/search');
     }
   };
 
@@ -129,7 +131,6 @@ export default function HeroSearch({ isCompact = false }: HeroSearchProps) {
         setHasCameraPermission(null);
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isCameraDialogOpen]);
 
   const cameraButton = (
@@ -138,6 +139,15 @@ export default function HeroSearch({ isCompact = false }: HeroSearchProps) {
       <span className="sr-only">Search by image</span>
     </Button>
   );
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (query.trim()) {
+      router.push(`/search?q=${encodeURIComponent(query.trim())}`);
+    } else {
+      router.push('/search');
+    }
+  };
 
   return (
     <>
@@ -175,39 +185,51 @@ export default function HeroSearch({ isCompact = false }: HeroSearchProps) {
               <DialogTrigger asChild>
                 {cameraButton}
               </DialogTrigger>
-              <DialogContent className="sm:max-w-[625px]">
-                <DialogHeader>
-                  <DialogTitle>Visual Search</DialogTitle>
+              <DialogContent className="sm:max-w-[625px] rounded-[2rem] overflow-hidden border-none shadow-2xl">
+                <DialogHeader className="p-6 bg-accent text-white">
+                  <DialogTitle className="flex items-center gap-2">
+                    <Sparkles className="h-5 w-5 text-primary" />
+                    AI Visual Scanner
+                  </DialogTitle>
                 </DialogHeader>
-                <div className="flex flex-col items-center justify-center gap-4">
-                  <div className="w-full bg-black rounded-md overflow-hidden relative">
-                    <video ref={videoRef} className="w-full aspect-video rounded-md" autoPlay playsInline muted />
+                <div className="flex flex-col items-center justify-center p-6 gap-6">
+                  <div className="w-full bg-black rounded-[2rem] overflow-hidden relative shadow-inner aspect-video">
+                    <video ref={videoRef} className="w-full h-full object-cover" autoPlay playsInline muted />
                     <canvas ref={canvasRef} className="hidden" />
                     {(hasCameraPermission === null || isProcessing) && (
-                      <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/50 text-white gap-2">
-                        <Loader2 className="h-8 w-8 animate-spin" />
-                        <p>{isProcessing ? 'Processing image...' : 'Requesting camera access...'}</p>
+                      <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 text-white gap-4 backdrop-blur-sm">
+                        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+                        <p className="font-bold tracking-tight">{isProcessing ? 'Analyzing Product Content...' : 'Calibrating Sensors...'}</p>
                       </div>
                     )}
+                    {/* Scanning Animation Line */}
+                    {!isProcessing && hasCameraPermission && (
+                        <div className="absolute inset-x-0 h-1 bg-primary/50 shadow-[0_0_15px_rgba(var(--primary),0.8)] animate-bounce top-1/2" />
+                    )}
                   </div>
+                  
+                  <div className="text-center space-y-1">
+                      <p className="text-sm font-bold text-accent">Position Item in Frame</p>
+                      <p className="text-xs text-muted-foreground uppercase tracking-widest">Identify Products • Read Barcodes • Scan QR</p>
+                  </div>
+
                   {hasCameraPermission === false && (
-                    <Alert variant="destructive">
+                    <Alert variant="destructive" className="rounded-2xl">
                       <AlertCircle className="h-4 w-4" />
-                      <AlertTitle>Camera Access Required</AlertTitle>
+                      <AlertTitle>Camera Blocked</AlertTitle>
                       <AlertDescription>
-                        Please allow camera access in your browser to use this feature.
-                        <Button variant="link" className="p-0 h-auto ml-2" onClick={getCameraPermission}>Try Again</Button>
+                        We need lens access to identify your products.
+                        <Button variant="link" className="p-0 h-auto ml-2 text-white underline" onClick={getCameraPermission}>Try Again</Button>
                       </AlertDescription>
                     </Alert>
                   )}
                 </div>
-                <DialogFooter>
+                <DialogFooter className="p-6 bg-muted/30">
                   <DialogClose asChild>
-                    <Button type="button" variant="secondary" disabled={isProcessing}>Cancel</Button>
+                    <Button type="button" variant="ghost" disabled={isProcessing} className="rounded-full px-8">Dismiss</Button>
                   </DialogClose>
-                  <Button type="button" onClick={handleCapture} disabled={!hasCameraPermission || isProcessing}>
-                    {isProcessing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Video className="mr-2 h-4 w-4" />}
-                    {isProcessing ? 'Uploading...' : 'Capture'}
+                  <Button type="button" onClick={handleCapture} disabled={!hasCameraPermission || isProcessing} className="rounded-full px-12 bg-primary font-black uppercase tracking-tighter shadow-xl">
+                    {isProcessing ? 'ANALYZING...' : 'IDENTIFY ITEM'}
                   </Button>
                 </DialogFooter>
               </DialogContent>

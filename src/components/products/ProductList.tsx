@@ -3,7 +3,7 @@
 import { useProducts } from '@/context/ProductProvider';
 import ProductCard from './ProductCard';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Package, Search, ArrowRight } from 'lucide-react';
+import { Package, Search, ArrowRight, Barcode } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { useMemo } from 'react';
 import type { Product } from '@/lib/types';
@@ -16,12 +16,13 @@ interface ProductListProps {
 
 /**
  * Inclusive Product List.
- * Supports comma-separated categories and fuzzy search.
+ * Supports comma-separated categories, fuzzy search, and barcode-exact matching.
  */
 export default function ProductList({ products: initialProducts }: ProductListProps) {
   const { products: contextProducts, loading } = useProducts();
   const searchParams = useSearchParams();
   const query = (searchParams.get('q') || '').toLowerCase().trim();
+  const barcode = (searchParams.get('barcode') || '').trim();
   const categoryFilter = searchParams.get('category')?.toLowerCase();
 
   const products = initialProducts || contextProducts;
@@ -29,7 +30,12 @@ export default function ProductList({ products: initialProducts }: ProductListPr
   const filteredProducts = useMemo(() => {
     let list = products || [];
     
-    // 1. Apply inclusive category filter
+    // 1. Direct Barcode Match (Highest Priority)
+    if (barcode) {
+        return list.filter(p => p.barcode === barcode);
+    }
+
+    // 2. Apply inclusive category filter
     if (categoryFilter) {
       list = list.filter(p => {
         if (!p || !p.category) return false;
@@ -38,7 +44,7 @@ export default function ProductList({ products: initialProducts }: ProductListPr
       });
     }
     
-    // 2. Apply fuzzy text search
+    // 3. Apply fuzzy text search
     if (query) {
       list = list.filter(p => {
         if (!p) return false;
@@ -46,19 +52,17 @@ export default function ProductList({ products: initialProducts }: ProductListPr
         const name = (p.name ?? '').toLowerCase();
         const desc = (p.description ?? p.longDescription ?? '').toLowerCase();
         const cat = (p.category ?? '').toLowerCase();
-        const brand = (p.brand ?? '').toLowerCase();
         
         return (
           name.includes(query) || 
           desc.includes(query) || 
-          cat.includes(query) ||
-          brand.includes(query)
+          cat.includes(query)
         );
       });
     }
     
     return list;
-  }, [products, query, categoryFilter]);
+  }, [products, query, categoryFilter, barcode]);
 
   if (loading) {
     return (
@@ -88,20 +92,25 @@ export default function ProductList({ products: initialProducts }: ProductListPr
     );
   }
 
-  const resultTitle = categoryFilter 
-    ? `Collection: ${categoryFilter}`
-    : query 
-      ? `Search Results for "${query}"` 
-      : 'Our Product Catalog';
+  const resultTitle = barcode
+    ? `Product ID: ${barcode}`
+    : categoryFilter 
+      ? `Collection: ${categoryFilter}`
+      : query 
+        ? `Results for "${query}"` 
+        : 'Our Product Catalog';
 
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold font-headline text-accent capitalize">
-          {resultTitle}
-        </h2>
+        <div className="flex items-center gap-3">
+             {barcode && <Barcode className="h-6 w-6 text-primary" />}
+             <h2 className="text-2xl font-bold font-headline text-accent capitalize">
+                {resultTitle}
+            </h2>
+        </div>
         <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest bg-muted px-3 py-1 rounded-full">
-          {filteredProducts.length} Items
+          {filteredProducts.length} Items Found
         </span>
       </div>
       
@@ -114,7 +123,7 @@ export default function ProductList({ products: initialProducts }: ProductListPr
       ) : (
         <div className="flex flex-col items-center justify-center py-24 bg-muted/5 rounded-[3rem] border-2 border-dashed border-muted-foreground/20">
              <Search className="h-16 w-16 text-muted-foreground mb-4 opacity-20" />
-             <p className="text-muted-foreground text-lg mb-8 font-medium italic">"Oops! It looks like we don't have that in stock yet..."</p>
+             <p className="text-muted-foreground text-lg mb-8 font-medium italic">"No matches for this scan. We're updating our inventory cycle daily."</p>
              
              <Button asChild size="lg" className="relative group overflow-hidden bg-[#28235f] text-white px-10 py-8 rounded-full font-black text-xl transition-all duration-300 hover:scale-110 hover:shadow-[0_0_40px_rgba(40,35,95,0.4)] active:scale-95 animate-pulse hover:animate-none">
                 <Link href="/search" className="flex items-center gap-3">
@@ -122,7 +131,7 @@ export default function ProductList({ products: initialProducts }: ProductListPr
                     <ArrowRight className="h-6 w-6 group-hover:translate-x-2 transition-transform" />
                 </Link>
              </Button>
-             <p className="mt-4 text-[10px] uppercase tracking-widest font-bold text-muted-foreground/60 animate-bounce">Click to explore our full 100+ inventory</p>
+             <p className="mt-4 text-[10px] uppercase tracking-widest font-bold text-muted-foreground/60">Click to explore our full 100+ inventory</p>
         </div>
       )}
     </div>
