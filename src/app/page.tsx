@@ -33,8 +33,8 @@ function HomeContent() {
       <CategoryCarousel />
       <FeaturedProducts />
       <DeliveryServices />
-      <ImpactSection />
       <HomepageAbout />
+      <ImpactSection />
       <CustomerReviews />
       <ConnectWithUs />
     </div>
