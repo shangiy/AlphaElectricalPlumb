@@ -48,9 +48,21 @@ const Toast = React.forwardRef<
   return (
     <ToastPrimitives.Root
       ref={ref}
-      className={cn(toastVariants({ variant }), className)}
+      duration={6000}
+      className={cn(toastVariants({ variant }), className, "relative group")}
       {...props}
-    />
+    >
+      {props.children}
+      {/* Progress Bar Lapse Line */}
+      <div className="absolute bottom-0 left-0 h-1 w-full bg-black/5 dark:bg-white/10 overflow-hidden">
+        <div 
+          className={cn(
+            "h-full w-full origin-left bg-primary animate-toast-progress",
+            variant === "destructive" && "bg-destructive-foreground"
+          )} 
+        />
+      </div>
+    </ToastPrimitives.Root>
   )
 })
 Toast.displayName = ToastPrimitives.Root.displayName

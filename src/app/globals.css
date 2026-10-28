@@ -81,4 +81,13 @@
   .glass-header {
     @apply bg-background/80 backdrop-blur-lg border-b border-white/20;
   }
+
+  @keyframes toast-progress {
+    from { transform: scaleX(1); }
+    to { transform: scaleX(0); }
+  }
+
+  .animate-toast-progress {
+    animation: toast-progress 6s linear forwards;
+  }
 }
