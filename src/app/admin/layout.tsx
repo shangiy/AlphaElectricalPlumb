@@ -12,7 +12,17 @@ import {
 } from '@/components/ui/sidebar';
 import Link from 'next/link';
 import Image from 'next/image';
-import { LayoutDashboard, LogOut, Package, Home, Camera, Receipt } from 'lucide-react';
+import { 
+  LayoutDashboard, 
+  LogOut, 
+  Package, 
+  Home, 
+  Camera, 
+  Receipt, 
+  BarChart3, 
+  Users, 
+  Settings 
+} from 'lucide-react';
 import AuthGuard from '@/components/auth/AuthGuard';
 import { useAuth } from '@/context/AuthProvider';
 
@@ -23,12 +33,23 @@ export default function AdminLayout({
 }) {
   const { logout } = useAuth();
 
+  const menuItems = [
+    { label: 'Dashboard', href: '/admin', icon: LayoutDashboard },
+    { label: 'Products', href: '/admin/products', icon: Package },
+    { label: 'Selfies', href: '/admin/selfies', icon: Camera },
+    { label: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
+    { label: 'Users', href: '/admin/users', icon: Users },
+    { label: 'Transactions', href: '/admin/transactions', icon: Receipt },
+    { label: 'Homepage', href: '/', icon: Home },
+    { label: 'Settings', href: '/admin/settings', icon: Settings },
+  ];
+
   return (
     <AuthGuard allowedRoles={['admin', 'staff']}>
       <SidebarProvider>
         <div className="flex h-screen w-full bg-background">
           <Sidebar className="flex flex-col border-r bg-muted/20">
-            <SidebarHeader className="p-4">
+            <SidebarHeader className="p-6">
               <Link href="/admin" className="flex items-center gap-3 group">
                   <Image src="/logo Alpha.png" alt="Alpha" width={45} height={45} className="transition-transform group-hover:scale-110" />
                   <div className="flex flex-col">
@@ -37,53 +58,29 @@ export default function AdminLayout({
                   </div>
               </Link>
             </SidebarHeader>
-            <SidebarContent className="p-2">
-              <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild tooltip="Manager" className="h-12 rounded-xl">
-                    <Link href="/admin">
-                      <LayoutDashboard className="text-primary" />
-                      <span className="font-bold">Unified Manager</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
+            <SidebarContent className="p-3">
+              <SidebarMenu className="gap-1">
+                {menuItems.map((item) => (
+                  <SidebarMenuItem key={item.label}>
+                    <SidebarMenuButton asChild tooltip={item.label} className="h-11 rounded-xl">
+                      <Link href={item.href}>
+                        <item.icon className="w-5 h-5 text-accent/70 group-hover:text-primary transition-colors" />
+                        <span className="font-semibold text-sm tracking-tight">{item.label}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
                 
-                <div className="px-4 py-4">
-                  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-4">Quick Tools</p>
+                <div className="mt-4 pt-4 border-t border-muted">
                   <SidebarMenuItem>
-                    <SidebarMenuButton asChild tooltip="Home" className="h-10 rounded-xl mb-1">
-                      <Link href="/">
-                        <Home className="w-4 h-4" />
-                        <span className="text-xs font-semibold">View Website</span>
-                      </Link>
-                    </SidebarMenuButton>
+                    <button 
+                      onClick={logout}
+                      className="w-full flex items-center gap-3 px-4 py-3 text-xs font-black uppercase tracking-widest text-red-600 bg-red-50 hover:bg-red-100 rounded-2xl transition-colors mt-2"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      Log Out
+                    </button>
                   </SidebarMenuItem>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton asChild tooltip="Selfies" className="h-10 rounded-xl mb-1">
-                      <Link href="/admin/selfies">
-                        <Camera className="w-4 h-4" />
-                        <span className="text-xs font-semibold">Visual Search Logs</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                   <SidebarMenuItem>
-                    <SidebarMenuButton asChild tooltip="Transactions" className="h-10 rounded-xl">
-                      <Link href="/admin/transactions">
-                        <Receipt className="w-4 h-4" />
-                        <span className="text-xs font-semibold">Order History</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                </div>
-
-                <div className="mt-auto px-4 pb-6">
-                  <button 
-                    onClick={logout}
-                    className="w-full flex items-center gap-3 px-4 py-3 text-xs font-black uppercase tracking-widest text-red-600 bg-red-50 hover:bg-red-100 rounded-2xl transition-colors"
-                  >
-                    <LogOut className="w-4 h-4" />
-                    Sign Out
-                  </button>
                 </div>
               </SidebarMenu>
             </SidebarContent>
