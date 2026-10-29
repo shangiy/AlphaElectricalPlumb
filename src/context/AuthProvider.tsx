@@ -1,4 +1,3 @@
-
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
@@ -120,38 +119,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           avatarUrl: supabaseUser.user_metadata.avatar_url,
         };
         
-        // Attempt insert with full column set
-        const { error: insertError } = await supabase.from('profiles').insert({
+        // Use UPSERT with onConflict to prevent "duplicate key" errors
+        const { error: insertError } = await supabase.from('profiles').upsert({
           id: supabaseUser.id,
           full_name: newUser.name,
           username: newUser.username,
           role: assignedRole,
           avatar_url: newUser.avatarUrl,
           email: newUser.email,
-        });
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'id' });
         
         if (insertError) {
-          // If error code is 23505, it means the profile was created by a parallel process
-          // just as we were checking. In this case, we simply fetch it again.
-          if (insertError.code === '23505') {
-              const { data: retryProfile } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('id', supabaseUser.id)
-                .single();
-                
-              if (retryProfile) {
-                  setUser({
-                    id: retryProfile.id,
-                    name: retryProfile.full_name || 'User',
-                    username: retryProfile.username || 'user',
-                    email: retryProfile.email || supabaseUser.email!,
-                    role: (retryProfile.role || 'user') as 'admin' | 'staff' | 'user',
-                    avatarUrl: retryProfile.avatar_url,
-                  });
-                  return;
-              }
-          }
           console.error("Profile auto-provisioning failed:", insertError.message);
         }
         
