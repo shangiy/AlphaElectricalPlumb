@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
-import { Button, buttonVariants } from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 import {
   Sheet,
   SheetContent,
@@ -26,7 +26,8 @@ import {
   LogOut,
   Info,
   PhoneCall,
-  Star
+  Settings,
+  CreditCard
 } from 'lucide-react';
 import ShoppingCart from './ShoppingCart';
 import {
@@ -110,9 +111,9 @@ export default function Header() {
   ];
   
   const headerClasses = cn(
-    "sticky top-0 z-50 w-full transition-all duration-300",
+    "sticky top-0 z-50 w-full transition-all duration-500",
     isHeaderOpaque 
-      ? "bg-background shadow-lg border-b" 
+      ? "bg-background/95 backdrop-blur-xl shadow-lg border-b border-white/10" 
       : "bg-transparent border-b border-transparent"
   );
 
@@ -196,7 +197,7 @@ export default function Header() {
                                 <ChevronDown className="h-4 w-4" />
                              </div>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="start" className="w-64 bg-background p-2 rounded-2xl shadow-xl">
+                        <DropdownMenuContent align="start" className="w-64 bg-background p-2 rounded-2xl shadow-xl border-none">
                             <DropdownMenuLabel className="text-xs uppercase tracking-widest text-muted-foreground mb-1">Catalog</DropdownMenuLabel>
                             {productCategories.map((category) => (
                                 <DropdownMenuItem key={category.name} asChild className="rounded-xl">
@@ -232,7 +233,7 @@ export default function Header() {
                             <span className="hidden xl:inline font-bold tracking-tight">{user ? user.username : 'Log in'}</span>
                         </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-56 p-2 rounded-2xl shadow-xl">
+                        <DropdownMenuContent align="end" className="w-56 p-2 rounded-2xl shadow-xl border-none">
                         {user ? (
                             <>
                             <DropdownMenuLabel className="flex flex-col px-2 py-2">
@@ -270,7 +271,7 @@ export default function Header() {
                     alt="AlphaElectricalPlumb Logo"
                     width={isHeaderOpaque ? 55 : 70}
                     height={isHeaderOpaque ? 55 : 70}
-                    className="h-auto transition-all duration-300"
+                    className="h-auto transition-all duration-500"
                 />
             </Link>
 
@@ -289,132 +290,146 @@ export default function Header() {
                             <Menu />
                         </Button>
                     </SheetTrigger>
-                    <SheetContent side="right" className="w-[300px] p-0 flex flex-col border-none bg-background shadow-2xl">
-                        <SheetHeader className="p-6 border-b flex flex-row items-center justify-between bg-white z-10 space-y-0 text-left">
+                    <SheetContent side="right" className="w-[320px] p-0 flex flex-col border-none bg-background shadow-2xl overflow-hidden">
+                        <SheetHeader className="p-8 border-b flex flex-row items-center justify-between bg-white z-10 space-y-0 text-left">
                             <SheetTitle asChild>
                                 <Link href="/" className="flex items-center gap-3">
-                                    <Image src="/logo Alpha.png" alt="Logo" width={40} height={40}/>
-                                    <span className="font-black text-xl text-accent tracking-tighter uppercase">ALPHA</span>
+                                    <Image src="/logo Alpha.png" alt="Logo" width={45} height={45}/>
+                                    <div className="flex flex-col">
+                                        <span className="font-black text-xl text-accent tracking-tighter uppercase leading-none">ALPHA</span>
+                                        <span className="text-[8px] font-bold text-primary uppercase tracking-widest mt-1">Ecosystem v2.4</span>
+                                    </div>
                                 </Link>
                             </SheetTitle>
-                            <SheetClose asChild>
-                                <Button variant="ghost" size="icon" className="rounded-full h-8 w-8"><X className="h-4 w-4" /></Button>
-                            </SheetClose>
                         </SheetHeader>
                         
                         <ScrollArea className="flex-1">
                             {/* User Identity Section */}
-                            {user && (
-                                <div className="p-6 bg-muted/30 border-b">
-                                    <div className="flex items-center gap-4">
-                                        <Avatar className="h-14 w-14 border-2 border-primary shadow-md">
+                            {user ? (
+                                <div className="p-8 bg-muted/20 border-b relative overflow-hidden group">
+                                    <div className="absolute top-0 right-0 p-4 opacity-5 rotate-12 transition-transform group-hover:rotate-45">
+                                        <User size={120} />
+                                    </div>
+                                    <div className="flex items-center gap-5 relative z-10">
+                                        <Avatar className="h-16 w-16 border-2 border-primary shadow-xl ring-4 ring-white">
                                             <AvatarImage src={user.avatarUrl} className="object-cover" />
-                                            <AvatarFallback className="bg-accent text-white font-black">{user.name.charAt(0)}</AvatarFallback>
+                                            <AvatarFallback className="bg-accent text-white font-black text-xl">{user.name.charAt(0)}</AvatarFallback>
                                         </Avatar>
                                         <div className="flex flex-col overflow-hidden">
-                                            <span className="font-black text-accent uppercase tracking-tighter truncate">{user.name}</span>
-                                            <span className="text-[10px] font-bold text-primary uppercase tracking-[0.2em]">{user.role} ACCOUNT</span>
+                                            <span className="font-black text-accent text-lg uppercase tracking-tighter truncate">{user.name}</span>
+                                            <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em] bg-primary/10 px-2 py-0.5 rounded-full w-fit">{user.role} ACCESS</span>
                                         </div>
                                     </div>
                                 </div>
+                            ) : (
+                                <div className="p-8 space-y-4 border-b">
+                                    <SheetClose asChild>
+                                        <Button asChild className="w-full rounded-2xl h-14 font-black uppercase tracking-widest shadow-xl transition-all active:scale-95 bg-accent hover:bg-accent/90">
+                                            <Link href={`/auth/login?tab=login${authRedirect}`}>Identify Yourself</Link>
+                                        </Button>
+                                    </SheetClose>
+                                    <p className="text-[10px] text-center font-bold text-muted-foreground uppercase tracking-widest">New to our network?</p>
+                                    <SheetClose asChild>
+                                        <Button asChild variant="outline" className="w-full rounded-2xl h-14 font-black uppercase tracking-widest border-2 transition-all active:scale-95">
+                                            <Link href={`/auth/login?tab=signup${authRedirect}`}>Request Account</Link>
+                                        </Button>
+                                    </SheetClose>
+                                </div>
                             )}
 
-                            {/* Navigation Block */}
-                            <div className="p-4 space-y-1">
+                            {/* Core Navigation Cluster */}
+                            <div className="p-6 space-y-2">
                                 {(user?.role === 'admin' || user?.role === 'staff') && (
                                     <SheetClose asChild>
-                                        <Link href="/admin" className="flex items-center gap-3 px-4 py-4 text-sm font-black uppercase tracking-tighter text-primary bg-primary/5 rounded-2xl border border-primary/10 mb-4 transition-all active:scale-95">
-                                            <LayoutDashboard className="h-5 w-5" />
-                                            Admin Dashboard
+                                        <Link href="/admin" className="flex items-center justify-between px-5 py-5 text-sm font-black uppercase tracking-tighter text-primary bg-primary/5 rounded-[1.5rem] border border-primary/20 mb-6 transition-all hover:bg-primary/10 active:scale-95 shadow-sm">
+                                            <div className="flex items-center gap-4">
+                                                <LayoutDashboard className="h-6 w-6" />
+                                                Inventory Control
+                                            </div>
+                                            <ArrowRight size={16} className="opacity-40" />
                                         </Link>
                                     </SheetClose>
                                 )}
 
-                                {user ? (
-                                    <>
+                                {user && (
+                                    <div className="space-y-1">
+                                        <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/40 ml-5 mb-3">Client Services</h3>
                                         <SheetClose asChild>
-                                            <Link href="/wishlist" className="flex items-center gap-4 px-4 py-3 text-sm font-bold text-accent hover:bg-muted rounded-xl transition-all">
-                                                <div className="h-8 w-8 rounded-lg bg-red-50 flex items-center justify-center"><Heart className="h-4 w-4 text-red-500" /></div>
-                                                My Wishlist
+                                            <Link href="/wishlist" className="flex items-center gap-4 px-5 py-4 text-sm font-bold text-accent hover:bg-muted rounded-2xl transition-all group">
+                                                <div className="h-10 w-10 rounded-xl bg-red-50 text-red-500 flex items-center justify-center group-hover:scale-110 transition-transform"><Heart className="h-5 w-5" /></div>
+                                                Personal Collection
                                             </Link>
                                         </SheetClose>
                                         <SheetClose asChild>
-                                            <Link href="/track-order" className="flex items-center gap-4 px-4 py-3 text-sm font-bold text-accent hover:bg-muted rounded-xl transition-all">
-                                                <div className="h-8 w-8 rounded-lg bg-blue-50 flex items-center justify-center"><Package className="h-4 w-4 text-blue-500" /></div>
-                                                Order Status
+                                            <Link href="/track-order" className="flex items-center gap-4 px-5 py-4 text-sm font-bold text-accent hover:bg-muted rounded-2xl transition-all group">
+                                                <div className="h-10 w-10 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center group-hover:scale-110 transition-transform"><Package className="h-5 w-5" /></div>
+                                                Logistics Status
                                             </Link>
                                         </SheetClose>
                                         <SheetClose asChild>
-                                            <Link href="/checkout" className="flex items-center gap-4 px-4 py-3 text-sm font-bold text-accent hover:bg-muted rounded-xl transition-all">
-                                                <div className="h-8 w-8 rounded-lg bg-green-50 flex items-center justify-center"><ShoppingCartIcon className="h-4 w-4 text-green-600" /></div>
-                                                Checkout
+                                            <Link href="/checkout" className="flex items-center gap-4 px-5 py-4 text-sm font-bold text-accent hover:bg-muted rounded-2xl transition-all group">
+                                                <div className="h-10 w-10 rounded-xl bg-green-50 text-green-600 flex items-center justify-center group-hover:scale-110 transition-transform"><CreditCard className="h-5 w-5" /></div>
+                                                Checkout Portal
                                             </Link>
                                         </SheetClose>
                                         <SheetClose asChild>
-                                            <Link href="/profile" className="flex items-center gap-4 px-4 py-3 text-sm font-bold text-accent hover:bg-muted rounded-xl transition-all">
-                                                <div className="h-8 w-8 rounded-lg bg-muted flex items-center justify-center"><User className="h-4 w-4 text-muted-foreground" /></div>
-                                                Profile Settings
+                                            <Link href="/profile" className="flex items-center gap-4 px-5 py-4 text-sm font-bold text-accent hover:bg-muted rounded-2xl transition-all group">
+                                                <div className="h-10 w-10 rounded-xl bg-muted flex items-center justify-center group-hover:scale-110 transition-transform"><Settings className="h-5 w-5" /></div>
+                                                Identity Settings
                                             </Link>
-                                        </SheetClose>
-                                    </>
-                                ) : (
-                                    <div className="p-2 space-y-3 pb-6">
-                                        <SheetClose asChild>
-                                            <Button asChild className="w-full rounded-2xl h-12 font-black uppercase tracking-widest shadow-lg">
-                                                <Link href={`/auth/login?tab=login${authRedirect}`}>Log In Access</Link>
-                                            </Button>
-                                        </SheetClose>
-                                        <SheetClose asChild>
-                                            <Button asChild variant="outline" className="w-full rounded-2xl h-12 font-black uppercase tracking-widest border-2">
-                                                <Link href={`/auth/login?tab=signup${authRedirect}`}>Create Account</Link>
-                                            </Button>
                                         </SheetClose>
                                     </div>
                                 )}
                             </div>
 
-                            {/* Dark Section with Accordion Catalog */}
-                            <div className="bg-accent text-white min-h-[400px] mt-4 p-6 space-y-8 rounded-t-[2rem]">
-                                <div className="space-y-4">
-                                    <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/30">Company Ecosystem</h3>
-                                    <nav className="flex flex-col gap-5">
+                            {/* Dark Modular Section */}
+                            <div className="bg-accent text-white min-h-[500px] mt-6 p-8 space-y-10 rounded-t-[3.5rem] shadow-[0_-20px_50px_rgba(0,0,0,0.1)]">
+                                <div className="space-y-6">
+                                    <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-white/30 ml-2">Brand Ecosystem</h3>
+                                    <nav className="flex flex-col gap-6">
                                         <SheetClose asChild>
-                                            <Link href="/about" className="flex items-center justify-between text-base font-bold group">
-                                                About Us
-                                                <ArrowRight className="h-4 w-4 opacity-40 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+                                            <Link href="/about" className="flex items-center justify-between text-lg font-black uppercase tracking-tight group">
+                                                The Alpha Story
+                                                <div className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all">
+                                                    <ArrowRight size={14} />
+                                                </div>
                                             </Link>
                                         </SheetClose>
                                         <SheetClose asChild>
-                                            <Link href="/contact" className="flex items-center justify-between text-base font-bold group">
-                                                Contact Us
-                                                <ArrowRight className="h-4 w-4 opacity-40 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+                                            <Link href="/contact" className="flex items-center justify-between text-lg font-black uppercase tracking-tight group">
+                                                Site Support
+                                                <div className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all">
+                                                    <ArrowRight size={14} />
+                                                </div>
                                             </Link>
                                         </SheetClose>
                                         <SheetClose asChild>
-                                            <Link href="/#featured" className="flex items-center justify-between text-base font-bold group">
-                                                Featured Items
-                                                <ArrowRight className="h-4 w-4 opacity-40 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+                                            <Link href="/#featured" className="flex items-center justify-between text-lg font-black uppercase tracking-tight group">
+                                                Premium Assets
+                                                <div className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all">
+                                                    <ArrowRight size={14} />
+                                                </div>
                                             </Link>
                                         </SheetClose>
                                     </nav>
                                 </div>
 
-                                <div className="space-y-4 pt-6 border-t border-white/10">
-                                    <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/30">Explore Catalog</h3>
+                                <div className="space-y-6 pt-10 border-t border-white/5">
+                                    <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-white/30 ml-2">Supply Chains</h3>
                                     <Accordion type="single" collapsible className="w-full">
                                         <AccordionItem value="mobile-catalog" className="border-none">
-                                            <AccordionTrigger className="py-0 hover:no-underline font-black uppercase tracking-widest text-primary text-sm flex items-center gap-2">
-                                                <Grid className="h-4 w-4" />
-                                                Browse Categories
+                                            <AccordionTrigger className="py-4 px-6 rounded-3xl bg-white/5 hover:no-underline font-black uppercase tracking-widest text-primary text-xs flex items-center gap-3 transition-all hover:bg-white/10 shadow-inner">
+                                                <Grid className="h-5 w-5" />
+                                                Browse Catalogues
                                             </AccordionTrigger>
-                                            <AccordionContent className="pt-6 pb-0 flex flex-col gap-4 border-l border-white/5 ml-2 pl-4">
+                                            <AccordionContent className="pt-8 pb-0 flex flex-col gap-6 border-l border-primary/20 ml-5 pl-6">
                                                 {productCategories.map((cat) => (
                                                     <SheetClose asChild key={cat.name}>
-                                                        <Link href={cat.href} className="flex items-center gap-3 group">
-                                                            <div className="h-7 w-7 rounded-lg bg-white/5 p-1.5 flex items-center justify-center group-hover:bg-primary transition-colors">
+                                                        <Link href={cat.href} className="flex items-center gap-4 group">
+                                                            <div className="h-9 w-9 rounded-xl bg-white/5 p-2 flex items-center justify-center group-hover:bg-primary transition-all group-hover:scale-110 shadow-lg">
                                                                 <img src={cat.icon} alt="" className="h-full w-full object-contain" />
                                                             </div>
-                                                            <span className="text-sm font-bold text-white/80 group-hover:text-white transition-colors">{cat.name}</span>
+                                                            <span className="text-sm font-bold text-white/70 group-hover:text-white transition-colors uppercase tracking-tight">{cat.name}</span>
                                                         </Link>
                                                     </SheetClose>
                                                 ))}
@@ -424,14 +439,14 @@ export default function Header() {
                                 </div>
 
                                 {user && (
-                                    <div className="pt-10">
+                                    <div className="pt-16 pb-10">
                                         <Button 
                                             variant="ghost" 
                                             onClick={logout}
-                                            className="w-full justify-start gap-3 p-0 h-auto font-black uppercase text-xs text-red-400 hover:text-red-300 hover:bg-transparent"
+                                            className="w-full justify-start gap-4 p-5 h-16 rounded-2xl font-black uppercase text-xs text-red-400 hover:text-red-300 hover:bg-red-500/10 border border-red-500/20 transition-all active:scale-95"
                                         >
-                                            <LogOut className="h-4 w-4" />
-                                            Sign Out Account
+                                            <LogOut className="h-5 w-5" />
+                                            Terminate Session
                                         </Button>
                                     </div>
                                 )}
