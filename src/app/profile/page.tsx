@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useForm } from 'react-hook-form';
@@ -77,6 +78,7 @@ function ProfileContent() {
 
         try {
             // Update Supabase profile
+            // Standardizing on snake_case columns as defined in README SQL
             const { error } = await supabase
                 .from('profiles')
                 .update({
@@ -87,7 +89,13 @@ function ProfileContent() {
                 .eq('id', user.id);
 
             if (error) {
-                console.error("Supabase Profile Update Error:", error);
+                // Improved logging to turn {} into readable messages
+                console.error("Supabase Profile Update Error:", {
+                    message: error.message,
+                    details: error.details,
+                    hint: error.hint,
+                    code: error.code
+                });
                 throw error;
             }
 
@@ -105,10 +113,15 @@ function ProfileContent() {
             
             form.reset(data);
         } catch (error: any) {
+            const errorMessage = error.message || "Could not save your profile changes.";
+            const isPermissionError = errorMessage.toLowerCase().includes('permission') || errorMessage.toLowerCase().includes('policy');
+            
             toast({
                 variant: "destructive",
                 title: "Update Failed",
-                description: error.message || "Could not save your profile changes. Please check your database permissions.",
+                description: isPermissionError 
+                    ? "Database policy blocked this update. Ensure you have run the RLS SQL in Supabase." 
+                    : errorMessage,
             });
         } finally {
             setIsSaving(false);

@@ -14,22 +14,38 @@ You must provide the following environment variables in your Vercel Dashboard (*
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Your Supabase Anonymous Key.
 - `SUPABASE_SERVICE_ROLE_KEY`: Your secret service role key (Required for Admin uploads and role management).
 
-### 👤 Profile & Database Setup
-To ensure profile updates and avatars work correctly, run the following in your Supabase SQL Editor:
+### 👤 Profile & Database Setup (CRITICAL)
+To ensure profile updates, avatars, and role management work correctly, run the following in your Supabase SQL Editor:
 
 ```sql
--- 1. Ensure the profiles table has the required columns
+-- 1. Ensure the profiles table has ALL required columns
 ALTER TABLE public.profiles 
+ADD COLUMN IF NOT EXISTS full_name TEXT,
+ADD COLUMN IF NOT EXISTS username TEXT,
+ADD COLUMN IF NOT EXISTS email TEXT,
 ADD COLUMN IF NOT EXISTS avatar_url TEXT,
 ADD COLUMN IF NOT EXISTS role TEXT DEFAULT 'user';
 
 -- 2. Force PostgREST to reload its schema cache
 NOTIFY pgrst, 'reload schema';
 
--- 3. Enable RLS
+-- 3. Enable RLS and setup Policies
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Users can update own profile" ON public.profiles FOR UPDATE USING (auth.uid() = id);
-CREATE POLICY "Users can view own profile" ON public.profiles FOR SELECT USING (auth.uid() = id);
+
+-- Policy: Allow users to update their own record
+DROP POLICY IF EXISTS "Users can update own profile" ON public.profiles;
+CREATE POLICY "Users can update own profile" ON public.profiles 
+FOR UPDATE USING (auth.uid() = id);
+
+-- Policy: Allow users to view their own record
+DROP POLICY IF EXISTS "Users can view own profile" ON public.profiles;
+CREATE POLICY "Users can view own profile" ON public.profiles 
+FOR SELECT USING (auth.uid() = id);
+
+-- Policy: Allow public profile creation during signup
+DROP POLICY IF EXISTS "Enable insert for authenticated users only" ON public.profiles;
+CREATE POLICY "Enable insert for authenticated users only" ON public.profiles
+FOR INSERT WITH CHECK (auth.uid() = id);
 ```
 
 ### 📂 Storage Setup (Fix for RLS Errors)

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
@@ -80,7 +81,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const fetchProfile = async (supabaseUser: SupabaseUser) => {
     if (!supabase) return;
     try {
-      // Fetch the role and full_name from the public.profiles table using the user's ID
+      // Fetch the profile using standard column names
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('*')
@@ -105,7 +106,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         });
       } else {
         // Provision new user if profile doesn't exist
-        // Default role is 'user'. Admins must be promoted via DB or Admin Settings.
         const assignedRole = 'user'; 
         const newUser: User = {
           id: supabaseUser.id,
@@ -116,7 +116,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           avatarUrl: supabaseUser.user_metadata.avatar_url,
         };
         
-        await supabase.from('profiles').insert({
+        // Attempt to insert with full column set to avoid partial record errors
+        const { error: insertError } = await supabase.from('profiles').insert({
           id: supabaseUser.id,
           full_name: newUser.name,
           username: newUser.username,
@@ -124,6 +125,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           avatar_url: newUser.avatarUrl,
           email: newUser.email,
         });
+        
+        if (insertError) {
+          console.error("Profile auto-provisioning failed:", insertError.message);
+        }
         
         setUser(newUser);
       }
