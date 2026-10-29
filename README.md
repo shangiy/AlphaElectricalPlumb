@@ -14,6 +14,24 @@ You must provide the following environment variables in your Vercel Dashboard (*
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Your Supabase Anonymous Key.
 - `SUPABASE_SERVICE_ROLE_KEY`: Your secret service role key (Required for Admin uploads and role management).
 
+### 👤 Profile & Database Setup
+To ensure profile updates and avatars work correctly, run the following in your Supabase SQL Editor:
+
+```sql
+-- 1. Ensure the profiles table has the required columns
+ALTER TABLE public.profiles 
+ADD COLUMN IF NOT EXISTS avatar_url TEXT,
+ADD COLUMN IF NOT EXISTS role TEXT DEFAULT 'user';
+
+-- 2. Force PostgREST to reload its schema cache
+NOTIFY pgrst, 'reload schema';
+
+-- 3. Enable RLS
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can update own profile" ON public.profiles FOR UPDATE USING (auth.uid() = id);
+CREATE POLICY "Users can view own profile" ON public.profiles FOR SELECT USING (auth.uid() = id);
+```
+
 ### 📂 Storage Setup (Fix for RLS Errors)
 If you see "row-level security policy" errors when uploading images, run this in your Supabase SQL Editor:
 
@@ -23,15 +41,6 @@ CREATE POLICY "Public Access" ON storage.objects FOR SELECT USING (bucket_id = '
 CREATE POLICY "Allow Admin Uploads" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'product-images');
 CREATE POLICY "Allow Admin Updates" ON storage.objects FOR UPDATE USING (bucket_id = 'product-images');
 CREATE POLICY "Allow Admin Deletes" ON storage.objects FOR DELETE USING (bucket_id = 'product-images');
-```
-
-### 👤 Profile Management (Fix for Update Failed Errors)
-If you cannot save your profile changes, run this to enable users to manage their own data:
-
-```sql
-ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Users can update own profile" ON public.profiles FOR UPDATE USING (auth.uid() = id);
-CREATE POLICY "Users can view own profile" ON public.profiles FOR SELECT USING (auth.uid() = id);
 ```
 
 ### 🛡️ Admin Security (Limit to 4 Admins)
@@ -72,7 +81,7 @@ To update your live site on Vercel with the latest synchronization and visual fi
    ```
 2. **Commit**: 
    ```bash
-   git commit -m "feat: migrate to role-based auth and enforce admin security"
+   git commit -m "feat: align profiles schema and improve documentation"
    ```
 3. **Push**: 
    ```bash
