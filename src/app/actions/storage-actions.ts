@@ -15,13 +15,14 @@ export async function uploadToStorageAdmin(formData: FormData) {
 
   const file = formData.get('file') as File;
   const path = formData.get('path') as string;
+  const bucket = (formData.get('bucket') as string) || 'product-images';
 
   if (!file) throw new Error("No file provided for upload.");
   if (!path) throw new Error("No destination path provided.");
 
   // Upload using the Admin client to bypass RLS policies
   const { data, error } = await supabaseAdmin.storage
-    .from('product-images')
+    .from(bucket)
     .upload(path, file, {
       cacheControl: '3600',
       upsert: true,
@@ -29,17 +30,16 @@ export async function uploadToStorageAdmin(formData: FormData) {
     });
 
   if (error) {
-    console.error("Supabase Storage Upload Error Detail:", error);
-    // If we get an RLS error even with supabaseAdmin, it means the key used is likely the 'anon' key by mistake.
+    console.error(`Supabase Storage Upload Error (${bucket}):`, error);
     if (error.message.includes('violates row-level security')) {
-        throw new Error("Storage Permission Denied. Please ensure you are using the SERVICE_ROLE_KEY and not the ANON_KEY in your server configuration.");
+        throw new Error(`Storage Permission Denied on bucket "${bucket}". Please ensure you are using the SERVICE_ROLE_KEY.`);
     }
     throw new Error(error.message);
   }
 
   // Generate the public URL for the newly uploaded file
   const { data: { publicUrl } } = supabaseAdmin.storage
-    .from('product-images')
+    .from(bucket)
     .getPublicUrl(data.path);
 
   return { publicUrl, path: data.path };

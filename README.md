@@ -48,15 +48,24 @@ CREATE POLICY "Enable insert for authenticated users only" ON public.profiles
 FOR INSERT WITH CHECK (auth.uid() = id);
 ```
 
-### 📂 Storage Setup (Fix for RLS Errors)
-If you see "row-level security policy" errors when uploading images, run this in your Supabase SQL Editor:
+### 📂 Storage Setup (Bucket Separation)
+To ensure independent storage for products, avatars, and search logs, run this in your Supabase SQL Editor:
 
 ```sql
+-- 1. Product Images Bucket
 INSERT INTO storage.buckets (id, name, public) VALUES ('product-images', 'product-images', true) ON CONFLICT (id) DO NOTHING;
-CREATE POLICY "Public Access" ON storage.objects FOR SELECT USING (bucket_id = 'product-images');
-CREATE POLICY "Allow Admin Uploads" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'product-images');
-CREATE POLICY "Allow Admin Updates" ON storage.objects FOR UPDATE USING (bucket_id = 'product-images');
-CREATE POLICY "Allow Admin Deletes" ON storage.objects FOR DELETE USING (bucket_id = 'product-images');
+CREATE POLICY "Public Access Products" ON storage.objects FOR SELECT USING (bucket_id = 'product-images');
+CREATE POLICY "Allow Admin Uploads Products" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'product-images');
+
+-- 2. User Avatars Bucket
+INSERT INTO storage.buckets (id, name, public) VALUES ('avatars', 'avatars', true) ON CONFLICT (id) DO NOTHING;
+CREATE POLICY "Public Access Avatars" ON storage.objects FOR SELECT USING (bucket_id = 'avatars');
+CREATE POLICY "Allow Admin Uploads Avatars" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'avatars');
+
+-- 3. User Selfies Bucket (Visual Search Logs)
+INSERT INTO storage.buckets (id, name, public) VALUES ('user-selfies', 'user-selfies', true) ON CONFLICT (id) DO NOTHING;
+CREATE POLICY "Public Access Selfies" ON storage.objects FOR SELECT USING (bucket_id = 'user-selfies');
+CREATE POLICY "Allow Admin Uploads Selfies" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'user-selfies');
 ```
 
 ### 🛡️ Admin Security (Limit to 4 Admins)
@@ -86,23 +95,6 @@ for each row execute procedure enforce_max_admins();
 - **Backend**: Supabase (Auth, Database, Storage)
 - **AI**: Firebase Genkit + Google Gemini
 - **Payments**: Paystack Integration
-
-## 🚀 Deployment Commands (Recommended)
-
-To update your live site on Vercel with the latest synchronization and visual fixes:
-
-1. **Stage changes**: 
-   ```bash
-   git add .
-   ```
-2. **Commit**: 
-   ```bash
-   git commit -m "feat: align profiles schema and improve documentation"
-   ```
-3. **Push**: 
-   ```bash
-   git push origin main
-   ```
 
 ## Local Development
 

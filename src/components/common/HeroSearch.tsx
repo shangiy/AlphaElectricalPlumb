@@ -86,8 +86,8 @@ export default function HeroSearch({ isCompact = false }: HeroSearchProps) {
         // 1. AI Analysis for identification
         const analysis = await identifyProductVisually({ imageDataUri: imageDataUrl });
         
-        // 2. Log for admin auditing (Selfies)
-        const downloadURL = await uploadImage(imageDataUrl);
+        // 2. Log for admin auditing (Selfies) - Store in 'user-selfies' bucket
+        const downloadURL = await uploadImage(imageDataUrl, 'user-selfies');
         if (supabase) {
             await supabase.from('user_selfies').insert([{
                 image_url: downloadURL,

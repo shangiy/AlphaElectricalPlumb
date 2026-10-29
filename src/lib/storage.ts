@@ -6,7 +6,7 @@ import { uploadToStorageAdmin } from '@/app/actions/storage-actions';
  * Routes all uploads through a Server Action using the Service Role key
  * to prevent RLS (Row Level Security) violation errors.
  */
-export async function uploadImage(file: File | string): Promise<string> {
+export async function uploadImage(file: File | string, bucket: string = 'product-images'): Promise<string> {
     try {
         const fileName = `${uuidv4()}.webp`;
         const filePath = `uploads/${fileName}`;
@@ -31,6 +31,7 @@ export async function uploadImage(file: File | string): Promise<string> {
         const formData = new FormData();
         formData.append('file', fileToUpload);
         formData.append('path', filePath);
+        formData.append('bucket', bucket);
 
         // Execute the server-side upload to bypass client-side RLS constraints
         const result = await uploadToStorageAdmin(formData);
@@ -42,6 +43,6 @@ export async function uploadImage(file: File | string): Promise<string> {
         return result.publicUrl;
     } catch (error: any) {
         console.error("Storage Service Error: ", error.message);
-        throw new Error(error.message || "Failed to upload image to Supabase Storage.");
+        throw new Error(error.message || `Failed to upload image to Supabase Storage bucket "${bucket}".`);
     }
 }

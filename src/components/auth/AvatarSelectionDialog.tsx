@@ -46,7 +46,8 @@ export default function AvatarSelectionDialog({ isOpen, onClose, onSelect }: Ava
 
     setIsUploading(true);
     try {
-        const publicUrl = await uploadImage(file);
+        // Specifically route user profile pictures to the 'avatars' bucket
+        const publicUrl = await uploadImage(file, 'avatars');
         handleSelect(publicUrl);
         toast({
             title: "Avatar Uploaded!",
