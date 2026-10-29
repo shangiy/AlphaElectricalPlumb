@@ -88,7 +88,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .maybeSingle();
 
       if (profileError) {
-          console.error("Error checking profile existence:", profileError.message);
+          // Check for infinite recursion specifically to guide the user
+          if (profileError.message.includes('infinite recursion')) {
+              console.error("DATABASE SECURITY ERROR: Infinite recursion detected in 'profiles' RLS policy. Please run the 'Emergency RLS Reset' script from README.md in your Supabase SQL Editor.");
+          } else {
+              console.error("Error checking profile existence:", profileError.message);
+          }
       }
 
       if (profile) {
@@ -131,7 +136,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }, { onConflict: 'id' });
         
         if (insertError) {
-          console.error("Profile auto-provisioning failed:", insertError.message);
+          if (insertError.code === '23505') {
+              // Row was likely created by parallel request, ignore and move on
+              console.log("Profile conflict resolved via concurrency check.");
+          } else {
+              console.error("Profile auto-provisioning failed:", insertError.message);
+          }
         }
         
         setUser(newUser);

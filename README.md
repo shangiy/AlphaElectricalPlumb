@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
 );
 
--- Safely add any missing columns (e.g. for existing projects)
+-- Safely add any missing columns
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS full_name TEXT;
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS username TEXT;
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS email TEXT;
@@ -72,8 +72,22 @@ WITH CHECK (auth.uid() = id);
 NOTIFY pgrst, 'reload schema';
 ```
 
+### 🆘 Emergency RLS Reset (Fixes "Infinite Recursion")
+If you see the "infinite recursion" error, your policies are looping. Run this script to break the loop:
+```sql
+-- 1. Wipe loop-causing policies
+DROP POLICY IF EXISTS "Public profiles are viewable by everyone." ON public.profiles;
+DROP POLICY IF EXISTS "Users can update own profile." ON public.profiles;
+
+-- 2. Re-apply simple, non-recursive logic
+CREATE POLICY "Public profiles are viewable by everyone" ON public.profiles FOR SELECT USING (true);
+CREATE POLICY "Users can update own profile" ON public.profiles FOR UPDATE USING (auth.uid() = id) WITH CHECK (auth.uid() = id);
+
+NOTIFY pgrst, 'reload schema';
+```
+
 ### 📂 Storage Setup (Bucket Separation)
-To ensure independent storage for products, avatars, and search logs, run this in your Supabase SQL Editor:
+Run this to ensure independent storage for products, avatars, and search logs:
 
 ```sql
 -- 1. Product Images Bucket
@@ -93,7 +107,7 @@ CREATE POLICY "Allow Admin Uploads Selfies" ON storage.objects FOR INSERT WITH C
 ```
 
 ### 🛡️ Admin Security (Limit to 4 Admins)
-To enforce the maximum limit of 4 administrators in your database, run this SQL script:
+To enforce the maximum limit of 4 administrators:
 
 ```sql
 create or replace function enforce_max_admins()
