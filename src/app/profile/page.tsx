@@ -26,7 +26,7 @@ import { supabase } from '@/lib/supabase';
 
 const profileFormSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters.'),
-  username: z.string().min(3, 'Username must be at least 3 characters.').regex(/^[a-zA-Z0-9_]+$/, 'Username can only contain letters, numbers, and underscores.'),
+  username: z.string().min(3, 'Username must be at least 3 characters.'),
   email: z.string().email('Please enter a valid email address.'),
   avatarUrl: z.string().url().optional().or(z.literal('')),
 });
@@ -80,7 +80,7 @@ function ProfileContent() {
             const { error } = await supabase
                 .from('profiles')
                 .update({
-                    name: data.name,
+                    full_name: data.name,
                     username: data.username,
                     avatar_url: data.avatarUrl,
                 })
