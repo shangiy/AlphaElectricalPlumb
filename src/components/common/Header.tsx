@@ -84,7 +84,7 @@ export default function Header() {
     const updateHeaderStyles = () => {
       const scrollY = window.scrollY;
       const isMobile = window.innerWidth < 768;
-      const stickyThreshold = isMobile ? 40 : 48;
+      const stickyThreshold = isMobile ? 40 : 48; // Banner height roughly
 
       const isLocked = !isHomePage || scrollY >= stickyThreshold;
       
@@ -290,15 +290,17 @@ export default function Header() {
                         </Button>
                     </SheetTrigger>
                     <SheetContent side="right" className="w-[300px] p-0 flex flex-col border-none bg-background shadow-2xl">
-                        <div className="p-6 border-b flex items-center justify-between bg-white z-10">
-                            <Link href="/" className="flex items-center gap-3">
-                                <Image src="/logo Alpha.png" alt="Logo" width={40} height={40}/>
-                                <span className="font-black text-xl text-accent tracking-tighter">ALPHA</span>
-                            </Link>
+                        <SheetHeader className="p-6 border-b flex flex-row items-center justify-between bg-white z-10 space-y-0 text-left">
+                            <SheetTitle asChild>
+                                <Link href="/" className="flex items-center gap-3">
+                                    <Image src="/logo Alpha.png" alt="Logo" width={40} height={40}/>
+                                    <span className="font-black text-xl text-accent tracking-tighter uppercase">ALPHA</span>
+                                </Link>
+                            </SheetTitle>
                             <SheetClose asChild>
                                 <Button variant="ghost" size="icon" className="rounded-full h-8 w-8"><X className="h-4 w-4" /></Button>
                             </SheetClose>
-                        </div>
+                        </SheetHeader>
                         
                         <ScrollArea className="flex-1">
                             {/* User Identity Section */}

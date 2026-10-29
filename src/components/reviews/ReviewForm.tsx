@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Star, Loader2, PenTool } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 interface ReviewFormProps {
   productId?: string; 
@@ -82,9 +83,11 @@ export default function ReviewForm({ productId, onReviewSubmitted }: ReviewFormP
       </div>
 
       <div className="space-y-2 relative z-10">
-        <h3 className="text-3xl font-black font-headline text-accent tracking-tighter uppercase">
-            {productId ? 'Product Review' : 'Storefront Feedback'}
-        </h3>
+        <DialogTitle asChild>
+          <h3 className="text-3xl font-black font-headline text-accent tracking-tighter uppercase">
+              {productId ? 'Product Review' : 'Storefront Feedback'}
+          </h3>
+        </DialogTitle>
         <p className="text-muted-foreground font-medium text-sm">Help others by sharing your professional experience.</p>
       </div>
       
