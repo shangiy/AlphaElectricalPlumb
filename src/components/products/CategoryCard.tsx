@@ -16,23 +16,24 @@ interface Category {
 }
 
 /**
- * High-Resolution Collection Mapping for v2.4.9:
+ * High-Resolution Collection Mapping for v2.5.1:
  * Prioritizes curated collection assets from the Supabase Storage bucket.
+ * The paths are tried in order: Collections/ -> collections/ -> root.
  */
 const collectionFileNameMap: Record<string, string> = {
   'toilets & sinks': 'Hand-wash Basin and Pedestal Sink Collection.webp',
-  toilets: 'Hand-wash Basin and Pedestal Sink Collection.webp',
-  sink: 'Hand-wash Basin and Pedestal Sink Collection.webp',
-  tank: 'Durable TopTank Vertical Water Tank collection.webp',
-  electric: 'Electric Socket Collection.webp',
-  chandelier: 'Alpha chanderlier collection.webp',
-  construction: 'granite and quartz slabs collection.webp',
-  fencing: 'granite and quartz slabs collection.webp',
-  plumbing: 'Alpha plumbing pipe collection.webp',
-  lighting: 'rustic woven rope pendant lights collection.webp',
-  decor: 'Bird Art Lights fixture Collection.webp',
-  mabati: 'Corrugated Roofing Sheet collection.webp',
-  solar: 'Solar items collection.webp',
+  'toilets': 'Hand-wash Basin and Pedestal Sink Collection.webp',
+  'sink': 'Hand-wash Basin and Pedestal Sink Collection.webp',
+  'tank': 'Durable TopTank Vertical Water Tank collection.webp',
+  'electric': 'Electric Socket Collection.webp',
+  'chandelier': 'Alpha chanderlier collection.webp',
+  'construction': 'granite and quartz slabs collection.webp',
+  'fencing': 'granite and quartz slabs collection.webp',
+  'plumbing': 'Alpha plumbing pipe collection.webp',
+  'lighting': 'rustic woven rope pendant lights collection.webp',
+  'decor': 'Bird Art Lights fixture Collection.webp',
+  'mabati': 'Corrugated Roofing Sheet collection.webp',
+  'solar': 'Solar items collection.webp',
 };
 
 /**
@@ -64,23 +65,26 @@ export default function CategoryCard({ category }: { category: Category }) {
   const candidateUrls = useMemo(() => {
     const urls: string[] = [];
 
-    // 1. Exact collection path resolution based on name (User requested priority)
+    // 1. Exact collection path resolution based on name (Priority)
     const lowerName = category.name.toLowerCase().trim();
     
-    // Check for specific instruction: "toilets & sinks" specifically
     for (const [key, filename] of Object.entries(collectionFileNameMap)) {
       if (lowerName.includes(key)) {
-        // Try root first as instructed
+        // A. Try 'Collections/' subfolder first (Standard for high-res assets)
+        const collectionsUrl = getStoragePublicUrl(`Collections/${filename}`);
+        if (collectionsUrl) urls.push(collectionsUrl);
+
+        // B. Try lowercase 'collections/' subfolder
+        const collectionsUrlLower = getStoragePublicUrl(`collections/${filename}`);
+        if (collectionsUrlLower) urls.push(collectionsUrlLower);
+        
+        // C. Try root
         const rootUrl = getStoragePublicUrl(filename);
         if (rootUrl) urls.push(rootUrl);
-        
-        // Try collections subfolder as a backup
-        const folderUrl = getStoragePublicUrl(`collections/${filename}`);
-        if (folderUrl) urls.push(folderUrl);
       }
     }
 
-    // 2. Explicit raw image fields passed in the category object
+    // 2. Explicit raw image fields passed in the category object (Database fallback)
     const rawVal =
       category.image ||
       category.imageUrl ||
@@ -93,7 +97,7 @@ export default function CategoryCard({ category }: { category: Category }) {
       if (url) urls.push(url);
     }
 
-    // 3. Fallback discovery logic for common category types
+    // 3. General Fallback discovery logic for common category types
     if (lowerName.includes('tank')) urls.push(placeholderData.cat_tanks.url);
     if (lowerName.includes('plumb')) urls.push(placeholderData.cat_plumbing.url);
     if (lowerName.includes('light') || lowerName.includes('chandelier')) urls.push(placeholderData.cat_lighting.url);
