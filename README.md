@@ -16,11 +16,11 @@ You must provide the following environment variables in your Vercel Dashboard (*
 
 ### 🔑 Initial Admin Setup (IMPORTANT)
 The app uses role-based security. To access the admin panel (`/admin`):
-1. Create an account on the website using your preferred email.
+1. Create an account on the website using your preferred email (e.g., `mwangi.dev@proton.me`).
 2. Go to your **Supabase SQL Editor**.
 3. Run the following command to promote yourself:
 ```sql
-UPDATE public.profiles SET role = 'admin' WHERE email = 'your-email@example.com';
+UPDATE public.profiles SET role = 'admin' WHERE email = 'mwangi.dev@proton.me';
 ```
 
 ### 👤 Profile & Database Setup (CRITICAL)
