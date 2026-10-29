@@ -81,12 +81,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const fetchProfile = async (supabaseUser: SupabaseUser) => {
     if (!supabase) return;
     try {
-      // Fetch the profile using standard column names
+      // 1. Attempt to fetch existing profile using maybeSingle to avoid 406/PGRST116 errors
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', supabaseUser.id)
-        .single();
+        .maybeSingle();
+
+      if (profileError) {
+          console.error("Error checking profile existence:", profileError.message);
+      }
 
       if (profile) {
         const role = profile.role || 'user';
@@ -105,7 +109,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           avatarUrl: profile.avatar_url || supabaseUser.user_metadata.avatar_url,
         });
       } else {
-        // Provision new user if profile doesn't exist
+        // 2. Provision new user if profile definitely doesn't exist
         const assignedRole = 'user'; 
         const newUser: User = {
           id: supabaseUser.id,
@@ -116,7 +120,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           avatarUrl: supabaseUser.user_metadata.avatar_url,
         };
         
-        // Attempt to insert with full column set to avoid partial record errors
+        // Attempt insert with full column set
         const { error: insertError } = await supabase.from('profiles').insert({
           id: supabaseUser.id,
           full_name: newUser.name,
@@ -127,13 +131,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         });
         
         if (insertError) {
+          // If error code is 23505, it means the profile was created by a parallel process
+          // just as we were checking. In this case, we simply fetch it again.
+          if (insertError.code === '23505') {
+              const { data: retryProfile } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', supabaseUser.id)
+                .single();
+                
+              if (retryProfile) {
+                  setUser({
+                    id: retryProfile.id,
+                    name: retryProfile.full_name || 'User',
+                    username: retryProfile.username || 'user',
+                    email: retryProfile.email || supabaseUser.email!,
+                    role: (retryProfile.role || 'user') as 'admin' | 'staff' | 'user',
+                    avatarUrl: retryProfile.avatar_url,
+                  });
+                  return;
+              }
+          }
           console.error("Profile auto-provisioning failed:", insertError.message);
         }
         
         setUser(newUser);
       }
     } catch (err) {
-      console.error('Error fetching profile:', err);
+      console.error('Unexpected error in profile cycle:', err);
     }
   };
 
