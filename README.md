@@ -18,34 +18,49 @@ You must provide the following environment variables in your Vercel Dashboard (*
 To ensure profile updates, avatars, and role management work correctly, run the following in your Supabase SQL Editor:
 
 ```sql
--- 1. Ensure the profiles table has ALL required columns
-ALTER TABLE public.profiles 
-ADD COLUMN IF NOT EXISTS full_name TEXT,
-ADD COLUMN IF NOT EXISTS username TEXT,
-ADD COLUMN IF NOT EXISTS email TEXT,
-ADD COLUMN IF NOT EXISTS avatar_url TEXT,
-ADD COLUMN IF NOT EXISTS role TEXT DEFAULT 'user';
+-- 1. Drop restrictive role check constraint if it exists
+ALTER TABLE public.profiles DROP CONSTRAINT IF EXISTS profiles_role_check;
 
--- 2. Force PostgREST to reload its schema cache
-NOTIFY pgrst, 'reload schema';
+-- 2. Ensure the profiles table has ALL required columns
+CREATE TABLE IF NOT EXISTS public.profiles (
+    id UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
+    full_name TEXT,
+    username TEXT,
+    email TEXT,
+    avatar_url TEXT,
+    role TEXT DEFAULT 'user',
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
+);
 
--- 3. Enable RLS and setup Policies
+-- Safely add any missing columns (e.g. for existing projects)
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS full_name TEXT;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS username TEXT;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS email TEXT;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS avatar_url TEXT;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS role TEXT DEFAULT 'user';
+
+-- 3. Enable RLS and setup Master Policies
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
--- Policy: Allow users to update their own record
-DROP POLICY IF EXISTS "Users can update own profile" ON public.profiles;
-CREATE POLICY "Users can update own profile" ON public.profiles 
-FOR UPDATE USING (auth.uid() = id);
+DROP POLICY IF EXISTS "Public profiles are viewable by everyone." ON public.profiles;
+DROP POLICY IF EXISTS "Users can insert their own profile." ON public.profiles;
+DROP POLICY IF EXISTS "Users can update own profile." ON public.profiles;
 
--- Policy: Allow users to view their own record
-DROP POLICY IF EXISTS "Users can view own profile" ON public.profiles;
-CREATE POLICY "Users can view own profile" ON public.profiles 
-FOR SELECT USING (auth.uid() = id);
+CREATE POLICY "Public profiles are viewable by everyone." 
+ON public.profiles FOR SELECT 
+USING (true);
 
--- Policy: Allow public profile creation during signup
-DROP POLICY IF EXISTS "Enable insert for authenticated users only" ON public.profiles;
-CREATE POLICY "Enable insert for authenticated users only" ON public.profiles
-FOR INSERT WITH CHECK (auth.uid() = id);
+CREATE POLICY "Users can insert their own profile." 
+ON public.profiles FOR INSERT 
+WITH CHECK (auth.uid() = id);
+
+CREATE POLICY "Users can update own profile." 
+ON public.profiles FOR UPDATE 
+USING (auth.uid() = id) 
+WITH CHECK (auth.uid() = id);
+
+-- 4. Force PostgREST to reload its schema cache
+NOTIFY pgrst, 'reload schema';
 ```
 
 ### 📂 Storage Setup (Bucket Separation)

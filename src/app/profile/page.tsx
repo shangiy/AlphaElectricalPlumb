@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useForm } from 'react-hook-form';
@@ -50,7 +49,7 @@ function ProfileContent() {
         },
     });
     
-    const avatarUrl = form.watch('avatarUrl');
+    const avatarUrlValue = form.watch('avatarUrl');
 
     useEffect(() => {
         if (user) {
@@ -89,7 +88,6 @@ function ProfileContent() {
                 .eq('id', user.id);
 
             if (error) {
-                // Improved logging to turn {} into readable messages
                 console.error("Supabase Profile Update Error:", {
                     message: error.message,
                     details: error.details,
@@ -154,7 +152,7 @@ function ProfileContent() {
                                             <FormLabel>Profile Picture</FormLabel>
                                             <div className="flex items-center gap-6">
                                                 <Avatar className="h-24 w-24 border-2 border-primary/10">
-                                                    <AvatarImage src={avatarUrl} alt={user?.name} className="object-cover" />
+                                                    <AvatarImage src={avatarUrlValue || undefined} alt={user?.name} className="object-cover" />
                                                     <AvatarFallback className="bg-muted">
                                                         <UserIcon size={40} className="text-muted-foreground" />
                                                     </AvatarFallback>
