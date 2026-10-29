@@ -25,6 +25,15 @@ CREATE POLICY "Allow Admin Updates" ON storage.objects FOR UPDATE USING (bucket_
 CREATE POLICY "Allow Admin Deletes" ON storage.objects FOR DELETE USING (bucket_id = 'product-images');
 ```
 
+### 👤 Profile Management (Fix for Update Failed Errors)
+If you cannot save your profile changes, run this to enable users to manage their own data:
+
+```sql
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can update own profile" ON public.profiles FOR UPDATE USING (auth.uid() = id);
+CREATE POLICY "Users can view own profile" ON public.profiles FOR SELECT USING (auth.uid() = id);
+```
+
 ### 🛡️ Admin Security (Limit to 4 Admins)
 To enforce the maximum limit of 4 administrators in your database, run this SQL script:
 

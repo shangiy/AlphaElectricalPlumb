@@ -86,7 +86,10 @@ function ProfileContent() {
                 })
                 .eq('id', user.id);
 
-            if (error) throw error;
+            if (error) {
+                console.error("Supabase Profile Update Error:", error);
+                throw error;
+            }
 
             // Update local context state
             updateUser({ 
@@ -101,11 +104,11 @@ function ProfileContent() {
             });
             
             form.reset(data);
-        } catch (error) {
+        } catch (error: any) {
             toast({
                 variant: "destructive",
                 title: "Update Failed",
-                description: "Could not save your profile changes. Please try again.",
+                description: error.message || "Could not save your profile changes. Please check your database permissions.",
             });
         } finally {
             setIsSaving(false);
