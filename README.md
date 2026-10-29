@@ -125,6 +125,12 @@ before insert or update on public.profiles
 for each row execute procedure enforce_max_admins();
 ```
 
+## 📅 Recent Milestones (v2.5.0)
+- **Supabase Integration**: Migrated Auth, Database, and Storage from Firebase.
+- **2027 Mobile UI**: Overhauled the mobile sidebar with fluid motions and glassmorphism.
+- **Identity System**: Enhanced profile updates with custom avatar uploads and global name support.
+- **Database Resilience**: Implemented `upsert` logic and recursion-proof RLS policies.
+
 ## Technology Stack
 
 - **Framework**: Next.js 15 (App Router)
