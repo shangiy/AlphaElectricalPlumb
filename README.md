@@ -14,6 +14,15 @@ You must provide the following environment variables in your Vercel Dashboard (*
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Your Supabase Anonymous Key.
 - `SUPABASE_SERVICE_ROLE_KEY`: Your secret service role key (Required for Admin uploads and role management).
 
+### 🔑 Initial Admin Setup (IMPORTANT)
+The app uses role-based security. To access the admin panel (`/admin`):
+1. Create an account on the website using your preferred email.
+2. Go to your **Supabase SQL Editor**.
+3. Run the following command to promote yourself:
+```sql
+UPDATE public.profiles SET role = 'admin' WHERE email = 'your-email@example.com';
+```
+
 ### 👤 Profile & Database Setup (CRITICAL)
 To ensure profile updates, avatars, and role management work correctly, run the following in your Supabase SQL Editor:
 
