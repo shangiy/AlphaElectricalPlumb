@@ -35,13 +35,16 @@ export async function getStorefrontSetting(key: string) {
  * Triggers a live revalidation of the public storefront.
  */
 export async function updateStorefrontSetting(key: string, content: any) {
-    if (!supabaseAdmin) throw new Error("Admin client not configured.");
+    if (!supabaseAdmin) throw new Error("Admin client not configured. Ensure SUPABASE_SERVICE_ROLE_KEY is set.");
     
     const { error } = await supabaseAdmin
         .from('storefront_settings')
         .upsert({ key, content, updated_at: new Date().toISOString() }, { onConflict: 'key' });
         
-    if (error) throw error;
+    if (error) {
+        console.error(`CMS Update Error (${key}):`, error);
+        throw new Error(error.message);
+    }
     
     // Instantly update the public storefront
     revalidatePath('/');
@@ -95,10 +98,22 @@ export async function updateSearchPhrases(phrases: string[]) {
     return updateStorefrontSetting('search_phrases', phrases);
 }
 
+/**
+ * Toggles review visibility on the public storefront.
+ */
 export async function toggleReviewVisibility(id: string, isHidden: boolean) {
-    if (!supabaseAdmin) throw new Error("Admin client not configured.");
-    const { error } = await supabaseAdmin.from('reviews').update({ is_hidden: isHidden }).eq('id', id);
-    if (error) throw error;
+    if (!supabaseAdmin) throw new Error("Admin client not configured. Ensure SUPABASE_SERVICE_ROLE_KEY is set.");
+    
+    const { error } = await supabaseAdmin
+        .from('reviews')
+        .update({ is_hidden: isHidden })
+        .eq('id', id);
+        
+    if (error) {
+        console.error("Review Visibility Toggle Error:", error);
+        throw new Error(error.message);
+    }
+    
     revalidatePath('/');
 }
 

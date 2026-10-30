@@ -132,18 +132,6 @@ export default function UiUxControlCenter() {
     }
   };
 
-  const handleSaveAbout = async () => {
-    setSubmitting(true);
-    try {
-        await updateStorefrontSetting('about_us_content', aboutContent);
-        toast({ title: "Copy Synchronized", description: "About Us content updated." });
-    } catch (err: any) {
-        toast({ variant: "destructive", title: "Error", description: err.message });
-    } finally {
-        setSubmitting(false);
-    }
-  };
-
   if (loading) {
       return (
           <div className="flex flex-col items-center justify-center py-40 gap-4">
@@ -209,13 +197,13 @@ export default function UiUxControlCenter() {
                                 className="h-14 rounded-2xl text-lg font-bold"
                                 onKeyDown={(e) => e.key === 'Enter' && (setSearchPhrases([...searchPhrases, newPhrase]), setNewPhrase(''))}
                             />
-                            <Button onClick={() => { setSearchPhrases([...searchPhrases, newPhrase]); setNewPhrase(''); }} className="h-14 rounded-2xl px-8 font-black uppercase">Add</Button>
+                            <Button onClick={() => { if(newPhrase) { setSearchPhrases([...searchPhrases, newPhrase]); setNewPhrase(''); } }} className="h-14 rounded-2xl px-8 font-black uppercase">Add</Button>
                         </div>
                         <div className="flex flex-wrap gap-3">
                             {searchPhrases.map((phrase, i) => (
                                 <div key={i} className="flex items-center gap-3 bg-secondary px-5 py-3 rounded-2xl border shadow-sm group">
                                     <span className="text-base font-bold text-accent">{phrase}</span>
-                                    <button onClick={() => setSearchPhrases(searchPhrases.filter((_, idx) => idx !== i))} className="text-muted-foreground hover:text-red-500">
+                                    <button onClick={() => setSearchPhrases(searchPhrases.filter((_, idx) => idx !== i))} className="text-muted-foreground hover:text-red-500 transition-colors">
                                         <Trash2 size={16} />
                                     </button>
                                 </div>
@@ -276,7 +264,7 @@ function HeroSlideManager({ slides, setSlides }: { slides: any[], setSlides: (s:
                             <img src={slide.imageUrl} alt="" className="w-full h-full object-cover transition-transform group-hover:scale-105" />
                             <div className="absolute top-4 right-4 flex gap-2">
                                 <Switch checked={slide.active} onCheckedChange={(val) => handleUpdateSlide(slide.id, { active: val })} />
-                                <button onClick={() => handleDeleteSlide(slide.id)} className="bg-red-500 text-white p-2 rounded-xl shadow-lg hover:bg-red-600">
+                                <button onClick={() => handleDeleteSlide(slide.id)} className="bg-red-500 text-white p-2 rounded-xl shadow-lg hover:bg-red-600 transition-colors">
                                     <Trash2 size={16} />
                                 </button>
                             </div>
@@ -323,11 +311,27 @@ function ReviewModerationSuite({ reviews, onRefresh }: { reviews: any[], onRefre
     const handleToggle = async (id: string, current: boolean) => {
         setModulating(id);
         try {
+            // Attempt to toggle visibility via Server Action
             await toggleReviewVisibility(id, !current);
-            toast({ title: !current ? "Review Redacted" : "Review Restored", description: "Public storefront updated." });
+            
+            toast({ 
+                title: !current ? "Review Redacted" : "Review Restored", 
+                description: "Public storefront updated successfully." 
+            });
+            
+            // Re-fetch reviews to update the UI list
             onRefresh();
-        } catch (e) {
-            toast({ variant: "destructive", title: "Action Failed" });
+        } catch (error: any) {
+            console.error("Moderation failure:", error);
+            const errorMessage = error.message || "Cloud connection failed.";
+            
+            toast({ 
+                variant: "destructive", 
+                title: "Action Refused", 
+                description: errorMessage.includes('column') 
+                    ? "Database schema mismatch. Please run the SQL reset script in Supabase." 
+                    : errorMessage 
+            });
         } finally {
             setModulating(null);
         }
@@ -346,7 +350,7 @@ function ReviewModerationSuite({ reviews, onRefresh }: { reviews: any[], onRefre
             </CardHeader>
             <CardContent className="p-0">
                 <div className="divide-y">
-                    {reviews.map(rev => (
+                    {reviews.length > 0 ? reviews.map(rev => (
                         <div key={rev.id} className={cn("p-8 flex flex-col md:flex-row gap-6 items-start transition-colors", rev.is_hidden ? "bg-muted/50" : "hover:bg-primary/5")}>
                             <div className="shrink-0 flex flex-col items-center gap-2">
                                 <div className="h-14 w-14 rounded-2xl bg-accent text-white flex items-center justify-center font-black text-xl shadow-lg">
@@ -359,7 +363,7 @@ function ReviewModerationSuite({ reviews, onRefresh }: { reviews: any[], onRefre
                             <div className="flex-1 space-y-2">
                                 <div className="flex justify-between items-start">
                                     <div>
-                                        <h4 className="font-black text-accent uppercase tracking-tight">{rev.title}</h4>
+                                        <h4 className="font-black text-accent uppercase tracking-tight">{rev.title || 'Review Entry'}</h4>
                                         <p className="text-[10px] font-bold text-muted-foreground uppercase">{rev.author_name} • {new Date(rev.created_at).toLocaleDateString()}</p>
                                     </div>
                                     <div className="flex items-center gap-4">
@@ -370,7 +374,7 @@ function ReviewModerationSuite({ reviews, onRefresh }: { reviews: any[], onRefre
                                             variant={rev.is_hidden ? "outline" : "destructive"} 
                                             size="sm" 
                                             disabled={modulating === rev.id}
-                                            onClick={() => handleToggle(rev.id, rev.is_hidden)}
+                                            onClick={() => handleToggle(rev.id, !!rev.is_hidden)}
                                             className="rounded-xl h-9 px-4 font-black uppercase text-[9px]"
                                         >
                                             {modulating === rev.id ? <Loader2 className="animate-spin h-3 w-3" /> : (rev.is_hidden ? <Eye className="mr-2 h-3 w-3" /> : <EyeOff className="mr-2 h-3 w-3" />)}
@@ -382,7 +386,11 @@ function ReviewModerationSuite({ reviews, onRefresh }: { reviews: any[], onRefre
                                 <p className="text-[10px] font-black text-primary uppercase tracking-widest">{rev.review_type} placement</p>
                             </div>
                         </div>
-                    ))}
+                    )) : (
+                        <div className="p-20 text-center text-muted-foreground">
+                            <p className="font-bold uppercase tracking-widest text-xs">No reviews found in the audit queue.</p>
+                        </div>
+                    )}
                 </div>
             </CardContent>
         </Card>
