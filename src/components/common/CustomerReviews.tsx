@@ -64,8 +64,12 @@ export default function CustomerReviews() {
                 createdAt: r.created_at,
                 isHidden: r.is_hidden
             })));
-        } catch (error) {
-            console.error("Fetch reviews error:", error);
+        } catch (error: any) {
+            console.error("Fetch reviews error:", {
+                message: error?.message || error,
+                details: error?.details,
+                hint: error?.hint
+            });
         } finally {
             setIsLoading(false);
         }
