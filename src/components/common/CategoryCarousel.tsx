@@ -6,11 +6,12 @@ import CategoryCard from '@/components/products/CategoryCard';
 import { Skeleton } from '../ui/skeleton';
 import { supabase } from '@/lib/supabase';
 import placeholderData from '@/app/lib/placeholder-images.json';
-import { getSiteSetting } from '@/app/actions/ui-actions';
+import { getStorefrontSetting } from '@/app/actions/cms-actions';
 
 /**
  * Dynamic Category Carousel v4.0:
- * Now supports dynamic scroll speed and database-curated ordering.
+ * Now supports custom category cards defined in Storefront CMS.
+ * Prioritizes 'category_cards' setting, falling back to the standard categories table.
  */
 export default function CategoryCarousel() {
   const [categories, setCategories] = React.useState<CarouselCategory[]>([]);
@@ -34,37 +35,41 @@ export default function CategoryCarousel() {
       }
 
       try {
-        const speed = await getSiteSetting('carousel_speed');
+        const speed = await getStorefrontSetting('carousel_speed');
         if (speed) setScrollSpeed(speed);
 
-        const { data, error } = await supabase
-          .from('categories')
-          .select('*')
-          .order('sort_order', { ascending: true });
-
-        if (!error && data && data.length > 0) {
-          const formatted = data
-            .map((cat: any) => {
-                const rawImg = cat.image_url || cat.imageUrl || cat.image || cat.image_path || '';
-                let resolvedUrl = rawImg;
-
-                if (rawImg && !rawImg.startsWith('http')) {
-                    const { data: publicUrlData } = supabase.storage
-                        .from('product-images')
-                        .getPublicUrl(rawImg.replace(/\\/g, '/').replace(/^\/+/, ''));
-                    resolvedUrl = publicUrlData.publicUrl;
-                }
-
-                return {
-                    id: String(cat.id || cat.name),
-                    name: cat.name || 'Category',
-                    image: resolvedUrl || placeholderData.cat_tanks.url,
-                    href: `/category/${cat.slug || (cat.name || '').toLowerCase().replace(/\s+/g, '-')}`
-                };
-            });
-          setCategories(formatted);
+        // 1. Try to fetch custom category cards from CMS
+        const customCards = await getStorefrontSetting('category_cards');
+        
+        if (customCards && Array.isArray(customCards) && customCards.length > 0) {
+            const formatted = customCards.map((cat: any) => ({
+                id: cat.id,
+                name: cat.title || cat.name,
+                image: cat.image || placeholderData.cat_tanks.url,
+                href: cat.link || cat.href || '/search'
+            }));
+            setCategories(formatted);
         } else {
-          setCategories(fallbackCategories);
+            // 2. Fallback to standard categories table
+            const { data, error } = await supabase
+                .from('categories')
+                .select('*')
+                .order('sort_order', { ascending: true });
+
+            if (!error && data && data.length > 0) {
+                const formatted = data.map((cat: any) => {
+                    const rawImg = cat.image_url || cat.imageUrl || cat.image || cat.image_path || '';
+                    return {
+                        id: String(cat.id || cat.name),
+                        name: cat.name || 'Category',
+                        image: rawImg || placeholderData.cat_tanks.url,
+                        href: `/category/${cat.slug || (cat.name || '').toLowerCase().replace(/\s+/g, '-')}`
+                    };
+                });
+                setCategories(formatted);
+            } else {
+                setCategories(fallbackCategories);
+            }
         }
       } catch (err) {
         console.error("Carousel data fetch failed:", err);
@@ -80,9 +85,9 @@ export default function CategoryCarousel() {
   const duplicatedCategories = [...categories, ...categories, ...categories];
 
   return (
-    <section id="categories" className="py-16 bg-secondary overflow-hidden">
+    <section id="categories" className="py-16 bg-secondary overflow-hidden border-t">
       <div className="container mx-auto px-4 mb-10 text-center">
-        <h2 className="text-3xl font-bold font-headline text-[#2b235f]">Browse by Category</h2>
+        <h2 className="text-3xl font-bold font-headline text-[#2b235f] uppercase tracking-tighter">Browse by Category</h2>
         <div className="w-20 h-1 bg-primary/20 rounded-full mx-auto mt-4" />
       </div>
       

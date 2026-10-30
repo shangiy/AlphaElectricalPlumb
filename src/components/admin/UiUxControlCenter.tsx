@@ -29,28 +29,12 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import FeaturedProductManager from './FeaturedProductManager';
+import CategoryManager, { type CategoryCardData } from './CategoryManager';
 import { 
   getStorefrontSetting, 
   updateStorefrontSetting,
   toggleReviewVisibility
 } from '@/app/actions/cms-actions';
-import { 
-  DndContext, 
-  closestCenter, 
-  KeyboardSensor, 
-  PointerSensor, 
-  useSensor, 
-  useSensors, 
-  DragEndEvent 
-} from '@dnd-kit/core';
-import { 
-  arrayMove, 
-  SortableContext, 
-  sortableKeyboardCoordinates, 
-  verticalListSortingStrategy,
-  useSortable
-} from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
 import { cn } from '@/lib/utils';
 
 /**
@@ -70,6 +54,9 @@ export default function UiUxControlCenter() {
   const [searchPhrases, setSearchPhrases] = useState<string[]>([]);
   const [newPhrase, setNewPhrase] = useState('');
 
+  // Category Manager State
+  const [categoryCards, setCategoryCards] = useState<CategoryCardData[]>([]);
+
   // About Content State
   const [aboutContent, setAboutContent] = useState({ text: '', alignment: 'center', fontSize: 'lg' });
 
@@ -79,15 +66,17 @@ export default function UiUxControlCenter() {
   const loadAllSettings = useCallback(async () => {
     setLoading(true);
     try {
-      const [hero, search, about] = await Promise.all([
+      const [hero, search, about, cats] = await Promise.all([
         getStorefrontSetting('hero_slides'),
         getStorefrontSetting('search_phrases'),
-        getStorefrontSetting('about_us_content')
+        getStorefrontSetting('about_us_content'),
+        getStorefrontSetting('category_cards')
       ]);
       
       if (hero) setHeroSlides(hero);
       if (search) setSearchPhrases(search);
       if (about) setAboutContent(about);
+      if (cats) setCategoryCards(cats);
 
       // Load reviews for moderation
       const { data: revData } = await supabase.from('reviews').select('*').order('created_at', { ascending: false });
@@ -168,7 +157,7 @@ export default function UiUxControlCenter() {
             <TabsTrigger value="hero" className="rounded-[1.5rem] font-black uppercase text-[10px] py-4">Hero Banners</TabsTrigger>
             <TabsTrigger value="search" className="rounded-[1.5rem] font-black uppercase text-[10px] py-4">Search CMS</TabsTrigger>
             <TabsTrigger value="spotlight" className="rounded-[1.5rem] font-black uppercase text-[10px] py-4">Spotlight</TabsTrigger>
-            <TabsTrigger value="about" className="rounded-[1.5rem] font-black uppercase text-[10px] py-4">About Story</TabsTrigger>
+            <TabsTrigger value="categories" className="rounded-[1.5rem] font-black uppercase text-[10px] py-4">Category CMS</TabsTrigger>
             <TabsTrigger value="reviews" className="rounded-[1.5rem] font-black uppercase text-[10px] py-4">Moderation</TabsTrigger>
         </TabsList>
 
@@ -226,6 +215,10 @@ export default function UiUxControlCenter() {
 
         <TabsContent value="spotlight">
             <FeaturedProductManager />
+        </TabsContent>
+
+        <TabsContent value="categories">
+            <CategoryManager initialCards={categoryCards} />
         </TabsContent>
 
         <TabsContent value="about">
@@ -422,3 +415,4 @@ function ReviewModerationSuite({ reviews, onRefresh }: { reviews: any[], onRefre
         </Card>
     );
 }
+

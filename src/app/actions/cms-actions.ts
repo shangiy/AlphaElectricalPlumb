@@ -2,7 +2,7 @@
 
 /**
  * @fileOverview Server Actions for Storefront CMS Management.
- * Handles persistence for Hero slides, Search suggestions, and About Us content.
+ * Handles persistence for Hero slides, Search suggestions, and Category arrangements.
  */
 
 import { supabaseAdmin } from '@/lib/supabase-admin';
@@ -33,6 +33,25 @@ export async function updateStorefrontSetting(key: string, content: any) {
     // Instantly update the public storefront
     revalidatePath('/');
     revalidatePath('/admin/featured');
+}
+
+/**
+ * Specialized fetching for category cards.
+ */
+export async function getCategoryCards() {
+    return getStorefrontSetting('category_cards');
+}
+
+/**
+ * Specialized saving for category cards.
+ */
+export async function saveCategoryCards(cards: any[]) {
+    // Re-index order matching array index
+    const indexedCards = cards.map((card, index) => ({
+        ...card,
+        order: index + 1
+    }));
+    return updateStorefrontSetting('category_cards', indexedCards);
 }
 
 /**
