@@ -9,7 +9,8 @@ import {
   updateProductAdmin, 
   deleteProductAdmin, 
   toggleFeaturedAdmin, 
-  updateStockAdmin 
+  updateStockAdmin,
+  updateFeaturedOrderAdmin
 } from '@/app/actions/product-actions';
 
 interface ProductProviderProps {
@@ -30,6 +31,7 @@ interface ProductContextType {
   updateProduct: (productId: string, productData: Partial<ProductFormData>) => Promise<void>;
   deleteProduct: (productId: string) => Promise<void>;
   toggleFeatured: (productId: string, currentStatus: boolean) => Promise<void>;
+  updateFeaturedOrder: (updates: { id: string, featured_order: number }[]) => Promise<void>;
   updateStock: (productId: string, newCount: number) => Promise<void>;
   getProductById: (productId: string) => Product | undefined;
   refreshProducts: () => Promise<void>;
@@ -159,6 +161,16 @@ export function ProductProvider({ children }: ProductProviderProps) {
     }
   }, [refreshProducts]);
 
+  const updateFeaturedOrder = useCallback(async (updates: { id: string, featured_order: number }[]) => {
+    setSubmitting(true);
+    try {
+      await updateFeaturedOrderAdmin(updates);
+      await refreshProducts();
+    } finally {
+      setSubmitting(false);
+    }
+  }, [refreshProducts]);
+
   const updateStock = useCallback(async (productId: string, newCount: number) => {
     try {
       await updateStockAdmin(productId, newCount);
@@ -180,6 +192,7 @@ export function ProductProvider({ children }: ProductProviderProps) {
     updateProduct,
     deleteProduct,
     toggleFeatured,
+    updateFeaturedOrder,
     updateStock,
     getProductById,
     refreshProducts

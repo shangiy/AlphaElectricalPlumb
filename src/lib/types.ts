@@ -37,6 +37,7 @@ export interface Product {
   barcode?: string;
   colors?: string[];
   isFeatured?: boolean;
+  featuredOrder?: number;
   stockCount: number;
 }
 

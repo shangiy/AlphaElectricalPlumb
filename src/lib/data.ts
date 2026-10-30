@@ -87,6 +87,7 @@ export function mapProduct(p: any): Product {
     rating: Number(p.rating || 5),
     reviews: Number(p.reviews || 0),
     isFeatured: !!(p.is_featured || p.isFeatured),
+    featuredOrder: Number(p.featured_order || 0),
     barcode: p.barcode || p.sku || ""
   };
 }

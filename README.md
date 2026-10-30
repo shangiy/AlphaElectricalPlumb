@@ -68,7 +68,10 @@ ON public.profiles FOR UPDATE
 USING (auth.uid() = id) 
 WITH CHECK (auth.uid() = id);
 
--- 4. Force PostgREST to reload its schema cache
+-- 4. Add persistent reordering support to products
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS featured_order INT DEFAULT 0;
+
+-- 5. Force PostgREST to reload its schema cache
 NOTIFY pgrst, 'reload schema';
 ```
 
@@ -129,7 +132,7 @@ for each row execute procedure enforce_max_admins();
 - **Supabase Integration**: Migrated Auth, Database, and Storage from Firebase.
 - **2027 Mobile UI**: Overhauled the mobile sidebar with fluid motions and glassmorphism.
 - **Identity System**: Enhanced profile updates with custom avatar uploads and global name support.
-- **Database Resilience**: Implemented `upsert` logic and recursion-proof RLS policies.
+- **Spotlight Manager**: Implemented persistent drag-and-drop sorting for featured homepage products.
 
 ## Technology Stack
 

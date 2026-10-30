@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useProducts } from '@/context/ProductProvider';
@@ -12,7 +11,7 @@ import {
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from '@/components/ui/badge';
-import { MoreHorizontal, PlusCircle, CheckCircle, XCircle, Package, AlertTriangle, Minus, Plus, Loader2 } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, CheckCircle, XCircle, Package, AlertTriangle, Minus, Plus, Loader2, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import {
@@ -100,14 +99,23 @@ export default function ProductManagement() {
                         <p className="text-xs text-muted-foreground mt-1">Requires attention</p>
                     </CardContent>
                 </Card>
-                <Card className="bg-blue-500/5 border-blue-200">
+                <Card 
+                  className="bg-blue-500/5 border-blue-200 cursor-pointer hover:bg-blue-500/10 transition-all group relative overflow-hidden"
+                  onClick={() => router.push('/admin/featured')}
+                >
                     <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium text-blue-600">Featured Items</CardTitle>
+                        <div className="flex items-center justify-between">
+                            <CardTitle className="text-sm font-medium text-blue-600">Featured Items</CardTitle>
+                            <ArrowRight className="h-4 w-4 text-blue-600 group-hover:translate-x-1 transition-transform" />
+                        </div>
                     </CardHeader>
                     <CardContent>
                         <div className="text-3xl font-bold">{products.filter(p => p.isFeatured).length}</div>
-                        <p className="text-xs text-muted-foreground mt-1">Visible on home page</p>
+                        <p className="text-xs text-muted-foreground mt-1">Click to arrange homepage spotlight</p>
                     </CardContent>
+                    <div className="absolute bottom-0 right-0 p-2 opacity-5">
+                      <Package size={80} />
+                    </div>
                 </Card>
             </div>
 

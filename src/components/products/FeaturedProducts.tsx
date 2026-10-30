@@ -10,8 +10,7 @@ import Link from 'next/link';
 
 /**
  * FeaturedProducts Component - Client Component.
- * Displays a grid of products marked as featured, with a fallback to the latest products.
- * Includes hydration safety to prevent mismatches between server skeleton and client content.
+ * Displays a grid of products marked as featured, sorted by customized order.
  */
 export default function FeaturedProducts() {
   const { products, loading: contextLoading } = useProducts();
@@ -23,17 +22,19 @@ export default function FeaturedProducts() {
   }, []);
 
   const featuredProducts = useMemo(() => {
-    // Show products marked as featured first
-    const featured = products.filter(p => p.isFeatured);
-    // Limit to 20 on homepage for better performance and to prevent ChunkLoad timeouts
+    // Show products marked as featured, sorted by featuredOrder
+    const featured = products
+      .filter(p => p.isFeatured)
+      .sort((a, b) => (a.featuredOrder || 0) - (b.featuredOrder || 0));
+      
+    // Limit to 20 on homepage for better performance
     if (featured.length > 0) return featured.slice(0, 20);
     
-    // Fallback: show the first 20 products from the database to populate the grid
+    // Fallback: show the first 20 products from the database if none are featured
     return products.slice(0, 20);
   }, [products]);
 
   // Hydration safety: force "loading" state on server and during the first client-side render pass.
-  // This ensures that the server-rendered HTML matches the initial client paint.
   const isLoading = !mounted || contextLoading;
 
   if (isLoading) {
