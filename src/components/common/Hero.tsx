@@ -3,25 +3,16 @@
 import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { getStorefrontSetting } from '@/app/actions/cms-actions';
+import { getStorefrontSetting, type HeroSlide } from '@/app/actions/cms-actions';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { STYLE_OPTIONS } from '@/components/admin/HeroManager';
 
 const HeroSearch = dynamic(() => import('./HeroSearch'), {
   ssr: true,
   loading: () => <div className="h-14 w-full max-w-2xl bg-white/20 animate-pulse rounded-full shadow-md border border-white/10" />
 });
-
-interface HeroSlide {
-    id: string;
-    title: string;
-    subtitle: string;
-    ctaText: string;
-    ctaLink: string;
-    imageUrl: string;
-    active: boolean;
-}
 
 export default function Hero() {
   const [slides, setHeroSlides] = useState<HeroSlide[]>([]);
@@ -48,7 +39,7 @@ export default function Hero() {
     if (slides.length <= 1) return;
     const timer = setInterval(() => {
         setCurrentIndex(prev => (prev + 1) % slides.length);
-    }, 6000);
+    }, 8000);
     return () => clearInterval(timer);
   }, [slides]);
 
@@ -58,6 +49,29 @@ export default function Hero() {
     { name: 'PPR Pipes', href: '/plumbing' },
     { name: 'Solar Heaters', href: '/plumbing' },
   ];
+
+  const renderHeadline = (slide: HeroSlide) => {
+    const headline = slide.headline || slide.title || 'Innovating Everyday Living';
+    const highlight = slide.highlightedText;
+    
+    if (!highlight) return headline;
+
+    const activeStyle = STYLE_OPTIONS.find(opt => opt.id === slide.styleType) || STYLE_OPTIONS[0];
+    
+    // Case-insensitive split but preserve casing of original parts
+    const parts = headline.split(new RegExp(`(${highlight})`, 'gi'));
+    
+    return parts.map((part, i) => {
+        if (part.toLowerCase() === highlight.toLowerCase()) {
+            return (
+                <span key={i} className={cn("inline-block px-1", activeStyle.previewClass)}>
+                    {part}
+                </span>
+            );
+        }
+        return part;
+    });
+  };
 
   if (loading) {
       return (
@@ -69,13 +83,15 @@ export default function Hero() {
 
   const activeSlides = slides.length > 0 ? slides : [{
       id: 'default',
-      title: 'Innovating Everyday Living',
-      subtitle: 'Premium Electrical & Plumbing Solutions',
+      headline: 'Innovating Everyday Living',
+      highlightedText: 'ALPHA',
+      styleType: 'kenyan-flag',
+      subheading: 'Premium Electrical & Plumbing Solutions',
       ctaText: 'START EXPLORING',
       ctaLink: '/search',
       imageUrl: '/background.jpg',
       active: true
-  }];
+  } as any];
 
   return (
     <section className="relative h-[70vh] md:h-[85vh] w-full overflow-hidden text-white -mt-24">
@@ -96,17 +112,17 @@ export default function Hero() {
               <div className="absolute inset-0 bg-black/50" />
               
               <div className="container mx-auto px-4 h-full flex flex-col justify-center items-start relative z-10 pt-24">
-                  <div className="max-w-3xl space-y-6 animate-in fade-in slide-in-from-left duration-1000">
-                    <h1 className="text-4xl md:text-7xl font-black font-headline leading-[0.9] tracking-tighter drop-shadow-2xl uppercase">
-                        {slide.title}
+                  <div className="max-w-4xl space-y-6 animate-in fade-in slide-in-from-left duration-1000">
+                    <h1 className="text-4xl md:text-7xl font-black font-headline leading-[0.95] tracking-tighter drop-shadow-2xl uppercase">
+                        {renderHeadline(slide)}
                     </h1>
                     <p className="text-lg md:text-2xl font-medium text-white/90 drop-shadow-lg max-w-2xl">
-                        {slide.subtitle}
+                        {slide.subheading || slide.subtitle}
                     </p>
                     
                     <div className="flex flex-col sm:flex-row gap-4 pt-4">
                         <Button asChild size="xl" className="rounded-full bg-primary hover:bg-primary/90 text-white font-black shadow-2xl hover:scale-105 transition-transform">
-                            <Link href={slide.ctaLink}>{slide.ctaText}</Link>
+                            <Link href={slide.ctaLink || slide.link || '/search'}>{slide.ctaText || 'EXPLORE'}</Link>
                         </Button>
                         <div className="hidden sm:block">
                             <HeroSearch />

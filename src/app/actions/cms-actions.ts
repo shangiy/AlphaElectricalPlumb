@@ -8,6 +8,19 @@
 import { supabaseAdmin } from '@/lib/supabase-admin';
 import { revalidatePath } from 'next/cache';
 
+export interface HeroSlide {
+    id: string;
+    headline: string;
+    highlightedText: string;
+    styleType: 'kenyan-flag' | 'gold-gradient' | 'neon-glow' | 'fire-emoji' | 'sparkle';
+    subheading: string;
+    ctaText: string;
+    ctaLink: string;
+    imageUrl: string;
+    order: number;
+    active: boolean;
+}
+
 /**
  * Fetches a configuration object from the storefront_settings table.
  */
@@ -52,6 +65,27 @@ export async function saveCategoryCards(cards: any[]) {
         order: index + 1
     }));
     return updateStorefrontSetting('category_cards', indexedCards);
+}
+
+/**
+ * Specialized fetching for hero slides.
+ */
+export async function getHeroSlides(): Promise<HeroSlide[]> {
+    const data = await getStorefrontSetting('hero_slides');
+    return (data as HeroSlide[]) || [];
+}
+
+/**
+ * Specialized saving for hero slides.
+ */
+export async function saveHeroSlides(slides: HeroSlide[]) {
+    const indexedSlides = slides.map((slide, index) => ({
+        ...slide,
+        order: index + 1
+    }));
+    await updateStorefrontSetting('hero_slides', indexedSlides);
+    revalidatePath('/admin/cms/hero');
+    return { success: true };
 }
 
 /**
