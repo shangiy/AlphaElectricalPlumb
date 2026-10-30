@@ -24,6 +24,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { GripVertical, Trash2, Save, Loader2, ArrowLeft, Package, Sparkles } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import type { Product } from '@/lib/types';
 
