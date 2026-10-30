@@ -21,7 +21,8 @@ import {
   MessageSquare,
   Eye,
   EyeOff,
-  MoveVertical
+  MoveVertical,
+  Flag
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import FeaturedProductManager from './FeaturedProductManager';
@@ -51,12 +52,13 @@ export default function UiUxControlCenter() {
   const searchParams = useSearchParams();
   const router = useRouter();
   
-  const initialTab = searchParams.get('tab') || 'hero';
+  const initialTab = searchParams.get('tab') || 'topbanner';
   const [activeTab, setActiveTab] = useState(initialTab);
   
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
+  const [topBannerText, setTopBannerText] = useState('');
   const [heroSlides, setHeroSlides] = useState<HeroSlide[]>([]);
   const [searchPhrases, setSearchPhrases] = useState<string[]>([]);
   const [newPhrase, setNewPhrase] = useState('');
@@ -73,15 +75,17 @@ export default function UiUxControlCenter() {
   const loadAllSettings = useCallback(async () => {
     setLoading(true);
     try {
-      const [hero, search, cats] = await Promise.all([
+      const [hero, search, cats, topBanner] = await Promise.all([
         getStorefrontSetting('hero_slides'),
         getStorefrontSetting('search_phrases'),
-        getStorefrontSetting('category_cards')
+        getStorefrontSetting('category_cards'),
+        getStorefrontSetting('top_banner_text')
       ]);
       
       if (hero) setHeroSlides(sortHeroSlides(hero as HeroSlide[]));
       if (search) setSearchPhrases(search);
       if (cats) setCategoryCards(cats);
+      if (topBanner) setTopBannerText(topBanner);
 
       const { data: revData } = await supabase.from('reviews').select('*').order('created_at', { ascending: false });
       setReviews(revData || []);
@@ -101,6 +105,18 @@ export default function UiUxControlCenter() {
     const params = new URLSearchParams(searchParams.toString());
     params.set('tab', value);
     router.replace(`/admin/featured?${params.toString()}`, { scroll: false });
+  };
+
+  const handleSaveTopBanner = async () => {
+    setSubmitting(true);
+    try {
+        await updateStorefrontSetting('top_banner_text', topBannerText);
+        toast({ title: "Top Banner Synced", description: "Scrolling text has been updated globally." });
+    } catch (err: any) {
+        toast({ variant: "destructive", title: "Error", description: err.message });
+    } finally {
+        setSubmitting(false);
+    }
   };
 
   const handleSaveHero = async () => {
@@ -153,13 +169,58 @@ export default function UiUxControlCenter() {
       </div>
 
       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 h-auto bg-muted/30 p-2 rounded-[2.5rem] mb-12 border shadow-inner">
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-6 h-auto bg-muted/30 p-2 rounded-[2.5rem] mb-12 border shadow-inner">
+            <TabsTrigger value="topbanner" className="rounded-[1.5rem] font-black uppercase text-[10px] py-4">Top Banner</TabsTrigger>
             <TabsTrigger value="hero" className="rounded-[1.5rem] font-black uppercase text-[10px] py-4">Hero Banners</TabsTrigger>
             <TabsTrigger value="search" className="rounded-[1.5rem] font-black uppercase text-[10px] py-4">Search CMS</TabsTrigger>
             <TabsTrigger value="spotlight" className="rounded-[1.5rem] font-black uppercase text-[10px] py-4">Spotlight</TabsTrigger>
             <TabsTrigger value="categories" className="rounded-[1.5rem] font-black uppercase text-[10px] py-4">Category CMS</TabsTrigger>
             <TabsTrigger value="reviews" className="rounded-[1.5rem] font-black uppercase text-[10px] py-4">Moderation</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="topbanner">
+            <div className="max-w-2xl mx-auto space-y-8">
+                <Card className="rounded-[2.5rem] border shadow-2xl overflow-hidden bg-white">
+                    <CardHeader className="bg-accent text-white p-8">
+                        <div className="flex items-center gap-3 mb-2">
+                            <Flag className="text-primary h-6 w-6" />
+                            <CardTitle className="text-xl font-black uppercase tracking-tight">Top Scrolling Banner</CardTitle>
+                        </div>
+                        <CardDescription className="text-white/60 font-medium">Manage the absolute topmost section of your landing page.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="p-8 space-y-6">
+                        <div className="space-y-4">
+                            <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Banner Message</Label>
+                            <Textarea 
+                                value={topBannerText} 
+                                onChange={(e) => setTopBannerText(e.target.value)}
+                                placeholder="OFFER! MIDYEAR FLASH SALE, MASHUJAA DAY OFFER!"
+                                className="min-h-[120px] rounded-2xl p-4 font-bold text-lg shadow-inner bg-muted/10 border-none resize-none"
+                            />
+                            <div className="p-4 bg-primary/5 rounded-xl border border-dashed border-primary/20 flex gap-3 items-start">
+                                <Sparkles className="h-5 w-5 text-primary shrink-0" />
+                                <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-tight">
+                                    Pro Tip: Use <span className="font-black text-accent">"OFFER!"</span> or <span className="font-black text-accent">"MASHUJAA"</span> in your text to trigger special Kenyan-themed visual highlights automatically.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="pt-4">
+                            <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 mb-4 block">Active Preview</Label>
+                            <div className="h-10 w-full rounded-lg bg-accent flex items-center overflow-hidden border">
+                                <div className="animate-scroll whitespace-nowrap text-white font-bold px-4 text-xs">
+                                    {topBannerText || 'Top Banner Message Placeholder...'} &nbsp;&nbsp;&nbsp;&nbsp; {topBannerText || 'Top Banner Message Placeholder...'}
+                                </div>
+                            </div>
+                        </div>
+
+                        <Button onClick={handleSaveTopBanner} disabled={submitting} className="w-full h-14 rounded-full font-black uppercase bg-primary text-white mt-4 shadow-xl">
+                            Publish Top Banner
+                        </Button>
+                    </CardContent>
+                </Card>
+            </div>
+        </TabsContent>
 
         <TabsContent value="hero">
             <div className="space-y-8">
@@ -492,7 +553,7 @@ function ReviewModerationSuite({ reviews, onRefresh }: { reviews: any[], onRefre
                                             variant={rev.is_hidden ? "outline" : "destructive"} 
                                             size="sm" 
                                             disabled={modulating === rev.id}
-                                            onClick={() => handleToggle(rev.id, !!rev.is_hidden)}
+                                            onClick={() => handleToggle(rev.id, !rev.is_hidden)}
                                             className="rounded-xl h-9 px-4 font-black uppercase text-[9px]"
                                         >
                                             {modulating === rev.id ? <Loader2 className="animate-spin h-3 w-3" /> : (rev.is_hidden ? <Eye className="mr-2 h-3 w-3" /> : <EyeOff className="mr-2 h-3 w-3" />)}
