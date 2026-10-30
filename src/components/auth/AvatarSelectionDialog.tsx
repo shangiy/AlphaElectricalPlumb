@@ -1,9 +1,8 @@
 'use client';
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import Image from 'next/image';
 import { availableAvatars } from '@/lib/data';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Upload, Loader2, Image as ImageIcon } from 'lucide-react';
 import { uploadImage } from '@/lib/storage';
@@ -18,10 +17,17 @@ interface AvatarSelectionDialogProps {
 
 export default function AvatarSelectionDialog({ isOpen, onClose, onSelect }: AvatarSelectionDialogProps) {
   const [isUploading, setIsUploading] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
+  // Ensure component only renders on client to avoid Server Component mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const handleSelect = (url: string) => {
+    if (!url) return;
     onSelect(url);
     onClose();
   };
@@ -34,7 +40,6 @@ export default function AvatarSelectionDialog({ isOpen, onClose, onSelect }: Ava
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Check file size (5MB limit)
     if (file.size > 5 * 1024 * 1024) {
         toast({
             variant: "destructive",
@@ -46,7 +51,6 @@ export default function AvatarSelectionDialog({ isOpen, onClose, onSelect }: Ava
 
     setIsUploading(true);
     try {
-        // Specifically route user profile pictures to the 'avatars' bucket
         const publicUrl = await uploadImage(file, 'avatars');
         handleSelect(publicUrl);
         toast({
@@ -62,10 +66,11 @@ export default function AvatarSelectionDialog({ isOpen, onClose, onSelect }: Ava
         });
     } finally {
         setIsUploading(false);
-        // Reset input
         if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
+
+  if (!mounted) return null;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -118,19 +123,21 @@ export default function AvatarSelectionDialog({ isOpen, onClose, onSelect }: Ava
                 <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/60">Professional Characters</h4>
                 <ScrollArea className="h-[240px] pr-4">
                     <div className="grid grid-cols-4 gap-4 pb-4">
-                        {availableAvatars.map((avatar, index) => (
+                        {(availableAvatars || []).map((avatar, index) => (
                             <button
                                 key={index}
                                 onClick={() => handleSelect(avatar.url)}
                                 className="relative aspect-square rounded-2xl overflow-hidden border-2 border-transparent hover:border-primary hover:scale-105 hover:shadow-xl focus:border-primary focus:outline-none transition-all duration-300 bg-muted/20"
                             >
                                 <img
-                                    src={avatar.url || 'https://api.dicebear.com/7.x/avataaars/svg?seed=fallback'}
-                                    alt={avatar.alt || 'Avatar'}
+                                    src={avatar.url || `https://api.dicebear.com/7.x/avataaars/svg?seed=fallback-${index}`}
+                                    alt={avatar.alt || `Avatar ${index}`}
                                     className="w-full h-full object-cover"
+                                    loading="lazy"
                                     onError={(e) => {
-                                        // Auto-recovery if external avatar API is unreachable
-                                        (e.target as HTMLImageElement).src = 'https://api.dicebear.com/7.x/avataaars/svg?seed=fallback';
+                                        // Auto-recovery if external avatar API is unreachable or blocked
+                                        const target = e.target as HTMLImageElement;
+                                        target.src = 'https://api.dicebear.com/7.x/identicon/svg?seed=placeholder';
                                     }}
                                 />
                             </button>
