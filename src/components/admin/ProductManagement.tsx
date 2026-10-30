@@ -101,7 +101,7 @@ export default function ProductManagement() {
                 </Card>
                 <Card 
                   className="bg-blue-500/5 border-blue-200 cursor-pointer hover:bg-blue-500/10 transition-all group relative overflow-hidden"
-                  onClick={() => router.push('/admin/featured')}
+                  onClick={() => router.push('/admin/featured?tab=spotlight')}
                 >
                     <CardHeader className="pb-2">
                         <div className="flex items-center justify-between">

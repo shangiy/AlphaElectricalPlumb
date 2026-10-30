@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { 
   Loader2, 
   Palette, 
@@ -40,10 +41,17 @@ import { cn } from '@/lib/utils';
 /**
  * Storefront CMS Suite v3.0
  * Intelligent hub for managing every aspect of the storefront experience.
+ * Supports deep-linking via ?tab= parameter.
  */
 export default function UiUxControlCenter() {
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState('hero');
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  
+  // Initialize tab from URL or default to 'hero'
+  const initialTab = searchParams.get('tab') || 'hero';
+  const [activeTab, setActiveTab] = useState(initialTab);
+  
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
@@ -91,6 +99,14 @@ export default function UiUxControlCenter() {
   useEffect(() => {
     loadAllSettings();
   }, [loadAllSettings]);
+
+  // Sync state with URL when tab changes manually
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('tab', value);
+    router.replace(`/admin/featured?${params.toString()}`, { scroll: false });
+  };
 
   const handleSaveHero = async () => {
     setSubmitting(true);
@@ -152,7 +168,7 @@ export default function UiUxControlCenter() {
         </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
         <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 h-auto bg-muted/30 p-2 rounded-[2.5rem] mb-12 border shadow-inner">
             <TabsTrigger value="hero" className="rounded-[1.5rem] font-black uppercase text-[10px] py-4">Hero Banners</TabsTrigger>
             <TabsTrigger value="search" className="rounded-[1.5rem] font-black uppercase text-[10px] py-4">Search CMS</TabsTrigger>
@@ -219,49 +235,6 @@ export default function UiUxControlCenter() {
 
         <TabsContent value="categories">
             <CategoryManager initialCards={categoryCards} />
-        </TabsContent>
-
-        <TabsContent value="about">
-            <div className="max-w-3xl mx-auto space-y-8">
-                <Card className="rounded-[3rem] border shadow-2xl overflow-hidden bg-white">
-                    <CardHeader className="bg-muted/30 p-10 border-b">
-                        <CardTitle className="text-3xl font-black uppercase tracking-tight text-accent">About Us Content</CardTitle>
-                        <CardDescription className="font-bold text-primary uppercase tracking-[0.2em] text-[10px] mt-2">Manage the narrative of your brand ecosystem</CardDescription>
-                    </CardHeader>
-                    <CardContent className="p-10 space-y-8">
-                        <div className="space-y-4">
-                            <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Main Body Text</Label>
-                            <Textarea 
-                                value={aboutContent.text} 
-                                onChange={(e) => setAboutContent({...aboutContent, text: e.target.value})} 
-                                rows={10}
-                                className="rounded-3xl p-6 text-lg font-medium leading-relaxed resize-none"
-                            />
-                        </div>
-                        <div className="grid grid-cols-2 gap-8">
-                            <div className="space-y-4">
-                                <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Text Alignment</Label>
-                                <div className="flex gap-2 bg-muted p-2 rounded-2xl w-fit">
-                                    <Button variant={aboutContent.alignment === 'left' ? 'default' : 'ghost'} size="icon" onClick={() => setAboutContent({...aboutContent, alignment: 'left'})} className="rounded-xl"><AlignLeft size={20}/></Button>
-                                    <Button variant={aboutContent.alignment === 'center' ? 'default' : 'ghost'} size="icon" onClick={() => setAboutContent({...aboutContent, alignment: 'center'})} className="rounded-xl"><AlignCenter size={20}/></Button>
-                                    <Button variant={aboutContent.alignment === 'right' ? 'default' : 'ghost'} size="icon" onClick={() => setAboutContent({...aboutContent, alignment: 'right'})} className="rounded-xl"><AlignRight size={20}/></Button>
-                                </div>
-                            </div>
-                            <div className="space-y-4">
-                                <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Font Size Scale</Label>
-                                <div className="flex gap-2 bg-muted p-2 rounded-2xl w-fit">
-                                    {['sm', 'base', 'lg', 'xl'].map(size => (
-                                        <Button key={size} variant={aboutContent.fontSize === size ? 'default' : 'ghost'} onClick={() => setAboutContent({...aboutContent, fontSize: size})} className="rounded-xl font-black uppercase text-[10px]">{size}</Button>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                        <Button onClick={handleSaveAbout} disabled={submitting} className="w-full h-16 rounded-full font-black uppercase tracking-widest bg-accent text-white shadow-2xl">
-                           Commit Copy Changes
-                        </Button>
-                    </CardContent>
-                </Card>
-            </div>
         </TabsContent>
 
         <TabsContent value="reviews">
@@ -415,4 +388,3 @@ function ReviewModerationSuite({ reviews, onRefresh }: { reviews: any[], onRefre
         </Card>
     );
 }
-
