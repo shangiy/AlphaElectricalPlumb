@@ -19,6 +19,12 @@ export interface HeroSlide {
     imageUrl: string;
     order: number;
     active: boolean;
+    // Advanced Styling
+    headlineColor?: string;
+    headlineSize?: number;
+    subheadingColor?: string;
+    subheadingSize?: number;
+    topMargin?: number; // in centimeters
 }
 
 /**

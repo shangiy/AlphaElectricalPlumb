@@ -26,7 +26,8 @@ import {
   AlignCenter,
   AlignRight,
   Eye,
-  EyeOff
+  EyeOff,
+  MoveVertical
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import FeaturedProductManager from './FeaturedProductManager';
@@ -34,7 +35,8 @@ import CategoryManager, { type CategoryCardData } from './CategoryManager';
 import { 
   getStorefrontSetting, 
   updateStorefrontSetting,
-  toggleReviewVisibility
+  toggleReviewVisibility,
+  type HeroSlide
 } from '@/app/actions/cms-actions';
 import { cn } from '@/lib/utils';
 
@@ -56,7 +58,7 @@ export default function UiUxControlCenter() {
   const [submitting, setSubmitting] = useState(false);
 
   // Hero Carousel State
-  const [heroSlides, setHeroSlides] = useState<any[]>([]);
+  const [heroSlides, setHeroSlides] = useState<HeroSlide[]>([]);
   
   // Search State
   const [searchPhrases, setSearchPhrases] = useState<string[]>([]);
@@ -233,21 +235,28 @@ export default function UiUxControlCenter() {
   );
 }
 
-function HeroSlideManager({ slides, setSlides }: { slides: any[], setSlides: (s: any[]) => void }) {
+function HeroSlideManager({ slides, setSlides }: { slides: HeroSlide[], setSlides: (s: HeroSlide[]) => void }) {
     const handleAddSlide = () => {
-        const newSlide = {
+        const newSlide: HeroSlide = {
             id: Math.random().toString(36).substr(2, 9),
-            title: 'New High-Rise Headline',
-            subtitle: 'Compelling subtext for your clients.',
+            headline: 'New High-Rise Headline',
+            highlightedText: 'ALPHA',
+            styleType: 'kenyan-flag',
+            subheading: 'Compelling subtext for your clients.',
             ctaText: 'EXPLORE',
             ctaLink: '/search',
             imageUrl: '/background.jpg',
-            active: true
+            active: true,
+            headlineColor: '#ffffff',
+            headlineSize: 72,
+            subheadingColor: '#ffffff',
+            subheadingSize: 24,
+            topMargin: 0
         };
         setSlides([...slides, newSlide]);
     };
 
-    const handleUpdateSlide = (id: string, updates: any) => {
+    const handleUpdateSlide = (id: string, updates: Partial<HeroSlide>) => {
         setSlides(slides.map(s => s.id === id ? { ...s, ...updates } : s));
     };
 
@@ -257,39 +266,126 @@ function HeroSlideManager({ slides, setSlides }: { slides: any[], setSlides: (s:
 
     return (
         <div className="grid grid-cols-1 gap-8">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 gap-8">
                 {slides.map((slide, i) => (
                     <Card key={slide.id} className={cn("rounded-[2.5rem] border shadow-xl overflow-hidden group transition-all", !slide.active && "opacity-60 grayscale")}>
-                        <div className="relative h-48 bg-muted overflow-hidden">
+                        <div className="relative h-64 bg-muted overflow-hidden">
                             <img src={slide.imageUrl} alt="" className="w-full h-full object-cover transition-transform group-hover:scale-105" />
-                            <div className="absolute top-4 right-4 flex gap-2">
+                            <div className="absolute top-6 right-6 flex gap-2">
                                 <Switch checked={slide.active} onCheckedChange={(val) => handleUpdateSlide(slide.id, { active: val })} />
                                 <button onClick={() => handleDeleteSlide(slide.id)} className="bg-red-500 text-white p-2 rounded-xl shadow-lg hover:bg-red-600 transition-colors">
-                                    <Trash2 size={16} />
+                                    <Trash2 size={20} />
                                 </button>
                             </div>
-                            <div className="absolute bottom-4 left-4 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-black text-white uppercase tracking-widest">
-                                Slide #{i + 1}
+                            <div className="absolute bottom-6 left-6 bg-black/60 backdrop-blur-md px-4 py-2 rounded-full text-[10px] font-black text-white uppercase tracking-widest">
+                                Slide Slot #{i + 1}
                             </div>
                         </div>
-                        <CardContent className="p-8 space-y-6">
-                            <div className="space-y-4">
-                                <div className="space-y-2">
-                                    <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Headline Text</Label>
-                                    <Input value={slide.title} onChange={(e) => handleUpdateSlide(slide.id, { title: e.target.value })} className="font-black text-lg h-12 rounded-xl" />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Subheading</Label>
-                                    <Input value={slide.subtitle} onChange={(e) => handleUpdateSlide(slide.id, { subtitle: e.target.value })} className="font-bold h-12 rounded-xl" />
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
+                        <CardContent className="p-10 space-y-10">
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                                {/* Text Content & Multi-line Editor */}
+                                <div className="space-y-6">
                                     <div className="space-y-2">
-                                        <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Button Text</Label>
-                                        <Input value={slide.ctaText} onChange={(e) => handleUpdateSlide(slide.id, { ctaText: e.target.value })} className="font-black rounded-xl" />
+                                        <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Headline Text (Supports Multi-line)</Label>
+                                        <Textarea 
+                                          value={slide.headline} 
+                                          onChange={(e) => handleUpdateSlide(slide.id, { headline: e.target.value })} 
+                                          className="font-black text-2xl h-32 rounded-2xl p-4 bg-muted/20" 
+                                          placeholder="Enter headline... Shift+Enter for new line"
+                                        />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Target Link</Label>
-                                        <Input value={slide.ctaLink} onChange={(e) => handleUpdateSlide(slide.id, { ctaLink: e.target.value })} className="font-bold rounded-xl" />
+                                        <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Subheading (Supports Multi-line)</Label>
+                                        <Textarea 
+                                          value={slide.subheading} 
+                                          onChange={(e) => handleUpdateSlide(slide.id, { subheading: e.target.value })} 
+                                          className="font-bold h-24 rounded-2xl p-4 bg-muted/20"
+                                          placeholder="Enter subheading... Shift+Enter for new line"
+                                        />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Button Label</Label>
+                                            <Input value={slide.ctaText} onChange={(e) => handleUpdateSlide(slide.id, { ctaText: e.target.value })} className="font-black rounded-xl h-12" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Target Path</Label>
+                                            <Input value={slide.ctaLink} onChange={(e) => handleUpdateSlide(slide.id, { ctaLink: e.target.value })} className="font-bold rounded-xl h-12" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Advanced Typography & Position Controls */}
+                                <div className="space-y-8 bg-secondary/30 p-8 rounded-[2rem] border border-dashed">
+                                    <h4 className="text-xs font-black uppercase tracking-[0.2em] text-primary flex items-center gap-2">
+                                      <Palette className="h-4 w-4" /> Visual Identity Controls
+                                    </h4>
+                                    
+                                    <div className="grid grid-cols-2 gap-6">
+                                        <div className="space-y-3">
+                                            <Label className="text-[10px] font-black uppercase text-muted-foreground/60 tracking-widest block">Headline Color</Label>
+                                            <div className="flex items-center gap-3">
+                                              <input 
+                                                type="color" 
+                                                value={slide.headlineColor || '#ffffff'} 
+                                                onChange={(e) => handleUpdateSlide(slide.id, { headlineColor: e.target.value })}
+                                                className="h-10 w-10 rounded-full cursor-pointer border-none overflow-hidden"
+                                              />
+                                              <Input value={slide.headlineColor || '#ffffff'} onChange={(e) => handleUpdateSlide(slide.id, { headlineColor: e.target.value })} className="h-10 rounded-xl font-mono text-xs" />
+                                            </div>
+                                        </div>
+                                        <div className="space-y-3">
+                                            <Label className="text-[10px] font-black uppercase text-muted-foreground/60 tracking-widest block">Headline Size (px)</Label>
+                                            <Input 
+                                              type="number" 
+                                              value={slide.headlineSize || 72} 
+                                              onChange={(e) => handleUpdateSlide(slide.id, { headlineSize: parseInt(e.target.value) || 0 })} 
+                                              className="h-10 rounded-xl font-bold" 
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-6">
+                                        <div className="space-y-3">
+                                            <Label className="text-[10px] font-black uppercase text-muted-foreground/60 tracking-widest block">Sub-text Color</Label>
+                                            <div className="flex items-center gap-3">
+                                              <input 
+                                                type="color" 
+                                                value={slide.subheadingColor || '#ffffff'} 
+                                                onChange={(e) => handleUpdateSlide(slide.id, { subheadingColor: e.target.value })}
+                                                className="h-10 w-10 rounded-full cursor-pointer border-none overflow-hidden"
+                                              />
+                                              <Input value={slide.subheadingColor || '#ffffff'} onChange={(e) => handleUpdateSlide(slide.id, { subheadingColor: e.target.value })} className="h-10 rounded-xl font-mono text-xs" />
+                                            </div>
+                                        </div>
+                                        <div className="space-y-3">
+                                            <Label className="text-[10px] font-black uppercase text-muted-foreground/60 tracking-widest block">Sub-text Size (px)</Label>
+                                            <Input 
+                                              type="number" 
+                                              value={slide.subheadingSize || 24} 
+                                              onChange={(e) => handleUpdateSlide(slide.id, { subheadingSize: parseInt(e.target.value) || 0 })} 
+                                              className="h-10 rounded-xl font-bold" 
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="pt-4 border-t border-muted">
+                                      <div className="space-y-3">
+                                          <Label className="text-[10px] font-black uppercase text-muted-foreground/60 tracking-widest flex items-center gap-2">
+                                            <MoveVertical className="h-3 w-3" /> Start Position (cm from top margin)
+                                          </Label>
+                                          <div className="flex items-center gap-4">
+                                            <Input 
+                                              type="number" 
+                                              step="0.5"
+                                              value={slide.topMargin || 0} 
+                                              onChange={(e) => handleUpdateSlide(slide.id, { topMargin: parseFloat(e.target.value) || 0 })} 
+                                              className="h-12 rounded-xl font-black text-lg bg-white w-32" 
+                                            />
+                                            <span className="text-xs font-bold text-muted-foreground uppercase">Centimeters</span>
+                                          </div>
+                                          <p className="text-[9px] text-muted-foreground/60 italic leading-tight">Increases the space between the top edge of the banner and the first line of text.</p>
+                                      </div>
                                     </div>
                                 </div>
                             </div>
@@ -297,8 +393,8 @@ function HeroSlideManager({ slides, setSlides }: { slides: any[], setSlides: (s:
                     </Card>
                 ))}
             </div>
-            <Button variant="outline" onClick={handleAddSlide} className="w-full h-20 rounded-[2rem] border-2 border-dashed font-black uppercase tracking-[0.2em] opacity-60 hover:opacity-100 hover:border-primary transition-all">
-                <Plus className="mr-2 h-6 w-6" /> Add New Hero Slide
+            <Button variant="outline" onClick={handleAddSlide} className="w-full h-24 rounded-[3rem] border-2 border-dashed font-black uppercase tracking-[0.3em] opacity-40 hover:opacity-100 hover:border-primary hover:bg-primary/5 transition-all">
+                <Plus className="mr-3 h-8 w-8" /> Add Campaign Module
             </Button>
         </div>
     );
