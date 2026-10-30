@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
@@ -107,25 +106,16 @@ export default function UserDirectory() {
             setTrendingItems(sortedTrends);
 
         } catch (err: any) {
-            // Log structured error for initial inspection
-            console.error("User Directory factual sync failed:", {
-                message: err?.message || err,
-                details: err?.details,
-                hint: err?.hint
-            });
+            // Extract non-enumerable properties from Supabase/PostgREST error objects
+            const errorMessage = err?.message || (typeof err === 'object' ? JSON.stringify(err, Object.getOwnPropertyNames(err)) : String(err));
             
-            // Log deep stringified error for hidden Supabase properties
-            console.error("User Directory factual sync error details:", 
-                err instanceof Error ? err.message : JSON.stringify(err, Object.getOwnPropertyNames(err))
-            );
+            console.error("User Directory factual sync failed:", errorMessage);
 
-            if (isInitial) {
-                toast({
-                    variant: "destructive",
-                    title: "Analytics Sync Error",
-                    description: "Database handshake failed. Please ensure the 'profiles' and 'wishlists' tables are correctly configured."
-                });
-            }
+            toast({
+                variant: "destructive",
+                title: "Sync Error",
+                description: typeof err === 'object' && err?.message ? err.message : "Failed to load user directory data.",
+            });
         } finally {
             if (isInitial) setLoading(false);
         }
