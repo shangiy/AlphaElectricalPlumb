@@ -21,7 +21,8 @@ import {
   Receipt, 
   BarChart3, 
   Users, 
-  Settings 
+  Settings,
+  Palette
 } from 'lucide-react';
 import AuthGuard from '@/components/auth/AuthGuard';
 import { useAuth } from '@/context/AuthProvider';
@@ -36,9 +37,10 @@ export default function AdminLayout({
   const menuItems = [
     { label: 'Dashboard', href: '/admin', icon: LayoutDashboard },
     { label: 'Products', href: '/admin/products', icon: Package },
-    { label: 'Selfies', href: '/admin/selfies', icon: Camera },
-    { label: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
     { label: 'Users', href: '/admin/users', icon: Users },
+    { label: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
+    { label: 'UI/UX Edit', href: '/admin/featured', icon: Palette },
+    { label: 'Selfies', href: '/admin/selfies', icon: Camera },
     { label: 'Transactions', href: '/admin/transactions', icon: Receipt },
     { label: 'Homepage', href: '/', icon: Home },
     { label: 'Settings', href: '/admin/settings', icon: Settings },
