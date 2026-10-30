@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
@@ -106,11 +107,18 @@ export default function UserDirectory() {
             setTrendingItems(sortedTrends);
 
         } catch (err: any) {
+            // Log structured error for initial inspection
             console.error("User Directory factual sync failed:", {
                 message: err?.message || err,
                 details: err?.details,
                 hint: err?.hint
             });
+            
+            // Log deep stringified error for hidden Supabase properties
+            console.error("User Directory factual sync error details:", 
+                err instanceof Error ? err.message : JSON.stringify(err, Object.getOwnPropertyNames(err))
+            );
+
             if (isInitial) {
                 toast({
                     variant: "destructive",
