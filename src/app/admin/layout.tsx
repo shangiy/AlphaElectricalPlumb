@@ -22,7 +22,8 @@ import {
   BarChart3, 
   Users, 
   Settings,
-  Palette
+  Palette,
+  LayoutTemplate
 } from 'lucide-react';
 import AuthGuard from '@/components/auth/AuthGuard';
 import { useAuth } from '@/context/AuthProvider';
@@ -36,14 +37,14 @@ export default function AdminLayout({
 
   const menuItems = [
     { label: 'Dashboard', href: '/admin', icon: LayoutDashboard },
-    { label: 'Products', href: '/admin/products', icon: Package },
-    { label: 'Users', href: '/admin/users', icon: Users },
+    { label: 'Inventory', href: '/admin/products', icon: Package },
+    { label: 'Users & Roles', href: '/admin/users', icon: Users },
     { label: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
     { label: 'Transactions', href: '/admin/transactions', icon: Receipt },
-    { label: 'Homepage', href: '/', icon: Home },
-    { label: 'Selfies', href: '/admin/selfies', icon: Camera },
-    { label: 'UI/UX Control', href: '/admin/featured', icon: Palette },
-    { label: 'Settings', href: '/admin/settings', icon: Settings },
+    { label: 'Homepage View', href: '/', icon: Home },
+    { label: 'Visual Logs (Selfies)', href: '/admin/selfies', icon: Camera },
+    { label: 'Storefront CMS', href: '/admin/featured', icon: LayoutTemplate },
+    { label: 'System Settings', href: '/admin/settings', icon: Settings },
   ];
 
   return (
@@ -55,8 +56,8 @@ export default function AdminLayout({
               <Link href="/admin" className="flex items-center gap-3 group">
                   <Image src="/logo Alpha.png" alt="Alpha" width={45} height={45} className="transition-transform group-hover:scale-110" />
                   <div className="flex flex-col">
-                    <span className="text-sm font-black text-accent uppercase tracking-tighter">Admin Panel</span>
-                    <span className="text-[10px] font-bold text-primary uppercase">v2.4.0 Live</span>
+                    <span className="text-sm font-black text-accent uppercase tracking-tighter leading-none">Admin Panel</span>
+                    <span className="text-[9px] font-bold text-primary uppercase tracking-widest mt-1">Alpha CMS v3.0</span>
                   </div>
               </Link>
             </SidebarHeader>
@@ -80,7 +81,7 @@ export default function AdminLayout({
                       className="w-full flex items-center gap-3 px-4 py-3 text-xs font-black uppercase tracking-widest text-red-600 bg-red-50 hover:bg-red-100 rounded-2xl transition-colors mt-2"
                     >
                       <LogOut className="w-4 h-4" />
-                      Log Out
+                      Terminate Session
                     </button>
                   </SidebarMenuItem>
                 </div>

@@ -6,6 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { 
   Loader2, 
@@ -16,19 +18,22 @@ import {
   Trash2, 
   Plus, 
   Save, 
-  Play,
-  Monitor
+  Monitor,
+  Sparkles,
+  MessageSquare,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import FeaturedProductManager from './FeaturedProductManager';
 import { 
-  updateSiteSetting, 
-  getSiteSetting, 
-  addCategoryAdmin, 
-  updateCategoryAdmin, 
-  deleteCategoryAdmin,
-  updateCategoryOrderAdmin
-} from '@/app/actions/ui-actions';
+  getStorefrontSetting, 
+  updateStorefrontSetting,
+  toggleReviewVisibility
+} from '@/app/actions/cms-actions';
 import { 
   DndContext, 
   closestCenter, 
@@ -46,306 +51,374 @@ import {
   useSortable
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { cn } from '@/lib/utils';
 
 /**
- * UI/UX Control Center v2.0
- * Intelligent hub for managing Alpha's visual brand parameters.
+ * Storefront CMS Suite v3.0
+ * Intelligent hub for managing every aspect of the storefront experience.
  */
 export default function UiUxControlCenter() {
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState('spotlight');
+  const [activeTab, setActiveTab] = useState('hero');
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
-  // Banner & Search State
-  const [bannerText, setBannerText] = useState('');
-  const [searchPlaceholders, setSearchPlaceholders] = useState<string[]>([]);
-  const [newPlaceholder, setNewPlaceholder] = useState('');
+  // Hero Carousel State
+  const [heroSlides, setHeroSlides] = useState<any[]>([]);
+  
+  // Search State
+  const [searchPhrases, setSearchPhrases] = useState<string[]>([]);
+  const [newPhrase, setNewPhrase] = useState('');
 
-  // Category State
-  const [categories, setCategories] = useState<any[]>([]);
-  const [carouselSpeed, setCarouselSpeed] = useState('40');
+  // About Content State
+  const [aboutContent, setAboutContent] = useState({ text: '', alignment: 'center', fontSize: 'lg' });
 
-  const loadSettings = useCallback(async () => {
+  // Reviews State
+  const [reviews, setReviews] = useState<any[]>([]);
+
+  const loadAllSettings = useCallback(async () => {
     setLoading(true);
     try {
-      const banner = await getSiteSetting('top_banner_text');
-      const suggestions = await getSiteSetting('search_suggestions');
-      const speed = await getSiteSetting('carousel_speed');
+      const [hero, search, about] = await Promise.all([
+        getStorefrontSetting('hero_slides'),
+        getStorefrontSetting('search_phrases'),
+        getStorefrontSetting('about_us_content')
+      ]);
       
-      if (banner) setBannerText(banner);
-      if (suggestions) setSearchPlaceholders(suggestions);
-      if (speed) setCarouselSpeed(speed);
+      if (hero) setHeroSlides(hero);
+      if (search) setSearchPhrases(search);
+      if (about) setAboutContent(about);
 
-      // Load categories for management
-      const { data: catData } = await supabase
-        .from('categories')
-        .select('*')
-        .order('sort_order', { ascending: true });
-      
-      setCategories(catData || []);
+      // Load reviews for moderation
+      const { data: revData } = await supabase.from('reviews').select('*').order('created_at', { ascending: false });
+      setReviews(revData || []);
     } catch (err) {
-      console.error("Failed to load UI settings:", err);
+      console.error("CMS data fetch failed:", err);
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    loadSettings();
-  }, [loadSettings]);
+    loadAllSettings();
+  }, [loadAllSettings]);
 
-  const handleSaveGeneral = async () => {
+  const handleSaveHero = async () => {
     setSubmitting(true);
     try {
-      await updateSiteSetting('top_banner_text', bannerText);
-      await updateSiteSetting('search_suggestions', searchPlaceholders);
-      await updateSiteSetting('carousel_speed', carouselSpeed);
-      toast({ title: "UI Synchronized", description: "Homepage parameters updated successfully." });
+        await updateStorefrontSetting('hero_slides', heroSlides);
+        toast({ title: "Hero Synchronized", description: "Banners updated live on storefront." });
     } catch (err: any) {
-      toast({ variant: "destructive", title: "Update Failed", description: err.message });
+        toast({ variant: "destructive", title: "Error", description: err.message });
     } finally {
-      setSubmitting(false);
+        setSubmitting(false);
     }
   };
 
-  const handleAddPlaceholder = () => {
-    if (newPlaceholder && !searchPlaceholders.includes(newPlaceholder)) {
-        setSearchPlaceholders([...searchPlaceholders, newPlaceholder]);
-        setNewPlaceholder('');
+  const handleSaveSearch = async () => {
+    setSubmitting(true);
+    try {
+        await updateStorefrontSetting('search_phrases', searchPhrases);
+        toast({ title: "Search Synced", description: "Typing animations updated." });
+    } catch (err: any) {
+        toast({ variant: "destructive", title: "Error", description: err.message });
+    } finally {
+        setSubmitting(false);
     }
   };
 
-  const handleRemovePlaceholder = (item: string) => {
-    setSearchPlaceholders(searchPlaceholders.filter(p => p !== item));
+  const handleSaveAbout = async () => {
+    setSubmitting(true);
+    try {
+        await updateStorefrontSetting('about_us_content', aboutContent);
+        toast({ title: "Copy Synchronized", description: "About Us content updated." });
+    } catch (err: any) {
+        toast({ variant: "destructive", title: "Error", description: err.message });
+    } finally {
+        setSubmitting(false);
+    }
   };
+
+  if (loading) {
+      return (
+          <div className="flex flex-col items-center justify-center py-40 gap-4">
+              <Loader2 className="h-12 w-12 animate-spin text-primary" />
+              <p className="font-black text-muted-foreground uppercase tracking-widest">Accessing CMS Cloud...</p>
+          </div>
+      );
+  }
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-700">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+    <div className="space-y-8 animate-in fade-in duration-700 pb-20">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b pb-8">
         <div>
-          <h1 className="text-4xl font-black font-headline text-accent tracking-tighter uppercase flex items-center gap-3">
-            <Palette className="text-primary h-10 w-10" />
-            UI/UX Control Center
+          <h1 className="text-5xl font-black font-headline text-accent tracking-tighter uppercase flex items-center gap-4">
+            <LayoutGrid className="text-primary h-12 w-12" />
+            Alpha CMS Suite
           </h1>
-          <p className="text-muted-foreground font-medium mt-1">Manage the visual pulse of the Alpha ecosystem.</p>
+          <p className="text-muted-foreground font-bold uppercase tracking-widest text-xs mt-2">Professional Storefront Governance v3.0</p>
+        </div>
+        <div className="flex items-center gap-3">
+            <div className="bg-primary/10 text-primary px-4 py-2 rounded-full border border-primary/20 text-[10px] font-black uppercase tracking-widest">Live Preview Ready</div>
         </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3 h-16 bg-muted/50 p-2 rounded-[2rem] mb-8">
-            <TabsTrigger value="spotlight" className="rounded-[1.5rem] font-black uppercase text-xs">Homepage Spotlight</TabsTrigger>
-            <TabsTrigger value="general" className="rounded-[1.5rem] font-black uppercase text-xs">Hero & Banners</TabsTrigger>
-            <TabsTrigger value="categories" className="rounded-[1.5rem] font-black uppercase text-xs">Category Carousel</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 h-auto bg-muted/30 p-2 rounded-[2.5rem] mb-12 border shadow-inner">
+            <TabsTrigger value="hero" className="rounded-[1.5rem] font-black uppercase text-[10px] py-4">Hero Banners</TabsTrigger>
+            <TabsTrigger value="search" className="rounded-[1.5rem] font-black uppercase text-[10px] py-4">Search CMS</TabsTrigger>
+            <TabsTrigger value="spotlight" className="rounded-[1.5rem] font-black uppercase text-[10px] py-4">Spotlight</TabsTrigger>
+            <TabsTrigger value="about" className="rounded-[1.5rem] font-black uppercase text-[10px] py-4">About Story</TabsTrigger>
+            <TabsTrigger value="reviews" className="rounded-[1.5rem] font-black uppercase text-[10px] py-4">Moderation</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="spotlight">
-            <FeaturedProductManager />
+        <TabsContent value="hero">
+            <div className="space-y-8">
+                <div className="flex justify-between items-center">
+                    <h3 className="text-2xl font-black uppercase tracking-tight text-accent">Hero Carousel Management</h3>
+                    <Button onClick={handleSaveHero} disabled={submitting} className="rounded-full h-12 px-8 bg-primary font-black uppercase tracking-tighter">
+                        {submitting ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : <Save className="mr-2 h-4 w-4" />}
+                        Publish Slides
+                    </Button>
+                </div>
+                <HeroSlideManager slides={heroSlides} setSlides={setHeroSlides} />
+            </div>
         </TabsContent>
 
-        <TabsContent value="general">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <Card className="rounded-[2.5rem] shadow-xl overflow-hidden border-none bg-white">
-                    <CardHeader className="bg-primary/5 p-8 border-b">
+        <TabsContent value="search">
+            <div className="max-w-2xl mx-auto space-y-8">
+                <Card className="rounded-[2.5rem] border shadow-2xl overflow-hidden bg-white">
+                    <CardHeader className="bg-accent text-white p-8">
                         <div className="flex items-center gap-3 mb-2">
-                            <Monitor className="text-primary h-5 w-5" />
-                            <CardTitle className="text-xl font-black uppercase tracking-tight">Top Banner Text</CardTitle>
+                            <Sparkles className="text-primary h-6 w-6" />
+                            <CardTitle className="text-xl font-black uppercase tracking-tight">Typing Suggestions</CardTitle>
                         </div>
-                        <CardDescription className="text-xs font-bold uppercase tracking-widest text-muted-foreground">The scrolling promotional text at the top of every page.</CardDescription>
+                        <CardDescription className="text-white/60 font-medium">Manage the sequence of keywords that appear in the global search bar.</CardDescription>
                     </CardHeader>
                     <CardContent className="p-8 space-y-6">
-                        <div className="space-y-2">
-                            <Label className="text-[10px] font-black uppercase text-muted-foreground/60 tracking-widest">Banner Content</Label>
+                        <div className="flex gap-3">
                             <Input 
-                                value={bannerText} 
-                                onChange={(e) => setBannerText(e.target.value)} 
-                                placeholder="OFFER! MIDYEAR FLASH SALE..." 
+                                value={newPhrase} 
+                                onChange={(e) => setNewPhrase(e.target.value)}
+                                placeholder="Add keyword (e.g. high-mast lighting)"
                                 className="h-14 rounded-2xl text-lg font-bold"
+                                onKeyDown={(e) => e.key === 'Enter' && (setSearchPhrases([...searchPhrases, newPhrase]), setNewPhrase(''))}
                             />
+                            <Button onClick={() => { setSearchPhrases([...searchPhrases, newPhrase]); setNewPhrase(''); }} className="h-14 rounded-2xl px-8 font-black uppercase">Add</Button>
                         </div>
-                        <div className="p-6 rounded-2xl bg-muted/30 border border-dashed text-xs text-muted-foreground">
-                            <strong>Note:</strong> The "MASHUJAA" text is automatically styled with the Kenyan flag gradient if the word is detected in the string.
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <Card className="rounded-[2.5rem] shadow-xl overflow-hidden border-none bg-white">
-                    <CardHeader className="bg-primary/5 p-8 border-b">
-                        <div className="flex items-center gap-3 mb-2">
-                            <Type className="text-primary h-5 w-5" />
-                            <CardTitle className="text-xl font-black uppercase tracking-tight">Search Suggestions</CardTitle>
-                        </div>
-                        <CardDescription className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Dynamic terms that type and untype in the search bar.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="p-8 space-y-6">
-                        <div className="flex gap-2">
-                            <Input 
-                                value={newPlaceholder} 
-                                onChange={(e) => setNewPlaceholder(e.target.value)}
-                                placeholder="Add keyword (e.g. plumbing)"
-                                className="h-12 rounded-xl"
-                                onKeyDown={(e) => e.key === 'Enter' && handleAddPlaceholder()}
-                            />
-                            <Button onClick={handleAddPlaceholder} variant="outline" className="h-12 rounded-xl px-6">Add</Button>
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                            {searchPlaceholders.map((item) => (
-                                <div key={item} className="flex items-center gap-2 bg-secondary px-4 py-2 rounded-full border shadow-sm group">
-                                    <span className="text-sm font-bold text-accent">{item}</span>
-                                    <button onClick={() => handleRemovePlaceholder(item)} className="text-muted-foreground hover:text-red-500">
-                                        <Trash2 size={12} />
+                        <div className="flex flex-wrap gap-3">
+                            {searchPhrases.map((phrase, i) => (
+                                <div key={i} className="flex items-center gap-3 bg-secondary px-5 py-3 rounded-2xl border shadow-sm group">
+                                    <span className="text-base font-bold text-accent">{phrase}</span>
+                                    <button onClick={() => setSearchPhrases(searchPhrases.filter((_, idx) => idx !== i))} className="text-muted-foreground hover:text-red-500">
+                                        <Trash2 size={16} />
                                     </button>
                                 </div>
                             ))}
                         </div>
-                        <Button 
-                            onClick={handleSaveGeneral} 
-                            disabled={submitting} 
-                            className="w-full h-14 rounded-full font-black uppercase tracking-widest bg-primary text-white shadow-lg mt-4"
-                        >
-                            {submitting ? <Loader2 className="h-5 w-5 animate-spin mr-3" /> : <Save className="h-5 w-5 mr-3" />}
-                            Sync Brand parameters
+                        <Button onClick={handleSaveSearch} disabled={submitting} className="w-full h-14 rounded-full font-black uppercase bg-primary text-white mt-4 shadow-xl">
+                            Sync Search Node
                         </Button>
                     </CardContent>
                 </Card>
             </div>
         </TabsContent>
 
-        <TabsContent value="categories">
-            <CategoryOrderManager categories={categories} speed={carouselSpeed} onRefresh={loadSettings} />
+        <TabsContent value="spotlight">
+            <FeaturedProductManager />
+        </TabsContent>
+
+        <TabsContent value="about">
+            <div className="max-w-3xl mx-auto space-y-8">
+                <Card className="rounded-[3rem] border shadow-2xl overflow-hidden bg-white">
+                    <CardHeader className="bg-muted/30 p-10 border-b">
+                        <CardTitle className="text-3xl font-black uppercase tracking-tight text-accent">About Us Content</CardTitle>
+                        <CardDescription className="font-bold text-primary uppercase tracking-[0.2em] text-[10px] mt-2">Manage the narrative of your brand ecosystem</CardDescription>
+                    </CardHeader>
+                    <CardContent className="p-10 space-y-8">
+                        <div className="space-y-4">
+                            <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Main Body Text</Label>
+                            <Textarea 
+                                value={aboutContent.text} 
+                                onChange={(e) => setAboutContent({...aboutContent, text: e.target.value})} 
+                                rows={10}
+                                className="rounded-3xl p-6 text-lg font-medium leading-relaxed resize-none"
+                            />
+                        </div>
+                        <div className="grid grid-cols-2 gap-8">
+                            <div className="space-y-4">
+                                <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Text Alignment</Label>
+                                <div className="flex gap-2 bg-muted p-2 rounded-2xl w-fit">
+                                    <Button variant={aboutContent.alignment === 'left' ? 'default' : 'ghost'} size="icon" onClick={() => setAboutContent({...aboutContent, alignment: 'left'})} className="rounded-xl"><AlignLeft size={20}/></Button>
+                                    <Button variant={aboutContent.alignment === 'center' ? 'default' : 'ghost'} size="icon" onClick={() => setAboutContent({...aboutContent, alignment: 'center'})} className="rounded-xl"><AlignCenter size={20}/></Button>
+                                    <Button variant={aboutContent.alignment === 'right' ? 'default' : 'ghost'} size="icon" onClick={() => setAboutContent({...aboutContent, alignment: 'right'})} className="rounded-xl"><AlignRight size={20}/></Button>
+                                </div>
+                            </div>
+                            <div className="space-y-4">
+                                <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Font Size Scale</Label>
+                                <div className="flex gap-2 bg-muted p-2 rounded-2xl w-fit">
+                                    {['sm', 'base', 'lg', 'xl'].map(size => (
+                                        <Button key={size} variant={aboutContent.fontSize === size ? 'default' : 'ghost'} onClick={() => setAboutContent({...aboutContent, fontSize: size})} className="rounded-xl font-black uppercase text-[10px]">{size}</Button>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                        <Button onClick={handleSaveAbout} disabled={submitting} className="w-full h-16 rounded-full font-black uppercase tracking-widest bg-accent text-white shadow-2xl">
+                           Commit Copy Changes
+                        </Button>
+                    </CardContent>
+                </Card>
+            </div>
+        </TabsContent>
+
+        <TabsContent value="reviews">
+            <ReviewModerationSuite reviews={reviews} onRefresh={loadAllSettings} />
         </TabsContent>
       </Tabs>
     </div>
   );
 }
 
-/**
- * Category Carousel Manager
- */
-function CategoryOrderManager({ categories, speed, onRefresh }: any) {
-    const { toast } = useToast();
-    const [list, setList] = useState<any[]>([]);
-    const [submitting, setSubmitting] = useState(false);
-    const [currentSpeed, setCurrentSpeed] = useState(speed);
-
-    useEffect(() => {
-        setList(categories);
-        setCurrentSpeed(speed);
-    }, [categories, speed]);
-
-    const sensors = useSensors(
-        useSensor(PointerSensor),
-        useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
-    );
-
-    const handleDragEnd = (event: DragEndEvent) => {
-        const { active, over } = event;
-        if (over && active.id !== over.id) {
-            setList((items) => {
-                const oldIndex = items.findIndex((i) => i.id === active.id);
-                const newIndex = items.findIndex((i) => i.id === over.id);
-                return arrayMove(items, oldIndex, newIndex);
-            });
-        }
+function HeroSlideManager({ slides, setSlides }: { slides: any[], setSlides: (s: any[]) => void }) {
+    const handleAddSlide = () => {
+        const newSlide = {
+            id: Math.random().toString(36).substr(2, 9),
+            title: 'New High-Rise Headline',
+            subtitle: 'Compelling subtext for your clients.',
+            ctaText: 'EXPLORE',
+            ctaLink: '/search',
+            imageUrl: '/background.jpg',
+            active: true
+        };
+        setSlides([...slides, newSlide]);
     };
 
-    const handleSaveOrder = async () => {
-        setSubmitting(true);
-        try {
-            const updates = list.map((c, index) => ({ id: c.id, sort_order: index + 1 }));
-            await updateCategoryOrderAdmin(updates);
-            await updateSiteSetting('carousel_speed', currentSpeed);
-            toast({ title: "Carousel Updated", description: "Hierarchy and speed synced successfully." });
-            onRefresh();
-        } catch (err: any) {
-            toast({ variant: "destructive", title: "Error", description: err.message });
-        } finally {
-            setSubmitting(false);
-        }
+    const handleUpdateSlide = (id: string, updates: any) => {
+        setSlides(slides.map(s => s.id === id ? { ...s, ...updates } : s));
     };
 
-    const handleDelete = async (id: string) => {
-        if (!confirm("Permanently remove this category card?")) return;
-        try {
-            await deleteCategoryAdmin(id);
-            toast({ description: "Category removed." });
-            onRefresh();
-        } catch (err) {
-            toast({ variant: "destructive", description: "Failed to delete." });
-        }
-    }
+    const handleDeleteSlide = (id: string) => {
+        setSlides(slides.filter(s => s.id !== id));
+    };
 
     return (
-        <div className="space-y-8 max-w-4xl mx-auto">
-            <Card className="rounded-[2.5rem] shadow-xl overflow-hidden border-none bg-white">
-                <CardHeader className="bg-primary/5 p-8 border-b flex flex-row items-center justify-between">
-                    <div>
-                        <div className="flex items-center gap-3 mb-2">
-                            <LayoutGrid className="text-primary h-5 w-5" />
-                            <CardTitle className="text-xl font-black uppercase tracking-tight">Carousel Hierarchy</CardTitle>
-                        </div>
-                        <CardDescription className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Drag to reorder cards. Items are mirrored for infinite loop.</CardDescription>
-                    </div>
-                    <div className="flex items-center gap-4">
-                        <div className="flex flex-col items-end gap-1">
-                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Speed (s)</Label>
-                            <Input 
-                                type="number" 
-                                value={currentSpeed} 
-                                onChange={(e) => setCurrentSpeed(e.target.value)} 
-                                className="w-20 h-9 rounded-lg font-bold"
-                            />
-                        </div>
-                        <Button 
-                            onClick={handleSaveOrder} 
-                            disabled={submitting} 
-                            className="rounded-full h-12 px-8 font-black uppercase tracking-tighter bg-accent text-white"
-                        >
-                            {submitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
-                            Sync Carousel
-                        </Button>
-                    </div>
-                </CardHeader>
-                <CardContent className="p-8">
-                    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                        <SortableContext items={list.map(c => c.id)} strategy={verticalListSortingStrategy}>
-                            <div className="space-y-4">
-                                {list.map((cat) => (
-                                    <SortableCategoryItem key={cat.id} category={cat} onDelete={handleDelete} />
-                                ))}
+        <div className="grid grid-cols-1 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {slides.map((slide, i) => (
+                    <Card key={slide.id} className={cn("rounded-[2.5rem] border shadow-xl overflow-hidden group transition-all", !slide.active && "opacity-60 grayscale")}>
+                        <div className="relative h-48 bg-muted overflow-hidden">
+                            <img src={slide.imageUrl} alt="" className="w-full h-full object-cover transition-transform group-hover:scale-105" />
+                            <div className="absolute top-4 right-4 flex gap-2">
+                                <Switch checked={slide.active} onCheckedChange={(val) => handleUpdateSlide(slide.id, { active: val })} />
+                                <button onClick={() => handleDeleteSlide(slide.id)} className="bg-red-500 text-white p-2 rounded-xl shadow-lg hover:bg-red-600">
+                                    <Trash2 size={16} />
+                                </button>
                             </div>
-                        </SortableContext>
-                    </DndContext>
-
-                    <div className="mt-8 pt-8 border-t border-dashed">
-                        <Button variant="outline" className="w-full rounded-2xl h-14 border-2 border-dashed font-black uppercase tracking-widest opacity-60 hover:opacity-100 hover:border-primary">
-                            <Plus className="mr-2 h-5 w-5" />
-                            Register New Category Node
-                        </Button>
-                    </div>
-                </CardContent>
-            </Card>
+                            <div className="absolute bottom-4 left-4 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-black text-white uppercase tracking-widest">
+                                Slide #{i + 1}
+                            </div>
+                        </div>
+                        <CardContent className="p-8 space-y-6">
+                            <div className="space-y-4">
+                                <div className="space-y-2">
+                                    <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Headline Text</Label>
+                                    <Input value={slide.title} onChange={(e) => handleUpdateSlide(slide.id, { title: e.target.value })} className="font-black text-lg h-12 rounded-xl" />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Subheading</Label>
+                                    <Input value={slide.subtitle} onChange={(e) => handleUpdateSlide(slide.id, { subtitle: e.target.value })} className="font-bold h-12 rounded-xl" />
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Button Text</Label>
+                                        <Input value={slide.ctaText} onChange={(e) => handleUpdateSlide(slide.id, { ctaText: e.target.value })} className="font-black rounded-xl" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Target Link</Label>
+                                        <Input value={slide.ctaLink} onChange={(e) => handleUpdateSlide(slide.id, { ctaLink: e.target.value })} className="font-bold rounded-xl" />
+                                    </div>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                ))}
+            </div>
+            <Button variant="outline" onClick={handleAddSlide} className="w-full h-20 rounded-[2rem] border-2 border-dashed font-black uppercase tracking-[0.2em] opacity-60 hover:opacity-100 hover:border-primary transition-all">
+                <Plus className="mr-2 h-6 w-6" /> Add New Hero Slide
+            </Button>
         </div>
     );
 }
 
-function SortableCategoryItem({ category, onDelete }: any) {
-    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: category.id });
-    const style = { transform: CSS.Transform.toString(transform), transition, zIndex: isDragging ? 50 : 0 };
+function ReviewModerationSuite({ reviews, onRefresh }: { reviews: any[], onRefresh: () => void }) {
+    const { toast } = useToast();
+    const [modulating, setModulating] = useState<string | null>(null);
+
+    const handleToggle = async (id: string, current: boolean) => {
+        setModulating(id);
+        try {
+            await toggleReviewVisibility(id, !current);
+            toast({ title: !current ? "Review Redacted" : "Review Restored", description: "Public storefront updated." });
+            onRefresh();
+        } catch (e) {
+            toast({ variant: "destructive", title: "Action Failed" });
+        } finally {
+            setModulating(null);
+        }
+    };
 
     return (
-        <div ref={setNodeRef} style={style} className="bg-white rounded-2xl border p-4 shadow-sm flex items-center gap-4 group">
-            <div {...attributes} {...listeners} className="cursor-grab p-2 hover:bg-muted rounded-lg"><GripVertical className="h-5 w-5 text-muted-foreground" /></div>
-            <div className="h-16 w-16 rounded-xl overflow-hidden border bg-muted shrink-0">
-                <img src={category.image_url || '/placeholder.jpg'} alt="" className="h-full w-full object-cover" />
-            </div>
-            <div className="flex-1 min-w-0">
-                <p className="font-bold text-accent uppercase tracking-tight">{category.name}</p>
-                <p className="text-[10px] font-bold text-muted-foreground/60 truncate">{category.image_url || 'No manual image override'}</p>
-            </div>
-            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-red-500" onClick={() => onDelete(category.id)}>
-                <Trash2 size={16} />
-            </Button>
-        </div>
+        <Card className="rounded-[2.5rem] border shadow-2xl overflow-hidden">
+            <CardHeader className="bg-accent text-white p-8 flex flex-row items-center justify-between">
+                <div>
+                    <CardTitle className="text-2xl font-black uppercase tracking-tight">Community Feedback Audit</CardTitle>
+                    <CardDescription className="text-white/60 font-medium">Moderate incoming testimonials before they reach the homepage cluster.</CardDescription>
+                </div>
+                <div className="h-12 w-12 rounded-2xl bg-white/10 flex items-center justify-center">
+                    <MessageSquare className="text-primary h-6 w-6" />
+                </div>
+            </CardHeader>
+            <CardContent className="p-0">
+                <div className="divide-y">
+                    {reviews.map(rev => (
+                        <div key={rev.id} className={cn("p-8 flex flex-col md:flex-row gap-6 items-start transition-colors", rev.is_hidden ? "bg-muted/50" : "hover:bg-primary/5")}>
+                            <div className="shrink-0 flex flex-col items-center gap-2">
+                                <div className="h-14 w-14 rounded-2xl bg-accent text-white flex items-center justify-center font-black text-xl shadow-lg">
+                                    {rev.author_name?.charAt(0).toUpperCase()}
+                                </div>
+                                <span className={cn("text-[8px] font-black uppercase px-2 py-0.5 rounded-full border", rev.is_hidden ? "bg-red-50 text-red-500 border-red-200" : "bg-green-50 text-green-600 border-green-200")}>
+                                    {rev.is_hidden ? "OFFLINE" : "LIVE"}
+                                </span>
+                            </div>
+                            <div className="flex-1 space-y-2">
+                                <div className="flex justify-between items-start">
+                                    <div>
+                                        <h4 className="font-black text-accent uppercase tracking-tight">{rev.title}</h4>
+                                        <p className="text-[10px] font-bold text-muted-foreground uppercase">{rev.author_name} • {new Date(rev.created_at).toLocaleDateString()}</p>
+                                    </div>
+                                    <div className="flex items-center gap-4">
+                                        <div className="flex items-center gap-1 bg-yellow-400/10 text-yellow-600 px-2 py-0.5 rounded-lg text-[10px] font-black">
+                                            {rev.rating} STARS
+                                        </div>
+                                        <Button 
+                                            variant={rev.is_hidden ? "outline" : "destructive"} 
+                                            size="sm" 
+                                            disabled={modulating === rev.id}
+                                            onClick={() => handleToggle(rev.id, rev.is_hidden)}
+                                            className="rounded-xl h-9 px-4 font-black uppercase text-[9px]"
+                                        >
+                                            {modulating === rev.id ? <Loader2 className="animate-spin h-3 w-3" /> : (rev.is_hidden ? <Eye className="mr-2 h-3 w-3" /> : <EyeOff className="mr-2 h-3 w-3" />)}
+                                            {rev.is_hidden ? "Publish" : "Redact"}
+                                        </Button>
+                                    </div>
+                                </div>
+                                <p className="text-sm text-muted-foreground leading-relaxed italic">"{rev.comment}"</p>
+                                <p className="text-[10px] font-black text-primary uppercase tracking-widest">{rev.review_type} placement</p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </CardContent>
+        </Card>
     );
 }

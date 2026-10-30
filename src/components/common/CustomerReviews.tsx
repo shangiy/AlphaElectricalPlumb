@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthProvider';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, MessageSquareQuote, ChevronLeft, ChevronRight, Star } from 'lucide-react';
+import { Loader2, MessageSquareQuote, ChevronLeft, ChevronRight, Sparkles } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 import useEmblaCarousel from 'embla-carousel-react';
@@ -13,6 +13,7 @@ import Autoplay from 'embla-carousel-autoplay';
 import ReviewForm from '@/components/reviews/ReviewForm';
 import { Rating } from '@/components/ui/rating';
 import { formatDistanceToNow } from 'date-fns';
+import { getStorefrontSetting } from '@/app/actions/cms-actions';
 
 interface ReviewData {
     id: string;
@@ -21,28 +22,35 @@ interface ReviewData {
     title: string;
     comment: string;
     createdAt: string;
+    isHidden: boolean;
 }
 
 /**
  * 2027 Homepage Professional Review Section:
- * Filters strictly for 'homepage' feedback using the unified reviews table.
+ * Now respects CMS moderation (isHidden) and dynamic layout settings.
  */
 export default function CustomerReviews() {
     const { user } = useAuth();
     const { toast } = useToast();
     const [reviews, setReviews] = useState<ReviewData[]>([]);
+    const [layout, setLayout] = useState({ type: 'marquee' });
     const [isLoading, setIsLoading] = useState(true);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-    const fetchReviews = useCallback(async () => {
+    const fetchCMSData = useCallback(async () => {
         if (!supabase) return;
         setIsLoading(true);
         try {
-            // Fetch strictly 'homepage' storefront testimonials
+            const layoutConfig = await getStorefrontSetting('review_layout');
+            if (layoutConfig) setLayout(layoutConfig);
+
+            // Fetch reviews, excluding hidden ones for the public storefront
             const { data, error } = await supabase
                 .from('reviews')
                 .select('*')
                 .eq('review_type', 'homepage')
+                .eq('is_hidden', false)
+                .order('sort_order', { ascending: true })
                 .order('created_at', { ascending: false });
             
             if (error) throw error;
@@ -53,7 +61,8 @@ export default function CustomerReviews() {
                 rating: r.rating,
                 title: r.title,
                 comment: r.comment,
-                createdAt: r.created_at
+                createdAt: r.created_at,
+                isHidden: r.is_hidden
             })));
         } catch (error) {
             console.error("Fetch reviews error:", error);
@@ -63,8 +72,8 @@ export default function CustomerReviews() {
     }, []);
 
     useEffect(() => {
-        fetchReviews();
-    }, [fetchReviews]);
+        fetchCMSData();
+    }, [fetchCMSData]);
 
     const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, align: 'start' }, [
         Autoplay({ delay: 6000, stopOnInteraction: false })
@@ -75,7 +84,8 @@ export default function CustomerReviews() {
 
     const handleSuccess = () => {
         setIsDialogOpen(false);
-        fetchReviews();
+        toast({ title: "Feedback Pending", description: "Your experience has been sent to our moderation queue." });
+        fetchCMSData();
     };
 
     return (
@@ -83,6 +93,9 @@ export default function CustomerReviews() {
             <div className="container mx-auto px-4">
                 <div className="flex flex-col lg:flex-row justify-between items-end mb-20 gap-10">
                     <div className="max-w-2xl">
+                        <div className="flex items-center gap-2 text-primary font-black uppercase tracking-[0.3em] mb-4">
+                            <Sparkles size={16} /> Verified Experience
+                        </div>
                         <h2 className="text-6xl font-black font-headline text-accent tracking-tighter leading-[0.8] mb-6 uppercase">Professional <br/>Feedback</h2>
                         <p className="text-xl text-muted-foreground font-medium">Discover what our community of engineers, plumbers, and developers are saying about Alpha's ecosystem.</p>
                     </div>

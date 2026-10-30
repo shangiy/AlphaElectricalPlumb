@@ -1,21 +1,43 @@
-import React from 'react';
+'use client';
+
+import { useState, useEffect } from 'react';
+import { getStorefrontSetting } from '@/app/actions/cms-actions';
+import { cn } from '@/lib/utils';
 
 export default function HomepageAbout() {
+  const [content, setAboutContent] = useState({ text: '', alignment: 'center', fontSize: 'lg' });
+
+  useEffect(() => {
+    async function loadAbout() {
+        const data = await getStorefrontSetting('about_us_content');
+        if (data) setAboutContent(data);
+    }
+    loadAbout();
+  }, []);
+
+  const defaultText = "Alpha Electricals & Plumbing Ltd is committed to providing quality tanks, plumbing equipment, lighting, décor, and construction products across the region. Our platform serves as a resourceful destination for homeowners, contractors, and businesses seeking expert advice, innovative products, and reliable services.";
+
   return (
-    <section className="bg-background py-16">
-      <div className="container mx-auto px-4 text-center max-w-4xl">
-        <h2 className="text-3xl font-bold font-headline mb-6 text-primary">About Us</h2>
-        <div className="space-y-4 text-muted-foreground">
-            <p>
-                Alpha Electricals & Plumbing Ltd is committed to providing quality tanks, plumbing equipment, lighting, décor, and construction products across the region.
-            </p>
-            <p>
-                Our platform serves as a resourceful destination for homeowners, contractors, and businesses seeking expert advice, innovative products, and reliable services in the construction and utility sectors.
-            </p>
-            <p>
-                We offer a wide range of guides and insights on efficient product use, energy-saving techniques, and modern plumbing solutions. Through strategic partnerships with certified electricians and plumbers.
-            </p>
+    <section className="bg-background py-32 border-y">
+      <div className={cn(
+          "container mx-auto px-4 max-w-5xl",
+          content.alignment === 'center' ? 'text-center' : content.alignment === 'right' ? 'text-right' : 'text-left'
+      )}>
+        <h2 className="text-5xl font-black font-headline mb-10 text-accent tracking-tighter uppercase">Our Story</h2>
+        <div className={cn(
+            "space-y-6 text-muted-foreground font-medium leading-relaxed",
+            content.fontSize === 'xl' ? 'text-2xl' : content.fontSize === 'lg' ? 'text-xl' : content.fontSize === 'sm' ? 'text-sm' : 'text-base'
+        )}>
+            {content.text ? (
+                content.text.split('\n').map((para, i) => <p key={i}>{para}</p>)
+            ) : (
+                <p>{defaultText}</p>
+            )}
         </div>
+        <div className={cn(
+            "w-32 h-2 bg-primary/20 rounded-full mt-12",
+            content.alignment === 'center' ? 'mx-auto' : content.alignment === 'right' ? 'ml-auto' : 'mr-auto'
+        )} />
       </div>
     </section>
   );
