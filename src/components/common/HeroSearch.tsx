@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search, Camera, Video, AlertCircle, Loader2, Sparkles } from 'lucide-react';
+import { Search, Camera, Loader2, Sparkles } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import {
@@ -21,7 +21,7 @@ import { cn } from '@/lib/utils';
 import { uploadImage } from '@/lib/storage';
 import { supabase } from '@/lib/supabase';
 import { identifyProductVisually } from '@/ai/flows/visual-identity-flow';
-import { getSiteSetting } from '@/app/actions/ui-actions';
+import { getStorefrontSetting } from '@/app/actions/cms-actions';
 
 interface HeroSearchProps {
   isCompact?: boolean;
@@ -43,15 +43,18 @@ export default function HeroSearch({ isCompact = false }: HeroSearchProps) {
 
   useEffect(() => {
     setMounted(true);
-    async function loadPlaceholders() {
+    async function loadCMSData() {
         try {
-            const val = await getSiteSetting('search_suggestions');
-            if (val && Array.isArray(val)) setPlaceholders(val);
+            // Fetch phrases from the new storefront_settings table
+            const val = await getStorefrontSetting('search_phrases');
+            if (val && Array.isArray(val)) {
+                setPlaceholders(val);
+            }
         } catch (e) {
-            console.error("Search suggestions fetch failed");
+            console.error("Search CMS fetch failed", e);
         }
     }
-    loadPlaceholders();
+    loadCMSData();
   }, []);
 
   const getCameraPermission = async () => {

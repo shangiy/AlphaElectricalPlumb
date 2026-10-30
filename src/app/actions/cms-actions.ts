@@ -8,12 +8,19 @@
 import { supabaseAdmin } from '@/lib/supabase-admin';
 import { revalidatePath } from 'next/cache';
 
+/**
+ * Fetches a configuration object from the storefront_settings table.
+ */
 export async function getStorefrontSetting(key: string) {
     if (!supabaseAdmin) return null;
     const { data } = await supabaseAdmin.from('storefront_settings').select('content').eq('key', key).maybeSingle();
     return data?.content;
 }
 
+/**
+ * Upserts a configuration object into the storefront_settings table.
+ * Triggers a live revalidation of the public storefront.
+ */
 export async function updateStorefrontSetting(key: string, content: any) {
     if (!supabaseAdmin) throw new Error("Admin client not configured.");
     
@@ -23,8 +30,16 @@ export async function updateStorefrontSetting(key: string, content: any) {
         
     if (error) throw error;
     
+    // Instantly update the public storefront
     revalidatePath('/');
-    revalidatePath('/admin/cms');
+    revalidatePath('/admin/featured');
+}
+
+/**
+ * Convenience wrapper specifically for search phrases.
+ */
+export async function updateSearchPhrases(phrases: string[]) {
+    return updateStorefrontSetting('search_phrases', phrases);
 }
 
 export async function toggleReviewVisibility(id: string, isHidden: boolean) {

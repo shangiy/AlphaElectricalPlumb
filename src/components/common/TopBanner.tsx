@@ -4,11 +4,11 @@ import { useState, useEffect } from 'react';
 import { Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
-import { getSiteSetting } from '@/app/actions/ui-actions';
+import { getStorefrontSetting } from '@/app/actions/cms-actions';
 
 /**
  * Dynamic TopBanner:
- * Fetches promotional content from Supabase site_settings.
+ * Fetches promotional content from Supabase storefront_settings.
  * Features KENYAN style "MASHUJAA" text logic.
  */
 export default function TopBanner() {
@@ -18,7 +18,8 @@ export default function TopBanner() {
   useEffect(() => {
     async function loadBanner() {
       try {
-        const val = await getSiteSetting('top_banner_text');
+        // Fetch banner text from unified storefront_settings table
+        const val = await getStorefrontSetting('top_banner_text');
         if (val) setContent(val);
       } catch (e) {
         console.error("Banner fetch failed", e);
