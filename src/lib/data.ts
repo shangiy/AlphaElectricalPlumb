@@ -25,7 +25,13 @@ function resolveStoragePath(rawPath: string): string {
 
   // If we still have a path, ask Supabase for the public URL
   if (clean && supabase) {
-    return supabase.storage.from(bucketName).getPublicUrl(clean).data.publicUrl;
+    try {
+        const { data } = supabase.storage.from(bucketName).getPublicUrl(clean);
+        return data.publicUrl;
+    } catch (e) {
+        console.warn("Storage resolution failed for path:", clean);
+        return rawPath;
+    }
   }
 
   return rawPath;
@@ -94,9 +100,11 @@ export function mapProduct(p: any): Product {
 
 export async function getProducts(): Promise<Product[]> {
   try {
-    if (!supabase) return [];
+    if (!supabase) {
+        console.warn("getProducts called but Supabase is not initialized.");
+        return [];
+    }
     
-    // Fetch directly from Supabase with anti-cache headers to ensure fresh admin sync
     const { data, error } = await supabase
       .from('products')
       .select('*')
@@ -105,8 +113,12 @@ export async function getProducts(): Promise<Product[]> {
     if (error) throw error;
 
     return (data || []).map(mapProduct) as Product[];
-  } catch (error) {
-    console.error("Supabase Sync Error:", error);
+  } catch (error: any) {
+    console.error("Supabase Sync Error (getProducts):", {
+        message: error.message,
+        details: error.details,
+        hint: error.hint
+    });
     return [];
   }
 }
@@ -115,11 +127,9 @@ export async function getCategories(): Promise<Category[]> {
   try {
     if (!supabase) return defaultCategories;
     
-    // Try to fetch from dedicated categories table first
     const { data, error } = await supabase.from('categories').select('*').order('name');
     
     if (error) {
-        // Fallback to getting categories from products if table doesn't exist
         const { data: pData } = await supabase.from('products').select('category').not('category', 'is', null);
         const unique = Array.from(new Set((pData || []).map(p => p.category))).map(c => ({ id: c, name: c }));
         return unique.length > 0 ? unique : defaultCategories;
