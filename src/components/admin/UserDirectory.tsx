@@ -101,7 +101,11 @@ export default function UserDirectory() {
             setTrendingItems(sortedTrends);
 
         } catch (err: any) {
-            console.error("User Directory sync failed:", err);
+            console.error("User Directory sync failed:", {
+                message: err?.message || err,
+                details: err?.details,
+                hint: err?.hint
+            });
             toast({
                 variant: "destructive",
                 title: "Sync Error",
