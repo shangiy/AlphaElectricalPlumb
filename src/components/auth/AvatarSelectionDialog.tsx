@@ -124,12 +124,14 @@ export default function AvatarSelectionDialog({ isOpen, onClose, onSelect }: Ava
                                 onClick={() => handleSelect(avatar.url)}
                                 className="relative aspect-square rounded-2xl overflow-hidden border-2 border-transparent hover:border-primary hover:scale-105 hover:shadow-xl focus:border-primary focus:outline-none transition-all duration-300 bg-muted/20"
                             >
-                                <Image
-                                    src={avatar.url}
-                                    alt={avatar.alt}
-                                    width={100}
-                                    height={100}
+                                <img
+                                    src={avatar.url || 'https://api.dicebear.com/7.x/avataaars/svg?seed=fallback'}
+                                    alt={avatar.alt || 'Avatar'}
                                     className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                        // Auto-recovery if external avatar API is unreachable
+                                        (e.target as HTMLImageElement).src = 'https://api.dicebear.com/7.x/avataaars/svg?seed=fallback';
+                                    }}
                                 />
                             </button>
                         ))}
