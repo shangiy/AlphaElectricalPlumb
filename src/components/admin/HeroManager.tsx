@@ -29,12 +29,24 @@ export const STYLE_OPTIONS = [
 ];
 
 export default function HeroManager({ initialSlides }: { initialSlides: HeroSlide[] }) {
-    const [slides, setSlides] = useState<HeroSlide[]>(initialSlides || []);
+    const sortSlides = (sArr: HeroSlide[]) => {
+        return [...sArr].sort((a, b) => {
+            if (a.active === b.active) return 0;
+            return a.active ? -1 : 1;
+        });
+    };
+
+    const [slides, setSlides] = useState<HeroSlide[]>(sortSlides(initialSlides || []));
     const [saving, setSaving] = useState(false);
     const { toast } = useToast();
 
     const handleUpdate = (id: string, updatedFields: Partial<HeroSlide>) => {
-        setSlides(slides.map(s => s.id === id ? { ...s, ...updatedFields } : s));
+        const updated = slides.map(s => s.id === id ? { ...s, ...updatedFields } : s);
+        if (updatedFields.active !== undefined) {
+            setSlides(sortSlides(updated));
+        } else {
+            setSlides(updated);
+        }
     };
 
     const handleAddSlide = () => {
@@ -56,7 +68,7 @@ export default function HeroManager({ initialSlides }: { initialSlides: HeroSlid
             headlineTopMargin: 0,
             subheadingTopMargin: 0
         };
-        setSlides([...slides, newSlide]);
+        setSlides(sortSlides([...slides, newSlide]));
     };
 
     const handleSave = async () => {
@@ -76,13 +88,13 @@ export default function HeroManager({ initialSlides }: { initialSlides: HeroSlid
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-10 border-b pb-8">
                 <div>
                     <h2 className="text-3xl font-black font-headline text-accent tracking-tighter uppercase">Hero Carousel CMS</h2>
-                    <p className="text-muted-foreground text-sm font-medium mt-1">Manage high-impact headlines and campaign banners with independent positioning controls.</p>
+                    <p className="text-muted-foreground text-sm font-medium mt-1">Manage high-impact headlines. Active slides move to top; inactive slides are moved below for cleanup.</p>
                 </div>
                 <div className="flex gap-3">
                     <Button onClick={handleAddSlide} variant="outline" className="rounded-full h-12 px-6 font-bold">
                         <Plus className="w-4 h-4 mr-2" /> Add Slide
                     </Button>
-                    <Button onClick={handleSave} disabled={saving} className="rounded-full h-12 px-10 font-black uppercase tracking-tighter shadow-lg bg-primary text-white">
+                    <Button onClick={handleSave} disabled={saving} className="rounded-full h-12 px-10 font-black uppercase tracking-tighter shadow-xl bg-primary text-white">
                         {saving ? <Loader2 className="animate-spin w-4 h-4 mr-2" /> : <Save className="w-4 h-4 mr-2" />}
                         Publish Changes
                     </Button>
@@ -94,23 +106,21 @@ export default function HeroManager({ initialSlides }: { initialSlides: HeroSlid
                     const activeStyle = STYLE_OPTIONS.find(opt => opt.id === slide.styleType) || STYLE_OPTIONS[0];
 
                     return (
-                        <div key={slide.id} className="bg-white rounded-[3rem] border shadow-xl p-10 relative overflow-hidden transition-all hover:shadow-2xl">
+                        <div key={slide.id} className={cn("bg-white rounded-[3rem] border shadow-xl p-10 relative overflow-hidden transition-all hover:shadow-2xl", !slide.active && "opacity-60 grayscale bg-muted/20")}>
                             <div className="flex justify-between items-center mb-8 border-b pb-6">
                                 <div className="flex items-center gap-3">
                                     <span className="h-10 w-10 rounded-full bg-accent text-white flex items-center justify-center font-black text-sm shadow-inner">#{index + 1}</span>
-                                    <span className="font-black text-accent uppercase tracking-widest text-xs">Campaign Slot</span>
+                                    <span className="font-black text-accent uppercase tracking-widest text-xs">Campaign Slot {!slide.active && "(OFFLINE)"}</span>
                                 </div>
                                 <div className="flex items-center gap-4">
+                                    <Switch checked={slide.active} onCheckedChange={(val) => handleUpdate(slide.id, { active: val })} />
                                     <button 
-                                        onClick={() => handleUpdate(slide.id, { active: !slide.active })}
-                                        className={`flex items-center gap-2 px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${slide.active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}
+                                        onClick={() => setSlides(slides.filter(s => s.id !== slide.id))} 
+                                        className="bg-red-500 text-white p-2 rounded-xl shadow-lg hover:bg-red-600 transition-colors"
+                                        title="Delete Banner"
                                     >
-                                        {slide.active ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-                                        {slide.active ? 'Live' : 'Hidden'}
+                                        <Trash2 size={20} />
                                     </button>
-                                    <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-red-500 rounded-xl" onClick={() => setSlides(slides.filter(s => s.id !== slide.id))}>
-                                        <Trash2 className="w-6 h-6" />
-                                    </Button>
                                 </div>
                             </div>
 
@@ -189,7 +199,7 @@ export default function HeroManager({ initialSlides }: { initialSlides: HeroSlid
                                 {/* SUBHEADING HUB */}
                                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
                                     <div className="lg:col-span-7 space-y-3">
-                                        <label className="text-[10px] font-black uppercase text-muted-foreground/60 tracking-widest ml-1">Subheading Copy (Supports Multi-line)</label>
+                                        <label className="text-[10px] font-black uppercase text-muted-foreground/60 tracking-widest ml-1">2. Subheading Copy (Supports Multi-line)</label>
                                         <Textarea 
                                             value={slide.subheading} 
                                             onChange={(e) => handleUpdate(slide.id, { subheading: e.target.value })} 
@@ -225,11 +235,30 @@ export default function HeroManager({ initialSlides }: { initialSlides: HeroSlid
                                         </div>
                                     </div>
                                 </div>
+
+                                {/* MEDIA & CTA ROW */}
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6 border-t">
+                                    <div className="space-y-2">
+                                        <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Background Image URL</Label>
+                                        <Input value={slide.imageUrl} onChange={(e) => handleUpdate(slide.id, { imageUrl: e.target.value })} className="h-11 rounded-xl" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Button Label</Label>
+                                        <Input value={slide.ctaText} onChange={(e) => handleUpdate(slide.id, { ctaText: e.target.value })} className="h-11 rounded-xl font-bold" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Button Destination</Label>
+                                        <Input value={slide.ctaLink} onChange={(e) => handleUpdate(slide.id, { ctaLink: e.target.value })} className="h-11 rounded-xl" />
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     );
                 })}
             </div>
+            <Button variant="outline" onClick={handleAddSlide} className="w-full h-24 rounded-[3.5rem] border-2 border-dashed font-black uppercase tracking-[0.4em] opacity-40 hover:opacity-100 hover:border-primary hover:bg-primary/5 transition-all">
+                <Plus className="mr-3 h-8 w-8" /> Add Campaign Module
+            </Button>
         </div>
     );
 }

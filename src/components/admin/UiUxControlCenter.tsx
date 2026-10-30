@@ -63,6 +63,13 @@ export default function UiUxControlCenter() {
   const [categoryCards, setCategoryCards] = useState<CategoryCardData[]>([]);
   const [reviews, setReviews] = useState<any[]>([]);
 
+  const sortHeroSlides = (slides: HeroSlide[]) => {
+    return [...slides].sort((a, b) => {
+        if (a.active === b.active) return 0;
+        return a.active ? -1 : 1;
+    });
+  };
+
   const loadAllSettings = useCallback(async () => {
     setLoading(true);
     try {
@@ -72,7 +79,7 @@ export default function UiUxControlCenter() {
         getStorefrontSetting('category_cards')
       ]);
       
-      if (hero) setHeroSlides(hero);
+      if (hero) setHeroSlides(sortHeroSlides(hero as HeroSlide[]));
       if (search) setSearchPhrases(search);
       if (cats) setCategoryCards(cats);
 
@@ -241,11 +248,25 @@ function HeroSlideManager({ slides, setSlides }: { slides: HeroSlide[], setSlide
             headlineTopMargin: 0,
             subheadingTopMargin: 0
         };
-        setSlides([...slides, newSlide]);
+        const newSlides = [...slides, newSlide];
+        setSlides(sortSlides(newSlides));
+    };
+
+    const sortSlides = (sArr: HeroSlide[]) => {
+        return [...sArr].sort((a, b) => {
+            if (a.active === b.active) return 0;
+            return a.active ? -1 : 1;
+        });
     };
 
     const handleUpdateSlide = (id: string, updates: Partial<HeroSlide>) => {
-        setSlides(slides.map(s => s.id === id ? { ...s, ...updates } : s));
+        const updated = slides.map(s => s.id === id ? { ...s, ...updates } : s);
+        // If toggling active status, re-sort the list
+        if (updates.active !== undefined) {
+            setSlides(sortSlides(updated));
+        } else {
+            setSlides(updated);
+        }
     };
 
     const handleDeleteSlide = (id: string) => {
@@ -259,17 +280,21 @@ function HeroSlideManager({ slides, setSlides }: { slides: HeroSlide[], setSlide
                     const activeStyle = STYLE_OPTIONS.find(opt => opt.id === slide.styleType) || STYLE_OPTIONS[0];
 
                     return (
-                        <Card key={slide.id} className={cn("rounded-[2.5rem] border shadow-2xl overflow-hidden group transition-all", !slide.active && "opacity-60 grayscale")}>
+                        <Card key={slide.id} className={cn("rounded-[2.5rem] border shadow-2xl overflow-hidden group transition-all", !slide.active && "opacity-60 grayscale bg-muted/20")}>
                             <div className="relative h-64 bg-muted overflow-hidden">
                                 <img src={slide.imageUrl} alt="" className="w-full h-full object-cover transition-transform group-hover:scale-105" />
                                 <div className="absolute top-6 right-6 flex gap-2">
                                     <Switch checked={slide.active} onCheckedChange={(val) => handleUpdateSlide(slide.id, { active: val })} />
-                                    <button onClick={() => handleDeleteSlide(slide.id)} className="bg-red-500 text-white p-2 rounded-xl shadow-lg hover:bg-red-600 transition-colors">
+                                    <button 
+                                        onClick={() => handleDeleteSlide(slide.id)} 
+                                        className="bg-red-500 text-white p-2 rounded-xl shadow-lg hover:bg-red-600 transition-colors"
+                                        title="Delete Banner"
+                                    >
                                         <Trash2 size={20} />
                                     </button>
                                 </div>
                                 <div className="absolute bottom-6 left-6 bg-black/60 backdrop-blur-md px-4 py-2 rounded-full text-[10px] font-black text-white uppercase tracking-widest">
-                                    Slide Slot #{i + 1}
+                                    Slide Slot #{i + 1} {!slide.active && "(OFFLINE)"}
                                 </div>
                             </div>
                             
