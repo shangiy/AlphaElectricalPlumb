@@ -65,6 +65,7 @@ export default function CustomerReviews() {
                 isHidden: r.is_hidden
             })));
         } catch (error: any) {
+            // Enhanced readable logger for Supabase PostgREST errors
             console.error("Fetch reviews error details:", 
                 error instanceof Error ? error.message : JSON.stringify(error, Object.getOwnPropertyNames(error))
             );
