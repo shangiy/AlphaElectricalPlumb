@@ -351,7 +351,7 @@ export default function Header() {
                                     </SheetClose>
                                 )}
 
-                                {user && (
+                                {user && user.role === 'user' && (
                                     <div className="space-y-1">
                                         <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/40 ml-5 mb-3">Client Services</h3>
                                         <SheetClose asChild>
