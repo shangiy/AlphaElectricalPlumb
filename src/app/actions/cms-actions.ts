@@ -24,7 +24,9 @@ export interface HeroSlide {
     headlineSize?: number;
     subheadingColor?: string;
     subheadingSize?: number;
-    topMargin?: number; // in centimeters
+    headlineTopMargin?: number; // in centimeters
+    subheadingTopMargin?: number; // in centimeters
+    topMargin?: number; // legacy fallback
 }
 
 /**

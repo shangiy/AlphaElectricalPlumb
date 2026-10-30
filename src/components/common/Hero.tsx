@@ -58,7 +58,6 @@ export default function Hero() {
 
     const activeStyle = STYLE_OPTIONS.find(opt => opt.id === slide.styleType) || STYLE_OPTIONS[0];
     
-    // Case-insensitive split but preserve casing of original parts
     const parts = headline.split(new RegExp(`(${highlight})`, 'gi'));
     
     return parts.map((part, i) => {
@@ -95,7 +94,8 @@ export default function Hero() {
       headlineSize: 72,
       subheadingColor: '#ffffff',
       subheadingSize: 24,
-      topMargin: 0
+      headlineTopMargin: 0,
+      subheadingTopMargin: 0
   } as any];
 
   return (
@@ -116,33 +116,30 @@ export default function Hero() {
               />
               <div className="absolute inset-0 bg-black/50" />
               
-              <div 
-                className="container mx-auto px-4 h-full flex flex-col justify-center items-start relative z-10"
-                style={{ 
-                  paddingTop: slide.topMargin ? `${slide.topMargin + 6}cm` : '6cm' 
-                }}
-              >
-                  <div className="max-w-4xl space-y-6 animate-in fade-in slide-in-from-left duration-1000">
+              <div className="container mx-auto px-4 h-full flex flex-col justify-center items-start relative z-10 pt-[4cm]">
+                  <div className="max-w-4xl space-y-2 animate-in fade-in slide-in-from-left duration-1000">
                     <h1 
-                      className="text-4xl md:text-7xl font-black font-headline leading-[0.95] tracking-tighter drop-shadow-2xl uppercase whitespace-pre-wrap"
+                      className="font-black font-headline leading-[0.95] tracking-tighter drop-shadow-2xl uppercase whitespace-pre-wrap"
                       style={{ 
                         color: slide.headlineColor || '#ffffff',
-                        fontSize: slide.headlineSize ? `${slide.headlineSize}px` : undefined
+                        fontSize: slide.headlineSize ? `${slide.headlineSize}px` : '72px',
+                        marginTop: slide.headlineTopMargin ? `${slide.headlineTopMargin}cm` : '0cm'
                       }}
                     >
                         {renderHeadline(slide)}
                     </h1>
                     <p 
-                      className="text-lg md:text-2xl font-medium drop-shadow-lg max-w-2xl whitespace-pre-wrap"
+                      className="font-medium drop-shadow-lg max-w-2xl whitespace-pre-wrap"
                       style={{ 
                         color: slide.subheadingColor || '#ffffff',
-                        fontSize: slide.subheadingSize ? `${slide.subheadingSize}px` : undefined
+                        fontSize: slide.subheadingSize ? `${slide.subheadingSize}px` : '24px',
+                        marginTop: slide.subheadingTopMargin ? `${slide.subheadingTopMargin}cm` : '1cm'
                       }}
                     >
                         {slide.subheading}
                     </p>
                     
-                    <div className="flex flex-col sm:flex-row gap-4 pt-4">
+                    <div className="flex flex-col sm:flex-row gap-4 pt-8">
                         <Button asChild size="xl" className="rounded-full bg-primary hover:bg-primary/90 text-white font-black shadow-2xl hover:scale-105 transition-transform">
                             <Link href={slide.ctaLink || '/search'}>{slide.ctaText || 'EXPLORE'}</Link>
                         </Button>

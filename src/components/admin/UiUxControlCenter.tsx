@@ -13,18 +13,12 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { 
   Loader2, 
   Palette, 
-  Type, 
   LayoutGrid, 
-  GripVertical, 
   Trash2, 
   Plus, 
   Save, 
-  Monitor,
   Sparkles,
   MessageSquare,
-  AlignLeft,
-  AlignCenter,
-  AlignRight,
   Eye,
   EyeOff,
   MoveVertical
@@ -40,55 +34,48 @@ import {
 } from '@/app/actions/cms-actions';
 import { cn } from '@/lib/utils';
 
+export const STYLE_OPTIONS = [
+    { id: 'kenyan-flag', label: '🇰🇪 Kenyan Flag Colors', previewClass: 'font-black bg-gradient-to-r from-black via-red-600 to-green-600 bg-clip-text text-transparent' },
+    { id: 'gold-gradient', label: '✨ Luxury Gold Gradient', previewClass: 'font-bold bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-600 bg-clip-text text-transparent' },
+    { id: 'neon-glow', label: '⚡ Electric Neon Blue', previewClass: 'font-bold text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.6)]' },
+    { id: 'fire-emoji', label: '🔥 Fire & Energy Mode', previewClass: 'font-extrabold text-orange-500 after:content-["🔥"]' },
+    { id: 'sparkle', label: '💎 Diamond Sparkle', previewClass: 'font-bold text-purple-400 tracking-widest after:content-["✨"]' }
+];
+
 /**
  * Storefront CMS Suite v3.0
  * Intelligent hub for managing every aspect of the storefront experience.
- * Supports deep-linking via ?tab= parameter.
  */
 export default function UiUxControlCenter() {
   const { toast } = useToast();
   const searchParams = useSearchParams();
   const router = useRouter();
   
-  // Initialize tab from URL or default to 'hero'
   const initialTab = searchParams.get('tab') || 'hero';
   const [activeTab, setActiveTab] = useState(initialTab);
   
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
-  // Hero Carousel State
   const [heroSlides, setHeroSlides] = useState<HeroSlide[]>([]);
-  
-  // Search State
   const [searchPhrases, setSearchPhrases] = useState<string[]>([]);
   const [newPhrase, setNewPhrase] = useState('');
-
-  // Category Manager State
   const [categoryCards, setCategoryCards] = useState<CategoryCardData[]>([]);
-
-  // About Content State
-  const [aboutContent, setAboutContent] = useState({ text: '', alignment: 'center', fontSize: 'lg' });
-
-  // Reviews State
   const [reviews, setReviews] = useState<any[]>([]);
 
   const loadAllSettings = useCallback(async () => {
     setLoading(true);
     try {
-      const [hero, search, about, cats] = await Promise.all([
+      const [hero, search, cats] = await Promise.all([
         getStorefrontSetting('hero_slides'),
         getStorefrontSetting('search_phrases'),
-        getStorefrontSetting('about_us_content'),
         getStorefrontSetting('category_cards')
       ]);
       
       if (hero) setHeroSlides(hero);
       if (search) setSearchPhrases(search);
-      if (about) setAboutContent(about);
       if (cats) setCategoryCards(cats);
 
-      // Load reviews for moderation
       const { data: revData } = await supabase.from('reviews').select('*').order('created_at', { ascending: false });
       setReviews(revData || []);
     } catch (err) {
@@ -102,7 +89,6 @@ export default function UiUxControlCenter() {
     loadAllSettings();
   }, [loadAllSettings]);
 
-  // Sync state with URL when tab changes manually
   const handleTabChange = (value: string) => {
     setActiveTab(value);
     const params = new URLSearchParams(searchParams.toString());
@@ -153,9 +139,10 @@ export default function UiUxControlCenter() {
           </h1>
           <p className="text-muted-foreground font-bold uppercase tracking-widest text-xs mt-2">Professional Storefront Governance v3.0</p>
         </div>
-        <div className="flex items-center gap-3">
-            <div className="bg-primary/10 text-primary px-4 py-2 rounded-full border border-primary/20 text-[10px] font-black uppercase tracking-widest">Live Preview Ready</div>
-        </div>
+        <Button onClick={handleSaveHero} disabled={submitting} className="rounded-full h-12 px-8 bg-primary font-black uppercase tracking-tighter shadow-xl">
+            {submitting ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : <Save className="mr-2 h-4 w-4" />}
+            Global Save
+        </Button>
       </div>
 
       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
@@ -171,9 +158,9 @@ export default function UiUxControlCenter() {
             <div className="space-y-8">
                 <div className="flex justify-between items-center">
                     <h3 className="text-2xl font-black uppercase tracking-tight text-accent">Hero Carousel Management</h3>
-                    <Button onClick={handleSaveHero} disabled={submitting} className="rounded-full h-12 px-8 bg-primary font-black uppercase tracking-tighter">
+                    <Button onClick={handleSaveHero} disabled={submitting} variant="outline" className="rounded-full h-12 px-8 font-black uppercase tracking-tighter">
                         {submitting ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : <Save className="mr-2 h-4 w-4" />}
-                        Publish Slides
+                        Save Carousel
                     </Button>
                 </div>
                 <HeroSlideManager slides={heroSlides} setSlides={setHeroSlides} />
@@ -239,7 +226,7 @@ function HeroSlideManager({ slides, setSlides }: { slides: HeroSlide[], setSlide
     const handleAddSlide = () => {
         const newSlide: HeroSlide = {
             id: Math.random().toString(36).substr(2, 9),
-            headline: 'New High-Rise Headline',
+            headline: 'New Campaign Headline',
             highlightedText: 'ALPHA',
             styleType: 'kenyan-flag',
             subheading: 'Compelling subtext for your clients.',
@@ -251,7 +238,8 @@ function HeroSlideManager({ slides, setSlides }: { slides: HeroSlide[], setSlide
             headlineSize: 72,
             subheadingColor: '#ffffff',
             subheadingSize: 24,
-            topMargin: 0
+            headlineTopMargin: 0,
+            subheadingTopMargin: 0
         };
         setSlides([...slides, newSlide]);
     };
@@ -265,135 +253,159 @@ function HeroSlideManager({ slides, setSlides }: { slides: HeroSlide[], setSlide
     };
 
     return (
-        <div className="grid grid-cols-1 gap-8">
-            <div className="grid grid-cols-1 gap-8">
-                {slides.map((slide, i) => (
-                    <Card key={slide.id} className={cn("rounded-[2.5rem] border shadow-xl overflow-hidden group transition-all", !slide.active && "opacity-60 grayscale")}>
-                        <div className="relative h-64 bg-muted overflow-hidden">
-                            <img src={slide.imageUrl} alt="" className="w-full h-full object-cover transition-transform group-hover:scale-105" />
-                            <div className="absolute top-6 right-6 flex gap-2">
-                                <Switch checked={slide.active} onCheckedChange={(val) => handleUpdateSlide(slide.id, { active: val })} />
-                                <button onClick={() => handleDeleteSlide(slide.id)} className="bg-red-500 text-white p-2 rounded-xl shadow-lg hover:bg-red-600 transition-colors">
-                                    <Trash2 size={20} />
-                                </button>
+        <div className="space-y-8">
+            <div className="grid grid-cols-1 gap-12">
+                {slides.map((slide, i) => {
+                    const activeStyle = STYLE_OPTIONS.find(opt => opt.id === slide.styleType) || STYLE_OPTIONS[0];
+
+                    return (
+                        <Card key={slide.id} className={cn("rounded-[2.5rem] border shadow-2xl overflow-hidden group transition-all", !slide.active && "opacity-60 grayscale")}>
+                            <div className="relative h-64 bg-muted overflow-hidden">
+                                <img src={slide.imageUrl} alt="" className="w-full h-full object-cover transition-transform group-hover:scale-105" />
+                                <div className="absolute top-6 right-6 flex gap-2">
+                                    <Switch checked={slide.active} onCheckedChange={(val) => handleUpdateSlide(slide.id, { active: val })} />
+                                    <button onClick={() => handleDeleteSlide(slide.id)} className="bg-red-500 text-white p-2 rounded-xl shadow-lg hover:bg-red-600 transition-colors">
+                                        <Trash2 size={20} />
+                                    </button>
+                                </div>
+                                <div className="absolute bottom-6 left-6 bg-black/60 backdrop-blur-md px-4 py-2 rounded-full text-[10px] font-black text-white uppercase tracking-widest">
+                                    Slide Slot #{i + 1}
+                                </div>
                             </div>
-                            <div className="absolute bottom-6 left-6 bg-black/60 backdrop-blur-md px-4 py-2 rounded-full text-[10px] font-black text-white uppercase tracking-widest">
-                                Slide Slot #{i + 1}
-                            </div>
-                        </div>
-                        <CardContent className="p-10 space-y-10">
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-                                {/* Text Content & Multi-line Editor */}
-                                <div className="space-y-6">
-                                    <div className="space-y-2">
-                                        <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Headline Text (Supports Multi-line)</Label>
+                            
+                            <CardContent className="p-10 space-y-12">
+                                {/* HEADLINE ROW */}
+                                <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+                                    <div className="lg:col-span-7 space-y-3">
+                                        <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest ml-1">1. Main Headline Editor (Shift+Enter for lines)</Label>
                                         <Textarea 
-                                          value={slide.headline} 
-                                          onChange={(e) => handleUpdateSlide(slide.id, { headline: e.target.value })} 
-                                          className="font-black text-2xl h-32 rounded-2xl p-4 bg-muted/20" 
-                                          placeholder="Enter headline... Shift+Enter for new line"
+                                            value={slide.headline} 
+                                            onChange={(e) => handleUpdateSlide(slide.id, { headline: e.target.value })} 
+                                            className="font-black text-2xl h-32 rounded-2xl p-4 bg-muted/20 border-none shadow-inner" 
+                                            placeholder="Headline text..."
                                         />
                                     </div>
-                                    <div className="space-y-2">
-                                        <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Subheading (Supports Multi-line)</Label>
-                                        <Textarea 
-                                          value={slide.subheading} 
-                                          onChange={(e) => handleUpdateSlide(slide.id, { subheading: e.target.value })} 
-                                          className="font-bold h-24 rounded-2xl p-4 bg-muted/20"
-                                          placeholder="Enter subheading... Shift+Enter for new line"
-                                        />
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                            <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Button Label</Label>
-                                            <Input value={slide.ctaText} onChange={(e) => handleUpdateSlide(slide.id, { ctaText: e.target.value })} className="font-black rounded-xl h-12" />
+                                    <div className="lg:col-span-5 bg-accent/5 p-6 rounded-[2rem] border border-dashed border-accent/20 space-y-4">
+                                        <h4 className="text-[9px] font-black uppercase tracking-[0.2em] text-accent flex items-center gap-2">
+                                          <Palette className="h-3 w-3" /> Headline Styling Hub
+                                        </h4>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="space-y-1.5">
+                                                <Label className="text-[9px] font-bold text-muted-foreground/60 uppercase">Text Color</Label>
+                                                <div className="flex items-center gap-2">
+                                                  <input type="color" value={slide.headlineColor || '#ffffff'} onChange={(e) => handleUpdateSlide(slide.id, { headlineColor: e.target.value })} className="h-9 w-9 rounded-lg cursor-pointer border-none" />
+                                                  <Input value={slide.headlineColor || '#ffffff'} onChange={(e) => handleUpdateSlide(slide.id, { headlineColor: e.target.value })} className="h-9 rounded-lg font-mono text-[10px] uppercase" />
+                                                </div>
+                                            </div>
+                                            <div className="space-y-1.5">
+                                                <Label className="text-[9px] font-bold text-muted-foreground/60 uppercase">Font Size (px)</Label>
+                                                <Input type="number" value={slide.headlineSize || 72} onChange={(e) => handleUpdateSlide(slide.id, { headlineSize: parseInt(e.target.value) || 0 })} className="h-9 rounded-lg font-bold" />
+                                            </div>
                                         </div>
-                                        <div className="space-y-2">
-                                            <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Target Path</Label>
-                                            <Input value={slide.ctaLink} onChange={(e) => handleUpdateSlide(slide.id, { ctaLink: e.target.value })} className="font-bold rounded-xl h-12" />
+                                        <div className="pt-2 border-t border-accent/5">
+                                            <Label className="text-[9px] font-bold text-muted-foreground/60 uppercase flex items-center gap-1.5 mb-2">
+                                                <MoveVertical className="h-3 w-3" /> Start Position (cm from top)
+                                            </Label>
+                                            <div className="flex items-center gap-3">
+                                                <Input type="number" step="0.5" value={slide.headlineTopMargin || 0} onChange={(e) => handleUpdateSlide(slide.id, { headlineTopMargin: parseFloat(e.target.value) || 0 })} className="h-10 rounded-xl font-black text-lg bg-white w-24" />
+                                                <span className="text-[8px] font-black text-muted-foreground uppercase">Centimeters</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
 
-                                {/* Advanced Typography & Position Controls */}
-                                <div className="space-y-8 bg-secondary/30 p-8 rounded-[2rem] border border-dashed">
-                                    <h4 className="text-xs font-black uppercase tracking-[0.2em] text-primary flex items-center gap-2">
-                                      <Palette className="h-4 w-4" /> Visual Identity Controls
-                                    </h4>
-                                    
-                                    <div className="grid grid-cols-2 gap-6">
-                                        <div className="space-y-3">
-                                            <Label className="text-[10px] font-black uppercase text-muted-foreground/60 tracking-widest block">Headline Color</Label>
-                                            <div className="flex items-center gap-3">
-                                              <input 
-                                                type="color" 
-                                                value={slide.headlineColor || '#ffffff'} 
-                                                onChange={(e) => handleUpdateSlide(slide.id, { headlineColor: e.target.value })}
-                                                className="h-10 w-10 rounded-full cursor-pointer border-none overflow-hidden"
-                                              />
-                                              <Input value={slide.headlineColor || '#ffffff'} onChange={(e) => handleUpdateSlide(slide.id, { headlineColor: e.target.value })} className="h-10 rounded-xl font-mono text-xs" />
-                                            </div>
+                                {/* HIGHLIGHT ROW */}
+                                <div className="bg-primary/5 p-8 rounded-[2.5rem] border border-primary/10">
+                                    <Label className="text-[10px] font-black text-primary uppercase tracking-[0.2em] flex items-center gap-2 mb-4">
+                                        <Sparkles className="w-4 h-4" /> Word Highlighting Engine
+                                    </Label>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                        <div className="space-y-2">
+                                            <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest block ml-1">Target word to highlight</span>
+                                            <Input value={slide.highlightedText} onChange={(e) => handleUpdateSlide(slide.id, { highlightedText: e.target.value })} placeholder="e.g. MASHUJAA" className="h-12 rounded-xl font-bold" />
                                         </div>
-                                        <div className="space-y-3">
-                                            <Label className="text-[10px] font-black uppercase text-muted-foreground/60 tracking-widest block">Headline Size (px)</Label>
-                                            <Input 
-                                              type="number" 
-                                              value={slide.headlineSize || 72} 
-                                              onChange={(e) => handleUpdateSlide(slide.id, { headlineSize: parseInt(e.target.value) || 0 })} 
-                                              className="h-10 rounded-xl font-bold" 
-                                            />
+                                        <div className="space-y-2">
+                                            <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest block ml-1">Visual effect style</span>
+                                            <select 
+                                                value={slide.styleType} 
+                                                onChange={(e) => handleUpdateSlide(slide.id, { styleType: e.target.value as any })}
+                                                className="w-full h-12 px-3 rounded-xl border border-input bg-white text-xs font-bold shadow-sm focus:outline-none"
+                                            >
+                                                {STYLE_OPTIONS.map(opt => (
+                                                    <option key={opt.id} value={opt.id}>{opt.label}</option>
+                                                ))}
+                                            </select>
                                         </div>
                                     </div>
-
-                                    <div className="grid grid-cols-2 gap-6">
-                                        <div className="space-y-3">
-                                            <Label className="text-[10px] font-black uppercase text-muted-foreground/60 tracking-widest block">Sub-text Color</Label>
-                                            <div className="flex items-center gap-3">
-                                              <input 
-                                                type="color" 
-                                                value={slide.subheadingColor || '#ffffff'} 
-                                                onChange={(e) => handleUpdateSlide(slide.id, { subheadingColor: e.target.value })}
-                                                className="h-10 w-10 rounded-full cursor-pointer border-none overflow-hidden"
-                                              />
-                                              <Input value={slide.subheadingColor || '#ffffff'} onChange={(e) => handleUpdateSlide(slide.id, { subheadingColor: e.target.value })} className="h-10 rounded-xl font-mono text-xs" />
-                                            </div>
-                                        </div>
-                                        <div className="space-y-3">
-                                            <Label className="text-[10px] font-black uppercase text-muted-foreground/60 tracking-widest block">Sub-text Size (px)</Label>
-                                            <Input 
-                                              type="number" 
-                                              value={slide.subheadingSize || 24} 
-                                              onChange={(e) => handleUpdateSlide(slide.id, { subheadingSize: parseInt(e.target.value) || 0 })} 
-                                              className="h-10 rounded-xl font-bold" 
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div className="pt-4 border-t border-muted">
-                                      <div className="space-y-3">
-                                          <Label className="text-[10px] font-black uppercase text-muted-foreground/60 tracking-widest flex items-center gap-2">
-                                            <MoveVertical className="h-3 w-3" /> Start Position (cm from top margin)
-                                          </Label>
-                                          <div className="flex items-center gap-4">
-                                            <Input 
-                                              type="number" 
-                                              step="0.5"
-                                              value={slide.topMargin || 0} 
-                                              onChange={(e) => handleUpdateSlide(slide.id, { topMargin: parseFloat(e.target.value) || 0 })} 
-                                              className="h-12 rounded-xl font-black text-lg bg-white w-32" 
-                                            />
-                                            <span className="text-xs font-bold text-muted-foreground uppercase">Centimeters</span>
-                                          </div>
-                                          <p className="text-[9px] text-muted-foreground/60 italic leading-tight">Increases the space between the top edge of the banner and the first line of text.</p>
-                                      </div>
+                                    <div className="mt-6 pt-4 border-t border-primary/5 flex items-center justify-between">
+                                        <span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Active Render:</span>
+                                        <span className={`text-xl px-4 py-1.5 rounded-xl bg-white shadow-sm border ${activeStyle.previewClass}`}>
+                                            {slide.highlightedText || 'PREVIEW'}
+                                        </span>
                                     </div>
                                 </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                ))}
+
+                                {/* SUBHEADING ROW */}
+                                <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+                                    <div className="lg:col-span-7 space-y-3">
+                                        <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest ml-1">2. Subheading Editor (Shift+Enter for lines)</Label>
+                                        <Textarea 
+                                            value={slide.subheading} 
+                                            onChange={(e) => handleUpdateSlide(slide.id, { subheading: e.target.value })} 
+                                            className="font-medium text-lg h-24 rounded-2xl p-4 bg-muted/20 border-none shadow-inner" 
+                                            placeholder="Subheading copy..."
+                                        />
+                                    </div>
+                                    <div className="lg:col-span-5 bg-accent/5 p-6 rounded-[2rem] border border-dashed border-accent/20 space-y-4">
+                                        <h4 className="text-[9px] font-black uppercase tracking-[0.2em] text-accent flex items-center gap-2">
+                                          <Palette className="h-3 w-3" /> Subheading Styling Hub
+                                        </h4>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="space-y-1.5">
+                                                <Label className="text-[9px] font-bold text-muted-foreground/60 uppercase">Text Color</Label>
+                                                <div className="flex items-center gap-2">
+                                                  <input type="color" value={slide.subheadingColor || '#ffffff'} onChange={(e) => handleUpdateSlide(slide.id, { subheadingColor: e.target.value })} className="h-9 w-9 rounded-lg cursor-pointer border-none" />
+                                                  <Input value={slide.subheadingColor || '#ffffff'} onChange={(e) => handleUpdateSlide(slide.id, { subheadingColor: e.target.value })} className="h-9 rounded-lg font-mono text-[10px] uppercase" />
+                                                </div>
+                                            </div>
+                                            <div className="space-y-1.5">
+                                                <Label className="text-[9px] font-bold text-muted-foreground/60 uppercase">Font Size (px)</Label>
+                                                <Input type="number" value={slide.subheadingSize || 24} onChange={(e) => handleUpdateSlide(slide.id, { subheadingSize: parseInt(e.target.value) || 0 })} className="h-9 rounded-lg font-bold" />
+                                            </div>
+                                        </div>
+                                        <div className="pt-2 border-t border-accent/5">
+                                            <Label className="text-[9px] font-bold text-muted-foreground/60 uppercase flex items-center gap-1.5 mb-2">
+                                                <MoveVertical className="h-3 w-3" /> Spacing from Headline (cm)
+                                            </Label>
+                                            <div className="flex items-center gap-3">
+                                                <Input type="number" step="0.5" value={slide.subheadingTopMargin || 0} onChange={(e) => handleUpdateSlide(slide.id, { subheadingTopMargin: parseFloat(e.target.value) || 0 })} className="h-10 rounded-xl font-black text-lg bg-white w-24" />
+                                                <span className="text-[8px] font-black text-muted-foreground uppercase">Centimeters</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* MEDIA & CTA ROW */}
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6 border-t">
+                                    <div className="space-y-2">
+                                        <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Background Image URL</Label>
+                                        <Input value={slide.imageUrl} onChange={(e) => handleUpdateSlide(slide.id, { imageUrl: e.target.value })} className="h-11 rounded-xl" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Button Label</Label>
+                                        <Input value={slide.ctaText} onChange={(e) => handleUpdateSlide(slide.id, { ctaText: e.target.value })} className="h-11 rounded-xl font-bold" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Button Destination</Label>
+                                        <Input value={slide.ctaLink} onChange={(e) => handleUpdateSlide(slide.id, { ctaLink: e.target.value })} className="h-11 rounded-xl" />
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    );
+                })}
             </div>
-            <Button variant="outline" onClick={handleAddSlide} className="w-full h-24 rounded-[3rem] border-2 border-dashed font-black uppercase tracking-[0.3em] opacity-40 hover:opacity-100 hover:border-primary hover:bg-primary/5 transition-all">
+            <Button variant="outline" onClick={handleAddSlide} className="w-full h-24 rounded-[3.5rem] border-2 border-dashed font-black uppercase tracking-[0.4em] opacity-40 hover:opacity-100 hover:border-primary hover:bg-primary/5 transition-all">
                 <Plus className="mr-3 h-8 w-8" /> Add Campaign Module
             </Button>
         </div>
@@ -407,27 +419,12 @@ function ReviewModerationSuite({ reviews, onRefresh }: { reviews: any[], onRefre
     const handleToggle = async (id: string, current: boolean) => {
         setModulating(id);
         try {
-            // Attempt to toggle visibility via Server Action
             await toggleReviewVisibility(id, !current);
-            
-            toast({ 
-                title: !current ? "Review Redacted" : "Review Restored", 
-                description: "Public storefront updated successfully." 
-            });
-            
-            // Re-fetch reviews to update the UI list
+            toast({ title: !current ? "Review Redacted" : "Review Restored", description: "Public storefront updated successfully." });
             onRefresh();
         } catch (error: any) {
             console.error("Moderation failure:", error);
-            const errorMessage = error.message || "Cloud connection failed.";
-            
-            toast({ 
-                variant: "destructive", 
-                title: "Action Refused", 
-                description: errorMessage.includes('column') 
-                    ? "Database schema mismatch. Please run the SQL reset script in Supabase." 
-                    : errorMessage 
-            });
+            toast({ variant: "destructive", title: "Action Refused", description: error.message });
         } finally {
             setModulating(null);
         }
@@ -479,7 +476,6 @@ function ReviewModerationSuite({ reviews, onRefresh }: { reviews: any[], onRefre
                                     </div>
                                 </div>
                                 <p className="text-sm text-muted-foreground leading-relaxed italic">"{rev.comment}"</p>
-                                <p className="text-[10px] font-black text-primary uppercase tracking-widest">{rev.review_type} placement</p>
                             </div>
                         </div>
                     )) : (
