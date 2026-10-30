@@ -6,7 +6,21 @@ import RevenueAreaChart from "@/components/admin/charts/RevenueAreaChart";
 import SalesBarChart from "@/components/admin/charts/SalesBarChart";
 import CategoryPieChart from "@/components/admin/charts/CategoryPieChart";
 import PlatformAnalyticsChart from "@/components/admin/charts/PlatformAnalyticsChart";
-import { Users, MousePointer2, ShoppingCart, RefreshCw, ArrowUpRight, ArrowDownRight, Zap, Database, Activity, Globe } from "lucide-react";
+import { 
+  Users, 
+  MousePointer2, 
+  ShoppingCart, 
+  RefreshCw, 
+  ArrowUpRight, 
+  ArrowDownRight, 
+  Zap, 
+  Database, 
+  Activity, 
+  Globe, 
+  MapPin, 
+  Link as LinkIcon, 
+  Eye
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function AnalyticsDashboard() {
@@ -22,6 +36,25 @@ export default function AnalyticsDashboard() {
         { label: "DB Latency", value: "12ms", icon: <Database className="h-3.5 w-3.5 text-primary" />, sub: "Supabase Postgres" },
         { label: "API Response", value: "148ms", icon: <Zap className="h-3.5 w-3.5 text-yellow-500" />, sub: "Global Average" },
         { label: "Active Threads", value: "18", icon: <Activity className="h-3.5 w-3.5 text-green-500" />, sub: "System Load" },
+    ];
+
+    const liveAudience = [
+        { label: "Live Online", value: "24", icon: <Activity className="h-3.5 w-3.5 text-green-500" />, detail: "Real-time sync" },
+        { label: "Last 24 Hours", value: "1,842", icon: <Users className="h-3.5 w-3.5 text-primary" />, detail: "Total Unique" },
+    ];
+
+    const geoDistribution = [
+        { region: "Nairobi, KE", percentage: "45%", count: "828" },
+        { region: "Eldoret, KE", percentage: "32%", count: "589" },
+        { region: "London, UK", percentage: "8%", count: "147" },
+        { region: "Delaware, US", percentage: "5%", count: "92" },
+    ];
+
+    const liveTraffic = [
+        { path: "/products/kentank-5000l", time: "Just now", status: "200 OK" },
+        { path: "/category/tanks", time: "2m ago", status: "200 OK" },
+        { path: "/search?q=pvc+pipes", time: "5m ago", status: "200 OK" },
+        { path: "/checkout", time: "8m ago", status: "304 Cache" },
     ];
 
     return (
@@ -56,7 +89,7 @@ export default function AnalyticsDashboard() {
                 ))}
             </div>
 
-            {/* NEW Infrastructure Intelligence Card */}
+            {/* Infrastructure & Audience Intelligence Card */}
             <Card className="rounded-[2.5rem] border shadow-xl overflow-hidden bg-white">
                 <CardHeader className="bg-accent text-white p-8 border-b border-white/5">
                     <div className="flex items-center justify-between mb-2">
@@ -66,9 +99,10 @@ export default function AnalyticsDashboard() {
                         </div>
                         <Badge className="bg-white/10 text-white border-none font-black text-[9px] uppercase tracking-[0.2em]">Edge Node Cluster</Badge>
                     </div>
-                    <CardDescription className="text-white/60 font-medium">Correlation between frontend edge traffic and backend database synchronization.</CardDescription>
+                    <CardDescription className="text-white/60 font-medium">Correlation between frontend edge traffic, live audience, and backend synchronization.</CardDescription>
                 </CardHeader>
-                <CardContent className="p-8 space-y-10">
+                <CardContent className="p-8 space-y-12">
+                    {/* Primary Performance Row */}
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                         {infraMetrics.map((m, i) => (
                             <div key={i} className="p-5 rounded-[1.5rem] bg-secondary/50 border border-muted flex flex-col gap-3 group hover:bg-white hover:shadow-lg transition-all">
@@ -83,8 +117,80 @@ export default function AnalyticsDashboard() {
                             </div>
                         ))}
                     </div>
-                    <div className="pt-4 border-t border-dashed">
-                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/40 mb-6 text-center">Telemetry Stream: Vercel requests vs. Supabase I/O</p>
+
+                    {/* Live Visitor row */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-2 mb-2">
+                                <Eye className="h-4 w-4 text-primary" />
+                                <h3 className="text-xs font-black uppercase tracking-[0.2em] text-accent">Audience Pulse</h3>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                {liveAudience.map((a, i) => (
+                                    <div key={i} className="p-6 rounded-[2rem] bg-muted/30 border border-dashed flex flex-col items-center text-center">
+                                        <div className="mb-2">{a.icon}</div>
+                                        <p className="text-3xl font-black text-accent">{a.value}</p>
+                                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">{a.label}</p>
+                                        <p className="text-[8px] font-black text-primary uppercase mt-1">{a.detail}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Regional Breakdown */}
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-2 mb-2">
+                                <MapPin className="h-4 w-4 text-primary" />
+                                <h3 className="text-xs font-black uppercase tracking-[0.2em] text-accent">Global Reach</h3>
+                            </div>
+                            <div className="space-y-3 bg-muted/20 p-6 rounded-[2rem]">
+                                {geoDistribution.map((g, i) => (
+                                    <div key={i} className="flex items-center justify-between">
+                                        <span className="text-xs font-bold text-muted-foreground">{g.region}</span>
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-24 h-1.5 bg-muted rounded-full overflow-hidden">
+                                                <div className="h-full bg-primary" style={{ width: g.percentage }} />
+                                            </div>
+                                            <span className="text-xs font-black text-accent w-10 text-right">{g.percentage}</span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Live Traffic Paths */}
+                    <div className="pt-4 space-y-4">
+                        <div className="flex items-center gap-2 mb-2">
+                            <LinkIcon className="h-4 w-4 text-primary" />
+                            <h3 className="text-xs font-black uppercase tracking-[0.2em] text-accent">Live Resource Stream</h3>
+                        </div>
+                        <div className="overflow-hidden rounded-2xl border bg-muted/10">
+                            <table className="w-full text-left text-xs border-collapse">
+                                <thead>
+                                    <tr className="bg-muted/50">
+                                        <th className="p-4 font-black uppercase tracking-widest text-[9px] text-muted-foreground">Request Path</th>
+                                        <th className="p-4 font-black uppercase tracking-widest text-[9px] text-muted-foreground">Timestamp</th>
+                                        <th className="p-4 font-black uppercase tracking-widest text-[9px] text-muted-foreground text-right">Edge Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y border-t">
+                                    {liveTraffic.map((t, i) => (
+                                        <tr key={i} className="hover:bg-primary/5 transition-colors">
+                                            <td className="p-4 font-mono font-medium text-primary">{t.path}</td>
+                                            <td className="p-4 text-muted-foreground font-bold">{t.time}</td>
+                                            <td className="p-4 text-right">
+                                                <Badge className="bg-green-500/10 text-green-600 border-none font-black text-[9px] uppercase">{t.status}</Badge>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div className="pt-8 border-t border-dashed">
+                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/40 mb-6 text-center">Telemetry Sync: Edge Requests vs. Supabase I/O vs. Audience Load</p>
                         <PlatformAnalyticsChart />
                     </div>
                 </CardContent>
