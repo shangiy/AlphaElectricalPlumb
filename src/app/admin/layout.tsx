@@ -39,10 +39,10 @@ export default function AdminLayout({
     { label: 'Products', href: '/admin/products', icon: Package },
     { label: 'Users', href: '/admin/users', icon: Users },
     { label: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
-    { label: 'UI/UX Edit', href: '/admin/featured', icon: Palette },
     { label: 'Selfies', href: '/admin/selfies', icon: Camera },
     { label: 'Transactions', href: '/admin/transactions', icon: Receipt },
     { label: 'Homepage', href: '/', icon: Home },
+    { label: 'UI/UX Control', href: '/admin/featured', icon: Palette },
     { label: 'Settings', href: '/admin/settings', icon: Settings },
   ];
 

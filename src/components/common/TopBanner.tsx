@@ -1,33 +1,63 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
+import { getSiteSetting } from '@/app/actions/ui-actions';
 
 /**
- * TopBanner: Featuring artistically enhanced promotional text.
- * The "MASHUJAA" text is divided horizontally into three stripes matching the Kenyan flag (Black, Red, Green).
+ * Dynamic TopBanner:
+ * Fetches promotional content from Supabase site_settings.
+ * Features KENYAN style "MASHUJAA" text logic.
  */
 export default function TopBanner() {
-  const offerContent = (
-    <>
-      OFFER! <span className="text-red-500">OFFER!</span> <span className="text-green-500">OFFER!</span> MIDYEAR FLASH SALE,{" "}
-      <span className="inline-flex font-black tracking-tighter drop-shadow-md bg-white px-2 rounded-sm mx-1 border border-white/20 overflow-hidden">
-        <span 
-          style={{
-            background: 'linear-gradient(to bottom, black 33.3%, #BB0000 33.3% 66.6%, #006600 66.6%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            display: 'inline-block',
-            lineHeight: '1'
-          }}
-        >
-          MASHUJAA
-        </span>
-      </span>{" "}
-      DAY OFFER!
-    </>
-  );
+  const [content, setContent] = useState('OFFER! MIDYEAR FLASH SALE, MASHUJAA DAY OFFER!');
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadBanner() {
+      try {
+        const val = await getSiteSetting('top_banner_text');
+        if (val) setContent(val);
+      } catch (e) {
+        console.error("Banner fetch failed", e);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadBanner();
+  }, []);
+
+  const renderRichText = (text: string) => {
+    // Splits text into parts, highlighting "OFFER" and "MASHUJAA"
+    const parts = text.split(/(OFFER!|MASHUJAA)/g);
+    
+    return parts.map((part, i) => {
+      if (part === 'OFFER!') {
+        const colors = ['text-red-500', 'text-green-500', 'text-white'];
+        return <span key={i} className={cn("font-black", colors[i % 3])}>{part} </span>;
+      }
+      if (part === 'MASHUJAA') {
+        return (
+          <span key={i} className="inline-flex font-black tracking-tighter drop-shadow-md bg-white px-2 rounded-sm mx-1 border border-white/20 overflow-hidden">
+            <span 
+              style={{
+                background: 'linear-gradient(to bottom, black 33.3%, #BB0000 33.3% 66.6%, #006600 66.6%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                display: 'inline-block',
+                lineHeight: '1'
+              }}
+            >
+              MASHUJAA
+            </span>
+          </span>
+        );
+      }
+      return <span key={i}>{part}</span>;
+    });
+  };
 
   const items = [1, 2, 3, 4, 5, 6];
 
@@ -47,7 +77,7 @@ export default function TopBanner() {
             <ul className="flex-1 font-bold text-center flex items-center justify-center md:justify-start [&_li]:mx-8 animate-scroll">
                 {items.map((_, index) => (
                     <li key={index} className="whitespace-nowrap text-xl md:text-3xl">
-                        {offerContent}
+                        {renderRichText(content)}
                     </li>
                 ))}
             </ul>

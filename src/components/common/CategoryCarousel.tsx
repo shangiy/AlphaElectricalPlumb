@@ -6,17 +6,17 @@ import CategoryCard from '@/components/products/CategoryCard';
 import { Skeleton } from '../ui/skeleton';
 import { supabase } from '@/lib/supabase';
 import placeholderData from '@/app/lib/placeholder-images.json';
+import { getSiteSetting } from '@/app/actions/ui-actions';
 
 /**
- * Dynamic Category Carousel v3.9:
- * Resolves images directly from the Supabase storage 'product-images' bucket 
- * and filters out unwanted placeholder categories like "Collection category".
+ * Dynamic Category Carousel v4.0:
+ * Now supports dynamic scroll speed and database-curated ordering.
  */
 export default function CategoryCarousel() {
   const [categories, setCategories] = React.useState<CarouselCategory[]>([]);
   const [loading, setLoading] = React.useState(true);
+  const [scrollSpeed, setScrollSpeed] = React.useState('40');
 
-  // Initializing with verified assets from placeholder-images.json
   const fallbackCategories: CarouselCategory[] = [
     { id: 'Tanks', name: 'Tanks', href: '/category/tanks', image: placeholderData.cat_tanks.url },
     { id: 'Plumbing', name: 'Plumbing', href: '/category/plumbing', image: placeholderData.cat_plumbing.url },
@@ -26,7 +26,7 @@ export default function CategoryCarousel() {
   ];
 
   React.useEffect(() => {
-    async function fetchDynamicCategories() {
+    async function fetchDynamicData() {
       if (!supabase) {
         setCategories(fallbackCategories);
         setLoading(false);
@@ -34,65 +34,56 @@ export default function CategoryCarousel() {
       }
 
       try {
-        // Query the dedicated categories table in Supabase
+        const speed = await getSiteSetting('carousel_speed');
+        if (speed) setScrollSpeed(speed);
+
         const { data, error } = await supabase
           .from('categories')
           .select('*')
-          .order('name', { ascending: true });
+          .order('sort_order', { ascending: true });
 
         if (!error && data && data.length > 0) {
           const formatted = data
-            // FILTER: Remove "Collection category" or unwanted placeholders
-            .filter((cat: any) => 
-                cat.name !== 'Collection category' && 
-                cat.id !== '7d20835c-7fb4-4ad0-a975-5fdfbbaf0527'
-            )
             .map((cat: any) => {
                 const rawImg = cat.image_url || cat.imageUrl || cat.image || cat.image_path || '';
                 let resolvedUrl = rawImg;
 
-                // Resolve storage bucket public URLs from 'product-images'
                 if (rawImg && !rawImg.startsWith('http')) {
-                const cleanPath = rawImg.replace(/\\/g, '/').replace(/^\/+/, '');
-                const { data: publicUrlData } = supabase.storage
-                    .from('product-images')
-                    .getPublicUrl(cleanPath);
-                resolvedUrl = publicUrlData.publicUrl;
+                    const { data: publicUrlData } = supabase.storage
+                        .from('product-images')
+                        .getPublicUrl(rawImg.replace(/\\/g, '/').replace(/^\/+/, ''));
+                    resolvedUrl = publicUrlData.publicUrl;
                 }
 
-                const catName = cat.name || 'Category';
-                const catSlug = cat.slug || catName.toLowerCase().replace(/\s+/g, '-');
-
                 return {
-                id: String(cat.id || catName),
-                name: catName,
-                image: resolvedUrl || placeholderData.cat_tanks.url,
-                href: `/category/${catSlug}`
+                    id: String(cat.id || cat.name),
+                    name: cat.name || 'Category',
+                    image: resolvedUrl || placeholderData.cat_tanks.url,
+                    href: `/category/${cat.slug || (cat.name || '').toLowerCase().replace(/\s+/g, '-')}`
                 };
             });
           setCategories(formatted);
         } else {
-          // Fallback logic
           setCategories(fallbackCategories);
         }
       } catch (err) {
-        console.error("Category fetch failed:", err);
+        console.error("Carousel data fetch failed:", err);
         setCategories(fallbackCategories);
       } finally {
         setLoading(false);
       }
     }
 
-    fetchDynamicCategories();
+    fetchDynamicData();
   }, []);
 
-  // SEAMLESS INFINITE LOOP
   const duplicatedCategories = [...categories, ...categories, ...categories];
 
   return (
     <section id="categories" className="py-16 bg-secondary overflow-hidden">
-      <div className="container mx-auto px-4 mb-10">
-        <h2 className="text-3xl font-bold font-headline text-center text-[#2b235f]">Browse by Category</h2>
+      <div className="container mx-auto px-4 mb-10 text-center">
+        <h2 className="text-3xl font-bold font-headline text-[#2b235f]">Browse by Category</h2>
+        <div className="w-20 h-1 bg-primary/20 rounded-full mx-auto mt-4" />
       </div>
       
       {loading ? (
@@ -111,7 +102,10 @@ export default function CategoryCarousel() {
             WebkitMaskImage: 'linear-gradient(to right, transparent, black 10%, black 90%, transparent)',
           }}
         >
-          <div className="flex w-fit items-center flex-nowrap animate-marquee hover:[animation-play-state:paused] py-4">
+          <div 
+            className="flex w-fit items-center flex-nowrap animate-marquee hover:[animation-play-state:paused] py-4"
+            style={{ animationDuration: `${scrollSpeed}s` }}
+          >
             {duplicatedCategories.map((category, index) => (
               <div key={`${category.id}-${index}`} className="flex-shrink-0 w-72 px-4">
                 <CategoryCard category={category} />

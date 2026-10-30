@@ -1,13 +1,13 @@
-import FeaturedProductManager from '@/components/admin/FeaturedProductManager';
+import UiUxControlCenter from '@/components/admin/UiUxControlCenter';
 
 /**
- * Admin Featured Portal:
- * Specialized route for managing the homepage spotlight hierarchy.
+ * Admin UI/UX Hub:
+ * Central portal for managing banners, spotlights, and categories.
  */
-export default function AdminFeaturedPage() {
+export default function AdminUiUxPage() {
     return (
         <div className="container mx-auto">
-            <FeaturedProductManager />
+            <UiUxControlCenter />
         </div>
     );
 }

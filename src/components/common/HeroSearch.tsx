@@ -21,6 +21,7 @@ import { cn } from '@/lib/utils';
 import { uploadImage } from '@/lib/storage';
 import { supabase } from '@/lib/supabase';
 import { identifyProductVisually } from '@/ai/flows/visual-identity-flow';
+import { getSiteSetting } from '@/app/actions/ui-actions';
 
 interface HeroSearchProps {
   isCompact?: boolean;
@@ -28,6 +29,7 @@ interface HeroSearchProps {
 
 export default function HeroSearch({ isCompact = false }: HeroSearchProps) {
   const [query, setQuery] = useState('');
+  const [placeholders, setPlaceholders] = useState(["tanks", "chandelier", "solar heater", "mabati"]);
   const router = useRouter();
   const { toast } = useToast();
 
@@ -39,10 +41,17 @@ export default function HeroSearch({ isCompact = false }: HeroSearchProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  const placeholders = ["tanks", "chandelier", "solar heater", "ironsheet mabati"];
-
   useEffect(() => {
     setMounted(true);
+    async function loadPlaceholders() {
+        try {
+            const val = await getSiteSetting('search_suggestions');
+            if (val && Array.isArray(val)) setPlaceholders(val);
+        } catch (e) {
+            console.error("Search suggestions fetch failed");
+        }
+    }
+    loadPlaceholders();
   }, []);
 
   const getCameraPermission = async () => {
@@ -53,7 +62,7 @@ export default function HeroSearch({ isCompact = false }: HeroSearchProps) {
     setHasCameraPermission(null);
     try {
       const mediaStream = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: 'environment' } // Prefer back camera for product scanning
+        video: { facingMode: 'environment' }
       });
       setStream(mediaStream);
       setHasCameraPermission(true);
@@ -83,10 +92,7 @@ export default function HeroSearch({ isCompact = false }: HeroSearchProps) {
       const imageDataUrl = canvas.toDataURL('image/jpeg', 0.8);
       
       try {
-        // 1. AI Analysis for identification
         const analysis = await identifyProductVisually({ imageDataUri: imageDataUrl });
-        
-        // 2. Log for admin auditing (Selfies) - Store in 'user-selfies' bucket
         const downloadURL = await uploadImage(imageDataUrl, 'user-selfies');
         if (supabase) {
             await supabase.from('user_selfies').insert([{
@@ -94,22 +100,15 @@ export default function HeroSearch({ isCompact = false }: HeroSearchProps) {
             }]);
         }
 
-        toast({
-            title: 'Scan Successful!',
-            description: `Searching for: ${analysis.suggestedName}`,
-        });
-
+        toast({ title: 'Scan Successful!', description: `Searching for: ${analysis.suggestedName}` });
         setIsCameraDialogOpen(false);
 
-        // 3. Redirect to search with either barcode or suggested query
         if (analysis.detectedBarcode) {
             router.push(`/search?barcode=${encodeURIComponent(analysis.detectedBarcode)}`);
         } else {
             router.push(`/search?q=${encodeURIComponent(analysis.searchQuery)}`);
         }
-
       } catch (error) {
-        console.error("Capture error:", error);
         toast({
             variant: "destructive",
             title: "Analysis Failed",
@@ -124,12 +123,10 @@ export default function HeroSearch({ isCompact = false }: HeroSearchProps) {
   useEffect(() => {
     if (isCameraDialogOpen) {
       getCameraPermission();
-    } else {
-      if (stream) {
-        stream.getTracks().forEach(track => track.stop());
-        setStream(null);
-        setHasCameraPermission(null);
-      }
+    } else if (stream) {
+      stream.getTracks().forEach(track => track.stop());
+      setStream(null);
+      setHasCameraPermission(null);
     }
   }, [isCameraDialogOpen]);
 
@@ -156,14 +153,8 @@ export default function HeroSearch({ isCompact = false }: HeroSearchProps) {
           "relative flex items-center w-full p-1 space-x-1 bg-white border border-gray-200 rounded-full shadow-md transition-all duration-500 ease-in-out",
           isCompact ? "h-9 pr-1" : "h-14 pr-2"
         )}>
-          
           {!isCompact && (
-            <div 
-              className={cn(
-                "absolute left-4 top-1/2 -translate-y-1/2 flex items-center pointer-events-none transition-opacity duration-500",
-                query ? "opacity-0" : "opacity-100"
-              )}
-            >
+            <div className={cn("absolute left-4 top-1/2 -translate-y-1/2 flex items-center pointer-events-none transition-opacity duration-500", query ? "opacity-0" : "opacity-100")}>
               <span className="text-base text-muted-foreground">Search for&nbsp;</span>
               <AnimatedPlaceholder placeholders={placeholders} />
             </div>
@@ -182,15 +173,10 @@ export default function HeroSearch({ isCompact = false }: HeroSearchProps) {
           
           {mounted ? (
             <Dialog open={isCameraDialogOpen} onOpenChange={setIsCameraDialogOpen}>
-              <DialogTrigger asChild>
-                {cameraButton}
-              </DialogTrigger>
+              <DialogTrigger asChild>{cameraButton}</DialogTrigger>
               <DialogContent className="sm:max-w-[625px] rounded-[2rem] overflow-hidden border-none shadow-2xl">
                 <DialogHeader className="p-6 bg-accent text-white">
-                  <DialogTitle className="flex items-center gap-2">
-                    <Sparkles className="h-5 w-5 text-primary" />
-                    AI Visual Scanner
-                  </DialogTitle>
+                  <DialogTitle className="flex items-center gap-2"><Sparkles className="h-5 w-5 text-primary" /> AI Visual Scanner</DialogTitle>
                 </DialogHeader>
                 <div className="flex flex-col items-center justify-center p-6 gap-6">
                   <div className="w-full bg-black rounded-[2rem] overflow-hidden relative shadow-inner aspect-video">
@@ -202,17 +188,14 @@ export default function HeroSearch({ isCompact = false }: HeroSearchProps) {
                         <p className="font-bold tracking-tight">{isProcessing ? 'Analyzing Product Content...' : 'Calibrating Sensors...'}</p>
                       </div>
                     )}
-                    {/* Scanning Animation Line */}
                     {!isProcessing && hasCameraPermission && (
                         <div className="absolute inset-x-0 h-1 bg-primary/50 shadow-[0_0_15px_rgba(var(--primary),0.8)] animate-bounce top-1/2" />
                     )}
                   </div>
-                  
                   <div className="text-center space-y-1">
                       <p className="text-sm font-bold text-accent">Position Item in Frame</p>
                       <p className="text-xs text-muted-foreground uppercase tracking-widest">Identify Products • Read Barcodes • Scan QR</p>
                   </div>
-
                   {hasCameraPermission === false && (
                     <Alert variant="destructive" className="rounded-2xl">
                       <AlertCircle className="h-4 w-4" />
@@ -225,9 +208,7 @@ export default function HeroSearch({ isCompact = false }: HeroSearchProps) {
                   )}
                 </div>
                 <DialogFooter className="p-6 bg-muted/30">
-                  <DialogClose asChild>
-                    <Button type="button" variant="ghost" disabled={isProcessing} className="rounded-full px-8">Dismiss</Button>
-                  </DialogClose>
+                  <DialogClose asChild><Button type="button" variant="ghost" disabled={isProcessing} className="rounded-full px-8">Dismiss</Button></DialogClose>
                   <Button type="button" onClick={handleCapture} disabled={!hasCameraPermission || isProcessing} className="rounded-full px-12 bg-primary font-black uppercase tracking-tighter shadow-xl">
                     {isProcessing ? 'ANALYZING...' : 'IDENTIFY ITEM'}
                   </Button>
@@ -236,14 +217,7 @@ export default function HeroSearch({ isCompact = false }: HeroSearchProps) {
             </Dialog>
           ) : cameraButton}
 
-          <Button 
-            type="submit" 
-            size={isCompact ? "sm" : "lg"} 
-            className={cn(
-              "rounded-full bg-[#28235f] hover:bg-[#28235f]/90 text-white transition-all duration-500 shadow-sm",
-              isCompact ? "h-7 px-3" : "h-12 px-6"
-            )}
-          >
+          <Button type="submit" size={isCompact ? "sm" : "lg"} className={cn("rounded-full bg-[#28235f] hover:bg-[#28235f]/90 text-white transition-all duration-500 shadow-sm", isCompact ? "h-7 px-3" : "h-12 px-6")}>
             <Search className={cn(isCompact ? "w-3.5 h-3.5" : "w-5 h-5", !isCompact && "md:mr-2")} />
             <span className="hidden md:inline">{isCompact ? "" : "Search"}</span>
           </Button>
