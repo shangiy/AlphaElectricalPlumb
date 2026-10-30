@@ -65,11 +65,9 @@ export default function CustomerReviews() {
                 isHidden: r.is_hidden
             })));
         } catch (error: any) {
-            console.error("Fetch reviews error:", {
-                message: error?.message || error,
-                details: error?.details,
-                hint: error?.hint
-            });
+            console.error("Fetch reviews error details:", 
+                error instanceof Error ? error.message : JSON.stringify(error, Object.getOwnPropertyNames(error))
+            );
         } finally {
             setIsLoading(false);
         }
