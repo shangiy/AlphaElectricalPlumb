@@ -99,7 +99,7 @@ function ProfileContent() {
 
             // Update local context state
             updateUser({ 
-                name: data.name,
+                name: data.name, 
                 username: data.username,
                 avatarUrl: data.avatarUrl
             });
@@ -132,6 +132,7 @@ function ProfileContent() {
                 isOpen={isAvatarDialogOpen}
                 onClose={() => setIsAvatarDialogOpen(false)}
                 onSelect={handleAvatarSelect}
+                currentAvatarUrl={avatarUrlValue || user?.avatarUrl}
             />
             <div className="container mx-auto px-4 py-12">
                 <Card className="max-w-3xl mx-auto shadow-md">

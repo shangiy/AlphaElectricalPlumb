@@ -145,6 +145,7 @@ export default function AdminSettings() {
         isOpen={isAvatarDialogOpen}
         onClose={() => setIsAvatarDialogOpen(false)}
         onSelect={handleAvatarSelect}
+        currentAvatarUrl={profileAvatarUrl}
       />
 
       <div>
