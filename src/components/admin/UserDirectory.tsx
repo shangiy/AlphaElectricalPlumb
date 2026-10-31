@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useToast } from '@/hooks/use-toast';
 import { promoteUserAdmin } from '@/app/actions/user-actions';
+import { useAuth } from '@/context/AuthProvider';
 
 interface UserProfile {
     id: string;
@@ -43,14 +44,17 @@ interface TrendingProduct {
 }
 
 /**
- * Identity Manager v3.5:
- * Features full Real-time synchronization with Supabase Postgres Changes.
+ * Identity Manager v3.6:
+ * Features full Real-time synchronization and Admin-only role management enforcement.
  */
 export default function UserDirectory() {
+    const { user: currentUser } = useAuth();
     const [users, setUsers] = useState<UserProfile[]>([]);
     const [trendingItems, setTrendingItems] = useState<TrendingProduct[]>([]);
     const [loading, setLoading] = useState(true);
     const { toast } = useToast();
+
+    const isAdmin = currentUser?.role === 'admin';
 
     const loadData = useCallback(async (isInitial = false) => {
         if (!supabase) return;
@@ -80,7 +84,7 @@ export default function UserDirectory() {
 
             if (trendError) throw trendError;
 
-            // Process trending items with factual naming
+            // Process trending items
             const counts: Record<string, { name: string, count: number }> = {};
             wishTrend?.forEach((item: any) => {
                 const id = item.product_id;
@@ -106,15 +110,12 @@ export default function UserDirectory() {
             setTrendingItems(sortedTrends);
 
         } catch (err: any) {
-            // Extract non-enumerable properties from Supabase/PostgREST error objects
             const errorMessage = err?.message || (typeof err === 'object' ? JSON.stringify(err, Object.getOwnPropertyNames(err)) : String(err));
-            
             console.error("User Directory factual sync failed:", errorMessage);
-
             toast({
                 variant: "destructive",
                 title: "Sync Error",
-                description: typeof err === 'object' && err?.message ? err.message : "Failed to load user directory data.",
+                description: "Failed to load user directory data.",
             });
         } finally {
             if (isInitial) setLoading(false);
@@ -122,43 +123,24 @@ export default function UserDirectory() {
     }, [toast]);
 
     useEffect(() => {
-        // Initial fetch
         loadData(true);
-
         if (!supabase) return;
-
-        // ACTIVATE REAL-TIME HANDSHAKE
-        // Subscribe to any changes in profiles or wishlists to update the dashboard instantly
         const channel = supabase
             .channel('factual-analytics-sync')
-            .on(
-                'postgres_changes',
-                { event: '*', schema: 'public', table: 'profiles' },
-                () => {
-                    console.log('Admin: Real-time Profile update detected');
-                    loadData(false);
-                }
-            )
-            .on(
-                'postgres_changes',
-                { event: '*', schema: 'public', table: 'wishlists' },
-                () => {
-                    console.log('Admin: Real-time Wishlist update detected');
-                    loadData(false);
-                }
-            )
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => loadData(false))
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'wishlists' }, () => loadData(false))
             .subscribe();
-
-        return () => {
-            supabase.removeChannel(channel);
-        };
+        return () => { supabase.removeChannel(channel); };
     }, [loadData]);
 
     const handleRoleUpdate = async (email: string, newRole: 'admin' | 'staff' | 'user') => {
+        if (!isAdmin) {
+            toast({ variant: "destructive", title: "Access Denied", description: "Only Administrators can modify account permissions." });
+            return;
+        }
         try {
             await promoteUserAdmin(email, newRole);
             toast({ title: "Permission Updated", description: `Role changed to ${newRole} for ${email}` });
-            // Re-fetch handled by Real-time subscription, but explicit call for speed
             loadData(false);
         } catch (err: any) {
             toast({ variant: "destructive", title: "Update Failed", description: err.message });
@@ -186,7 +168,6 @@ export default function UserDirectory() {
 
     return (
         <div className="space-y-8 animate-in fade-in duration-700">
-            {/* Real-time Factual Analytics Overview */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <Card className="rounded-3xl border shadow-xl bg-accent text-white overflow-hidden relative group">
                     <div className="absolute -right-4 -bottom-4 opacity-10 transition-transform group-hover:scale-110"><UsersIcon size={120} /></div>
@@ -205,9 +186,7 @@ export default function UserDirectory() {
                         <CardTitle className="text-xs font-black uppercase tracking-[0.2em] opacity-60">Purchase Intent</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-5xl font-black tracking-tighter tabular-nums">
-                            {totalWishlistItems}
-                        </div>
+                        <div className="text-5xl font-black tracking-tighter tabular-nums">{totalWishlistItems}</div>
                         <p className="text-[10px] font-bold uppercase mt-1 opacity-60">Real-time Saved Items</p>
                     </CardContent>
                 </Card>
@@ -234,7 +213,6 @@ export default function UserDirectory() {
                 </Card>
             </div>
 
-            {/* User Lifecycle Directory */}
             <Card className="rounded-[2.5rem] border shadow-2xl overflow-hidden">
                 <CardHeader className="bg-muted/30 border-b p-8">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -252,9 +230,11 @@ export default function UserDirectory() {
                                 </span>
                                 <span className="text-[9px] font-black uppercase">Live Sync Active</span>
                             </div>
-                            <Button className="rounded-full font-black uppercase tracking-tighter shadow-lg" asChild>
-                                <a href="/admin/settings"><UserPlus className="mr-2 h-4 w-4" /> Provision Team</a>
-                            </Button>
+                            {isAdmin && (
+                                <Button className="rounded-full font-black uppercase tracking-tighter shadow-lg" asChild>
+                                    <a href="/admin/settings"><UserPlus className="mr-2 h-4 w-4" /> Provision Team</a>
+                                </Button>
+                            )}
                         </div>
                     </div>
                 </CardHeader>
@@ -271,62 +251,64 @@ export default function UserDirectory() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {users.length > 0 ? users.map(user => (
-                                    <TableRow key={user.id} className="hover:bg-primary/5 transition-all group">
+                                {users.length > 0 ? users.map(u => (
+                                    <TableRow key={u.id} className="hover:bg-primary/5 transition-all group">
                                         <TableCell className="pl-8 py-5">
                                             <div className="flex items-center gap-4">
                                                 <Avatar className="h-12 w-12 border-2 border-white shadow-md group-hover:scale-110 transition-transform">
-                                                    <AvatarImage src={user.avatar_url} />
-                                                    <AvatarFallback className="bg-accent text-white font-black">{user.full_name.charAt(0)}</AvatarFallback>
+                                                    <AvatarImage src={u.avatar_url} />
+                                                    <AvatarFallback className="bg-accent text-white font-black">{u.full_name.charAt(0)}</AvatarFallback>
                                                 </Avatar>
                                                 <div className="flex flex-col">
-                                                    <span className="font-black text-accent text-sm uppercase tracking-tight">{user.full_name}</span>
+                                                    <span className="font-black text-accent text-sm uppercase tracking-tight">{u.full_name}</span>
                                                     <span className="text-[10px] font-bold text-muted-foreground flex items-center gap-1">
-                                                        <Mail size={10} /> {user.email}
+                                                        <Mail size={10} /> {u.email}
                                                     </span>
                                                 </div>
                                             </div>
                                         </TableCell>
-                                        <TableCell>{getRoleBadge(user.role)}</TableCell>
+                                        <TableCell>{getRoleBadge(u.role)}</TableCell>
                                         <TableCell>
                                             <div className="flex items-center gap-2">
                                                 <div className="h-8 w-8 rounded-xl bg-red-50 text-red-500 flex items-center justify-center">
-                                                    <Heart size={14} className={user.wishlist_count > 0 ? "fill-current" : ""} />
+                                                    <Heart size={14} className={u.wishlist_count > 0 ? "fill-current" : ""} />
                                                 </div>
-                                                <span className="text-sm font-black text-accent tabular-nums">{user.wishlist_count} <span className="text-[10px] font-bold text-muted-foreground uppercase ml-1">SAVED</span></span>
+                                                <span className="text-sm font-black text-accent tabular-nums">{u.wishlist_count} <span className="text-[10px] font-bold text-muted-foreground uppercase ml-1">SAVED</span></span>
                                             </div>
                                         </TableCell>
                                         <TableCell className="hidden lg:table-cell">
                                             <div className="flex flex-col gap-1">
                                                 <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Registered On</span>
                                                 <span className="text-xs font-bold text-accent">
-                                                    {new Date(user.created_at).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                                    {new Date(u.created_at).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}
                                                 </span>
                                             </div>
                                         </TableCell>
                                         <TableCell className="pr-8 text-right">
-                                            <DropdownMenu>
-                                                <DropdownMenuTrigger asChild>
-                                                    <Button size="icon" variant="ghost" className="rounded-full hover:bg-accent/10">
-                                                        <MoreHorizontal className="h-5 w-5 text-accent" />
-                                                    </Button>
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end" className="w-56 p-2 rounded-2xl shadow-2xl border-none">
-                                                    <DropdownMenuLabel className="text-[10px] font-black uppercase text-muted-foreground px-2 py-1">Administrative Ops</DropdownMenuLabel>
-                                                    <DropdownMenuSeparator />
-                                                    <DropdownMenuItem className="rounded-xl font-bold text-xs" onClick={() => handleRoleUpdate(user.email, 'admin')}>Promote to Admin</DropdownMenuItem>
-                                                    <DropdownMenuItem className="rounded-xl font-bold text-xs" onClick={() => handleRoleUpdate(user.email, 'staff')}>Promote to Staff</DropdownMenuItem>
-                                                    <DropdownMenuItem className="rounded-xl font-bold text-xs" onClick={() => handleRoleUpdate(user.email, 'user')}>Revoke to Client</DropdownMenuItem>
-                                                    <DropdownMenuSeparator />
-                                                    <DropdownMenuItem className="rounded-xl font-bold text-xs text-destructive focus:bg-destructive/10">Restrict Access</DropdownMenuItem>
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
+                                            {isAdmin ? (
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <Button size="icon" variant="ghost" className="rounded-full hover:bg-accent/10">
+                                                            <MoreHorizontal className="h-5 w-5 text-accent" />
+                                                        </Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align="end" className="w-56 p-2 rounded-2xl shadow-2xl border-none">
+                                                        <DropdownMenuLabel className="text-[10px] font-black uppercase text-muted-foreground px-2 py-1">Administrative Ops</DropdownMenuLabel>
+                                                        <DropdownMenuSeparator />
+                                                        <DropdownMenuItem className="rounded-xl font-bold text-xs" onClick={() => handleRoleUpdate(u.email, 'admin')}>Promote to Admin</DropdownMenuItem>
+                                                        <DropdownMenuItem className="rounded-xl font-bold text-xs" onClick={() => handleRoleUpdate(u.email, 'staff')}>Promote to Staff</DropdownMenuItem>
+                                                        <DropdownMenuItem className="rounded-xl font-bold text-xs" onClick={() => handleRoleUpdate(u.email, 'user')}>Revoke to Client</DropdownMenuItem>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
+                                            ) : (
+                                                <Badge variant="outline" className="text-[8px] font-bold opacity-30">LOCKED</Badge>
+                                            )}
                                         </TableCell>
                                     </TableRow>
                                 )) : (
                                     <TableRow>
                                         <TableCell colSpan={5} className="py-20 text-center">
-                                            <p className="text-muted-foreground font-bold uppercase tracking-widest text-xs">No active identities found in the factual sync.</p>
+                                            <p className="text-muted-foreground font-bold uppercase tracking-widest text-xs">No active identities found.</p>
                                         </TableCell>
                                     </TableRow>
                                 )}
