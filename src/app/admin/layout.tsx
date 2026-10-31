@@ -25,20 +25,22 @@ import {
   Settings,
   LayoutTemplate,
   ChevronUp,
-  ChevronDown
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import AuthGuard from '@/components/auth/AuthGuard';
 import { useAuth } from '@/context/AuthProvider';
 import { cn } from '@/lib/utils';
 
 /**
- * Admin Layout v3.5:
- * Features a slideable sidebar menu with top/bottom navigation arrows
- * and intelligent mobile retraction logic.
+ * Admin Layout v3.8:
+ * Features vertical scroll arrows for desktop lists and a horizontal 
+ * slide-in toggle for mobile devices.
  */
 function AdminSidebarWrapper({ children }: { children: React.ReactNode }) {
   const { logout } = useAuth();
-  const { isMobile, setOpenMobile } = useSidebar();
+  const { isMobile, setOpenMobile, openMobile } = useSidebar();
   const scrollRef = useRef<HTMLDivElement>(null);
   
   const [canScrollUp, setCanScrollUp] = useState(false);
@@ -51,30 +53,28 @@ function AdminSidebarWrapper({ children }: { children: React.ReactNode }) {
     { label: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
     { label: 'Transactions', href: '/admin/transactions', icon: Receipt },
     { label: 'Homepage View', href: '/', icon: Home },
-    { label: 'Visual Logs (Selfies)', href: '/admin/selfies', icon: Camera },
+    { label: 'Visual Logs', href: '/admin/selfies', icon: Camera },
     { label: 'Storefront CMS', href: '/admin/featured', icon: LayoutTemplate },
     { label: 'System Settings', href: '/admin/settings', icon: Settings },
   ];
 
-  // Logic to handle mobile retraction
   const handleNavClick = () => {
     if (isMobile) {
       setOpenMobile(false);
     }
   };
 
-  // Scroll monitoring for arrow visibility
   const checkScroll = useCallback(() => {
-    if (scrollRef.current) {
+    if (scrollRef.current && !isMobile) {
       const { scrollTop, scrollHeight, clientHeight } = scrollRef.current;
       setCanScrollUp(scrollTop > 10);
       setCanScrollDown(scrollTop + clientHeight < scrollHeight - 10);
     }
-  }, []);
+  }, [isMobile]);
 
   useEffect(() => {
     const el = scrollRef.current;
-    if (el) {
+    if (el && !isMobile) {
       checkScroll();
       el.addEventListener('scroll', checkScroll);
       window.addEventListener('resize', checkScroll);
@@ -83,7 +83,7 @@ function AdminSidebarWrapper({ children }: { children: React.ReactNode }) {
         window.removeEventListener('resize', checkScroll);
       };
     }
-  }, [checkScroll]);
+  }, [checkScroll, isMobile]);
 
   const scrollTo = (direction: 'up' | 'down') => {
     if (scrollRef.current) {
@@ -93,31 +93,51 @@ function AdminSidebarWrapper({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <div className="flex h-screen w-full bg-background">
+    <div className="flex h-screen w-full bg-background overflow-hidden relative">
+      {/* Mobile Toggle Interface (Left/Right movement) */}
+      {isMobile && (
+        <div 
+          className={cn(
+            "fixed bottom-8 z-[100] transition-all duration-500",
+            openMobile ? "right-6" : "left-6"
+          )}
+        >
+          <button 
+            onClick={() => setOpenMobile(!openMobile)}
+            className="h-14 w-14 rounded-full bg-primary text-white shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-transform"
+          >
+            {openMobile ? (
+              <ChevronLeft className="h-7 w-7" />
+            ) : (
+              <ChevronRight className="h-7 w-7" />
+            )}
+          </button>
+        </div>
+      )}
+
       <Sidebar className="flex flex-col border-r bg-muted/20">
         <SidebarHeader className="p-6 shrink-0">
           <Link href="/admin" onClick={handleNavClick} className="flex items-center gap-3 group">
               <Image src="/logo Alpha.png" alt="Alpha" width={45} height={45} className="transition-transform group-hover:scale-110" />
               <div className="flex flex-col">
                 <span className="text-sm font-black text-accent uppercase tracking-tighter leading-none">Admin Panel</span>
-                <span className="text-[9px] font-bold text-primary uppercase tracking-widest mt-1">Alpha CMS v3.5</span>
+                {!isMobile && <span className="text-[9px] font-bold text-primary uppercase tracking-widest mt-1">Alpha Ecosystem</span>}
               </div>
           </Link>
         </SidebarHeader>
 
         <div className="flex-1 relative flex flex-col overflow-hidden">
-          {/* Top Slide Arrow */}
-          <div className={cn(
-            "absolute top-0 left-0 right-0 z-20 flex justify-center py-1 bg-gradient-to-b from-background via-background/80 to-transparent transition-opacity duration-300 pointer-events-none",
-            canScrollUp ? "opacity-100" : "opacity-0"
-          )}>
-            <button 
-              onClick={(e) => { e.stopPropagation(); scrollTo('up'); }} 
-              className="p-1 rounded-full bg-primary text-white shadow-lg pointer-events-auto hover:scale-110 transition-transform"
-            >
-              <ChevronUp className="h-4 w-4 animate-bounce" />
-            </button>
-          </div>
+          {/* Desktop Only: Top Scroll Arrow */}
+          {!isMobile && canScrollUp && (
+            <div className="absolute top-0 left-0 right-0 z-20 flex justify-center py-1 bg-gradient-to-b from-background via-background/80 to-transparent transition-opacity duration-300 pointer-events-none">
+              <button 
+                onClick={(e) => { e.stopPropagation(); scrollTo('up'); }} 
+                className="p-1 rounded-full bg-primary text-white shadow-lg pointer-events-auto hover:scale-110 transition-transform"
+              >
+                <ChevronUp className="h-4 w-4 animate-bounce" />
+              </button>
+            </div>
+          )}
 
           <SidebarContent 
             ref={scrollRef} 
@@ -154,18 +174,17 @@ function AdminSidebarWrapper({ children }: { children: React.ReactNode }) {
             </SidebarMenu>
           </SidebarContent>
 
-          {/* Bottom Slide Arrow */}
-          <div className={cn(
-            "absolute bottom-0 left-0 right-0 z-20 flex justify-center py-1 bg-gradient-to-t from-background via-background/80 to-transparent transition-opacity duration-300 pointer-events-none",
-            canScrollDown ? "opacity-100" : "opacity-0"
-          )}>
-            <button 
-              onClick={(e) => { e.stopPropagation(); scrollTo('down'); }} 
-              className="p-1 rounded-full bg-primary text-white shadow-lg pointer-events-auto hover:scale-110 transition-transform"
-            >
-              <ChevronDown className="h-4 w-4 animate-bounce" />
-            </button>
-          </div>
+          {/* Desktop Only: Bottom Scroll Arrow */}
+          {!isMobile && canScrollDown && (
+            <div className="absolute bottom-0 left-0 right-0 z-20 flex justify-center py-1 bg-gradient-to-t from-background via-background/80 to-transparent transition-opacity duration-300 pointer-events-none">
+              <button 
+                onClick={(e) => { e.stopPropagation(); scrollTo('down'); }} 
+                className="p-1 rounded-full bg-primary text-white shadow-lg pointer-events-auto hover:scale-110 transition-transform"
+              >
+                <ChevronDown className="h-4 w-4 animate-bounce" />
+              </button>
+            </div>
+          )}
         </div>
       </Sidebar>
       
