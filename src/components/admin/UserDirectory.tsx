@@ -24,8 +24,8 @@ import {
     DropdownMenuSeparator
 } from "@/components/ui/dropdown-menu";
 import { useToast } from '@/hooks/use-toast';
-import { promoteUserAdmin } from '@/app/actions/user-actions';
 import { useAuth } from '@/context/AuthProvider';
+import Link from 'next/link';
 
 interface UserProfile {
     id: string;
@@ -44,8 +44,8 @@ interface TrendingProduct {
 }
 
 /**
- * Identity Manager v3.6:
- * Features full Real-time synchronization and Admin-only role management enforcement.
+ * Identity Manager v3.7:
+ * Features secure role-provisioning navigation and Admin-only role management enforcement.
  */
 export default function UserDirectory() {
     const { user: currentUser } = useAuth();
@@ -61,7 +61,6 @@ export default function UserDirectory() {
         if (isInitial) setLoading(true);
         
         try {
-            // 1. Fetch Users with Wishlist Counts (Relational Join)
             const { data: profiles, error: profileError } = await supabase
                 .from('profiles')
                 .select(`
@@ -72,7 +71,6 @@ export default function UserDirectory() {
 
             if (profileError) throw profileError;
 
-            // 2. Fetch Wishlist Global Trends (Factual Market Data)
             const { data: wishTrend, error: trendError } = await supabase
                 .from('wishlists')
                 .select(`
@@ -84,7 +82,6 @@ export default function UserDirectory() {
 
             if (trendError) throw trendError;
 
-            // Process trending items
             const counts: Record<string, { name: string, count: number }> = {};
             wishTrend?.forEach((item: any) => {
                 const id = item.product_id;
@@ -132,20 +129,6 @@ export default function UserDirectory() {
             .subscribe();
         return () => { supabase.removeChannel(channel); };
     }, [loadData]);
-
-    const handleRoleUpdate = async (email: string, newRole: 'admin' | 'staff' | 'user') => {
-        if (!isAdmin) {
-            toast({ variant: "destructive", title: "Access Denied", description: "Only Administrators can modify account permissions." });
-            return;
-        }
-        try {
-            await promoteUserAdmin(email, newRole);
-            toast({ title: "Permission Updated", description: `Role changed to ${newRole} for ${email}` });
-            loadData(false);
-        } catch (err: any) {
-            toast({ variant: "destructive", title: "Update Failed", description: err.message });
-        }
-    };
 
     const getRoleBadge = (role: string) => {
         switch(role) {
@@ -232,7 +215,7 @@ export default function UserDirectory() {
                             </div>
                             {isAdmin && (
                                 <Button className="rounded-full font-black uppercase tracking-tighter shadow-lg" asChild>
-                                    <a href="/admin/settings"><UserPlus className="mr-2 h-4 w-4" /> Provision Team</a>
+                                    <Link href="/admin/settings"><UserPlus className="mr-2 h-4 w-4" /> Provision Team</Link>
                                 </Button>
                             )}
                         </div>
@@ -295,9 +278,21 @@ export default function UserDirectory() {
                                                     <DropdownMenuContent align="end" className="w-56 p-2 rounded-2xl shadow-2xl border-none">
                                                         <DropdownMenuLabel className="text-[10px] font-black uppercase text-muted-foreground px-2 py-1">Administrative Ops</DropdownMenuLabel>
                                                         <DropdownMenuSeparator />
-                                                        <DropdownMenuItem className="rounded-xl font-bold text-xs" onClick={() => handleRoleUpdate(u.email, 'admin')}>Promote to Admin</DropdownMenuItem>
-                                                        <DropdownMenuItem className="rounded-xl font-bold text-xs" onClick={() => handleRoleUpdate(u.email, 'staff')}>Promote to Staff</DropdownMenuItem>
-                                                        <DropdownMenuItem className="rounded-xl font-bold text-xs" onClick={() => handleRoleUpdate(u.email, 'user')}>Revoke to Client</DropdownMenuItem>
+                                                        <DropdownMenuItem className="rounded-xl font-bold text-xs" asChild>
+                                                            <Link href={`/admin/users/confirm-role?id=${u.id}&email=${encodeURIComponent(u.email)}&role=admin`}>
+                                                                Promote to Admin
+                                                            </Link>
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem className="rounded-xl font-bold text-xs" asChild>
+                                                            <Link href={`/admin/users/confirm-role?id=${u.id}&email=${encodeURIComponent(u.email)}&role=staff`}>
+                                                                Promote to Staff
+                                                            </Link>
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem className="rounded-xl font-bold text-xs" asChild>
+                                                            <Link href={`/admin/users/confirm-role?id=${u.id}&email=${encodeURIComponent(u.email)}&role=user`}>
+                                                                Revoke to Client
+                                                            </Link>
+                                                        </DropdownMenuItem>
                                                     </DropdownMenuContent>
                                                 </DropdownMenu>
                                             ) : (
