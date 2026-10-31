@@ -556,7 +556,10 @@ function ReviewModerationSuite({ reviews, onRefresh }: { reviews: any[], onRefre
         setModulating(id);
         try {
             await toggleReviewVisibility(id, !current);
-            toast({ title: !current ? "Review Redacted" : "Review Restored", description: "Public storefront updated successfully." });
+            toast({ 
+                title: !current ? "Review Redacted" : "Review Transmitted", 
+                description: !current ? "Removed from public view." : "Now visible on the storefront." 
+            });
             onRefresh();
         } catch (error: any) {
             console.error("Moderation failure:", error);
@@ -607,7 +610,7 @@ function ReviewModerationSuite({ reviews, onRefresh }: { reviews: any[], onRefre
                                             className="rounded-xl h-9 px-4 font-black uppercase text-[9px]"
                                         >
                                             {modulating === rev.id ? <Loader2 className="animate-spin h-3 w-3" /> : (rev.is_hidden ? <Eye className="mr-2 h-3 w-3" /> : <EyeOff className="mr-2 h-3 w-3" />)}
-                                            {rev.is_hidden ? "Publish" : "Redact"}
+                                            {rev.is_hidden ? "Show" : "Redact"}
                                         </Button>
                                     </div>
                                 </div>
