@@ -43,7 +43,7 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion";
+} from "@/components/accordion";
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useState, useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
@@ -297,7 +297,7 @@ export default function Header() {
                                     <Image src="/logo Alpha.png" alt="Logo" width={45} height={45}/>
                                     <div className="flex flex-col">
                                         <span className="font-black text-xl text-accent tracking-tighter uppercase leading-none">ALPHA</span>
-                                        <span className="text-[8px] font-bold text-primary uppercase tracking-widest mt-1">Ecosystem v2.4</span>
+                                        <span className="text-[8px] font-bold text-primary uppercase tracking-widest mt-1">Ecosystem v2.5.0</span>
                                     </div>
                                 </Link>
                             </SheetTitle>
