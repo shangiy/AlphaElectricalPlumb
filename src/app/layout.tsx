@@ -26,7 +26,10 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   title: 'AlphaElectricalPlumb',
   description: 'Premium plumbing, electrical, lighting, and home décor solutions in Eldoret, Kenya.',
-  metadataBase: new URL('https://alphaelectricalsplumbingltd.com'),
+  metadataBase: new URL('https://alpha-electrical-plumb-git-main-shangiys-projects.vercel.app'), // Must be a valid URL base
+  verification: {
+    google: 'X32RvS3QP_uktu5eR2tmD8IErRhM-vOsw-OIE_kYEF4', // Your verification code goes here
+  },
   manifest: '/manifest.json',
   icons: {
     icon: [
