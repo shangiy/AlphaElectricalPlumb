@@ -22,7 +22,8 @@ import {
   Eye,
   EyeOff,
   MoveVertical,
-  Flag
+  Flag,
+  Ghost
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import FeaturedProductManager from './FeaturedProductManager';
@@ -197,11 +198,19 @@ export default function UiUxControlCenter() {
                                 placeholder="OFFER! MIDYEAR FLASH SALE, MASHUJAA DAY OFFER!"
                                 className="min-h-[120px] rounded-2xl p-4 font-bold text-lg shadow-inner bg-muted/10 border-none resize-none"
                             />
-                            <div className="p-4 bg-primary/5 rounded-xl border border-dashed border-primary/20 flex gap-3 items-start">
-                                <Sparkles className="h-5 w-5 text-primary shrink-0" />
-                                <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-tight">
-                                    Pro Tip: Use <span className="font-black text-accent">"OFFER!"</span> or <span className="font-black text-accent">"MASHUJAA"</span> in your text to trigger special Kenyan-themed visual highlights automatically.
-                                </p>
+                            <div className="space-y-3">
+                                <div className="p-4 bg-primary/5 rounded-xl border border-dashed border-primary/20 flex gap-3 items-start">
+                                    <Sparkles className="h-5 w-5 text-primary shrink-0" />
+                                    <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-tight">
+                                        Pro Tip: Use <span className="font-black text-accent">"OFFER!"</span> or <span className="font-black text-accent">"MASHUJAA"</span> in your text to trigger special Kenyan-themed visual highlights automatically.
+                                    </p>
+                                </div>
+                                <div className="p-4 bg-orange-500/5 rounded-xl border border-dashed border-orange-500/20 flex gap-3 items-start">
+                                    <Ghost className="h-5 w-5 text-orange-500 shrink-0" />
+                                    <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-tight">
+                                        Seasonal Tip: Use <span className="font-black text-orange-600">"HALLOWEEN"</span> in your text to trigger a spooky seasonal effect with orange glows and 🎃 ghosts.
+                                    </p>
+                                </div>
                             </div>
                         </div>
 

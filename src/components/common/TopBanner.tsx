@@ -9,7 +9,7 @@ import { getStorefrontSetting } from '@/app/actions/cms-actions';
 /**
  * Dynamic TopBanner:
  * Fetches promotional content from Supabase storefront_settings.
- * Features KENYAN style "MASHUJAA" text logic.
+ * Features KENYAN style "MASHUJAA" and spooky "HALLOWEEN" text logic.
  */
 export default function TopBanner() {
   const [content, setContent] = useState('OFFER! MIDYEAR FLASH SALE, MASHUJAA DAY OFFER!');
@@ -31,15 +31,16 @@ export default function TopBanner() {
   }, []);
 
   const renderRichText = (text: string) => {
-    // Splits text into parts, highlighting "OFFER" and "MASHUJAA"
-    const parts = text.split(/(OFFER!|MASHUJAA)/g);
+    // Splits text into parts, highlighting "OFFER", "MASHUJAA", and "HALLOWEEN"
+    const parts = text.split(/(OFFER!|MASHUJAA|HALLOWEEN)/gi);
     
     return parts.map((part, i) => {
-      if (part === 'OFFER!') {
+      const lowerPart = part.toLowerCase();
+      if (lowerPart === 'offer!') {
         const colors = ['text-red-500', 'text-green-500', 'text-white'];
         return <span key={i} className={cn("font-black", colors[i % 3])}>{part} </span>;
       }
-      if (part === 'MASHUJAA') {
+      if (lowerPart === 'mashujaa') {
         return (
           <span key={i} className="inline-flex font-black tracking-tighter drop-shadow-md bg-white px-2 rounded-sm mx-1 border border-white/20 overflow-hidden">
             <span 
@@ -53,6 +54,13 @@ export default function TopBanner() {
             >
               MASHUJAA
             </span>
+          </span>
+        );
+      }
+      if (lowerPart === 'halloween') {
+        return (
+          <span key={i} className="inline-flex items-center gap-1 font-black text-orange-500 drop-shadow-[0_0_8px_rgba(249,115,22,0.8)] mx-1">
+            🎃 {part.toUpperCase()} 👻
           </span>
         );
       }
