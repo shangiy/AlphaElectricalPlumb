@@ -66,6 +66,44 @@ export default function UiUxControlCenter() {
   const [categoryCards, setCategoryCards] = useState<CategoryCardData[]>([]);
   const [reviews, setReviews] = useState<any[]>([]);
 
+  const renderRichText = (text: string) => {
+    // Splits text into parts, highlighting "OFFER", "MASHUJAA", and "HALLOWEEN"
+    const parts = text.split(/(OFFER!|MASHUJAA|HALLOWEEN)/gi);
+    
+    return parts.map((part, i) => {
+      const lowerPart = part.toLowerCase();
+      if (lowerPart === 'offer!') {
+        const colors = ['text-red-500', 'text-green-500', 'text-blue-400'];
+        return <span key={i} className={cn("font-black", colors[i % 3])}>{part} </span>;
+      }
+      if (lowerPart === 'mashujaa') {
+        return (
+          <span key={i} className="inline-flex font-black tracking-tighter drop-shadow-md bg-white px-2 rounded-sm mx-1 border border-white/20 overflow-hidden text-[10px]">
+            <span 
+              style={{
+                background: 'linear-gradient(to bottom, black 33.3%, #BB0000 33.3% 66.6%, #006600 66.6%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                display: 'inline-block',
+                lineHeight: '1'
+              }}
+            >
+              MASHUJAA
+            </span>
+          </span>
+        );
+      }
+      if (lowerPart === 'halloween') {
+        return (
+          <span key={i} className="inline-flex items-center gap-1 font-black text-orange-500 drop-shadow-[0_0_8px_rgba(249,115,22,0.8)] mx-1">
+            🎃 {part.toUpperCase()} 👻
+          </span>
+        );
+      }
+      return <span key={i}>{part}</span>;
+    });
+  };
+
   const sortHeroSlides = (slides: HeroSlide[]) => {
     return [...slides].sort((a, b) => {
         if (a.active === b.active) return 0;
@@ -207,9 +245,12 @@ export default function UiUxControlCenter() {
                                 </div>
                                 <div className="p-4 bg-orange-500/5 rounded-xl border border-dashed border-orange-500/20 flex gap-3 items-start">
                                     <Ghost className="h-5 w-5 text-orange-500 shrink-0" />
-                                    <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-tight">
-                                        Seasonal Tip: Use <span className="font-black text-orange-600">"HALLOWEEN"</span> in your text to trigger a spooky seasonal effect with orange glows and 🎃 ghosts.
-                                    </p>
+                                    <div>
+                                        <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-tight">
+                                            Seasonal Tip: Use <span className="font-black text-orange-600">"HALLOWEEN"</span> in your text to trigger a spooky seasonal effect with orange glows and 🎃 ghosts.
+                                        </p>
+                                        <p className="text-[9px] text-orange-600/60 font-bold mt-1 uppercase italic">Example: "🎃 HALLOWEEN Mega Sale - Up to 40% Off! 👻"</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -218,7 +259,7 @@ export default function UiUxControlCenter() {
                             <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 mb-4 block">Active Preview</Label>
                             <div className="h-10 w-full rounded-lg bg-accent flex items-center overflow-hidden border">
                                 <div className="animate-scroll whitespace-nowrap text-white font-bold px-4 text-xs">
-                                    {topBannerText || 'Top Banner Message Placeholder...'} &nbsp;&nbsp;&nbsp;&nbsp; {topBannerText || 'Top Banner Message Placeholder...'}
+                                    {renderRichText(topBannerText || 'Top Banner Message Placeholder...')} &nbsp;&nbsp;&nbsp;&nbsp; {renderRichText(topBannerText || 'Top Banner Message Placeholder...')}
                                 </div>
                             </div>
                         </div>
