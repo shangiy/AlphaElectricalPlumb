@@ -162,34 +162,11 @@ export default function Footer() {
 
         </div>
         
-        {/* Advanced Footer Infrastructure Node */}
+        {/* Footer Bottom Row */}
         <div className="mt-20 pt-10 border-t border-accent/5">
           <div className="flex flex-col lg:flex-row items-center justify-between gap-8">
             <div className="flex flex-col items-center lg:items-start gap-2 text-center lg:text-left">
               <p className="text-xs font-bold text-muted-foreground opacity-60">© 2026 Alpha Electricals & Plumbing Ltd. All rights reserved.</p>
-            </div>
-
-            <div className="flex flex-wrap justify-center lg:justify-end gap-4">
-               {/* Verified Badge with CSS Tooltip */}
-               <div className="group relative flex items-center gap-2.5 px-5 py-2.5 bg-white rounded-2xl border border-primary/10 shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5 cursor-help">
-                  <ShieldCheck size={16} className="text-primary" />
-                  <span className="text-[10px] font-black uppercase tracking-tight text-accent">Verified Cloud Ecosystem</span>
-                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 px-4 py-2 bg-accent text-white text-[9px] font-black rounded-xl opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none whitespace-nowrap uppercase tracking-widest shadow-2xl scale-95 group-hover:scale-100 border border-white/10 z-50">
-                    Encrypted via Supabase & Vercel Edge
-                    <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-accent" />
-                  </div>
-               </div>
-
-               {/* Coder+ Credit with CSS Tooltip */}
-               <div className="group relative flex items-center gap-2.5 px-5 py-2.5 bg-accent text-white rounded-2xl shadow-xl transition-all hover:scale-105 active:scale-95 cursor-help">
-                  <div className="h-5 w-5 bg-white rounded-md flex items-center justify-center text-accent text-[10px] font-black shadow-inner">C+</div>
-                  <span className="text-[10px] font-black uppercase tracking-tight">Infrastructure by <span className="text-primary">Coder+ Web-Dev</span></span>
-                  <span className="text-base">✨🎈✨🎈</span>
-                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 px-4 py-2 bg-primary text-white text-[9px] font-black rounded-xl opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none whitespace-nowrap uppercase tracking-widest shadow-2xl scale-95 group-hover:scale-100 border border-white/10 z-50">
-                    Alpha Core Deployment v2.5.0
-                    <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-primary" />
-                  </div>
-               </div>
             </div>
           </div>
         </div>
