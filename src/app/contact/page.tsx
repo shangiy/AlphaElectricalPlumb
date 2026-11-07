@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Mail, Phone, MapPin, Clock, Facebook } from 'lucide-react';
 import Image from 'next/image';
@@ -47,8 +46,8 @@ export default function ContactPage() {
                 <div className="flex flex-col items-center">
                   <Mail className="h-10 w-10 text-primary mb-2" />
                   <h3 className="text-lg font-semibold">Email</h3>
-                  <a href="mailto:Alphaltd21@gmail.com" className="text-muted-foreground hover:text-primary">
-                    Alphaltd21@gmail.com
+                  <a href="mailto:info@alphaelectricalplumbingltd.com" className="text-muted-foreground hover:text-primary font-bold">
+                    info@alphaelectricalplumbingltd.com
                   </a>
                 </div>
                 <div className="flex flex-col items-center">

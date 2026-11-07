@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function PrivacyPage() {
@@ -64,7 +63,7 @@ export default function PrivacyPage() {
               <p>If you have questions about this Privacy Policy, please contact us:</p>
               <address className="not-italic">
                 <strong>Alpha Electricals & Plumbing Ltd</strong><br />
-                Email: <a href="mailto:Alphaltd21@gmail.com" className="text-primary hover:underline">Alphaltd21@gmail.com</a><br />
+                Email: <a href="mailto:info@alphaelectricalplumbingltd.com" className="text-primary hover:underline font-bold">info@alphaelectricalplumbingltd.com</a><br />
                 Phone: <a href="tel:+254117484887" className="text-primary hover:underline">0117 484887</a><br />
                 Address: Nandi Arcade, Eldoret, Kenya
               </address>

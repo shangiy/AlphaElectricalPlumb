@@ -1,8 +1,7 @@
-
 import Link from 'next/link';
 import Image from 'next/image';
 import NewsletterForm from './NewsletterForm';
-import { User, Facebook, Instagram, Youtube, CheckCircle } from 'lucide-react';
+import { User, Facebook, Instagram, Youtube, CheckCircle, Mail } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 export default function Footer() {
@@ -52,6 +51,19 @@ export default function Footer() {
             <div className="mt-4">
               <h3 className="font-semibold font-headline mb-2">Subscribe to our newsletter</h3>
               <NewsletterForm />
+            </div>
+            
+            {/* Professional Contact Email */}
+            <div className="mt-2 flex items-center gap-2 text-sm group">
+              <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all">
+                <Mail size={14} />
+              </div>
+              <a 
+                href="mailto:info@alphaelectricalplumbingltd.com" 
+                className="font-bold text-accent hover:text-primary transition-colors"
+              >
+                info@alphaelectricalplumbingltd.com
+              </a>
             </div>
           </div>
           
