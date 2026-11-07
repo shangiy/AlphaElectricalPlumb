@@ -4,7 +4,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 import NewsletterForm from './NewsletterForm';
 import { Facebook, Mail, ArrowUpRight, CheckCircle } from 'lucide-react';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useAuth } from '@/context/AuthProvider';
 import { cn } from '@/lib/utils';
 
@@ -164,44 +163,8 @@ export default function Footer() {
         </div>
         
         {/* Footer Bottom Block */}
-        <div className="mt-24 border-t border-accent/5 pt-12">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-8">
-            <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4 text-[10px] font-black text-muted-foreground/40 uppercase tracking-[0.3em]">
-                <span>&copy; 2026 Alpha Electricals & Plumbing Ltd.</span>
-                <span className="hidden md:block">|</span>
-                <span className="flex items-center gap-1.5"><CheckCircle size={10} className="text-primary" /> Verified Cloud Ecosystem</span>
-            </div>
-            
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <a 
-                    href="https://mushangi-s-vision.vercel.app/" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="relative group/credit inline-flex items-center gap-3 p-2.5 px-6 rounded-full bg-accent text-white shadow-2xl hover:scale-105 transition-all active:scale-95 border border-white/5"
-                  >
-                    <div className="h-6 w-6 rounded-full bg-white/10 flex items-center justify-center font-black text-[10px] shadow-inner">C+</div>
-                    <div className="flex flex-col items-start">
-                        <span className="text-[8px] font-bold uppercase tracking-[0.2em] opacity-40 leading-none mb-1">Infrastructure by</span>
-                        <span className="text-[10px] font-black uppercase tracking-tighter text-sky-400 leading-none">Coder+ Web-Dev</span>
-                    </div>
-                    
-                    {/* Animated Particles */}
-                    <div className="absolute -top-12 left-0 w-full h-12 pointer-events-none opacity-0 group-hover/credit:opacity-100 transition-opacity">
-                      <span className="absolute animate-float-up-fade left-[10%] text-sm" style={{ animationDelay: '0s' }}>✨</span>
-                      <span className="absolute animate-float-up-fade left-[40%]" style={{ animationDelay: '0.3s' }}>🎈</span>
-                      <span className="absolute animate-float-up-fade left-[70%] text-sm" style={{ animationDelay: '0.1s' }}>✨</span>
-                      <span className="absolute animate-float-up-fade left-[90%]" style={{ animationDelay: '0.5s' }}>🎈</span>
-                    </div>
-                  </a>
-                </TooltipTrigger>
-                <TooltipContent className="rounded-2xl border-none bg-accent text-white p-4 font-bold text-xs shadow-2xl">
-                  <p>View the full developer portfolio node</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
+        <div className="mt-12 border-t border-accent/10 pt-8 text-center text-sm text-muted-foreground font-medium">
+          <p>&copy; 2026 Alpha Electricals & Plumbing Ltd. All rights reserved.</p>
         </div>
       </div>
       
