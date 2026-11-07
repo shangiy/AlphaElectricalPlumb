@@ -162,17 +162,42 @@ export default function Footer() {
 
         </div>
         
-        {/* Footer Bottom Block */}
-        <div className="mt-12 border-t border-accent/10 pt-8 text-center text-sm text-muted-foreground font-medium">
-          <div className="flex flex-col md:flex-row items-center justify-center gap-x-2 gap-y-1">
-            <p>&copy; 2026 Alpha Electricals & Plumbing Ltd. All rights reserved.</p>
-            <span className="hidden md:inline opacity-20">|</span>
-            <p className="flex items-center gap-1.5">
-              <ShieldCheck size={14} className="text-primary" />
-              <span className="font-bold">Verified Cloud Ecosystem</span>
-              <span className="bg-accent text-white px-1.5 py-0.5 rounded-sm text-[9px] font-black">C+</span>
-              <span>Infrastructure by <span className="text-accent font-black">Coder+ Web-Dev</span> ✨🎈✨🎈</span>
-            </p>
+        {/* Advanced Footer Infrastructure Node */}
+        <div className="mt-20 pt-10 border-t border-accent/5">
+          <div className="flex flex-col lg:flex-row items-center justify-between gap-8">
+            <div className="flex flex-col items-center lg:items-start gap-2 text-center lg:text-left">
+              <p className="text-xs font-bold text-muted-foreground opacity-60">© 2026 Alpha Electricals & Plumbing Ltd. All rights reserved.</p>
+              <div className="flex items-center gap-4 text-[9px] font-black uppercase tracking-widest text-muted-foreground/40">
+                <Link href="/terms" className="hover:text-primary transition-colors">Terms of Service</Link>
+                <span className="opacity-20">•</span>
+                <Link href="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link>
+                <span className="opacity-20">•</span>
+                <Link href="/cookie-policy" className="hover:text-primary transition-colors">Cookies Protocol</Link>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap justify-center lg:justify-end gap-4">
+               {/* Verified Badge with CSS Tooltip */}
+               <div className="group relative flex items-center gap-2.5 px-5 py-2.5 bg-white rounded-2xl border border-primary/10 shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5 cursor-help">
+                  <ShieldCheck size={16} className="text-primary" />
+                  <span className="text-[10px] font-black uppercase tracking-tight text-accent">Verified Cloud Ecosystem</span>
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 px-4 py-2 bg-accent text-white text-[9px] font-black rounded-xl opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none whitespace-nowrap uppercase tracking-widest shadow-2xl scale-95 group-hover:scale-100 border border-white/10 z-50">
+                    Encrypted via Supabase & Vercel Edge
+                    <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-accent" />
+                  </div>
+               </div>
+
+               {/* Coder+ Credit with CSS Tooltip */}
+               <div className="group relative flex items-center gap-2.5 px-5 py-2.5 bg-accent text-white rounded-2xl shadow-xl transition-all hover:scale-105 active:scale-95 cursor-help">
+                  <div className="h-5 w-5 bg-white rounded-md flex items-center justify-center text-accent text-[10px] font-black shadow-inner">C+</div>
+                  <span className="text-[10px] font-black uppercase tracking-tight">Infrastructure by <span className="text-primary">Coder+ Web-Dev</span></span>
+                  <span className="text-base">✨🎈✨🎈</span>
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 px-4 py-2 bg-primary text-white text-[9px] font-black rounded-xl opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none whitespace-nowrap uppercase tracking-widest shadow-2xl scale-95 group-hover:scale-100 border border-white/10 z-50">
+                    Alpha Core Deployment v2.5.0
+                    <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-primary" />
+                  </div>
+               </div>
+            </div>
           </div>
         </div>
       </div>
