@@ -6,14 +6,29 @@ import NewsletterForm from './NewsletterForm';
 import { Facebook, Mail, ArrowUpRight, CheckCircle } from 'lucide-react';
 import { useAuth } from '@/context/AuthProvider';
 import { cn } from '@/lib/utils';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { getStorefrontSetting } from '@/app/actions/cms-actions';
+
+/**
+ * Utility to convert hex to rgba components
+ */
+function hexToRgb(hex: string) {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result ? {
+    r: parseInt(result[1], 16),
+    g: parseInt(result[2], 16),
+    b: parseInt(result[3], 16)
+  } : { r: 0, g: 128, b: 141 }; // Default Teal
+}
 
 /**
  * Interactive Spider Web Background Component
  * Renders a particle network that follows the mouse and connects nodes.
+ * Now supports dynamic colors from CMS.
  */
-function InteractiveSpiderWeb() {
+function InteractiveSpiderWeb({ color = "#00808d" }: { color?: string }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const rgb = hexToRgb(color);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -50,11 +65,10 @@ function InteractiveSpiderWeb() {
         if (!ctx) return;
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2, false);
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+        ctx.fillStyle = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.8)`;
         ctx.fill();
-        // Add glow to dots
         ctx.shadowBlur = 10;
-        ctx.shadowColor = 'white';
+        ctx.shadowColor = color;
       }
 
       update() {
@@ -68,7 +82,7 @@ function InteractiveSpiderWeb() {
         this.x += this.directionX;
         this.y += this.directionY;
         this.draw();
-        ctx!.shadowBlur = 0; // Reset shadow for lines
+        ctx!.shadowBlur = 0; 
       }
     }
 
@@ -96,7 +110,7 @@ function InteractiveSpiderWeb() {
 
           if (distance < (canvas!.width / 7) * (canvas!.height / 7)) {
             opacityValue = 1 - (distance / 20000);
-            ctx!.strokeStyle = `rgba(255, 255, 255, ${opacityValue * 0.2})`;
+            ctx!.strokeStyle = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${opacityValue * 0.2})`;
             ctx!.lineWidth = 1;
             ctx!.beginPath();
             ctx!.moveTo(particles[a].x, particles[a].y);
@@ -105,7 +119,6 @@ function InteractiveSpiderWeb() {
           }
         }
 
-        // Mouse interaction
         if (mouse.x !== null && mouse.y !== null) {
           const dxMouse = particles[a].x - mouse.x;
           const dyMouse = particles[a].y - mouse.y;
@@ -113,7 +126,7 @@ function InteractiveSpiderWeb() {
           
           if (distanceMouse < mouse.radius * mouse.radius) {
             opacityValue = 1 - (distanceMouse / (mouse.radius * mouse.radius));
-            ctx!.strokeStyle = `rgba(255, 255, 255, ${opacityValue * 0.5})`;
+            ctx!.strokeStyle = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${opacityValue * 0.5})`;
             ctx!.lineWidth = 1.5;
             ctx!.beginPath();
             ctx!.moveTo(particles[a].x, particles[a].y);
@@ -157,7 +170,7 @@ function InteractiveSpiderWeb() {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseout', handleMouseOut);
     };
-  }, []);
+  }, [color, rgb.r, rgb.g, rgb.b]);
 
   return (
     <canvas 
@@ -169,14 +182,21 @@ function InteractiveSpiderWeb() {
 }
 
 /**
- * Premium Footer v2.5.1:
- * Features a "Mini-App" Style Support Node and dynamic identity handshake.
- * Interactive Developer Credit with floating emoji animation.
- * New: Cursor-reactive Spider Web Particle Background.
+ * Premium Footer v2.5.2:
+ * Features cursor-reactive Spider Web Particle Background with CMS Color control.
  */
 export default function Footer() {
   const { user } = useAuth();
+  const [particleColor, setParticleColor] = useState("#00808d");
   
+  useEffect(() => {
+    async function loadStyles() {
+      const color = await getStorefrontSetting('footer_particle_color');
+      if (color) setParticleColor(color);
+    }
+    loadStyles();
+  }, []);
+
   const socialLinks = [
     { name: 'Facebook', href: 'https://www.facebook.com/Alphaelectricalsandplumbing', icon: <Facebook className="h-5 w-5" />, color: "text-blue-600" },
     { name: 'TikTok', href: 'https://www.tiktok.com/@AlphaElectricalsandplumb', icon: <Image src="/tiktok-V1.png" alt="TikTok" width={20} height={20} />, color: "" },
@@ -221,12 +241,11 @@ export default function Footer() {
   return (
     <footer className="bg-secondary text-secondary-foreground border-t relative overflow-hidden group/footer">
       {/* Spider Web Layer */}
-      <InteractiveSpiderWeb />
+      <InteractiveSpiderWeb color={particleColor} />
 
       <div className="container mx-auto px-4 py-20 relative z-10">
         <div className="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-4">
           
-          {/* Brand & Support Node Column */}
           <div className="flex flex-col gap-8">
             <div className="space-y-4">
                 <Link href="/" className="flex items-center gap-3 group">
@@ -248,7 +267,6 @@ export default function Footer() {
                 <NewsletterForm />
             </div>
 
-            {/* The "Mini-App" Style Support Node */}
             <div className="pt-2">
                 <a 
                     href={mailtoLink}
@@ -281,7 +299,6 @@ export default function Footer() {
             </div>
           </div>
           
-          {/* Navigation Matrix */}
           {footerLinks.map((section) => (
             <div key={section.title} className="flex flex-col gap-8">
               <h3 className="text-[10px] font-black font-headline uppercase tracking-[0.4em] text-accent/40">{section.title}</h3>
@@ -333,7 +350,6 @@ export default function Footer() {
 
         </div>
         
-        {/* Footer Bottom Row */}
         <div className="mt-20 pt-10 border-t border-accent/5">
           <div className="flex flex-col items-center justify-center gap-2 text-center w-full">
             <p className="text-xs font-bold text-muted-foreground opacity-60">
@@ -354,8 +370,8 @@ export default function Footer() {
         </div>
       </div>
       
-      {/* Structural Accent */}
       <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-primary/0 via-primary/40 to-primary/0" />
     </footer>
   );
 }
+

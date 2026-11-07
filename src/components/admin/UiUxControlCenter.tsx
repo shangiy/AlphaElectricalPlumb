@@ -23,7 +23,8 @@ import {
   EyeOff,
   MoveVertical,
   Flag,
-  Ghost
+  Ghost,
+  Box
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import FeaturedProductManager from './FeaturedProductManager';
@@ -45,8 +46,8 @@ export const STYLE_OPTIONS = [
 ];
 
 /**
- * Storefront CMS Suite v3.0
- * Intelligent hub for managing every aspect of the storefront experience.
+ * Storefront CMS Suite v3.1
+ * Includes Global Style Node for Footer Particle control.
  */
 export default function UiUxControlCenter() {
   const { toast } = useToast();
@@ -60,6 +61,7 @@ export default function UiUxControlCenter() {
   const [submitting, setSubmitting] = useState(false);
 
   const [topBannerText, setTopBannerText] = useState('');
+  const [footerParticleColor, setFooterParticleColor] = useState('#00808d');
   const [heroSlides, setHeroSlides] = useState<HeroSlide[]>([]);
   const [searchPhrases, setSearchPhrases] = useState<string[]>([]);
   const [newPhrase, setNewPhrase] = useState('');
@@ -67,7 +69,6 @@ export default function UiUxControlCenter() {
   const [reviews, setReviews] = useState<any[]>([]);
 
   const renderRichText = (text: string) => {
-    // Splits text into parts, highlighting "OFFER", "MASHUJAA", and "HALLOWEEN"
     const parts = text.split(/(OFFER!|MASHUJAA|HALLOWEEN)/gi);
     
     return parts.map((part, i) => {
@@ -114,17 +115,19 @@ export default function UiUxControlCenter() {
   const loadAllSettings = useCallback(async () => {
     setLoading(true);
     try {
-      const [hero, search, cats, topBanner] = await Promise.all([
+      const [hero, search, cats, topBanner, particleColor] = await Promise.all([
         getStorefrontSetting('hero_slides'),
         getStorefrontSetting('search_phrases'),
         getStorefrontSetting('category_cards'),
-        getStorefrontSetting('top_banner_text')
+        getStorefrontSetting('top_banner_text'),
+        getStorefrontSetting('footer_particle_color')
       ]);
       
       if (hero) setHeroSlides(sortHeroSlides(hero as HeroSlide[]));
       if (search) setSearchPhrases(search);
       if (cats) setCategoryCards(cats);
       if (topBanner) setTopBannerText(topBanner);
+      if (particleColor) setFooterParticleColor(particleColor);
 
       const { data: revData } = await supabase.from('reviews').select('*').order('created_at', { ascending: false });
       setReviews(revData || []);
@@ -157,6 +160,18 @@ export default function UiUxControlCenter() {
         setSubmitting(false);
     }
   };
+
+  const handleSaveGlobalStyles = async () => {
+    setSubmitting(true);
+    try {
+        await updateStorefrontSetting('footer_particle_color', footerParticleColor);
+        toast({ title: "Styles Published", description: "Global UI attributes synchronized." });
+    } catch (err: any) {
+        toast({ variant: "destructive", title: "Sync Failed", description: err.message });
+    } finally {
+        setSubmitting(false);
+    }
+  }
 
   const handleSaveHero = async () => {
     setSubmitting(true);
@@ -199,7 +214,7 @@ export default function UiUxControlCenter() {
             <LayoutGrid className="text-primary h-12 w-12" />
             Alpha CMS Suite
           </h1>
-          <p className="text-muted-foreground font-bold uppercase tracking-widest text-xs mt-2">Professional Storefront Governance v3.0</p>
+          <p className="text-muted-foreground font-bold uppercase tracking-widest text-xs mt-2">Professional Storefront Governance v3.1</p>
         </div>
         <Button onClick={handleSaveHero} disabled={submitting} className="rounded-full h-12 px-8 bg-primary font-black uppercase tracking-tighter shadow-xl">
             {submitting ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : <Save className="mr-2 h-4 w-4" />}
@@ -208,8 +223,8 @@ export default function UiUxControlCenter() {
       </div>
 
       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-6 h-auto bg-muted/30 p-2 rounded-[2.5rem] mb-12 border shadow-inner">
-            <TabsTrigger value="topbanner" className="rounded-[1.5rem] font-black uppercase text-[10px] py-4">Top Banner</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-6 h-auto bg-muted/30 p-2 rounded-[2.5rem] mb-12 border shadow-inner overflow-x-auto">
+            <TabsTrigger value="topbanner" className="rounded-[1.5rem] font-black uppercase text-[10px] py-4">Global UI</TabsTrigger>
             <TabsTrigger value="hero" className="rounded-[1.5rem] font-black uppercase text-[10px] py-4">Hero Banners</TabsTrigger>
             <TabsTrigger value="search" className="rounded-[1.5rem] font-black uppercase text-[10px] py-4">Search CMS</TabsTrigger>
             <TabsTrigger value="spotlight" className="rounded-[1.5rem] font-black uppercase text-[10px] py-4">Spotlight</TabsTrigger>
@@ -218,7 +233,7 @@ export default function UiUxControlCenter() {
         </TabsList>
 
         <TabsContent value="topbanner">
-            <div className="max-w-2xl mx-auto space-y-8">
+            <div className="max-w-3xl mx-auto space-y-12">
                 <Card className="rounded-[2.5rem] border shadow-2xl overflow-hidden bg-white">
                     <CardHeader className="bg-accent text-white p-8">
                         <div className="flex items-center gap-3 mb-2">
@@ -236,36 +251,74 @@ export default function UiUxControlCenter() {
                                 placeholder="OFFER! MIDYEAR FLASH SALE, MASHUJAA DAY OFFER!"
                                 className="min-h-[120px] rounded-2xl p-4 font-bold text-lg shadow-inner bg-muted/10 border-none resize-none"
                             />
-                            <div className="space-y-3">
-                                <div className="p-4 bg-primary/5 rounded-xl border border-dashed border-primary/20 flex gap-3 items-start">
-                                    <Sparkles className="h-5 w-5 text-primary shrink-0" />
-                                    <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-tight">
-                                        Pro Tip: Use <span className="font-black text-accent">"OFFER!"</span> or <span className="font-black text-accent">"MASHUJAA"</span> in your text to trigger special Kenyan-themed visual highlights automatically.
-                                    </p>
-                                </div>
-                                <div className="p-4 bg-orange-500/5 rounded-xl border border-dashed border-orange-500/20 flex gap-3 items-start">
-                                    <Ghost className="h-5 w-5 text-orange-500 shrink-0" />
-                                    <div>
-                                        <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-tight">
-                                            Seasonal Tip: Use <span className="font-black text-orange-600">"HALLOWEEN"</span> in your text to trigger a spooky seasonal effect with orange glows and 🎃 ghosts.
-                                        </p>
-                                        <p className="text-[9px] text-orange-600/60 font-bold mt-1 uppercase italic">Example: "🎃 HALLOWEEN Mega Sale - Up to 40% Off! 👻"</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="pt-4">
-                            <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 mb-4 block">Active Preview</Label>
-                            <div className="h-10 w-full rounded-lg bg-accent flex items-center overflow-hidden border">
-                                <div className="animate-scroll whitespace-nowrap text-white font-bold px-4 text-xs">
-                                    {renderRichText(topBannerText || 'Top Banner Message Placeholder...')} &nbsp;&nbsp;&nbsp;&nbsp; {renderRichText(topBannerText || 'Top Banner Message Placeholder...')}
-                                </div>
+                            <div className="p-4 bg-primary/5 rounded-xl border border-dashed border-primary/20 flex gap-3 items-start">
+                                <Sparkles className="h-5 w-5 text-primary shrink-0" />
+                                <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-tight">
+                                    Pro Tip: Use <span className="font-black text-accent">"OFFER!"</span> or <span className="font-black text-accent">"MASHUJAA"</span> in your text to trigger special visual highlights.
+                                </p>
                             </div>
                         </div>
 
                         <Button onClick={handleSaveTopBanner} disabled={submitting} className="w-full h-14 rounded-full font-black uppercase bg-primary text-white mt-4 shadow-xl">
                             Publish Top Banner
+                        </Button>
+                    </CardContent>
+                </Card>
+
+                <Card className="rounded-[2.5rem] border shadow-2xl overflow-hidden bg-white">
+                    <CardHeader className="bg-primary/5 p-8 border-b">
+                        <div className="flex items-center gap-3 mb-2">
+                            <Palette className="text-primary h-6 w-6" />
+                            <CardTitle className="text-xl font-black uppercase tracking-tight text-accent">Footer Visual Node</CardTitle>
+                        </div>
+                        <CardDescription className="font-medium">Control the styling of the interactive particle background.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="p-8 space-y-8">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
+                            <div className="space-y-4">
+                                <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Particle & Line Color</Label>
+                                <div className="flex items-center gap-4">
+                                    <input 
+                                        type="color" 
+                                        value={footerParticleColor} 
+                                        onChange={(e) => setFooterParticleColor(e.target.value)}
+                                        className="h-14 w-24 rounded-2xl cursor-pointer border-none p-1 bg-muted/20 shadow-inner"
+                                    />
+                                    <div className="flex-1 space-y-1">
+                                        <Input 
+                                            value={footerParticleColor} 
+                                            onChange={(e) => setFooterParticleColor(e.target.value)}
+                                            className="h-12 rounded-xl font-mono font-bold uppercase tracking-widest"
+                                        />
+                                        <p className="text-[8px] font-black text-muted-foreground/40 uppercase">Hex Code Protocol</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="p-6 rounded-[2rem] bg-secondary/50 border border-dashed flex flex-col items-center justify-center text-center relative group">
+                                <div 
+                                    className="h-20 w-20 rounded-full blur-xl opacity-20 absolute"
+                                    style={{ backgroundColor: footerParticleColor }}
+                                />
+                                <Box className="h-8 w-8 mb-2 z-10" style={{ color: footerParticleColor }} />
+                                <p className="text-[10px] font-black uppercase text-accent/60 tracking-widest z-10">Active Render Preview</p>
+                                <p className="text-xs font-bold mt-1 z-10" style={{ color: footerParticleColor }}>Factual Sync Node</p>
+                            </div>
+                        </div>
+
+                        <div className="p-4 bg-accent/5 rounded-xl border border-dashed border-accent/20 flex gap-3 items-start">
+                            <Palette className="h-5 w-5 text-accent shrink-0" />
+                            <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-tight">
+                                Recommendation: A semi-vibrant <span className="font-black text-primary">Teal (#00808d)</span> or deep <span className="font-black text-accent">Navy (#1d1b42)</span> provides the most professional technological depth.
+                            </p>
+                        </div>
+
+                        <Button 
+                            onClick={handleSaveGlobalStyles} 
+                            disabled={submitting} 
+                            className="w-full h-14 rounded-full font-black uppercase bg-accent text-white shadow-xl hover:scale-[1.02] active:scale-95 transition-all"
+                        >
+                            Sync Global Styles
                         </Button>
                     </CardContent>
                 </Card>
@@ -627,3 +680,4 @@ function ReviewModerationSuite({ reviews, onRefresh }: { reviews: any[], onRefre
         </Card>
     );
 }
+
