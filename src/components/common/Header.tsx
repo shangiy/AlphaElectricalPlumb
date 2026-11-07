@@ -290,39 +290,41 @@ export default function Header() {
                             <Menu />
                         </Button>
                     </SheetTrigger>
-                    <SheetContent side="right" className="w-[320px] p-0 flex flex-col border-none bg-background shadow-2xl overflow-hidden">
-                        <SheetHeader className="p-8 border-b flex flex-row items-center justify-between bg-white z-10 space-y-0 text-left">
+                    <SheetContent side="right" className="w-[300px] xs:w-[320px] p-0 flex flex-col border-none bg-background shadow-2xl overflow-hidden">
+                        <SheetHeader className="p-6 xs:p-8 border-b flex flex-row items-center justify-between bg-white z-10 space-y-0 text-left">
                             <SheetTitle asChild>
-                                <Link href="/" className="flex items-center gap-3">
-                                    <Image src="/logo Alpha.png" alt="Logo" width={45} height={45}/>
-                                    <div className="flex flex-col">
-                                        <span className="font-black text-xl text-accent tracking-tighter uppercase leading-none">ALPHA</span>
-                                        <span className="text-[8px] font-bold text-primary uppercase tracking-widest mt-1">Ecosystem v2.5.0</span>
-                                    </div>
-                                </Link>
+                                <SheetClose asChild>
+                                    <Link href="/" className="flex items-center gap-3">
+                                        <Image src="/logo Alpha.png" alt="Logo" width={45} height={45}/>
+                                        <div className="flex flex-col">
+                                            <span className="font-black text-lg xs:text-xl text-accent tracking-tighter uppercase leading-none">ALPHA</span>
+                                            <span className="text-[8px] font-bold text-primary uppercase tracking-widest mt-1">Ecosystem v2.5.0</span>
+                                        </div>
+                                    </Link>
+                                </SheetClose>
                             </SheetTitle>
                         </SheetHeader>
                         
                         <ScrollArea className="flex-1">
                             {/* User Identity Section */}
                             {user ? (
-                                <div className="p-8 bg-muted/20 border-b relative overflow-hidden group">
+                                <div className="p-6 xs:p-8 bg-muted/20 border-b relative overflow-hidden group">
                                     <div className="absolute top-0 right-0 p-4 opacity-5 rotate-12 transition-transform group-hover:rotate-45">
                                         <User size={120} />
                                     </div>
-                                    <div className="flex items-center gap-5 relative z-10">
-                                        <Avatar className="h-16 w-16 border-2 border-primary shadow-xl ring-4 ring-white">
+                                    <div className="flex items-center gap-4 xs:gap-5 relative z-10">
+                                        <Avatar className="h-14 w-14 xs:h-16 xs:w-16 border-2 border-primary shadow-xl ring-4 ring-white">
                                             <AvatarImage src={user.avatarUrl} className="object-cover" />
                                             <AvatarFallback className="bg-accent text-white font-black text-xl">{user.name.charAt(0)}</AvatarFallback>
                                         </Avatar>
                                         <div className="flex flex-col overflow-hidden">
-                                            <span className="font-black text-accent text-lg uppercase tracking-tighter truncate">{user.name}</span>
-                                            <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em] bg-primary/10 px-2 py-0.5 rounded-full w-fit">{user.role} ACCESS</span>
+                                            <span className="font-black text-accent text-base xs:text-lg uppercase tracking-tighter truncate max-w-[150px]">{user.name}</span>
+                                            <span className="text-[9px] xs:text-[10px] font-black text-primary uppercase tracking-[0.15em] xs:tracking-[0.2em] bg-primary/10 px-2 py-0.5 rounded-full w-fit">{user.role} ACCESS</span>
                                         </div>
                                     </div>
                                 </div>
                             ) : (
-                                <div className="p-8 space-y-4 border-b">
+                                <div className="p-6 xs:p-8 space-y-4 border-b">
                                     <SheetClose asChild>
                                         <Button asChild className="w-full rounded-2xl h-14 font-black uppercase tracking-widest shadow-xl transition-all active:scale-95 bg-accent hover:bg-accent/90">
                                             <Link href={`/auth/login?tab=login${authRedirect}`}>Identify Yourself</Link>
@@ -341,10 +343,10 @@ export default function Header() {
                             )}
 
                             {/* Core Navigation Cluster */}
-                            <div className="p-6 space-y-2">
+                            <div className="p-4 xs:p-6 space-y-2">
                                 {(user?.role === 'admin' || user?.role === 'staff') && (
                                     <SheetClose asChild>
-                                        <Link href="/admin" className="flex items-center justify-between px-5 py-5 text-sm font-black uppercase tracking-tighter text-primary bg-primary/5 rounded-[1.5rem] border border-primary/20 mb-6 transition-all hover:bg-primary/10 active:scale-95 shadow-sm">
+                                        <Link href="/admin" className="flex items-center justify-between px-5 py-5 text-xs xs:text-sm font-black uppercase tracking-tighter text-primary bg-primary/5 rounded-[1.5rem] border border-primary/20 mb-6 transition-all hover:bg-primary/10 active:scale-95 shadow-sm">
                                             <div className="flex items-center gap-4">
                                                 <LayoutDashboard className="h-6 w-6" />
                                                 Inventory Control
@@ -356,27 +358,27 @@ export default function Header() {
 
                                 {user && user.role === 'user' && (
                                     <div className="space-y-1">
-                                        <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/40 ml-5 mb-3">Client Services</h3>
+                                        <h3 className="text-[9px] xs:text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/40 ml-5 mb-3">Client Services</h3>
                                         <SheetClose asChild>
-                                            <Link href="/wishlist" className="flex items-center gap-4 px-5 py-4 text-sm font-bold text-accent hover:bg-muted rounded-2xl transition-all group">
+                                            <Link href="/wishlist" className="flex items-center gap-4 px-5 py-4 text-xs xs:text-sm font-bold text-accent hover:bg-muted rounded-2xl transition-all group">
                                                 <div className="h-10 w-10 rounded-xl bg-red-50 text-red-500 flex items-center justify-center group-hover:scale-110 transition-transform"><Heart className="h-5 w-5" /></div>
                                                 Personal Collection
                                             </Link>
                                         </SheetClose>
                                         <SheetClose asChild>
-                                            <Link href="/track-order" className="flex items-center gap-4 px-5 py-4 text-sm font-bold text-accent hover:bg-muted rounded-2xl transition-all group">
+                                            <Link href="/track-order" className="flex items-center gap-4 px-5 py-4 text-xs xs:text-sm font-bold text-accent hover:bg-muted rounded-2xl transition-all group">
                                                 <div className="h-10 w-10 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center group-hover:scale-110 transition-transform"><Package className="h-5 w-5" /></div>
                                                 Logistics Status
                                             </Link>
                                         </SheetClose>
                                         <SheetClose asChild>
-                                            <Link href="/checkout" className="flex items-center gap-4 px-5 py-4 text-sm font-bold text-accent hover:bg-muted rounded-2xl transition-all group">
+                                            <Link href="/checkout" className="flex items-center gap-4 px-5 py-4 text-xs xs:text-sm font-bold text-accent hover:bg-muted rounded-2xl transition-all group">
                                                 <div className="h-10 w-10 rounded-xl bg-green-50 text-green-600 flex items-center justify-center group-hover:scale-110 transition-transform"><CreditCard className="h-5 w-5" /></div>
                                                 Checkout Portal
                                             </Link>
                                         </SheetClose>
                                         <SheetClose asChild>
-                                            <Link href="/profile" className="flex items-center gap-4 px-5 py-4 text-sm font-bold text-accent hover:bg-muted rounded-2xl transition-all group">
+                                            <Link href="/profile" className="flex items-center gap-4 px-5 py-4 text-xs xs:text-sm font-bold text-accent hover:bg-muted rounded-2xl transition-all group">
                                                 <div className="h-10 w-10 rounded-xl bg-muted flex items-center justify-center group-hover:scale-110 transition-transform"><Settings className="h-5 w-5" /></div>
                                                 Identity Settings
                                             </Link>
@@ -386,12 +388,12 @@ export default function Header() {
                             </div>
 
                             {/* Dark Modular Section */}
-                            <div className="bg-accent text-white min-h-[500px] mt-6 p-8 space-y-10 rounded-t-[3.5rem] shadow-[0_-20px_50px_rgba(0,0,0,0.1)]">
+                            <div className="bg-accent text-white min-h-[500px] mt-6 p-6 xs:p-8 space-y-10 rounded-t-[3rem] xs:rounded-t-[3.5rem] shadow-[0_-20px_50px_rgba(0,0,0,0.1)]">
                                 <div className="space-y-6">
-                                    <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-white/30 ml-2">Brand Ecosystem</h3>
+                                    <h3 className="text-[9px] xs:text-[10px] font-black uppercase tracking-[0.4em] text-white/30 ml-2">Brand Ecosystem</h3>
                                     <nav className="flex flex-col gap-6">
                                         <SheetClose asChild>
-                                            <Link href="/about" className="flex items-center justify-between text-lg font-black uppercase tracking-tight group">
+                                            <Link href="/about" className="flex items-center justify-between text-base xs:text-lg font-black uppercase tracking-tight group">
                                                 The Alpha Story
                                                 <div className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all">
                                                     <ArrowRight size={14} />
@@ -399,7 +401,7 @@ export default function Header() {
                                             </Link>
                                         </SheetClose>
                                         <SheetClose asChild>
-                                            <Link href="/contact" className="flex items-center justify-between text-lg font-black uppercase tracking-tight group">
+                                            <Link href="/contact" className="flex items-center justify-between text-base xs:text-lg font-black uppercase tracking-tight group">
                                                 Site Support
                                                 <div className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all">
                                                     <ArrowRight size={14} />
@@ -407,7 +409,7 @@ export default function Header() {
                                             </Link>
                                         </SheetClose>
                                         <SheetClose asChild>
-                                            <Link href="/#featured" className="flex items-center justify-between text-lg font-black uppercase tracking-tight group">
+                                            <Link href="/#featured" className="flex items-center justify-between text-base xs:text-lg font-black uppercase tracking-tight group">
                                                 Premium Assets
                                                 <div className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all">
                                                     <ArrowRight size={14} />
@@ -418,10 +420,10 @@ export default function Header() {
                                 </div>
 
                                 <div className="space-y-6 pt-10 border-t border-white/5">
-                                    <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-white/30 ml-2">Supply Chains</h3>
+                                    <h3 className="text-[9px] xs:text-[10px] font-black uppercase tracking-[0.4em] text-white/30 ml-2">Supply Chains</h3>
                                     <Accordion type="single" collapsible className="w-full">
                                         <AccordionItem value="mobile-catalog" className="border-none">
-                                            <AccordionTrigger className="py-4 px-6 rounded-3xl bg-white/5 hover:no-underline font-black uppercase tracking-widest text-primary text-xs flex items-center gap-3 transition-all hover:bg-white/10 shadow-inner">
+                                            <AccordionTrigger className="py-4 px-6 rounded-3xl bg-white/5 hover:no-underline font-black uppercase tracking-widest text-primary text-[10px] xs:text-xs flex items-center gap-3 transition-all hover:bg-white/10 shadow-inner">
                                                 <Grid className="h-5 w-5" />
                                                 Browse Catalogues
                                             </AccordionTrigger>
@@ -429,10 +431,10 @@ export default function Header() {
                                                 {productCategories.map((cat) => (
                                                     <SheetClose asChild key={cat.name}>
                                                         <Link href={cat.href} className="flex items-center gap-4 group">
-                                                            <div className="h-9 w-9 rounded-xl bg-white/5 p-2 flex items-center justify-center group-hover:bg-primary transition-all group-hover:scale-110 shadow-lg">
+                                                            <div className="h-8 w-8 xs:h-9 xs:w-9 rounded-xl bg-white/5 p-2 flex items-center justify-center group-hover:bg-primary transition-all group-hover:scale-110 shadow-lg">
                                                                 <img src={cat.icon} alt="" className="h-full w-full object-contain" />
                                                             </div>
-                                                            <span className="text-sm font-bold text-white/70 group-hover:text-white transition-colors uppercase tracking-tight">{cat.name}</span>
+                                                            <span className="text-xs xs:text-sm font-bold text-white/70 group-hover:text-white transition-colors uppercase tracking-tight truncate max-w-[160px]">{cat.name}</span>
                                                         </Link>
                                                     </SheetClose>
                                                 ))}
@@ -443,14 +445,16 @@ export default function Header() {
 
                                 {user && (
                                     <div className="pt-16 pb-10">
-                                        <Button 
-                                            variant="ghost" 
-                                            onClick={logout}
-                                            className="w-full justify-start gap-4 p-5 h-16 rounded-2xl font-black uppercase text-xs text-red-400 hover:text-red-300 hover:bg-red-500/10 border border-red-500/20 transition-all active:scale-95"
-                                        >
-                                            <LogOut className="h-5 w-5" />
-                                            Terminate Session
-                                        </Button>
+                                        <SheetClose asChild>
+                                            <Button 
+                                                variant="ghost" 
+                                                onClick={logout}
+                                                className="w-full justify-start gap-4 p-5 h-16 rounded-2xl font-black uppercase text-[10px] xs:text-xs text-red-400 hover:text-red-300 hover:bg-red-500/10 border border-red-500/20 transition-all active:scale-95"
+                                            >
+                                                <LogOut className="h-5 w-5" />
+                                                Terminate Session
+                                            </Button>
+                                        </SheetClose>
                                     </div>
                                 )}
                             </div>
