@@ -331,7 +331,7 @@ export default function Header() {
                                     <p className="text-[10px] text-center font-bold text-muted-foreground uppercase tracking-widest">New to our network?</p>
                                     <SheetClose asChild>
                                         <Button asChild variant="outline" className="w-full rounded-2xl h-14 font-black uppercase tracking-widest border-2 transition-all active:scale-95">
-                                            <Link href={`/auth/login?tab=signup${authRedirect}`}>Request Account</Link>
+                                            <Link href={`/auth/login?tab=signup${authRedirect}`}>Sign Up</Link>
                                         </Button>
                                     </SheetClose>
                                 </div>
