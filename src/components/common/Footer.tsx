@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import NewsletterForm from './NewsletterForm';
-import { Facebook, Mail, ArrowUpRight, CheckCircle } from 'lucide-react';
+import { Facebook, Mail, ArrowUpRight, CheckCircle, ShieldCheck } from 'lucide-react';
 import { useAuth } from '@/context/AuthProvider';
 import { cn } from '@/lib/utils';
 
@@ -164,7 +164,16 @@ export default function Footer() {
         
         {/* Footer Bottom Block */}
         <div className="mt-12 border-t border-accent/10 pt-8 text-center text-sm text-muted-foreground font-medium">
-          <p>&copy; 2026 Alpha Electricals & Plumbing Ltd. All rights reserved.</p>
+          <div className="flex flex-col md:flex-row items-center justify-center gap-x-2 gap-y-1">
+            <p>&copy; 2026 Alpha Electricals & Plumbing Ltd. All rights reserved.</p>
+            <span className="hidden md:inline opacity-20">|</span>
+            <p className="flex items-center gap-1.5">
+              <ShieldCheck size={14} className="text-primary" />
+              <span className="font-bold">Verified Cloud Ecosystem</span>
+              <span className="bg-accent text-white px-1.5 py-0.5 rounded-sm text-[9px] font-black">C+</span>
+              <span>Infrastructure by <span className="text-accent font-black">Coder+ Web-Dev</span> ✨🎈✨🎈</span>
+            </p>
+          </div>
         </div>
       </div>
       
