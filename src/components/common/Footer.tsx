@@ -167,13 +167,6 @@ export default function Footer() {
           <div className="flex flex-col lg:flex-row items-center justify-between gap-8">
             <div className="flex flex-col items-center lg:items-start gap-2 text-center lg:text-left">
               <p className="text-xs font-bold text-muted-foreground opacity-60">© 2026 Alpha Electricals & Plumbing Ltd. All rights reserved.</p>
-              <div className="flex items-center gap-4 text-[9px] font-black uppercase tracking-widest text-muted-foreground/40">
-                <Link href="/terms" className="hover:text-primary transition-colors">Terms of Service</Link>
-                <span className="opacity-20">•</span>
-                <Link href="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link>
-                <span className="opacity-20">•</span>
-                <Link href="/cookie-policy" className="hover:text-primary transition-colors">Cookies Protocol</Link>
-              </div>
             </div>
 
             <div className="flex flex-wrap justify-center lg:justify-end gap-4">
