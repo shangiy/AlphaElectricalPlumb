@@ -27,16 +27,18 @@ import {
   ChevronUp,
   ChevronDown,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight
 } from 'lucide-react';
 import AuthGuard from '@/components/auth/AuthGuard';
 import { useAuth } from '@/context/AuthProvider';
 import { cn } from '@/lib/utils';
 
 /**
- * Admin Layout v3.8:
- * Features vertical scroll arrows for desktop lists and a horizontal 
- * slide-in toggle for mobile devices.
+ * Admin Layout v3.9:
+ * Features a high-fidelity mobile toggle interface with retracting 
+ * Chevrons and automatic navigation closure for a seamless mobile experience.
  */
 function AdminSidebarWrapper({ children }: { children: React.ReactNode }) {
   const { logout } = useAuth();
@@ -94,25 +96,26 @@ function AdminSidebarWrapper({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex h-screen w-full bg-background overflow-hidden relative">
-      {/* Mobile Toggle Interface (Left/Right movement) */}
+      {/* 
+          Mobile Toggle Interface (Retracting Edge Handle)
+          Visible only on mobile devices. Latches to the sidebar edge when open.
+          Uses Chevrons (double brackets) for the requested visual indicator.
+      */}
       {isMobile && (
-        <div 
+        <button 
+          onClick={() => setOpenMobile(!openMobile)}
           className={cn(
-            "fixed bottom-8 z-[100] transition-all duration-500",
-            openMobile ? "right-6" : "left-6"
+            "fixed top-1/2 -translate-y-1/2 z-[200] h-24 w-10 bg-primary text-white shadow-[10px_0_40px_rgba(0,0,0,0.3)] flex items-center justify-center transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] rounded-r-[2rem] border-y border-r border-white/20",
+            openMobile ? "left-[18rem]" : "left-0"
           )}
+          aria-label={openMobile ? "Close Admin Menu" : "Open Admin Menu"}
         >
-          <button 
-            onClick={() => setOpenMobile(!openMobile)}
-            className="h-14 w-14 rounded-full bg-primary text-white shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-transform"
-          >
-            {openMobile ? (
-              <ChevronLeft className="h-7 w-7" />
-            ) : (
-              <ChevronRight className="h-7 w-7" />
-            )}
-          </button>
-        </div>
+          {openMobile ? (
+            <ChevronsLeft className="h-6 w-6" />
+          ) : (
+            <ChevronsRight className="h-6 w-6 animate-pulse" />
+          )}
+        </button>
       )}
 
       <Sidebar className="flex flex-col border-r bg-muted/20">
