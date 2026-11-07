@@ -9,14 +9,18 @@ import placeholderData from '@/app/lib/placeholder-images.json';
 import { getStorefrontSetting } from '@/app/actions/cms-actions';
 
 /**
- * Dynamic Category Carousel v4.0:
- * Now supports custom category cards defined in Storefront CMS.
- * Prioritizes 'category_cards' setting, falling back to the standard categories table.
+ * Dynamic Category Carousel v4.1:
+ * Added URL normalization to convert legacy /shop/ paths to /category/ routes.
  */
 export default function CategoryCarousel() {
   const [categories, setCategories] = React.useState<CarouselCategory[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [scrollSpeed, setScrollSpeed] = React.useState('40');
+
+  const normalizeHref = (href: string) => {
+    if (!href) return '/search';
+    return href.replace(/^\/shop\//, '/category/');
+  };
 
   const fallbackCategories: CarouselCategory[] = [
     { id: 'Tanks', name: 'Tanks', href: '/category/tanks', image: placeholderData.cat_tanks.url },
@@ -38,7 +42,6 @@ export default function CategoryCarousel() {
         const speed = await getStorefrontSetting('carousel_speed');
         if (speed) setScrollSpeed(speed);
 
-        // 1. Try to fetch custom category cards from CMS
         const customCards = await getStorefrontSetting('category_cards');
         
         if (customCards && Array.isArray(customCards) && customCards.length > 0) {
@@ -46,11 +49,10 @@ export default function CategoryCarousel() {
                 id: cat.id,
                 name: cat.title || cat.name,
                 image: cat.image || placeholderData.cat_tanks.url,
-                href: cat.link || cat.href || '/search'
+                href: normalizeHref(cat.link || cat.href || '/search')
             }));
             setCategories(formatted);
         } else {
-            // 2. Fallback to standard categories table
             const { data, error } = await supabase
                 .from('categories')
                 .select('*')
@@ -59,11 +61,12 @@ export default function CategoryCarousel() {
             if (!error && data && data.length > 0) {
                 const formatted = data.map((cat: any) => {
                     const rawImg = cat.image_url || cat.imageUrl || cat.image || cat.image_path || '';
+                    const slug = cat.slug || (cat.name || '').toLowerCase().replace(/\s+/g, '-');
                     return {
                         id: String(cat.id || cat.name),
                         name: cat.name || 'Category',
                         image: rawImg || placeholderData.cat_tanks.url,
-                        href: `/category/${cat.slug || (cat.name || '').toLowerCase().replace(/\s+/g, '-')}`
+                        href: `/category/${slug}`
                     };
                 });
                 setCategories(formatted);

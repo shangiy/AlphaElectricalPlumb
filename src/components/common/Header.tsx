@@ -57,15 +57,15 @@ const HeroSearch = dynamic(() => import('./HeroSearch'), {
 });
 
 const productCategories = [
-  { name: 'Tanks Collection', href: '/tanks', icon: '/kentank 2000l.png' },
-  { name: 'Plumbing Equipment', href: '/plumbing', icon: '/ppr pipes.png' },
+  { name: 'Tanks Collection', href: '/category/tanks', icon: '/kentank 2000l.png' },
+  { name: 'Plumbing Equipment', href: '/category/plumbing', icon: '/ppr pipes.png' },
   {
     name: 'Electricals and Cables',
-    href: '/lighting',
+    href: '/category/lighting',
     icon: '/decor lighting design.png',
   },
-  { name: 'Home & Décor', href: '/decor', icon: '/square lights.png' },
-  { name: 'Roofing & Construction', href: '/roofing', icon: '/roof 2.png' },
+  { name: 'Home & Décor', href: '/category/decor', icon: '/square lights.png' },
+  { name: 'Roofing & Construction', href: '/category/roofing', icon: '/roof 2.png' },
 ];
 
 export default function Header() {
@@ -85,7 +85,7 @@ export default function Header() {
     const updateHeaderStyles = () => {
       const scrollY = window.scrollY;
       const isMobile = window.innerWidth < 768;
-      const stickyThreshold = isMobile ? 40 : 48; // Banner height roughly
+      const stickyThreshold = isMobile ? 40 : 48;
 
       const isLocked = !isHomePage || scrollY >= stickyThreshold;
       
@@ -263,7 +263,6 @@ export default function Header() {
             </div>
         </div>
 
-        {/* Mobile Header Overhaul */}
         <div className="w-full lg:hidden flex items-center justify-between py-2 h-16">
              <Link href="/" className="flex-shrink-0">
                 <Image
@@ -292,21 +291,19 @@ export default function Header() {
                     </SheetTrigger>
                     <SheetContent side="right" className="w-[300px] xs:w-[320px] p-0 flex flex-col border-none bg-background shadow-2xl overflow-hidden">
                         <SheetHeader className="p-6 xs:p-8 border-b flex flex-row items-center justify-between bg-white z-10 space-y-0 text-left">
-                            <SheetTitle asChild>
-                                <SheetClose asChild>
-                                    <Link href="/" className="flex items-center gap-3">
-                                        <Image src="/logo Alpha.png" alt="Logo" width={45} height={45}/>
-                                        <div className="flex flex-col">
-                                            <span className="font-black text-lg xs:text-xl text-accent tracking-tighter uppercase leading-none">ALPHA</span>
-                                            <span className="text-[8px] font-bold text-primary uppercase tracking-widest mt-1">Ecosystem v2.5.0</span>
-                                        </div>
-                                    </Link>
-                                </SheetClose>
-                            </SheetTitle>
+                            <SheetTitle className="sr-only">Mobile Navigation Menu</SheetTitle>
+                            <SheetClose asChild>
+                                <Link href="/" className="flex items-center gap-3">
+                                    <Image src="/logo Alpha.png" alt="Logo" width={45} height={45}/>
+                                    <div className="flex flex-col">
+                                        <span className="font-black text-lg xs:text-xl text-accent tracking-tighter uppercase leading-none">ALPHA</span>
+                                        <span className="text-[8px] font-bold text-primary uppercase tracking-widest mt-1">Ecosystem v2.5.0</span>
+                                    </div>
+                                </Link>
+                            </SheetClose>
                         </SheetHeader>
                         
                         <ScrollArea className="flex-1">
-                            {/* User Identity Section */}
                             {user ? (
                                 <div className="p-6 xs:p-8 bg-muted/20 border-b relative overflow-hidden group">
                                     <div className="absolute top-0 right-0 p-4 opacity-5 rotate-12 transition-transform group-hover:rotate-45">
@@ -342,7 +339,6 @@ export default function Header() {
                                 </div>
                             )}
 
-                            {/* Core Navigation Cluster */}
                             <div className="p-4 xs:p-6 space-y-2">
                                 {(user?.role === 'admin' || user?.role === 'staff') && (
                                     <SheetClose asChild>
@@ -387,7 +383,6 @@ export default function Header() {
                                 )}
                             </div>
 
-                            {/* Dark Modular Section */}
                             <div className="bg-accent text-white min-h-[500px] mt-6 p-6 xs:p-8 space-y-10 rounded-t-[3rem] xs:rounded-t-[3.5rem] shadow-[0_-20px_50px_rgba(0,0,0,0.1)]">
                                 <div className="space-y-6">
                                     <h3 className="text-[9px] xs:text-[10px] font-black uppercase tracking-[0.4em] text-white/30 ml-2">Brand Ecosystem</h3>
