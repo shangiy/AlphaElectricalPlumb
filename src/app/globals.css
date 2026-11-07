@@ -27,6 +27,27 @@
     --blue: 210 100% 50%;
     --blue-foreground: 0 0% 100%;
   }
+
+  ::-webkit-scrollbar {
+    width: 14px;
+    height: 14px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: hsl(var(--muted) / 0.5);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--primary) / 0.2);
+    border: 3px solid transparent;
+    background-clip: content-box;
+    border-radius: 10px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--primary) / 0.5);
+    border: 2px solid transparent;
+  }
 }
 
 @layer base {
