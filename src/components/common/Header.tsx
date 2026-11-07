@@ -328,7 +328,10 @@ export default function Header() {
                                             <Link href={`/auth/login?tab=login${authRedirect}`}>Identify Yourself</Link>
                                         </Button>
                                     </SheetClose>
-                                    <p className="text-[10px] text-center font-bold text-muted-foreground uppercase tracking-widest">New to our network?</p>
+                                    <div className="flex flex-col items-center gap-1">
+                                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">NEW HERE?</p>
+                                        <ChevronDown className="h-4 w-4 text-primary animate-bounce" />
+                                    </div>
                                     <SheetClose asChild>
                                         <Button asChild variant="outline" className="w-full rounded-2xl h-14 font-black uppercase tracking-widest border-2 transition-all active:scale-95">
                                             <Link href={`/auth/login?tab=signup${authRedirect}`}>Sign Up</Link>
