@@ -90,4 +90,14 @@
   .animate-toast-progress {
     animation: toast-progress 6s linear forwards;
   }
+
+  @keyframes float-up-fade {
+    0% { transform: translateY(0) scale(0.8); opacity: 0; }
+    20% { opacity: 1; }
+    100% { transform: translateY(-40px) scale(1.2); opacity: 0; }
+  }
+
+  .animate-float-up-fade {
+    animation: float-up-fade 2s ease-in-out infinite;
+  }
 }

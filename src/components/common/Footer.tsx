@@ -3,13 +3,14 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import NewsletterForm from './NewsletterForm';
-import { Facebook, Mail, ArrowUpRight, CheckCircle, ShieldCheck } from 'lucide-react';
+import { Facebook, Mail, ArrowUpRight, CheckCircle } from 'lucide-react';
 import { useAuth } from '@/context/AuthProvider';
 import { cn } from '@/lib/utils';
 
 /**
  * Premium Footer v2.5.0:
  * Features a "Mini-App" Style Support Node and dynamic identity handshake.
+ * Interactive Developer Credit with floating emoji animation.
  */
 export default function Footer() {
   const { user } = useAuth();
@@ -164,10 +165,21 @@ export default function Footer() {
         
         {/* Footer Bottom Row */}
         <div className="mt-20 pt-10 border-t border-accent/5">
-          <div className="flex flex-col lg:flex-row items-center justify-between gap-8">
-            <div className="flex flex-col items-center lg:items-start gap-2 text-center lg:text-left">
-              <p className="text-xs font-bold text-muted-foreground opacity-60">© 2026 Alpha Electricals & Plumbing Ltd. All rights reserved.</p>
-            </div>
+          <div className="flex flex-col items-center justify-center gap-2 text-center w-full">
+            <p className="text-xs font-bold text-muted-foreground opacity-60">
+              © 2026 Alpha Electricals & Plumbing Ltd. Developed by{" "}
+              <span className="relative group inline-block">
+                <span className="group-hover:text-blue-500 transition-colors duration-300 cursor-default">
+                  Coder+
+                </span>
+                <span className="absolute -top-10 left-1/2 -translate-x-1/2 flex gap-1 opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-500">
+                  <span className="animate-float-up-fade inline-block" style={{ animationDelay: '0s' }}>✨</span>
+                  <span className="animate-float-up-fade inline-block" style={{ animationDelay: '0.3s' }}>🎈</span>
+                  <span className="animate-float-up-fade inline-block" style={{ animationDelay: '0.6s' }}>✨</span>
+                </span>
+              </span>
+              {" "} . All rights reserved.
+            </p>
           </div>
         </div>
       </div>
