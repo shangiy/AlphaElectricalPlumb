@@ -105,7 +105,7 @@ export default function Footer() {
                     
                     <p className="text-sm font-bold text-accent truncate mb-1">{supportEmail}</p>
                     <div className="flex items-center gap-2 text-[10px] font-black text-primary uppercase tracking-[0.2em] opacity-40 group-hover:opacity-100 transition-opacity">
-                        Connect with {user ? user.username : 'Cloud Support'} <ArrowUpRight size={14} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                        Enquire about any Product or Service <ArrowUpRight size={14} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                     </div>
                 </a>
             </div>
