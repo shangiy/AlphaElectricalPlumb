@@ -46,9 +46,14 @@ export default function ContactPage() {
                 <div className="flex flex-col items-center">
                   <Mail className="h-10 w-10 text-primary mb-2" />
                   <h3 className="text-lg font-semibold">Email</h3>
-                  <a href="mailto:info@alphaelectricalplumbingltd.com" className="text-muted-foreground hover:text-primary font-bold">
-                    info@alphaelectricalplumbingltd.com
-                  </a>
+                  <div className="flex flex-col gap-1">
+                    <a href="mailto:alphaltd21@gmail.com" className="text-muted-foreground hover:text-primary font-bold">
+                        alphaltd21@gmail.com
+                    </a>
+                    <a href="mailto:info@alphaelectricalplumbingltd.com" className="text-muted-foreground hover:text-primary font-bold">
+                        info@alphaelectricalplumbingltd.com
+                    </a>
+                  </div>
                 </div>
                 <div className="flex flex-col items-center">
                   <Phone className="h-10 w-10 text-primary mb-2" />

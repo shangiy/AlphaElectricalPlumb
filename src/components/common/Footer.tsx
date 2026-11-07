@@ -48,12 +48,14 @@ export default function Footer() {
     },
   ];
 
-  const supportEmail = "info@alphaelectricalplumbingltd.com";
+  const primaryEmail = "alphaltd21@gmail.com";
+  const professionalEmail = "info@alphaelectricalplumbingltd.com";
+  const combinedEmails = `${primaryEmail},${professionalEmail}`;
   
   // Intelligent Mailto: Pre-fills user info if logged in
   const mailtoLink = user 
-    ? `mailto:${supportEmail}?subject=Support Inquiry: ${user.name}&body=Hello Alpha Support Engine,%0D%0A%0D%0A[Sent via Authenticated Account: ${user.email}]%0D%0A%0D%0AEnter your message below:%0D%0A`
-    : `mailto:${supportEmail}`;
+    ? `mailto:${combinedEmails}?subject=Support Inquiry: ${user.name}&body=Hello Alpha Support Engine,%0D%0A%0D%0A[Sent via Authenticated Account: ${user.email}]%0D%0A%0D%0AEnter your message below:%0D%0A`
+    : `mailto:${combinedEmails}`;
 
   return (
     <footer className="bg-secondary text-secondary-foreground border-t relative overflow-hidden">
@@ -103,7 +105,11 @@ export default function Footer() {
                         </div>
                     </div>
                     
-                    <p className="text-sm font-bold text-accent truncate mb-1">{supportEmail}</p>
+                    <div className="flex flex-col gap-0.5 mb-1 overflow-hidden">
+                        <p className="text-[13px] font-bold text-accent truncate">{primaryEmail}</p>
+                        <p className="text-[13px] font-bold text-accent truncate">{professionalEmail}</p>
+                    </div>
+                    
                     <div className="flex items-center gap-2 text-[10px] font-black text-primary uppercase tracking-[0.2em] opacity-40 group-hover:opacity-100 transition-opacity">
                         Enquire about any Product or Service <ArrowUpRight size={14} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                     </div>

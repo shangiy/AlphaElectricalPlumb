@@ -32,10 +32,11 @@ export default function DataDeletionPage() {
               <div className="bg-primary/5 p-6 rounded-2xl border border-primary/10">
                 <h2 className="text-primary flex items-center gap-2">Manual Deletion Request:</h2>
                 <p>
-                  Alternatively, you can request the manual deletion of your account and all associated data from our internal Firebase systems by contacting us directly.
+                  Alternatively, you can request the manual deletion of your account and all associated data from our internal systems by contacting us directly.
                 </p>
-                <p className="mt-4">
-                  Please send an email to: <a href="mailto:mushangip0@gmail.com" className="text-xl font-bold text-primary hover:underline">mushangip0@gmail.com</a>
+                <p className="mt-4 flex flex-col gap-2">
+                  <a href="mailto:alphaltd21@gmail.com" className="text-xl font-bold text-primary hover:underline">alphaltd21@gmail.com</a>
+                  <a href="mailto:info@alphaelectricalplumbingltd.com" className="text-xl font-bold text-primary hover:underline">info@alphaelectricalplumbingltd.com</a>
                 </p>
                 <p className="text-xs text-muted-foreground mt-4 italic">
                   Note: Please include your registered email address or username so we can identify and process your request promptly. Once processed, all your profile data, delivery addresses, and wishlists will be permanently wiped.
@@ -46,7 +47,8 @@ export default function DataDeletionPage() {
               <p>If you have any other questions regarding your data privacy, please reach out to our team:</p>
               <address className="not-italic bg-muted/20 p-4 rounded-lg">
                 <strong>Alpha Electricals & Plumbing Ltd</strong><br />
-                Email: <a href="mailto:mushangip0@gmail.com" className="text-primary hover:underline">mushangip0@gmail.com</a><br />
+                Email 1: <a href="mailto:alphaltd21@gmail.com" className="text-primary hover:underline">alphaltd21@gmail.com</a><br />
+                Email 2: <a href="mailto:info@alphaelectricalplumbingltd.com" className="text-primary hover:underline">info@alphaelectricalplumbingltd.com</a><br />
                 Phone: <a href="tel:+254117484887" className="text-primary hover:underline">0117 484887</a><br />
                 Address: Nandi Arcade, Eldoret, Kenya
               </address>

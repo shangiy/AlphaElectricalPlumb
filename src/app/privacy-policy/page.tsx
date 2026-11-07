@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function PrivacyPolicyPage() {
@@ -99,7 +98,7 @@ export default function PrivacyPolicyPage() {
                 <li>Right to withdraw consent at any time</li>
                 <li>Right to lodge a complaint with a supervisory authority</li>
               </ul>
-              <p>You can exercise these rights by contacting us at <a href="mailto:Alphaltd21@gmail.com" className="text-primary hover:underline">Alphaltd21@gmail.com</a>.</p>
+              <p>You can exercise these rights by contacting us at <a href="mailto:alphaltd21@gmail.com" className="text-primary hover:underline">alphaltd21@gmail.com</a>.</p>
 
               <h2>9. Security of Your Information</h2>
               <p>We employ technical and organizational measures to protect your personal data, including:</p>
@@ -135,7 +134,8 @@ export default function PrivacyPolicyPage() {
               <p>If you have questions about this Privacy Policy or wish to exercise your data rights, please contact us:</p>
               <address className="not-italic">
                 <strong>Alpha Electricals & Plumbing Ltd</strong><br />
-                Email: <a href="mailto:Alphaltd21@gmail.com" className="text-primary hover:underline">Alphaltd21@gmail.com</a><br />
+                Email 1: <a href="mailto:alphaltd21@gmail.com" className="text-primary hover:underline">alphaltd21@gmail.com</a><br />
+                Email 2: <a href="mailto:info@alphaelectricalplumbingltd.com" className="text-primary hover:underline">info@alphaelectricalplumbingltd.com</a><br />
                 Phone: <a href="tel:+254117484887" className="text-primary hover:underline">0117 484887</a><br />
                 Address 1: Nandi Arcade, Eldoret, Kenya<br />
                 Address 2: Kisumu Ndogo (Opp. Naivas), Elgon View Mall, Eldoret City

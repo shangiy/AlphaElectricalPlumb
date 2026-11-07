@@ -135,7 +135,8 @@ export default function CookiePolicyPage() {
               <p>If you have questions about our use of cookies or this Policy, please contact us:</p>
               <address className="not-italic">
                 <strong>Alpha Electricals & Plumbing Ltd</strong><br />
-                Email: <a href="mailto:info@alphaelectricalplumbingltd.com" className="text-primary hover:underline font-bold">info@alphaelectricalplumbingltd.com</a><br />
+                Email 1: <a href="mailto:alphaltd21@gmail.com" className="text-primary hover:underline font-bold">alphaltd21@gmail.com</a><br />
+                Email 2: <a href="mailto:info@alphaelectricalplumbingltd.com" className="text-primary hover:underline font-bold">info@alphaelectricalplumbingltd.com</a><br />
                 Phone: <a href="tel:+254117484887" className="text-primary hover:underline">0117 484887</a><br />
                 Address 1: Nandi Arcade, Eldoret, Kenya<br />
                 Address 2: Kisumu Ndogo (Opp. Naivas), Elgon View Mall, Eldoret City
