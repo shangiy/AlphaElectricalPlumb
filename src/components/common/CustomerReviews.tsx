@@ -65,7 +65,6 @@ export default function CustomerReviews() {
                 isHidden: r.is_hidden
             })));
         } catch (error: any) {
-            // Enhanced readable logger for Supabase PostgREST errors
             console.error("Fetch reviews error details:", 
                 error instanceof Error ? error.message : JSON.stringify(error, Object.getOwnPropertyNames(error))
             );
@@ -121,6 +120,9 @@ export default function CustomerReviews() {
                                 </Button>
                             </DialogTrigger>
                             <DialogContent className="sm:max-w-[500px] p-0 border-none bg-transparent shadow-none">
+                                <DialogHeader className="sr-only">
+                                    <DialogTitle>Post Feedback</DialogTitle>
+                                </DialogHeader>
                                 <ReviewForm onReviewSubmitted={handleSuccess} />
                             </DialogContent>
                         </Dialog>

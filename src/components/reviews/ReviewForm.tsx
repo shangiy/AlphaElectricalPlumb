@@ -10,7 +10,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Star, Loader2, PenTool } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 interface ReviewFormProps {
   productId?: string; 
@@ -20,6 +19,7 @@ interface ReviewFormProps {
 /**
  * Modern Unified Review Form:
  * Handles both Storefront (homepage) and Product-specific submissions.
+ * Fixed: Removed DialogTitle wrapper to prevent crashes when rendered inline.
  */
 export default function ReviewForm({ productId, onReviewSubmitted }: ReviewFormProps) {
   const [rating, setRating] = useState(5);
@@ -83,11 +83,9 @@ export default function ReviewForm({ productId, onReviewSubmitted }: ReviewFormP
       </div>
 
       <div className="space-y-2 relative z-10">
-        <DialogTitle asChild>
-          <h3 className="text-3xl font-black font-headline text-accent tracking-tighter uppercase">
-              {productId ? 'Product Review' : 'Storefront Feedback'}
-          </h3>
-        </DialogTitle>
+        <h3 className="text-3xl font-black font-headline text-accent tracking-tighter uppercase">
+            {productId ? 'Product Review' : 'Storefront Feedback'}
+        </h3>
         <p className="text-muted-foreground font-medium text-sm">Help others by sharing your professional experience.</p>
       </div>
       
