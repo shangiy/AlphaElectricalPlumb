@@ -6,11 +6,173 @@ import NewsletterForm from './NewsletterForm';
 import { Facebook, Mail, ArrowUpRight, CheckCircle } from 'lucide-react';
 import { useAuth } from '@/context/AuthProvider';
 import { cn } from '@/lib/utils';
+import { useEffect, useRef } from 'react';
 
 /**
- * Premium Footer v2.5.0:
+ * Interactive Spider Web Background Component
+ * Renders a particle network that follows the mouse and connects nodes.
+ */
+function InteractiveSpiderWeb() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let particles: Particle[] = [];
+    let mouse = { x: null as number | null, y: null as number | null, radius: 180 };
+
+    const resize = () => {
+      if (!canvas.parentElement) return;
+      canvas.width = canvas.parentElement.offsetWidth;
+      canvas.height = canvas.parentElement.offsetHeight;
+      init();
+    };
+
+    class Particle {
+      x: number;
+      y: number;
+      directionX: number;
+      directionY: number;
+      size: number;
+
+      constructor(x: number, y: number, directionX: number, directionY: number, size: number) {
+        this.x = x;
+        this.y = y;
+        this.directionX = directionX;
+        this.directionY = directionY;
+        this.size = size;
+      }
+
+      draw() {
+        if (!ctx) return;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2, false);
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+        ctx.fill();
+        // Add glow to dots
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = 'white';
+      }
+
+      update() {
+        if (this.x > canvas!.width || this.x < 0) {
+          this.directionX = -this.directionX;
+        }
+        if (this.y > canvas!.height || this.y < 0) {
+          this.directionY = -this.directionY;
+        }
+
+        this.x += this.directionX;
+        this.y += this.directionY;
+        this.draw();
+        ctx!.shadowBlur = 0; // Reset shadow for lines
+      }
+    }
+
+    function init() {
+      particles = [];
+      const numberOfParticles = (canvas!.width * canvas!.height) / 10000;
+      for (let i = 0; i < numberOfParticles; i++) {
+        const size = (Math.random() * 2) + 1;
+        const x = (Math.random() * ((canvas!.width - size * 2) - (size * 2)) + size * 2);
+        const y = (Math.random() * ((canvas!.height - size * 2) - (size * 2)) + size * 2);
+        const directionX = (Math.random() * 1) - 0.5;
+        const directionY = (Math.random() * 1) - 0.5;
+
+        particles.push(new Particle(x, y, directionX, directionY, size));
+      }
+    }
+
+    function connect() {
+      let opacityValue = 1;
+      for (let a = 0; a < particles.length; a++) {
+        for (let b = a; b < particles.length; b++) {
+          const dx = particles[a].x - particles[b].x;
+          const dy = particles[a].y - particles[b].y;
+          const distance = (dx * dx) + (dy * dy);
+
+          if (distance < (canvas!.width / 7) * (canvas!.height / 7)) {
+            opacityValue = 1 - (distance / 20000);
+            ctx!.strokeStyle = `rgba(255, 255, 255, ${opacityValue * 0.2})`;
+            ctx!.lineWidth = 1;
+            ctx!.beginPath();
+            ctx!.moveTo(particles[a].x, particles[a].y);
+            ctx!.lineTo(particles[b].x, particles[b].y);
+            ctx!.stroke();
+          }
+        }
+
+        // Mouse interaction
+        if (mouse.x !== null && mouse.y !== null) {
+          const dxMouse = particles[a].x - mouse.x;
+          const dyMouse = particles[a].y - mouse.y;
+          const distanceMouse = (dxMouse * dxMouse) + (dyMouse * dyMouse);
+          
+          if (distanceMouse < mouse.radius * mouse.radius) {
+            opacityValue = 1 - (distanceMouse / (mouse.radius * mouse.radius));
+            ctx!.strokeStyle = `rgba(255, 255, 255, ${opacityValue * 0.5})`;
+            ctx!.lineWidth = 1.5;
+            ctx!.beginPath();
+            ctx!.moveTo(particles[a].x, particles[a].y);
+            ctx!.lineTo(mouse.x, mouse.y);
+            ctx!.stroke();
+          }
+        }
+      }
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      ctx!.clearRect(0, 0, canvas!.width, canvas!.height);
+
+      for (let i = 0; i < particles.length; i++) {
+        particles[i].update();
+      }
+      connect();
+    }
+
+    const handleMouseMove = (event: MouseEvent) => {
+      const rect = canvas.getBoundingClientRect();
+      mouse.x = event.clientX - rect.left;
+      mouse.y = event.clientY - rect.top;
+    };
+
+    const handleMouseOut = () => {
+      mouse.x = null;
+      mouse.y = null;
+    };
+
+    window.addEventListener('resize', resize);
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseout', handleMouseOut);
+
+    resize();
+    animate();
+
+    return () => {
+      window.removeEventListener('resize', resize);
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseout', handleMouseOut);
+    };
+  }, []);
+
+  return (
+    <canvas 
+      ref={canvasRef} 
+      className="absolute inset-0 pointer-events-none opacity-40 z-0"
+      style={{ maskImage: 'linear-gradient(to bottom, black 80%, transparent 100%)' }}
+    />
+  );
+}
+
+/**
+ * Premium Footer v2.5.1:
  * Features a "Mini-App" Style Support Node and dynamic identity handshake.
  * Interactive Developer Credit with floating emoji animation.
+ * New: Cursor-reactive Spider Web Particle Background.
  */
 export default function Footer() {
   const { user } = useAuth();
@@ -52,13 +214,15 @@ export default function Footer() {
   const professionalEmail = "info@alphaelectricalplumbingltd.com";
   const combinedEmails = `${primaryEmail},${professionalEmail}`;
   
-  // Intelligent Mailto: Pre-fills user info if logged in
   const mailtoLink = user 
     ? `mailto:${combinedEmails}?subject=Support Inquiry: ${user.name}&body=Hello Alpha Support Engine,%0D%0A%0D%0A[Sent via Authenticated Account: ${user.email}]%0D%0A%0D%0AEnter your message below:%0D%0A`
     : `mailto:${combinedEmails}`;
 
   return (
-    <footer className="bg-secondary text-secondary-foreground border-t relative overflow-hidden">
+    <footer className="bg-secondary text-secondary-foreground border-t relative overflow-hidden group/footer">
+      {/* Spider Web Layer */}
+      <InteractiveSpiderWeb />
+
       <div className="container mx-auto px-4 py-20 relative z-10">
         <div className="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-4">
           
