@@ -176,7 +176,6 @@ function InteractiveSpiderWeb({ color = "#00808d" }: { color?: string }) {
     <canvas 
       ref={canvasRef} 
       className="absolute inset-0 pointer-events-none opacity-40 z-0"
-      style={{ maskImage: 'linear-gradient(to bottom, black 80%, transparent 100%)' }}
     />
   );
 }
@@ -184,6 +183,7 @@ function InteractiveSpiderWeb({ color = "#00808d" }: { color?: string }) {
 /**
  * Premium Footer v2.5.2:
  * Features cursor-reactive Spider Web Particle Background with CMS Color control.
+ * The background is now isolated to the upper content area as requested.
  */
 export default function Footer() {
   const { user } = useAuth();
@@ -239,117 +239,123 @@ export default function Footer() {
     : `mailto:${combinedEmails}`;
 
   return (
-    <footer className="bg-secondary text-secondary-foreground border-t relative overflow-hidden group/footer">
-      {/* Spider Web Layer */}
-      <InteractiveSpiderWeb color={particleColor} />
+    <footer className="bg-secondary text-secondary-foreground border-t relative group/footer">
+      
+      {/* Top Part Wrapper with Spider Web Background */}
+      <div className="relative overflow-hidden">
+        <InteractiveSpiderWeb color={particleColor} />
 
-      <div className="container mx-auto px-4 py-20 relative z-10">
-        <div className="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-4">
-          
-          <div className="flex flex-col gap-8">
-            <div className="space-y-4">
-                <Link href="/" className="flex items-center gap-3 group">
-                    <div className="relative h-14 w-14 bg-white rounded-2xl p-2 shadow-xl border border-primary/5 transition-transform group-hover:scale-110">
-                        <Image src="/logo Alpha.png" alt="Alpha" fill className="object-contain p-1.5" />
-                    </div>
-                    <div className="flex flex-col">
-                        <span className="text-xl font-black font-headline text-accent tracking-tighter uppercase leading-none">ALPHA</span>
-                        <span className="text-[9px] font-bold text-primary uppercase tracking-[0.2em] mt-1">Ecosystem v2.5.0</span>
-                    </div>
-                </Link>
-                <p className="text-sm text-muted-foreground leading-relaxed max-w-[280px] font-medium">
-                    East Africa's premium destination for industrial electrical fittings and smart plumbing infrastructure.
-                </p>
-            </div>
-
-            <div className="space-y-4">
-                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/60">Global Newsletter</h3>
-                <NewsletterForm />
-            </div>
-
-            <div className="pt-2">
-                <a 
-                    href={mailtoLink}
-                    className="group relative flex flex-col p-6 bg-white rounded-[2.5rem] border shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden active:scale-95"
-                >
-                    <div className="absolute -top-10 -right-10 h-32 w-32 bg-primary/5 rounded-full blur-3xl group-hover:bg-primary/10 transition-colors" />
-                    
-                    <div className="flex items-center gap-4 mb-4">
-                        <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all shadow-inner">
-                            <Mail size={20} />
-                        </div>
-                        <div className="flex flex-col">
-                            <span className="text-xs font-black uppercase text-accent tracking-tight">Support Node</span>
-                            <span className="text-[9px] text-green-600 font-black uppercase flex items-center gap-1.5">
-                                <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-                                Synchronized
-                            </span>
-                        </div>
-                    </div>
-                    
-                    <div className="flex flex-col gap-0.5 mb-1 overflow-hidden">
-                        <p className="text-[13px] font-bold text-accent truncate">{primaryEmail}</p>
-                        <p className="text-[13px] font-bold text-accent truncate">{professionalEmail}</p>
-                    </div>
-                    
-                    <div className="flex items-center gap-2 text-[10px] font-black text-primary uppercase tracking-[0.2em] opacity-40 group-hover:opacity-100 transition-opacity">
-                        Enquire about any Product or Service <ArrowUpRight size={14} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-                    </div>
-                </a>
-            </div>
-          </div>
-          
-          {footerLinks.map((section) => (
-            <div key={section.title} className="flex flex-col gap-8">
-              <h3 className="text-[10px] font-black font-headline uppercase tracking-[0.4em] text-accent/40">{section.title}</h3>
-              <ul className="space-y-4">
-                {section.links.map((link) => (
-                  <li key={link.name}>
-                    <Link href={link.href} className="text-sm font-bold text-muted-foreground hover:text-primary hover:pl-2 transition-all inline-flex items-center gap-2 group">
-                      {link.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-              
-              {section.title === 'Company' && (
-                <div className="mt-2 space-y-4">
-                   <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-accent/40">Social Channels</h3>
-                   <div className="flex gap-3">
-                    {socialLinks.map((social) => (
-                      <Link 
-                        key={social.name} 
-                        href={social.href} 
-                        className={cn(
-                            "h-11 w-11 rounded-2xl bg-white border shadow-sm flex items-center justify-center transition-all hover:scale-110 hover:-rotate-6 hover:shadow-xl",
-                            social.color
-                        )}
-                        aria-label={social.name}
-                      >
-                        {social.icon}
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {section.title === 'Support' && (
-                  <div className="mt-2 p-5 rounded-3xl bg-muted/30 border border-dashed border-accent/10">
-                      <div className="flex items-center gap-2 mb-3">
-                        <CheckCircle size={14} className="text-primary" />
-                        <h4 className="text-[10px] font-black uppercase text-accent tracking-widest">Alpha Hub Eldoret</h4>
+        <div className="container mx-auto px-4 pt-20 relative z-10">
+          <div className="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-4">
+            
+            <div className="flex flex-col gap-8">
+              <div className="space-y-4">
+                  <Link href="/" className="flex items-center gap-3 group">
+                      <div className="relative h-14 w-14 bg-white rounded-2xl p-2 shadow-xl border border-primary/5 transition-transform group-hover:scale-110">
+                          <Image src="/logo Alpha.png" alt="Alpha" fill className="object-contain p-1.5" />
                       </div>
-                      <p className="text-[10px] text-muted-foreground font-bold uppercase leading-relaxed opacity-80">
-                          Nandi Arcade • Office 204<br/>
-                          Mon - Sat: 08:00 - 18:00
-                      </p>
-                  </div>
-              )}
-            </div>
-          ))}
+                      <div className="flex flex-col">
+                          <span className="text-xl font-black font-headline text-accent tracking-tighter uppercase leading-none">ALPHA</span>
+                          <span className="text-[9px] font-bold text-primary uppercase tracking-[0.2em] mt-1">Ecosystem v2.5.0</span>
+                      </div>
+                  </Link>
+                  <p className="text-sm text-muted-foreground leading-relaxed max-w-[280px] font-medium">
+                      East Africa's premium destination for industrial electrical fittings and smart plumbing infrastructure.
+                  </p>
+              </div>
 
+              <div className="space-y-4">
+                  <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/60">Global Newsletter</h3>
+                  <NewsletterForm />
+              </div>
+
+              <div className="pt-2">
+                  <a 
+                      href={mailtoLink}
+                      className="group relative flex flex-col p-6 bg-white rounded-[2.5rem] border shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden active:scale-95"
+                  >
+                      <div className="absolute -top-10 -right-10 h-32 w-32 bg-primary/5 rounded-full blur-3xl group-hover:bg-primary/10 transition-colors" />
+                      
+                      <div className="flex items-center gap-4 mb-4">
+                          <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all shadow-inner">
+                              <Mail size={20} />
+                          </div>
+                          <div className="flex flex-col">
+                              <span className="text-xs font-black uppercase text-accent tracking-tight">Support Node</span>
+                              <span className="text-[9px] text-green-600 font-black uppercase flex items-center gap-1.5">
+                                  <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+                                  Synchronized
+                              </span>
+                          </div>
+                      </div>
+                      
+                      <div className="flex flex-col gap-0.5 mb-1 overflow-hidden">
+                          <p className="text-[13px] font-bold text-accent truncate">{primaryEmail}</p>
+                          <p className="text-[13px] font-bold text-accent truncate">{professionalEmail}</p>
+                      </div>
+                      
+                      <div className="flex items-center gap-2 text-[10px] font-black text-primary uppercase tracking-[0.2em] opacity-40 group-hover:opacity-100 transition-opacity">
+                          Enquire about any Product or Service <ArrowUpRight size={14} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                      </div>
+                  </a>
+              </div>
+            </div>
+            
+            {footerLinks.map((section) => (
+              <div key={section.title} className="flex flex-col gap-8">
+                <h3 className="text-[10px] font-black font-headline uppercase tracking-[0.4em] text-accent/40">{section.title}</h3>
+                <ul className="space-y-4">
+                  {section.links.map((link) => (
+                    <li key={link.name}>
+                      <Link href={link.href} className="text-sm font-bold text-muted-foreground hover:text-primary hover:pl-2 transition-all inline-flex items-center gap-2 group">
+                        {link.name}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+                
+                {section.title === 'Company' && (
+                  <div className="mt-2 space-y-4">
+                    <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-accent/40">Social Channels</h3>
+                    <div className="flex gap-3">
+                      {socialLinks.map((social) => (
+                        <Link 
+                          key={social.name} 
+                          href={social.href} 
+                          className={cn(
+                              "h-11 w-11 rounded-2xl bg-white border shadow-sm flex items-center justify-center transition-all hover:scale-110 hover:-rotate-6 hover:shadow-xl",
+                              social.color
+                          )}
+                          aria-label={social.name}
+                        >
+                          {social.icon}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {section.title === 'Support' && (
+                    <div className="mt-2 p-5 rounded-3xl bg-muted/30 border border-dashed border-accent/10">
+                        <div className="flex items-center gap-2 mb-3">
+                          <CheckCircle size={14} className="text-primary" />
+                          <h4 className="text-[10px] font-black uppercase text-accent tracking-widest">Alpha Hub Eldoret</h4>
+                        </div>
+                        <p className="text-[10px] text-muted-foreground font-bold uppercase leading-relaxed opacity-80">
+                            Nandi Arcade • Office 204<br/>
+                            Mon - Sat: 08:00 - 18:00
+                        </p>
+                    </div>
+                )}
+              </div>
+            ))}
+
+          </div>
         </div>
-        
+      </div>
+
+      {/* Bottom Part (Copyright) - No Spider Web here */}
+      <div className="container mx-auto px-4 pb-20 relative z-10">
         <div className="mt-20 pt-10 border-t border-accent/5">
           <div className="flex flex-col items-center justify-center gap-2 text-center w-full">
             <p className="text-xs font-bold text-muted-foreground opacity-60">
@@ -374,4 +380,3 @@ export default function Footer() {
     </footer>
   );
 }
-
