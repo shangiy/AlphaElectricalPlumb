@@ -15,10 +15,10 @@ const HeroSearch = dynamic(() => import('./HeroSearch'), {
 });
 
 /**
- * Premium Hero v3.0:
- * - Visually separated from header (removed negative margin).
- * - Implements strict safety margins for responsive elements.
- * - Features high-fidelity layout for e-commerce conversion.
+ * Premium Hero v3.1:
+ * - Visually separated from header.
+ * - Implements strict safe margins for responsive design.
+ * - Optimized container architecture to prevent bleed on mobile.
  */
 export default function Hero() {
   const [slides, setHeroSlides] = useState<HeroSlide[]>([]);
@@ -111,7 +111,6 @@ export default function Hero() {
       <div className="container mx-auto px-4 lg:px-8 max-w-7xl">
         <div className="relative h-[600px] md:h-[700px] rounded-[3rem] overflow-hidden shadow-2xl group/hero">
           
-          {/* Slide Cycle */}
           {activeSlides.map((slide, idx) => (
               <div 
                 key={slide.id} 
@@ -120,7 +119,6 @@ export default function Hero() {
                     idx === currentIndex ? "opacity-100 scale-100 z-10" : "opacity-0 scale-105 pointer-events-none z-0"
                 )}
               >
-                  {/* Background Image Container */}
                   <img
                     src={slide.imageUrl}
                     alt=""
@@ -129,7 +127,6 @@ export default function Hero() {
                   />
                   <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent" />
                   
-                  {/* Content with Safe Margins */}
                   <div className="relative h-full w-full flex flex-col justify-center items-start px-8 md:px-20 py-12">
                       <div className="max-w-3xl space-y-6 animate-in fade-in slide-in-from-left duration-1000">
                         <div className="flex items-center gap-2 text-primary font-black uppercase tracking-[0.3em] text-[10px] bg-white/10 backdrop-blur-md px-4 py-1.5 rounded-full w-fit border border-white/10">
@@ -163,13 +160,8 @@ export default function Hero() {
                                     <ArrowRight size={20} />
                                 </Link>
                             </Button>
-                            
-                            <div className="mt-2 sm:mt-0">
-                                <HeroSearch />
-                            </div>
                         </div>
 
-                        {/* Trending Tags - Safe from margins */}
                         <div className="mt-12 flex items-center justify-start gap-3 flex-wrap">
                             <span className="text-[10px] font-black uppercase tracking-widest text-white/40">Trending:</span>
                             {frequentSearches.map((item) => (
@@ -187,7 +179,6 @@ export default function Hero() {
               </div>
           ))}
 
-          {/* Navigation Controls */}
           {activeSlides.length > 1 && (
               <div className="absolute bottom-10 right-10 flex gap-3 z-20">
                   <Button 

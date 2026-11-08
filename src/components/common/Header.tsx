@@ -44,12 +44,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useState, useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
@@ -62,9 +56,6 @@ const HeroSearch = dynamic(() => import('./HeroSearch'), {
   loading: () => <div className="h-9 w-full max-w-xl bg-muted/10 animate-pulse rounded-full" />
 });
 
-/**
- * High-Fidelity Product Categories with unique icons
- */
 const productCategories = [
   { name: 'Tanks Collection', href: '/category/tanks', icon: <Droplets className="h-5 w-5 text-blue-500" />, desc: 'Heavy duty water storage' },
   { name: 'Plumbing Equipment', href: '/category/plumbing', icon: <Hammer className="h-5 w-5 text-orange-500" />, desc: 'Pipes, fittings & valves' },
@@ -73,47 +64,15 @@ const productCategories = [
   { name: 'Roofing & Construction', href: '/category/roofing', icon: <Home className="h-5 w-5 text-green-600" />, desc: 'Quality Mabati solutions' },
 ];
 
-/**
- * Sticky Header v4.2:
- * - Positioned below TopBanner.
- * - Sticks to top-0 after banner scrolls away.
- * - Features high-fidelity dropdowns and responsive safety margins.
- */
 export default function Header() {
   const { user, logout } = useAuth();
   const pathname = usePathname();
-  const isHomePage = pathname === '/';
-  
-  const [isHeaderOpaque, setIsHeaderOpaque] = useState(false);
-  const [showSearchInHeader, setShowSearchInHeader] = useState(false);
   const [mounted, setMounted] = useState(false);
-
   const [isProductsMenuOpen, setProductsMenuOpen] = useState(false);
-  const productsMenuTimerRef = useRef<NodeJS.Timeout | null>(null);
   
   useEffect(() => {
     setMounted(true);
-    const updateHeaderStyles = () => {
-      const scrollY = window.scrollY;
-      const isMobile = window.innerWidth < 768;
-      
-      // The TopBanner is ~40px high. Header sticks after that.
-      const bannerHeight = isMobile ? 40 : 48;
-      const isStickyState = scrollY > bannerHeight;
-      
-      setIsHeaderOpaque(!isHomePage || isStickyState);
-      setShowSearchInHeader(!isHomePage || isStickyState);
-    };
-
-    updateHeaderStyles();
-    window.addEventListener('scroll', updateHeaderStyles, { passive: true });
-    window.addEventListener('resize', updateHeaderStyles);
-    
-    return () => {
-      window.removeEventListener('scroll', updateHeaderStyles);
-      window.removeEventListener('resize', updateHeaderStyles);
-    };
-  }, [pathname, isHomePage]);
+  }, []);
 
   if (!mounted) return null;
 
@@ -123,43 +82,23 @@ export default function Header() {
   ];
   
   const headerClasses = cn(
-    "sticky top-0 z-50 w-full transition-all duration-500",
-    isHeaderOpaque 
-      ? "bg-background/95 backdrop-blur-xl shadow-lg border-b border-white/10" 
-      : "bg-transparent border-b border-transparent"
+    "sticky top-0 z-50 w-full transition-all duration-300",
+    "bg-background/95 backdrop-blur-xl shadow-lg border-b border-white/10"
   );
 
-  const dynamicColorClasses = cn(
-    "transition-colors duration-300",
-    !isHeaderOpaque && isHomePage ? "text-white" : "text-accent"
-  );
+  const dynamicColorClasses = "text-accent";
   
   const navAndIconClasses = cn(
     "font-bold text-base transition-all duration-300 px-3 py-2 rounded-md whitespace-nowrap",
     dynamicColorClasses,
-    "hover:text-primary hover:bg-primary/10"
+    "hover:text-primary hover:bg-primary/5"
   );
 
   const iconClasses = cn(
     "rounded-full p-2 transition-all duration-300",
     dynamicColorClasses,
-    "hover:bg-primary/10 hover:text-primary"
+    "hover:bg-primary/5 hover:text-primary"
   );
-
-  const logoTextClasses = cn(
-    "hidden sm:flex flex-col transition-colors duration-300",
-    dynamicColorClasses,
-    "group-hover:text-primary"
-  );
-  
-  const handleProductsMenuEnter = () => {
-    if (productsMenuTimerRef.current) clearTimeout(productsMenuTimerRef.current);
-    setProductsMenuOpen(true);
-  };
-
-  const handleProductsMenuLeave = () => {
-    productsMenuTimerRef.current = setTimeout(() => setProductsMenuOpen(false), 200);
-  };
 
   const authRedirect = pathname !== '/auth/login' ? `&redirect=${encodeURIComponent(pathname)}` : '';
 
@@ -177,23 +116,16 @@ export default function Header() {
                         className="object-contain p-1"
                     />
                 </div>
-                <div className={logoTextClasses}>
+                <div className="hidden sm:flex flex-col text-accent">
                     <span className="font-black tracking-tighter text-xl leading-none">ALPHA</span>
-                    <div className={cn("w-full h-0.5 mt-0.5 transition-colors", !isHeaderOpaque && isHomePage ? "bg-white" : "bg-primary")} />
+                    <div className="w-full h-0.5 mt-0.5 bg-primary" />
                     <span className="text-[9px] font-bold uppercase tracking-[0.2em] leading-tight">Ecosystem</span>
                 </div>
             </Link>
             
             {/* Desktop Search Center */}
             <div className="hidden lg:flex flex-1 justify-center items-center px-8">
-                <div className={cn(
-                    "w-full max-w-xl transition-all duration-500 transform",
-                    showSearchInHeader 
-                        ? "opacity-100 translate-y-0" 
-                        : "opacity-0 -translate-y-8 pointer-events-none"
-                )}>
-                    <HeroSearch isCompact />
-                </div>
+                <HeroSearch isCompact />
             </div>
 
             {/* Desktop Nav Actions */}
@@ -206,39 +138,38 @@ export default function Header() {
                       </Link>
                     )}
                     
-                    {/* High-Fidelity Dropdown */}
-                    <div onMouseEnter={handleProductsMenuEnter} onMouseLeave={handleProductsMenuLeave} className="relative">
-                      <DropdownMenu open={isProductsMenuOpen} onOpenChange={setProductsMenuOpen}>
+                    <DropdownMenu open={isProductsMenuOpen} onOpenChange={setProductsMenuOpen}>
                         <DropdownMenuTrigger asChild>
                              <div className={cn("flex items-center gap-1 cursor-pointer", navAndIconClasses)}>
                                 Products
                                 <ChevronDown className={cn("h-4 w-4 transition-transform", isProductsMenuOpen && "rotate-180")} />
                              </div>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="start" className="w-80 bg-background p-3 rounded-[2rem] shadow-2xl border-none animate-in fade-in zoom-in-95 duration-200">
-                            <DropdownMenuLabel className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground/60 px-4 py-2">Our Collections</DropdownMenuLabel>
-                            {productCategories.map((category) => (
-                                <DropdownMenuItem key={category.name} asChild className="rounded-2xl cursor-pointer">
-                                <Link href={category.href} className="flex items-center gap-4 py-3 px-3 hover:bg-primary/5">
-                                    <div className="h-12 w-12 rounded-xl bg-secondary flex items-center justify-center shadow-inner">
-                                        {category.icon}
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <span className="font-black text-sm text-accent uppercase tracking-tight">{category.name}</span>
-                                        <span className="text-[10px] text-muted-foreground font-medium">{category.desc}</span>
-                                    </div>
-                                </Link>
-                                </DropdownMenuItem>
-                            ))}
-                            <DropdownMenuSeparator className="mx-4 my-2" />
-                            <DropdownMenuItem asChild className="rounded-2xl">
-                                <Link href="/search" className="flex items-center justify-center gap-2 py-3 text-primary font-black uppercase text-xs tracking-widest">
-                                    View Full Catalog <ArrowRight size={14} />
+                        <DropdownMenuContent align="start" className="w-[450px] bg-background p-6 rounded-[2.5rem] shadow-2xl border-none animate-in fade-in zoom-in-95 duration-200">
+                            <DropdownMenuLabel className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground/60 px-4 mb-4">Our Professional Collections</DropdownMenuLabel>
+                            <div className="grid grid-cols-1 gap-2">
+                              {productCategories.map((category) => (
+                                  <DropdownMenuItem key={category.name} asChild className="rounded-2xl cursor-pointer p-0 focus:bg-primary/5">
+                                    <Link href={category.href} className="flex items-center gap-4 py-4 px-4 w-full">
+                                        <div className="h-14 w-14 rounded-2xl bg-secondary flex items-center justify-center shadow-inner shrink-0">
+                                            {category.icon}
+                                        </div>
+                                        <div className="flex flex-col">
+                                            <span className="font-black text-base text-accent uppercase tracking-tight leading-none mb-1">{category.name}</span>
+                                            <span className="text-[11px] text-muted-foreground font-medium">{category.desc}</span>
+                                        </div>
+                                    </Link>
+                                  </DropdownMenuItem>
+                              ))}
+                            </div>
+                            <DropdownMenuSeparator className="my-6" />
+                            <DropdownMenuItem asChild className="rounded-2xl focus:bg-primary focus:text-white">
+                                <Link href="/search" className="flex items-center justify-center gap-2 py-4 font-black uppercase text-xs tracking-widest text-primary hover:text-white transition-colors">
+                                    Browse Full Catalog <ArrowRight size={14} />
                                 </Link>
                             </DropdownMenuItem>
                         </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
+                    </DropdownMenu>
 
                     {navLinks.map((link) => (
                         <Link key={link.name} href={link.href} className={navAndIconClasses}>
@@ -253,7 +184,7 @@ export default function Header() {
                     <ShoppingCart triggerClassName={cn(iconClasses, '[&_svg]:h-7 [&_svg]:w-7')} />
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className={cn("w-auto px-3 gap-2 rounded-full hover:bg-primary/10", iconClasses)}>
+                        <Button variant="ghost" className={cn("w-auto px-3 gap-2 rounded-full", iconClasses)}>
                             {user?.avatarUrl ? (
                                 <div className="h-8 w-8 rounded-full overflow-hidden border-2 border-primary shadow-md">
                                     <Image src={user.avatarUrl} alt={user.username} width={32} height={32} className="object-cover" />
@@ -295,12 +226,7 @@ export default function Header() {
 
             {/* Mobile Interface */}
             <div className="lg:hidden flex items-center gap-2">
-                <div className={cn(
-                    "transition-all transform duration-300",
-                    showSearchInHeader ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-4 pointer-events-none"
-                )}>
-                    <HeroSearch isCompact />
-                </div>
+                <HeroSearch isCompact />
                 <ShoppingCart triggerClassName={cn(iconClasses, '[&_svg]:h-6 [&_svg]:w-6')} />
                 <Sheet>
                     <SheetTrigger asChild>
@@ -315,8 +241,8 @@ export default function Header() {
                             <SheetClose asChild>
                                 <Link href="/" className="flex items-center gap-4">
                                     <Image src="/logo Alpha.png" alt="Logo" width={50} height={50}/>
-                                    <div className="flex flex-col">
-                                        <span className="font-black text-xl text-accent tracking-tighter uppercase leading-none">ALPHA</span>
+                                    <div className="flex flex-col text-accent">
+                                        <span className="font-black text-xl tracking-tighter uppercase leading-none">ALPHA</span>
                                         <span className="text-[9px] font-bold text-primary uppercase tracking-widest mt-1">Ecosystem</span>
                                     </div>
                                 </Link>
@@ -379,7 +305,7 @@ export default function Header() {
                                                         {cat.icon}
                                                     </div>
                                                     <div className="flex flex-col">
-                                                        <span className="text-sm font-black text-accent uppercase tracking-tight">{cat.name}</span>
+                                                        <span className="text-sm font-black text-accent uppercase tracking-tight leading-none mb-1">{cat.name}</span>
                                                         <span className="text-[10px] text-muted-foreground font-medium">{cat.desc}</span>
                                                     </div>
                                                 </Link>
