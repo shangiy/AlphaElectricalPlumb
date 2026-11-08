@@ -8,15 +8,16 @@ const HeroSearch = dynamic(() => import('./HeroSearch'), {
 });
 
 /**
- * Detached Hero Section v8.0
- * - Structure: Independent block separated from the sticky header.
- * - Margins: max-w-7xl mx-auto px-6 py-20 to ensure call-to-action buttons are protected.
+ * Detached Hero Section v8.2
+ * Refined positioning to ensure it scrolls BEHIND the sticky header.
+ * - Structure: Independent block that detaches from header overlay.
+ * - Margins: max-w-7xl mx-auto px-6 py-20 to provide professional safe-zones.
  */
 export default function Hero() {
   const categoryTags = ["Water Tanks", "LED Lights", "PPR Pipes", "Solar Heaters", "Chandeliers", "Sockets"];
 
   return (
-    <section className="relative w-full overflow-hidden bg-[#0a0f1e] min-h-[60vh] flex items-center">
+    <section className="relative w-full overflow-hidden bg-[#0a0f1e] min-h-[70vh] flex items-center">
       {/* Blueprint Pattern Overlay */}
       <div 
         className="absolute inset-0 opacity-20 pointer-events-none"
@@ -40,7 +41,7 @@ export default function Hero() {
             </p>
           </div>
 
-          {/* Action Center with Detached Positioning */}
+          {/* Action Center - side-by-side cluster within safe zones */}
           <div className="space-y-8">
             <div className="flex flex-col sm:flex-row items-center gap-4 w-full max-w-2xl">
               <HeroSearch />
