@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { getStorefrontSetting, type HeroSlide } from '@/app/actions/cms-actions';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, Sparkles } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { STYLE_OPTIONS } from '@/components/admin/HeroManager';
 
@@ -66,7 +66,7 @@ export default function Hero() {
 
   if (loading) {
       return (
-          <section className="h-[750px] w-full bg-[#050b1a] animate-pulse" />
+          <section className="h-[600px] w-full bg-[#050b1a] animate-pulse" />
       );
   }
 
@@ -78,7 +78,7 @@ export default function Hero() {
       subheading: 'Solution for Plumbing and Eletricals',
       ctaText: 'EXPLORE',
       ctaLink: '/search',
-      imageUrl: '/background.jpg', // Technical background
+      imageUrl: '/background.jpg',
       active: true,
       headlineColor: '#ffffff',
       headlineSize: 84,
@@ -87,13 +87,13 @@ export default function Hero() {
   } as any];
 
   return (
-    <section className="relative h-[750px] w-full overflow-hidden bg-[#050b1a]">
+    <section className="relative w-full overflow-hidden bg-[#050b1a]">
       {activeSlides.map((slide, idx) => (
           <div 
             key={slide.id} 
             className={cn(
-                "absolute inset-0 transition-all duration-1000",
-                idx === currentIndex ? "opacity-100 z-10 scale-100" : "opacity-0 z-0 scale-105 pointer-events-none"
+                "relative transition-all duration-1000",
+                idx === currentIndex ? "opacity-100 z-10" : "absolute inset-0 opacity-0 z-0 pointer-events-none"
             )}
           >
               <img
@@ -104,8 +104,8 @@ export default function Hero() {
               />
               <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/40 to-black/80" />
               
-              <div className="relative h-full container mx-auto px-4 flex flex-col justify-center items-start text-left text-white max-w-7xl">
-                  <div className="max-w-4xl space-y-8 animate-in fade-in slide-in-from-left-8 duration-1000">
+              <div className="relative z-10 container mx-auto px-4 lg:px-8 py-20 md:py-32 max-w-7xl">
+                  <div className="max-w-4xl space-y-10 animate-in fade-in slide-in-from-left-8 duration-1000">
                     <h1 
                       className="font-black font-headline leading-[1] tracking-tighter uppercase whitespace-pre-wrap drop-shadow-2xl"
                       style={{ 
@@ -126,8 +126,8 @@ export default function Hero() {
                         {slide.subheading}
                     </p>
                     
-                    <div className="flex flex-col sm:flex-row items-center gap-6 pt-4">
-                        <Button asChild size="lg" className="rounded-full bg-[#18998c] hover:bg-[#158076] text-white font-black px-12 h-16 text-xl shadow-[0_10px_30px_rgba(24,153,140,0.3)] transition-all hover:scale-105 active:scale-95 border-none">
+                    <div className="flex flex-col sm:flex-row items-center gap-8 pt-6">
+                        <Button asChild size="lg" className="rounded-full bg-[#18998c] hover:bg-[#158076] text-white font-black px-12 h-16 text-xl shadow-[0_10px_30px_rgba(24,153,140,0.3)] transition-all hover:scale-105 active:scale-95 border-none shrink-0">
                             <Link href={slide.ctaLink || '/search'}>
                                 {slide.ctaText || 'EXPLORE'}
                             </Link>

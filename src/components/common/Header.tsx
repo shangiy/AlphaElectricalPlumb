@@ -19,7 +19,11 @@ import {
   LogOut,
   Settings,
   Heart,
-  ChevronDown
+  ChevronDown,
+  Droplets,
+  Zap,
+  Lightbulb,
+  Home
 } from 'lucide-react';
 import ShoppingCart from './ShoppingCart';
 import {
@@ -48,14 +52,15 @@ export default function Header() {
 
   if (!mounted) return null;
 
-  const navLinks = [
-    { name: 'Products', href: '/search', hasDropdown: true },
-    { name: 'Contact Us', href: '/contact' },
-    { name: 'About Us', href: '/about' },
+  const productCategories = [
+    { name: 'Water Tanks', href: '/category/tanks', icon: <Droplets className="h-5 w-5 text-blue-500" />, desc: 'Durable storage solutions' },
+    { name: 'Plumbing', href: '/category/plumbing', icon: <Zap className="h-5 w-5 text-emerald-500" />, desc: 'Pipes, fittings & valves' },
+    { name: 'Lighting', href: '/category/lighting', icon: <Lightbulb className="h-5 w-5 text-yellow-500" />, desc: 'Elegant chandeliers & LEDs' },
+    { name: 'Home & Decor', href: '/category/decor', icon: <Home className="h-5 w-5 text-rose-500" />, desc: 'Premium artistic finishes' },
   ];
-  
+
   const headerClasses = cn(
-    "absolute top-10 md:top-12 left-0 right-0 z-40 w-full transition-all duration-300 h-24 flex items-center bg-transparent"
+    "sticky top-0 left-0 right-0 z-50 w-full h-24 flex items-center bg-[#050b1a] border-b border-white/5 shadow-2xl transition-all duration-300"
   );
 
   const authRedirect = pathname !== '/auth/login' ? `&redirect=${encodeURIComponent(pathname)}` : '';
@@ -77,16 +82,33 @@ export default function Header() {
         {/* Desktop Nav Actions */}
         <div className="hidden lg:flex items-center gap-10">
             <nav className="flex items-center gap-8">
-                {navLinks.map((link) => (
-                    <Link 
-                      key={link.name} 
-                      href={link.href} 
-                      className="text-sm font-black text-white hover:text-primary transition-all flex items-center gap-1 uppercase tracking-tight"
-                    >
-                        {link.name}
-                        {link.hasDropdown && <ChevronDown size={14} className="opacity-50" />}
-                    </Link>
-                ))}
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <button className="text-sm font-black text-white hover:text-primary transition-all flex items-center gap-1 uppercase tracking-tight outline-none group">
+                            Products
+                            <ChevronDown size={14} className="opacity-50 group-data-[state=open]:rotate-180 transition-transform" />
+                        </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" className="w-[600px] p-6 rounded-[2rem] shadow-2xl border-none bg-white grid grid-cols-2 gap-4">
+                        <DropdownMenuLabel className="col-span-2 text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/60 mb-2">Inventory Collections</DropdownMenuLabel>
+                        {productCategories.map((cat) => (
+                            <DropdownMenuItem key={cat.name} asChild className="p-0 focus:bg-transparent">
+                                <Link href={cat.href} className="flex items-start gap-4 p-4 rounded-2xl hover:bg-primary/5 transition-all group/item">
+                                    <div className="h-12 w-12 rounded-xl bg-muted/50 flex items-center justify-center group-hover/item:bg-white group-hover/item:shadow-lg transition-all">
+                                        {cat.icon}
+                                    </div>
+                                    <div>
+                                        <p className="font-black text-accent uppercase text-sm tracking-tight">{cat.name}</p>
+                                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">{cat.desc}</p>
+                                    </div>
+                                </Link>
+                            </DropdownMenuItem>
+                        ))}
+                    </DropdownMenuContent>
+                </DropdownMenu>
+                
+                <Link href="/contact" className="text-sm font-black text-white hover:text-primary transition-all uppercase tracking-tight">Contact Us</Link>
+                <Link href="/about" className="text-sm font-black text-white hover:text-primary transition-all uppercase tracking-tight">About Us</Link>
             </nav>
 
             <div className="flex items-center gap-4">
@@ -159,13 +181,23 @@ export default function Header() {
                                     </Link>
                                 </SheetClose>
                             )}
-                            {navLinks.map((link) => (
-                                <SheetClose asChild key={link.name}>
-                                    <Link href={link.href} className="flex items-center gap-4 p-4 rounded-2xl hover:bg-muted font-bold text-accent uppercase text-sm tracking-tight transition-all">
-                                        {link.name}
+                            <DropdownMenuSeparator className="mb-4" />
+                            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 px-4 mb-2">Our Collections</p>
+                            {productCategories.map((cat) => (
+                                <SheetClose asChild key={cat.name}>
+                                    <Link href={cat.href} className="flex items-center gap-4 p-4 rounded-2xl hover:bg-muted font-bold text-accent uppercase text-sm tracking-tight transition-all">
+                                        <span className="h-8 w-8 rounded-lg bg-muted flex items-center justify-center">{cat.icon}</span>
+                                        {cat.name}
                                     </Link>
                                 </SheetClose>
                             ))}
+                            <DropdownMenuSeparator className="my-6" />
+                            <SheetClose asChild>
+                                <Link href="/contact" className="p-4 font-bold text-accent uppercase text-sm tracking-tight">Contact Us</Link>
+                            </SheetClose>
+                            <SheetClose asChild>
+                                <Link href="/about" className="p-4 font-bold text-accent uppercase text-sm tracking-tight">About Us</Link>
+                            </SheetClose>
                             <DropdownMenuSeparator className="my-6" />
                             {user ? (
                                 <>
