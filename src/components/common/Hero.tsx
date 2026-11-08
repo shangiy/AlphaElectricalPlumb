@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { getStorefrontSetting, type HeroSlide } from '@/app/actions/cms-actions';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Loader2, Sparkles, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { STYLE_OPTIONS } from '@/components/admin/HeroManager';
 
@@ -14,6 +14,12 @@ const HeroSearch = dynamic(() => import('./HeroSearch'), {
   loading: () => <div className="h-14 w-full max-w-2xl bg-white/20 animate-pulse rounded-full shadow-md border border-white/10" />
 });
 
+/**
+ * Premium Hero v3.0:
+ * - Visually separated from header (removed negative margin).
+ * - Implements strict safety margins for responsive elements.
+ * - Features high-fidelity layout for e-commerce conversion.
+ */
 export default function Hero() {
   const [slides, setHeroSlides] = useState<HeroSlide[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -44,10 +50,10 @@ export default function Hero() {
   }, [slides]);
 
   const frequentSearches = [
-    { name: 'Water Tanks', href: '/tanks' },
-    { name: 'LED Lights', href: '/decor' },
-    { name: 'PPR Pipes', href: '/plumbing' },
-    { name: 'Solar Heaters', href: '/plumbing' },
+    { name: 'Water Tanks', href: '/category/tanks' },
+    { name: 'LED Lights', href: '/category/decor' },
+    { name: 'PPR Pipes', href: '/category/plumbing' },
+    { name: 'Solar Heaters', href: '/category/plumbing' },
   ];
 
   const renderHeadline = (slide: HeroSlide) => {
@@ -63,7 +69,7 @@ export default function Hero() {
     return parts.map((part, i) => {
         if (part.toLowerCase() === highlight.toLowerCase()) {
             return (
-                <span key={i} className={cn("inline-block px-1", activeStyle.previewClass)}>
+                <span key={i} className={cn("inline-block px-2", activeStyle.previewClass)}>
                     {part}
                 </span>
             );
@@ -74,8 +80,10 @@ export default function Hero() {
 
   if (loading) {
       return (
-          <section className="relative h-[70vh] md:h-[85vh] w-full flex items-center justify-center bg-accent">
-              <Loader2 className="h-10 w-10 animate-spin text-white/20" />
+          <section className="container mx-auto px-4 lg:px-8 py-12 md:py-20">
+              <div className="w-full aspect-[21/9] bg-muted animate-pulse rounded-[3rem] flex items-center justify-center">
+                <Loader2 className="h-10 w-10 animate-spin text-primary/20" />
+              </div>
           </section>
       );
   }
@@ -85,8 +93,8 @@ export default function Hero() {
       headline: 'Innovating Everyday Living',
       highlightedText: 'ALPHA',
       styleType: 'kenyan-flag',
-      subheading: 'Premium Electrical & Plumbing Solutions',
-      ctaText: 'START EXPLORING',
+      subheading: 'Premium Electrical & Plumbing Solutions for your home and project.',
+      ctaText: 'EXPLORE CATALOG',
       ctaLink: '/search',
       imageUrl: '/background.jpg',
       active: true,
@@ -99,82 +107,109 @@ export default function Hero() {
   } as any];
 
   return (
-    <section className="relative h-[70vh] md:h-[85vh] w-full overflow-hidden text-white -mt-24">
-      {activeSlides.map((slide, idx) => (
-          <div 
-            key={slide.id} 
-            className={cn(
-                "absolute inset-0 transition-all duration-1000 ease-in-out",
-                idx === currentIndex ? "opacity-100 scale-100" : "opacity-0 scale-110 pointer-events-none"
-            )}
-          >
-              <img
-                src={slide.imageUrl}
-                alt=""
-                className="absolute inset-0 h-full w-full object-cover"
-                onError={(e) => { (e.target as HTMLImageElement).src = '/elegant_background.jpg'; }}
-              />
-              <div className="absolute inset-0 bg-black/50" />
-              
-              <div className="container mx-auto px-4 h-full flex flex-col justify-center items-start relative z-10 pt-[4cm]">
-                  <div className="max-w-4xl space-y-2 animate-in fade-in slide-in-from-left duration-1000">
-                    <h1 
-                      className="font-black font-headline leading-[0.95] tracking-tighter drop-shadow-2xl uppercase whitespace-pre-wrap"
-                      style={{ 
-                        color: slide.headlineColor || '#ffffff',
-                        fontSize: slide.headlineSize ? `${slide.headlineSize}px` : '72px',
-                        marginTop: slide.headlineTopMargin ? `${slide.headlineTopMargin}cm` : '0cm'
-                      }}
-                    >
-                        {renderHeadline(slide)}
-                    </h1>
-                    <p 
-                      className="font-medium drop-shadow-lg max-w-2xl whitespace-pre-wrap"
-                      style={{ 
-                        color: slide.subheadingColor || '#ffffff',
-                        fontSize: slide.subheadingSize ? `${slide.subheadingSize}px` : '24px',
-                        marginTop: slide.subheadingTopMargin ? `${slide.subheadingTopMargin}cm` : '1cm'
-                      }}
-                    >
-                        {slide.subheading}
-                    </p>
-                    
-                    <div className="flex flex-col sm:flex-row gap-4 pt-8">
-                        <Button asChild size="xl" className="rounded-full bg-primary hover:bg-primary/90 text-white font-black shadow-2xl hover:scale-105 transition-transform">
-                            <Link href={slide.ctaLink || '/search'}>{slide.ctaText || 'EXPLORE'}</Link>
-                        </Button>
-                        <div className="hidden sm:block">
-                            <HeroSearch />
+    <section className="relative overflow-hidden bg-background py-8 md:py-12">
+      <div className="container mx-auto px-4 lg:px-8 max-w-7xl">
+        <div className="relative h-[600px] md:h-[700px] rounded-[3rem] overflow-hidden shadow-2xl group/hero">
+          
+          {/* Slide Cycle */}
+          {activeSlides.map((slide, idx) => (
+              <div 
+                key={slide.id} 
+                className={cn(
+                    "absolute inset-0 transition-all duration-1000 ease-in-out",
+                    idx === currentIndex ? "opacity-100 scale-100 z-10" : "opacity-0 scale-105 pointer-events-none z-0"
+                )}
+              >
+                  {/* Background Image Container */}
+                  <img
+                    src={slide.imageUrl}
+                    alt=""
+                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-[10000ms] group-hover/hero:scale-110"
+                    onError={(e) => { (e.target as HTMLImageElement).src = '/elegant_background.jpg'; }}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent" />
+                  
+                  {/* Content with Safe Margins */}
+                  <div className="relative h-full w-full flex flex-col justify-center items-start px-8 md:px-20 py-12">
+                      <div className="max-w-3xl space-y-6 animate-in fade-in slide-in-from-left duration-1000">
+                        <div className="flex items-center gap-2 text-primary font-black uppercase tracking-[0.3em] text-[10px] bg-white/10 backdrop-blur-md px-4 py-1.5 rounded-full w-fit border border-white/10">
+                           <Sparkles size={12} /> Established Excellence
                         </div>
-                    </div>
+                        
+                        <h1 
+                          className="font-black font-headline leading-[0.9] tracking-tighter drop-shadow-2xl uppercase whitespace-pre-wrap"
+                          style={{ 
+                            color: slide.headlineColor || '#ffffff',
+                            fontSize: slide.headlineSize ? `${Math.min(slide.headlineSize, 80)}px` : '72px'
+                          }}
+                        >
+                            {renderHeadline(slide)}
+                        </h1>
+                        
+                        <p 
+                          className="font-medium drop-shadow-lg max-w-xl text-white/90 text-lg leading-relaxed whitespace-pre-wrap"
+                          style={{ 
+                            color: slide.subheadingColor || '#ffffff',
+                            fontSize: slide.subheadingSize ? `${Math.min(slide.subheadingSize, 24)}px` : '20px'
+                          }}
+                        >
+                            {slide.subheading}
+                        </p>
+                        
+                        <div className="flex flex-col sm:flex-row gap-6 pt-6 items-start sm:items-center">
+                            <Button asChild size="xl" className="rounded-full bg-primary hover:bg-primary/90 text-white font-black shadow-[0_20px_50px_rgba(var(--primary),0.3)] hover:scale-105 active:scale-95 transition-all">
+                                <Link href={slide.ctaLink || '/search'} className="flex items-center gap-3">
+                                    {slide.ctaText || 'EXPLORE CATALOG'}
+                                    <ArrowRight size={20} />
+                                </Link>
+                            </Button>
+                            
+                            <div className="mt-2 sm:mt-0">
+                                <HeroSearch />
+                            </div>
+                        </div>
 
-                    <div className="mt-8 flex items-center justify-start gap-3 flex-wrap">
-                        <span className="text-xs font-black uppercase tracking-widest text-white/60">Trending:</span>
-                        {frequentSearches.map((item) => (
-                            <Link
-                                key={item.name}
-                                href={item.href}
-                                className="text-[10px] font-black uppercase tracking-widest rounded-full px-4 py-1.5 border border-white/20 bg-white/5 hover:bg-white/20 backdrop-blur-md transition-all text-white"
-                            >
-                                {item.name}
-                            </Link>
-                        ))}
-                    </div>
+                        {/* Trending Tags - Safe from margins */}
+                        <div className="mt-12 flex items-center justify-start gap-3 flex-wrap">
+                            <span className="text-[10px] font-black uppercase tracking-widest text-white/40">Trending:</span>
+                            {frequentSearches.map((item) => (
+                                <Link
+                                    key={item.name}
+                                    href={item.href}
+                                    className="text-[9px] font-black uppercase tracking-widest rounded-full px-4 py-2 border border-white/10 bg-white/5 hover:bg-white/10 backdrop-blur-md transition-all text-white/80 hover:text-white"
+                                >
+                                    {item.name}
+                                </Link>
+                            ))}
+                        </div>
+                      </div>
                   </div>
               </div>
-          </div>
-      ))}
+          ))}
 
-      {activeSlides.length > 1 && (
-          <div className="absolute bottom-10 right-10 flex gap-2 z-20">
-              <Button size="icon" variant="ghost" className="rounded-full border border-white/20 hover:bg-white/10 text-white" onClick={() => setCurrentIndex((currentIndex - 1 + activeSlides.length) % activeSlides.length)}>
-                  <ChevronLeft />
-              </Button>
-              <Button size="icon" variant="ghost" className="rounded-full border border-white/20 hover:bg-white/10 text-white" onClick={() => setCurrentIndex((currentIndex + 1) % activeSlides.length)}>
-                  <ChevronRight />
-              </Button>
-          </div>
-      )}
+          {/* Navigation Controls */}
+          {activeSlides.length > 1 && (
+              <div className="absolute bottom-10 right-10 flex gap-3 z-20">
+                  <Button 
+                    size="icon" 
+                    variant="ghost" 
+                    className="h-12 w-12 rounded-full border border-white/20 bg-black/20 backdrop-blur-md hover:bg-white/10 text-white transition-all hover:scale-110" 
+                    onClick={() => setCurrentIndex((currentIndex - 1 + activeSlides.length) % activeSlides.length)}
+                  >
+                      <ChevronLeft size={24} />
+                  </Button>
+                  <Button 
+                    size="icon" 
+                    variant="ghost" 
+                    className="h-12 w-12 rounded-full border border-white/20 bg-black/20 backdrop-blur-md hover:bg-white/10 text-white transition-all hover:scale-110" 
+                    onClick={() => setCurrentIndex((currentIndex + 1) % activeSlides.length)}
+                  >
+                      <ChevronRight size={24} />
+                  </Button>
+              </div>
+          )}
+        </div>
+      </div>
     </section>
   );
 }
