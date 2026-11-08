@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -17,8 +18,7 @@ import {
   Menu, 
   ChevronDown, 
   ShoppingCart as ShoppingCartIcon,
-  Search,
-  Camera
+  Search
 } from 'lucide-react';
 import ShoppingCart from './ShoppingCart';
 import {
@@ -57,13 +57,17 @@ export default function Header() {
 
   return (
     <header className={cn(
-      "sticky top-0 z-50 w-full transition-all duration-500 overflow-hidden border-b",
-      isScrolled ? "bg-background/95 backdrop-blur-md border-white/10" : "bg-transparent border-transparent"
+      "sticky top-0 z-50 w-full transition-all duration-500 overflow-hidden bg-transparent border-b border-transparent",
+      isScrolled && "border-white/10"
     )}>
-      {/* Background Layers for Dynamic Transitions */}
+      {/* Background Layers for Dynamic Transitions (Specification Match) */}
       <div className={cn(
         "absolute inset-0 -z-20 bg-gradient-to-r from-red-500 via-purple-500 to-blue-500 bg-[length:200%_200%] animate-gradient-x transition-opacity duration-500",
         isScrolled ? "opacity-10" : "opacity-0"
+      )} />
+      <div className={cn(
+        "absolute inset-0 -z-10 bg-background/90 backdrop-blur-md transition-opacity duration-500",
+        isScrolled ? "opacity-100" : "opacity-0"
       )} />
       
       <div className="container mx-auto px-4 relative z-10">
@@ -95,12 +99,22 @@ export default function Header() {
           <div className="flex items-center justify-end">
             <nav className="flex items-center">
               <div className="relative">
-                <Link href="/search" className={cn(
-                  "flex items-center gap-1 px-3 py-2 whitespace-nowrap font-semibold text-base transition-colors duration-300 hover:text-[#8a0b0d]",
-                  isScrolled ? "text-accent" : "text-white"
-                )}>
-                  Products <ChevronDown className="h-4 w-4" />
-                </Link>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <button className={cn(
+                        "flex items-center gap-1 px-3 py-2 whitespace-nowrap font-semibold text-base transition-colors duration-300",
+                        isScrolled ? "text-accent hover:text-[#8a0b0d]" : "text-white hover:text-[#8a0b0d]"
+                        )}>
+                        Products <ChevronDown className="h-4 w-4" />
+                        </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-[400px] p-4 rounded-2xl grid grid-cols-2 gap-2 border-none shadow-2xl">
+                         <DropdownMenuItem asChild className="rounded-xl"><Link href="/category/tanks" className="p-3 font-bold">Water Tanks</Link></DropdownMenuItem>
+                         <DropdownMenuItem asChild className="rounded-xl"><Link href="/category/plumbing" className="p-3 font-bold">Plumbing</Link></DropdownMenuItem>
+                         <DropdownMenuItem asChild className="rounded-xl"><Link href="/category/lighting" className="p-3 font-bold">Lighting</Link></DropdownMenuItem>
+                         <DropdownMenuItem asChild className="rounded-xl"><Link href="/category/roofing" className="p-3 font-bold">Roofing</Link></DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
               </div>
               <Link href="/contact" className={cn(
                 "px-3 py-2 whitespace-nowrap font-semibold text-base transition-colors duration-300 hover:text-[#8a0b0d]",
@@ -164,7 +178,7 @@ export default function Header() {
           </div>
         </div>
 
-        {/* Mobile View */}
+        {/* Mobile View (Specification Match) */}
         <div className="w-full lg:hidden flex flex-col py-2 transition-all duration-500">
           <div className="flex w-full items-center justify-between gap-2">
             <Link href="/" className="flex-shrink-0 transition-all duration-500">

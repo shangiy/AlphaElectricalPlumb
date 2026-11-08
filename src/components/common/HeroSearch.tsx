@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -23,7 +24,7 @@ export default function HeroSearch() {
     async function loadCMSData() {
         try {
             const val = await getStorefrontSetting('search_phrases');
-            if (val && Array.isArray(val)) {
+            if (val && Array.isArray(val) && val.length > 0) {
                 setPlaceholders(val);
             }
         } catch (e) {

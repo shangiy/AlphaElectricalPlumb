@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -14,7 +15,22 @@ export function AnimatedPlaceholder({ placeholders, className }: AnimatedPlaceho
   const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
-    const fullText = placeholders[placeholderIndex];
+    // Safety check: if placeholders is empty or undefined, do nothing
+    if (!placeholders || placeholders.length === 0) {
+      setCurrentPlaceholder('');
+      return;
+    }
+
+    // Ensure index is within bounds (handles case where placeholders array shrinks)
+    const activeIndex = placeholderIndex % placeholders.length;
+    const fullText = placeholders[activeIndex];
+
+    // Safety check for individual placeholder string
+    if (typeof fullText !== 'string') {
+      setCurrentPlaceholder('');
+      return;
+    }
+
     let timeout: NodeJS.Timeout;
 
     if (isDeleting) {
