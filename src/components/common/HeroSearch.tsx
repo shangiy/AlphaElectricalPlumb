@@ -29,7 +29,7 @@ interface HeroSearchProps {
 
 export default function HeroSearch({ isCompact = false }: HeroSearchProps) {
   const [query, setQuery] = useState('');
-  const [placeholders, setPlaceholders] = useState(["tanks", "chandelier", "solar heater", "mabati"]);
+  const [placeholders, setPlaceholders] = useState(["Switches and Sockets", "Water Tanks", "Chandeliers", "PPR Pipes"]);
   const router = useRouter();
   const { toast } = useToast();
 
@@ -45,7 +45,6 @@ export default function HeroSearch({ isCompact = false }: HeroSearchProps) {
     setMounted(true);
     async function loadCMSData() {
         try {
-            // Fetch phrases from the new storefront_settings table
             const val = await getStorefrontSetting('search_phrases');
             if (val && Array.isArray(val)) {
                 setPlaceholders(val);
@@ -153,13 +152,13 @@ export default function HeroSearch({ isCompact = false }: HeroSearchProps) {
     <>
       <form onSubmit={handleSubmit} className={cn("w-full transition-all duration-500 ease-in-out", isCompact ? "max-w-full" : "max-w-2xl")}>
         <div className={cn(
-          "relative flex items-center w-full p-1 space-x-1 bg-white border border-gray-200 rounded-full shadow-md transition-all duration-500 ease-in-out",
-          isCompact ? "h-9 pr-1" : "h-14 pr-2"
+          "relative flex items-center w-full p-1 space-x-1 bg-white rounded-full shadow-2xl transition-all duration-500 ease-in-out",
+          isCompact ? "h-9 pr-1" : "h-16 pr-2"
         )}>
           {!isCompact && (
-            <div className={cn("absolute left-4 top-1/2 -translate-y-1/2 flex items-center pointer-events-none transition-opacity duration-500", query ? "opacity-0" : "opacity-100")}>
-              <span className="text-base text-muted-foreground">Search for&nbsp;</span>
-              <AnimatedPlaceholder placeholders={placeholders} />
+            <div className={cn("absolute left-6 top-1/2 -translate-y-1/2 flex items-center pointer-events-none transition-opacity duration-500", query ? "opacity-0" : "opacity-100")}>
+              <span className="text-base font-medium text-gray-400">Search for&nbsp;</span>
+              <AnimatedPlaceholder placeholders={placeholders} className="font-bold text-gray-500" />
             </div>
           )}
 
@@ -169,8 +168,8 @@ export default function HeroSearch({ isCompact = false }: HeroSearchProps) {
             onChange={(e) => setQuery(e.target.value)}
             placeholder={isCompact ? "Search Alpha..." : ""}
             className={cn(
-              "flex-1 pl-4 pr-2 text-foreground focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent border-none appearance-none transition-all duration-500",
-              isCompact ? "h-7 text-xs placeholder:text-xs" : "h-12 text-base"
+              "flex-1 pl-6 pr-2 text-foreground font-bold focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent border-none appearance-none transition-all duration-500",
+              isCompact ? "h-7 text-xs placeholder:text-xs" : "h-14 text-lg"
             )}
           />
           
@@ -195,10 +194,6 @@ export default function HeroSearch({ isCompact = false }: HeroSearchProps) {
                         <div className="absolute inset-x-0 h-1 bg-primary/50 shadow-[0_0_15px_rgba(var(--primary),0.8)] animate-bounce top-1/2" />
                     )}
                   </div>
-                  <div className="text-center space-y-1">
-                      <p className="text-sm font-bold text-accent">Position Item in Frame</p>
-                      <p className="text-xs text-muted-foreground uppercase tracking-widest">Identify Products • Read Barcodes • Scan QR</p>
-                  </div>
                   {hasCameraPermission === false && (
                     <Alert variant="destructive" className="rounded-2xl">
                       <AlertCircle className="h-4 w-4" />
@@ -220,8 +215,8 @@ export default function HeroSearch({ isCompact = false }: HeroSearchProps) {
             </Dialog>
           ) : cameraButton}
 
-          <Button type="submit" size={isCompact ? "sm" : "lg"} className={cn("rounded-full bg-[#28235f] hover:bg-[#28235f]/90 text-white transition-all duration-500 shadow-sm", isCompact ? "h-7 px-3" : "h-12 px-6")}>
-            <Search className={cn(isCompact ? "w-3.5 h-3.5" : "w-5 h-5", !isCompact && "md:mr-2")} />
+          <Button type="submit" size={isCompact ? "sm" : "lg"} className={cn("rounded-full bg-[#2b235f] hover:bg-[#1d1b42] text-white transition-all duration-500 shadow-xl font-black uppercase tracking-widest", isCompact ? "h-7 px-3" : "h-14 px-10")}>
+            <Search className={cn(isCompact ? "w-3.5 h-3.5" : "w-5 h-5", !isCompact && "md:mr-3")} />
             <span className="hidden md:inline">{isCompact ? "" : "Search"}</span>
           </Button>
         </div>
