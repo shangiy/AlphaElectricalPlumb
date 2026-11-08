@@ -8,10 +8,9 @@ const HeroSearch = dynamic(() => import('./HeroSearch'), {
 });
 
 /**
- * Specification-compliant Hero Section
- * - Background: Dark slate/navy technical blueprint
- * - Margins: max-w-7xl mx-auto px-6 py-12
- * - Typo: Heavy bold white
+ * Detached Hero Section v8.0
+ * - Structure: Independent block separated from the sticky header.
+ * - Margins: max-w-7xl mx-auto px-6 py-20 to ensure call-to-action buttons are protected.
  */
 export default function Hero() {
   const categoryTags = ["Water Tanks", "LED Lights", "PPR Pipes", "Solar Heaters", "Chandeliers", "Sockets"];
@@ -28,7 +27,7 @@ export default function Hero() {
       />
       <div className="absolute inset-0 bg-gradient-to-b from-[#0a0f1e]/80 via-transparent to-[#0a0f1e]" />
 
-      <div className="relative z-10 container mx-auto max-w-7xl px-6 py-12 md:py-24">
+      <div className="relative z-10 container mx-auto max-w-7xl px-6 py-20 md:py-32">
         <div className="flex flex-col gap-10 max-w-3xl animate-in fade-in slide-in-from-bottom-8 duration-1000">
           <div className="space-y-4">
             <h1 className="text-5xl md:text-7xl font-black font-headline text-white leading-[0.9] tracking-tighter uppercase">
@@ -41,10 +40,13 @@ export default function Hero() {
             </p>
           </div>
 
-          {/* Action Center */}
-          <div className="space-y-6">
-            <div className="w-full max-w-2xl">
+          {/* Action Center with Detached Positioning */}
+          <div className="space-y-8">
+            <div className="flex flex-col sm:flex-row items-center gap-4 w-full max-w-2xl">
               <HeroSearch />
+              <button className="h-16 px-10 rounded-full bg-primary text-white font-black uppercase tracking-[0.2em] shadow-2xl hover:scale-105 active:scale-95 transition-all">
+                Explore
+              </button>
             </div>
 
             {/* Category Pill Row */}
