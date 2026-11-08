@@ -35,12 +35,11 @@ import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAuth } from '@/context/AuthProvider';
-import { Input } from '@/components/ui/input';
 
 /**
- * Navigation Header v6.0 (Restored Visual Parity & Specifications)
- * - Background: Transparent -> Glassmorphism/Gradient on Scroll
- * - Hover State: Brand Crimson (#8a0b0d)
+ * Sticky Navigation Header v7.0
+ * - Behavior: Sticks to top once the banner scrolls away.
+ * - Logic: Becomes opaque and high-contrast when scrolling.
  */
 export default function Header() {
   const { user, logout } = useAuth();
@@ -51,7 +50,8 @@ export default function Header() {
   useEffect(() => {
     setMounted(true);
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
+      // Trigger background change as soon as the banner starts scrolling
+      setIsScrolled(window.scrollY > 10);
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
@@ -66,7 +66,7 @@ export default function Header() {
       "sticky top-0 z-50 w-full transition-all duration-500 overflow-hidden bg-transparent border-b",
       isScrolled ? "border-border" : "border-transparent"
     )}>
-      {/* Background Layers for Dynamic Transitions (From User Snippet) */}
+      {/* Dynamic Background Layers */}
       <div className={cn(
         "absolute inset-0 -z-20 bg-gradient-to-r from-red-500 via-purple-500 to-blue-500 bg-[length:200%_200%] animate-gradient-x transition-opacity duration-500",
         isScrolled ? "opacity-10" : "opacity-0"
@@ -77,12 +77,12 @@ export default function Header() {
       )} />
       
       <div className="container mx-auto px-4 relative z-10">
-        {/* Desktop View (LG and up) */}
+        {/* Desktop View */}
         <div className={cn(
           "hidden w-full items-center gap-4 lg:flex transition-all duration-500",
           isScrolled ? "h-20" : "h-24"
         )}>
-          {/* Logo & Brand Node */}
+          {/* Logo & Branding */}
           <Link href="/" className="flex flex-shrink-0 items-center gap-3 group">
             <div className="relative h-[90px] w-[90px] transition-all duration-500">
               <Image 
@@ -97,19 +97,19 @@ export default function Header() {
               isScrolled ? "text-accent" : "text-white"
             )}>
               <span className="font-bold transition-all text-[20px]">Alpha</span>
-              <div className="w-full h-px bg-current"></div>
+              <div className="w-full h-px bg-current opacity-30"></div>
               <span className="text-[12px] leading-tight">Electricals & Plumbing Ltd</span>
             </div>
           </Link>
 
           <div className="flex-1 w-full max-w-xl mx-auto px-4" />
 
-          {/* Nav & Actions */}
+          {/* Navigation Items */}
           <div className="flex items-center justify-end">
             <nav className="flex items-center">
               <div className="relative">
                 <Link href="#" className={cn(
-                  "flex items-center gap-1 px-3 py-2 whitespace-nowrap font-semibold text-base transition-colors duration-300 bg-transparent",
+                  "flex items-center gap-1 px-3 py-2 whitespace-nowrap font-semibold text-base transition-colors duration-300",
                   isScrolled ? "text-accent hover:text-[#8a0b0d]" : "text-white hover:text-accent-foreground"
                 )}>
                   Products <ChevronDown className="h-4 w-4" />
@@ -146,7 +146,7 @@ export default function Header() {
                         {user?.avatarUrl ? (
                           <Avatar className="h-8 w-8 border border-white/20">
                             <AvatarImage src={user.avatarUrl} />
-                            <AvatarFallback>{user.username?.charAt(0)}</AvatarFallback>
+                            <AvatarFallback className="bg-primary text-white font-black">{user.username?.charAt(0)}</AvatarFallback>
                           </Avatar>
                         ) : (
                           <User />
@@ -177,21 +177,20 @@ export default function Header() {
           </div>
         </div>
 
-        {/* Mobile View (Below LG) */}
+        {/* Mobile View */}
         <div className="w-full lg:hidden flex flex-col py-2 transition-all duration-500">
           <div className="flex w-full items-center justify-between gap-2">
             <Link href="/" className="flex-shrink-0 transition-all duration-500">
               <div className="relative h-[70px] w-[70px]">
                 <Image 
                   src="/logo Alpha.png" 
-                  alt="Alpha Electricals & Plumbing Ltd Logo" 
+                  alt="Alpha Logo" 
                   fill 
                   className="object-contain" 
                 />
               </div>
             </Link>
 
-            {/* Mobile Action Buttons Cluster */}
             <div className="flex items-center flex-shrink-0">
               <ShoppingCart 
                 triggerClassName={cn(
@@ -220,23 +219,14 @@ export default function Header() {
                 </SheetTrigger>
                 <SheetContent side="right" className="w-[85%] rounded-l-[3rem] p-0 flex flex-col border-none shadow-2xl">
                   <SheetHeader className="p-6 border-b bg-muted/20">
-                    <SheetTitle className="text-left font-black uppercase tracking-tighter">Navigation</SheetTitle>
-                    <SheetDescription className="sr-only">Mobile Menu Access Node</SheetDescription>
+                    <SheetTitle className="text-left font-black uppercase tracking-tighter">Menu</SheetTitle>
+                    <SheetDescription className="sr-only">Alpha Electricals Navigation</SheetDescription>
                   </SheetHeader>
                   <ScrollArea className="flex-1 p-6">
                     <div className="flex flex-col gap-6">
                       <SheetClose asChild><Link href="/search" className="text-xl font-bold uppercase hover:text-primary">Products</Link></SheetClose>
                       <SheetClose asChild><Link href="/contact" className="text-xl font-bold uppercase hover:text-primary">Contact Us</Link></SheetClose>
                       <SheetClose asChild><Link href="/about" className="text-xl font-bold uppercase hover:text-primary">About Us</Link></SheetClose>
-                      <DropdownMenuSeparator />
-                      {user ? (
-                        <Button variant="destructive" onClick={logout} className="rounded-2xl h-14 font-black uppercase">Logout</Button>
-                      ) : (
-                        <div className="grid grid-cols-2 gap-4">
-                          <Button asChild className="rounded-2xl h-14 font-black uppercase"><Link href="/auth/login">Login</Link></Button>
-                          <Button asChild variant="outline" className="rounded-2xl h-14 font-black uppercase border-2"><Link href="/auth/login?tab=signup">Join</Link></Button>
-                        </div>
-                      )}
                     </div>
                   </ScrollArea>
                 </SheetContent>

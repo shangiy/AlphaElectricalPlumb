@@ -10,7 +10,7 @@ import Image from 'next/image';
  */
 export default function TopBanner() {
   return (
-    <div className="text-white py-2 px-4 bg-gradient-to-r from-red-500 via-purple-500 to-blue-500 bg-[length:200%_200%] animate-gradient-x transition-all duration-500 relative z-[60]">
+    <div className="text-white py-2 px-4 bg-gradient-to-r from-red-500 via-purple-500 to-blue-500 bg-[length:200%_200%] animate-gradient-x relative z-[60]">
       <div className="container mx-auto flex justify-between items-center h-6">
         {/* Left Side: Clock (Hidden on Mobile) */}
         <div className="hidden md:flex items-center gap-2 flex-shrink-0">
@@ -28,7 +28,7 @@ export default function TopBanner() {
           </ul>
         </div>
 
-        {/* Right Side: TikTok Static (Hidden on Mobile) */}
+        {/* Right Side: TikTok Node (Hidden on Mobile) */}
         <div className="hidden md:flex items-center gap-2 justify-end flex-shrink-0">
           <div className="relative w-4 h-4">
             <Image 
