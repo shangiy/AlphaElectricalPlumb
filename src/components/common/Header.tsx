@@ -16,24 +16,13 @@ import {
 import { 
   User, 
   Menu, 
-  ChevronDown, 
   LayoutDashboard, 
-  X, 
-  Heart, 
-  Package, 
-  ShoppingCart as ShoppingCartIcon,
-  ArrowRight,
-  Grid,
   LogOut,
   Info,
   PhoneCall,
   Settings,
-  CreditCard,
-  Droplets,
-  Zap,
-  Lightbulb,
-  Home,
-  Hammer
+  Heart,
+  Package
 } from 'lucide-react';
 import ShoppingCart from './ShoppingCart';
 import {
@@ -45,7 +34,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -56,19 +45,10 @@ const HeroSearch = dynamic(() => import('./HeroSearch'), {
   loading: () => <div className="h-9 w-full max-w-xl bg-muted/10 animate-pulse rounded-full" />
 });
 
-const productCategories = [
-  { name: 'Tanks Collection', href: '/category/tanks', icon: <Droplets className="h-5 w-5 text-blue-500" />, desc: 'Heavy duty water storage' },
-  { name: 'Plumbing Equipment', href: '/category/plumbing', icon: <Hammer className="h-5 w-5 text-orange-500" />, desc: 'Pipes, fittings & valves' },
-  { name: 'Electricals & Cables', href: '/category/lighting', icon: <Zap className="h-5 w-5 text-yellow-500" />, desc: 'Industrial grade wiring' },
-  { name: 'Home & Décor', href: '/category/decor', icon: <Lightbulb className="h-5 w-5 text-purple-500" />, desc: 'Modern lighting fixtures' },
-  { name: 'Roofing & Construction', href: '/category/roofing', icon: <Home className="h-5 w-5 text-green-600" />, desc: 'Quality Mabati solutions' },
-];
-
 export default function Header() {
   const { user, logout } = useAuth();
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
-  const [isProductsMenuOpen, setProductsMenuOpen] = useState(false);
   
   useEffect(() => {
     setMounted(true);
@@ -77,276 +57,145 @@ export default function Header() {
   if (!mounted) return null;
 
   const navLinks = [
-    { name: 'Contact Us', href: '/contact', icon: <PhoneCall className="h-4 w-4" /> },
-    { name: 'About Us', href: '/about', icon: <Info className="h-4 w-4" /> },
+    { name: 'Products', href: '/search' },
+    { name: 'Contact Us', href: '/contact' },
+    { name: 'About Us', href: '/about' },
   ];
   
   const headerClasses = cn(
-    "sticky top-0 z-50 w-full transition-all duration-300",
-    "bg-background/95 backdrop-blur-xl shadow-lg border-b border-white/10"
-  );
-
-  const dynamicColorClasses = "text-accent";
-  
-  const navAndIconClasses = cn(
-    "font-bold text-base transition-all duration-300 px-3 py-2 rounded-md whitespace-nowrap",
-    dynamicColorClasses,
-    "hover:text-primary hover:bg-primary/5"
-  );
-
-  const iconClasses = cn(
-    "rounded-full p-2 transition-all duration-300",
-    dynamicColorClasses,
-    "hover:bg-primary/5 hover:text-primary"
+    "sticky top-0 z-50 w-full bg-white border-b shadow-sm transition-all duration-300 h-20 flex items-center"
   );
 
   const authRedirect = pathname !== '/auth/login' ? `&redirect=${encodeURIComponent(pathname)}` : '';
 
   return (
     <header className={headerClasses}>
-      <div className="container mx-auto px-4 lg:px-8">
-        <div className="flex w-full items-center justify-between h-20">
-            {/* Logo Section */}
-            <Link href="/" className="flex flex-shrink-0 items-center gap-3 group">
-                <div className="relative h-12 w-12 bg-white rounded-xl p-1.5 shadow-md border border-primary/5 transition-transform group-hover:scale-110">
-                    <Image
-                        src="/logo Alpha.png"
-                        alt="Alpha Logo"
-                        fill
-                        className="object-contain p-1"
-                    />
-                </div>
-                <div className="hidden sm:flex flex-col text-accent">
-                    <span className="font-black tracking-tighter text-xl leading-none">ALPHA</span>
-                    <div className="w-full h-0.5 mt-0.5 bg-primary" />
-                    <span className="text-[9px] font-bold uppercase tracking-[0.2em] leading-tight">Ecosystem</span>
-                </div>
-            </Link>
-            
-            {/* Desktop Search Center */}
-            <div className="hidden lg:flex flex-1 justify-center items-center px-8">
-                <HeroSearch isCompact />
-            </div>
+      <div className="container mx-auto px-4 lg:px-8 flex items-center justify-between h-full">
+        {/* Logo Section */}
+        <Link href="/" className="flex items-center gap-2 group shrink-0">
+            <Image src="/logo Alpha.png" alt="Alpha" width={40} height={40} className="transition-transform group-hover:scale-110" />
+            <span className="font-black text-xl tracking-tighter text-accent">ALPHA</span>
+        </Link>
+        
+        {/* Desktop Search Center */}
+        <div className="hidden lg:flex flex-1 justify-center items-center px-8">
+            <HeroSearch isCompact />
+        </div>
 
-            {/* Desktop Nav Actions */}
-            <div className="hidden lg:flex items-center gap-2">
-                <nav className='flex items-center gap-1'>
-                    {(user?.role === 'admin' || user?.role === 'staff') && (
-                      <Link href="/admin" className={cn(navAndIconClasses, "text-primary border border-primary/20 bg-primary/5 px-4")}>
-                        <LayoutDashboard className="mr-1 h-4 w-4 inline-block" />
-                        Admin Panel
-                      </Link>
-                    )}
-                    
-                    <DropdownMenu open={isProductsMenuOpen} onOpenChange={setProductsMenuOpen}>
-                        <DropdownMenuTrigger asChild>
-                             <div className={cn("flex items-center gap-1 cursor-pointer", navAndIconClasses)}>
-                                Products
-                                <ChevronDown className={cn("h-4 w-4 transition-transform", isProductsMenuOpen && "rotate-180")} />
-                             </div>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="start" className="w-[450px] bg-background p-6 rounded-[2.5rem] shadow-2xl border-none animate-in fade-in zoom-in-95 duration-200">
-                            <DropdownMenuLabel className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground/60 px-4 mb-4">Our Professional Collections</DropdownMenuLabel>
-                            <div className="grid grid-cols-1 gap-2">
-                              {productCategories.map((category) => (
-                                  <DropdownMenuItem key={category.name} asChild className="rounded-2xl cursor-pointer p-0 focus:bg-primary/5">
-                                    <Link href={category.href} className="flex items-center gap-4 py-4 px-4 w-full">
-                                        <div className="h-14 w-14 rounded-2xl bg-secondary flex items-center justify-center shadow-inner shrink-0">
-                                            {category.icon}
-                                        </div>
-                                        <div className="flex flex-col">
-                                            <span className="font-black text-base text-accent uppercase tracking-tight leading-none mb-1">{category.name}</span>
-                                            <span className="text-[11px] text-muted-foreground font-medium">{category.desc}</span>
-                                        </div>
-                                    </Link>
-                                  </DropdownMenuItem>
-                              ))}
-                            </div>
-                            <DropdownMenuSeparator className="my-6" />
-                            <DropdownMenuItem asChild className="rounded-2xl focus:bg-primary focus:text-white">
-                                <Link href="/search" className="flex items-center justify-center gap-2 py-4 font-black uppercase text-xs tracking-widest text-primary hover:text-white transition-colors">
-                                    Browse Full Catalog <ArrowRight size={14} />
-                                </Link>
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+        {/* Desktop Nav Actions */}
+        <div className="hidden lg:flex items-center gap-6">
+            <nav className="flex items-center gap-6">
+                {(user?.role === 'admin' || user?.role === 'staff') && (
+                  <Link href="/admin" className="text-sm font-bold text-primary hover:underline">Admin Panel</Link>
+                )}
+                {navLinks.map((link) => (
+                    <Link key={link.name} href={link.href} className="text-sm font-bold text-accent hover:text-primary transition-colors">
+                        {link.name}
+                    </Link>
+                ))}
+            </nav>
 
-                    {navLinks.map((link) => (
-                        <Link key={link.name} href={link.href} className={navAndIconClasses}>
-                            {link.name}
-                        </Link>
-                    ))}
-                </nav>
-
-                <div className="h-8 w-[1px] bg-border mx-2" />
-
-                <div className="flex items-center gap-1">
-                    <ShoppingCart triggerClassName={cn(iconClasses, '[&_svg]:h-7 [&_svg]:w-7')} />
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className={cn("w-auto px-3 gap-2 rounded-full", iconClasses)}>
-                            {user?.avatarUrl ? (
-                                <div className="h-8 w-8 rounded-full overflow-hidden border-2 border-primary shadow-md">
-                                    <Image src={user.avatarUrl} alt={user.username} width={32} height={32} className="object-cover" />
-                                </div>
-                            ) : (
-                                <User className="h-7 w-7" />
-                            )}
-                            <span className="hidden xl:inline font-bold tracking-tight">{user ? user.username : 'Log in'}</span>
-                        </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-64 p-3 rounded-[2rem] shadow-2xl border-none">
-                        {user ? (
-                            <>
-                            <DropdownMenuLabel className="flex flex-col px-4 py-3">
-                                <span className="text-sm font-black text-accent truncate uppercase tracking-tighter">{user.name}</span>
-                                <span className="text-[9px] uppercase tracking-[0.2em] text-primary font-bold">{user.role} Account</span>
-                            </DropdownMenuLabel>
-                            <DropdownMenuSeparator className="mx-2" />
-                            <DropdownMenuItem asChild className="rounded-xl px-4 py-2.5"><Link href="/profile" className="flex items-center gap-3"><Settings size={16}/> Settings</Link></DropdownMenuItem>
-                            <DropdownMenuItem asChild className="rounded-xl px-4 py-2.5"><Link href="/track-order" className="flex items-center gap-3"><Package size={16}/> Track Order</Link></DropdownMenuItem>
-                            <DropdownMenuItem asChild className="rounded-xl px-4 py-2.5"><Link href="/wishlist" className="flex items-center gap-3"><Heart size={16}/> Wishlist</Link></DropdownMenuItem>
-                            <DropdownMenuSeparator className="mx-2" />
-                            <DropdownMenuItem onClick={logout} className="rounded-xl px-4 py-2.5 text-destructive focus:bg-destructive/5 flex items-center gap-3"><LogOut size={16}/> Terminate Session</DropdownMenuItem>
-                            </>
+            <div className="flex items-center gap-2">
+                <ShoppingCart />
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="p-0 h-10 w-10 rounded-full hover:bg-muted transition-colors">
+                        {user?.avatarUrl ? (
+                            <Avatar className="h-9 w-9 border shadow-sm">
+                                <AvatarImage src={user.avatarUrl} alt={user.username} className="object-cover" />
+                                <AvatarFallback className="bg-accent text-white">{user.username?.charAt(0)}</AvatarFallback>
+                            </Avatar>
                         ) : (
-                            <div className="space-y-2 p-2">
-                                <Button asChild className="w-full rounded-xl h-11 font-black uppercase tracking-widest shadow-lg">
-                                    <Link href={`/auth/login?tab=login${authRedirect}`}>Log In</Link>
-                                </Button>
-                                <Button asChild variant="outline" className="w-full rounded-xl h-11 font-black uppercase tracking-widest border-2">
-                                    <Link href={`/auth/login?tab=signup${authRedirect}`}>Sign Up</Link>
-                                </Button>
-                            </div>
+                            <User className="h-6 w-6 text-accent" />
                         )}
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                </div>
+                    </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-56 p-2 rounded-xl shadow-xl border-none">
+                    {user ? (
+                        <>
+                        <DropdownMenuLabel className="font-black text-accent uppercase tracking-tighter px-4 py-2">{user.username}</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem asChild className="rounded-lg px-4 py-2"><Link href="/profile" className="flex items-center gap-3"><Settings size={16}/> Settings</Link></DropdownMenuItem>
+                        <DropdownMenuItem asChild className="rounded-lg px-4 py-2"><Link href="/wishlist" className="flex items-center gap-3"><Heart size={16}/> Wishlist</Link></DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={logout} className="rounded-lg px-4 py-2 text-destructive focus:bg-destructive/5 flex items-center gap-3"><LogOut size={16}/> Logout</DropdownMenuItem>
+                        </>
+                    ) : (
+                        <div className="p-2 space-y-2">
+                            <Button asChild className="w-full rounded-lg" size="sm">
+                                <Link href={`/auth/login?tab=login${authRedirect}`}>Log In</Link>
+                            </Button>
+                            <Button asChild variant="outline" className="w-full rounded-lg" size="sm">
+                                <Link href={`/auth/login?tab=signup${authRedirect}`}>Sign Up</Link>
+                            </Button>
+                        </div>
+                    )}
+                    </DropdownMenuContent>
+                </DropdownMenu>
             </div>
+        </div>
 
-            {/* Mobile Interface */}
-            <div className="lg:hidden flex items-center gap-2">
-                <HeroSearch isCompact />
-                <ShoppingCart triggerClassName={cn(iconClasses, '[&_svg]:h-6 [&_svg]:w-6')} />
-                <Sheet>
-                    <SheetTrigger asChild>
-                        <Button variant="ghost" size="icon" className={cn(iconClasses, '[&_svg]:h-6 [&_svg]:w-6')}>
-                            <Menu />
-                        </Button>
-                    </SheetTrigger>
-                    <SheetContent side="right" className="w-[85%] sm:w-[400px] p-0 flex flex-col border-none bg-background shadow-2xl overflow-hidden rounded-l-[3rem]">
-                        <SheetHeader className="p-8 border-b bg-white relative z-10">
-                            <SheetTitle className="sr-only">Alpha Menu</SheetTitle>
-                            <SheetDescription className="sr-only">Mobile navigation and account tools</SheetDescription>
-                            <SheetClose asChild>
-                                <Link href="/" className="flex items-center gap-4">
-                                    <Image src="/logo Alpha.png" alt="Logo" width={50} height={50}/>
-                                    <div className="flex flex-col text-accent">
-                                        <span className="font-black text-xl tracking-tighter uppercase leading-none">ALPHA</span>
-                                        <span className="text-[9px] font-bold text-primary uppercase tracking-widest mt-1">Ecosystem</span>
-                                    </div>
-                                </Link>
-                            </SheetClose>
-                        </SheetHeader>
-                        
-                        <ScrollArea className="flex-1">
-                            {user ? (
-                                <div className="p-8 bg-muted/20 border-b">
-                                    <div className="flex items-center gap-5">
-                                        <Avatar className="h-16 w-16 border-2 border-primary shadow-xl">
-                                            <AvatarImage src={user.avatarUrl} className="object-cover" />
-                                            <AvatarFallback className="bg-accent text-white font-black">{user.name.charAt(0)}</AvatarFallback>
-                                        </Avatar>
-                                        <div className="flex flex-col overflow-hidden">
-                                            <span className="font-black text-accent text-lg uppercase tracking-tighter truncate">{user.name}</span>
-                                            <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em] bg-primary/10 px-2 py-0.5 rounded-full w-fit">{user.role} Account</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className="p-8 space-y-4 border-b">
-                                    <SheetClose asChild>
-                                        <Button asChild className="w-full rounded-2xl h-14 font-black uppercase tracking-widest shadow-xl bg-accent">
-                                            <Link href={`/auth/login?tab=login${authRedirect}`}>Log In</Link>
-                                        </Button>
-                                    </SheetClose>
-                                    <div className="flex flex-col items-center gap-1">
-                                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">NEW HERE?</p>
-                                        <ChevronDown className="h-4 w-4 text-primary animate-bounce" />
-                                    </div>
-                                    <SheetClose asChild>
-                                        <Button asChild variant="outline" className="w-full rounded-2xl h-14 font-black uppercase tracking-widest border-2">
-                                            <Link href={`/auth/login?tab=signup${authRedirect}`}>Sign Up</Link>
-                                        </Button>
-                                    </SheetClose>
-                                </div>
+        {/* Mobile View */}
+        <div className="lg:hidden flex items-center gap-2">
+            <HeroSearch isCompact />
+            <ShoppingCart />
+            <Sheet>
+                <SheetTrigger asChild>
+                    <Button variant="ghost" size="icon" className="rounded-full">
+                        <Menu className="h-6 w-6" />
+                    </Button>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-[85%] rounded-l-3xl p-0 flex flex-col border-none shadow-2xl">
+                    <SheetHeader className="p-6 border-b bg-white">
+                        <SheetTitle className="flex items-center gap-3">
+                             <Image src="/logo Alpha.png" alt="Logo" width={32} height={32} />
+                             <span className="font-black text-accent tracking-tighter uppercase">ALPHA</span>
+                        </SheetTitle>
+                        <SheetDescription className="sr-only">Mobile navigation menu</SheetDescription>
+                    </SheetHeader>
+                    
+                    <ScrollArea className="flex-1 p-6">
+                        <div className="flex flex-col gap-2">
+                            {(user?.role === 'admin' || user?.role === 'staff') && (
+                                <SheetClose asChild>
+                                    <Link href="/admin" className="flex items-center gap-4 p-4 rounded-2xl bg-primary/5 text-primary font-black uppercase text-sm tracking-tighter">
+                                        <LayoutDashboard className="h-5 w-5" /> Admin Dashboard
+                                    </Link>
+                                </SheetClose>
                             )}
-
-                            <div className="p-6 space-y-8">
-                                {(user?.role === 'admin' || user?.role === 'staff') && (
+                            {navLinks.map((link) => (
+                                <SheetClose asChild key={link.name}>
+                                    <Link href={link.href} className="flex items-center gap-4 p-4 rounded-2xl hover:bg-muted font-bold text-accent uppercase text-sm tracking-tight transition-all">
+                                        {link.name}
+                                    </Link>
+                                </SheetClose>
+                            ))}
+                            <DropdownMenuSeparator className="my-6" />
+                            {user ? (
+                                <>
                                     <SheetClose asChild>
-                                        <Link href="/admin" className="flex items-center justify-between px-6 py-5 text-sm font-black uppercase tracking-tighter text-primary bg-primary/5 rounded-[1.5rem] border border-primary/20 shadow-sm transition-transform active:scale-95">
-                                            <div className="flex items-center gap-4">
-                                                <LayoutDashboard className="h-6 w-6" />
-                                                Command Center
-                                            </div>
-                                            <ArrowRight size={16} className="opacity-40" />
+                                        <Link href="/profile" className="flex items-center gap-4 p-4 rounded-2xl hover:bg-muted font-bold text-accent">
+                                            <Settings className="h-5 w-5" /> Account Settings
                                         </Link>
                                     </SheetClose>
-                                )}
-
-                                <div className="space-y-4">
-                                    <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground/40 ml-4">Supply Chains</h3>
-                                    <div className="grid gap-2">
-                                        {productCategories.map((cat) => (
-                                            <SheetClose asChild key={cat.name}>
-                                                <Link href={cat.href} className="flex items-center gap-4 px-6 py-4 rounded-2xl bg-muted/30 hover:bg-primary/5 transition-colors group">
-                                                    <div className="h-10 w-10 rounded-xl bg-white flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
-                                                        {cat.icon}
-                                                    </div>
-                                                    <div className="flex flex-col">
-                                                        <span className="text-sm font-black text-accent uppercase tracking-tight leading-none mb-1">{cat.name}</span>
-                                                        <span className="text-[10px] text-muted-foreground font-medium">{cat.desc}</span>
-                                                    </div>
-                                                </Link>
-                                            </SheetClose>
-                                        ))}
-                                    </div>
+                                    <Button variant="ghost" onClick={logout} className="justify-start gap-4 p-4 h-auto text-red-500 hover:text-red-600 hover:bg-red-50 rounded-2xl font-black uppercase text-xs tracking-widest mt-4">
+                                        <LogOut className="h-5 w-5" /> Logout
+                                    </Button>
+                                </>
+                            ) : (
+                                <div className="grid grid-cols-2 gap-4 p-2 mt-4">
+                                    <SheetClose asChild>
+                                        <Button asChild className="rounded-2xl h-12 font-black uppercase tracking-widest"><Link href="/auth/login">Login</Link></Button>
+                                    </SheetClose>
+                                    <SheetClose asChild>
+                                        <Button asChild variant="outline" className="rounded-2xl h-12 font-black uppercase tracking-widest border-2"><Link href="/auth/login?tab=signup">Join</Link></Button>
+                                    </SheetClose>
                                 </div>
-
-                                <div className="space-y-4">
-                                    <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground/40 ml-4">Company</h3>
-                                    <div className="grid gap-2">
-                                        {navLinks.map((link) => (
-                                            <SheetClose asChild key={link.name}>
-                                                <Link href={link.href} className="flex items-center gap-4 px-6 py-4 rounded-2xl hover:bg-muted font-bold text-accent uppercase text-sm tracking-tight transition-all">
-                                                    {link.icon}
-                                                    {link.name}
-                                                </Link>
-                                            </SheetClose>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                {user && (
-                                    <div className="pt-8 pb-10">
-                                        <SheetClose asChild>
-                                            <Button 
-                                                variant="ghost" 
-                                                onClick={logout}
-                                                className="w-full justify-start gap-4 p-6 h-16 rounded-2xl font-black uppercase text-xs text-red-500 hover:text-red-600 hover:bg-red-50 border border-red-100 transition-all active:scale-95"
-                                            >
-                                                <LogOut className="h-5 w-5" />
-                                                Terminate Session
-                                            </Button>
-                                        </SheetClose>
-                                    </div>
-                                )}
-                            </div>
-                        </ScrollArea>
-                    </SheetContent>
-                </Sheet>
-            </div>
+                            )}
+                        </div>
+                    </ScrollArea>
+                </SheetContent>
+            </Sheet>
         </div>
       </div>
     </header>
