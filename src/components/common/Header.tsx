@@ -38,7 +38,7 @@ import { useAuth } from '@/context/AuthProvider';
 import { Input } from '@/components/ui/input';
 
 /**
- * Navigation Header v5.0 (Restored Visual Parity)
+ * Navigation Header v6.0 (Restored Visual Parity & Specifications)
  * - Background: Transparent -> Glassmorphism/Gradient on Scroll
  * - Hover State: Brand Crimson (#8a0b0d)
  */
@@ -63,17 +63,21 @@ export default function Header() {
 
   return (
     <header className={cn(
-      "sticky top-0 z-50 w-full transition-all duration-500 overflow-hidden border-b",
-      isScrolled ? "bg-background/90 backdrop-blur-md border-border" : "bg-transparent border-transparent"
+      "sticky top-0 z-50 w-full transition-all duration-500 overflow-hidden bg-transparent border-b",
+      isScrolled ? "border-border" : "border-transparent"
     )}>
-      {/* Background Layers for Dynamic Transitions */}
+      {/* Background Layers for Dynamic Transitions (From User Snippet) */}
       <div className={cn(
         "absolute inset-0 -z-20 bg-gradient-to-r from-red-500 via-purple-500 to-blue-500 bg-[length:200%_200%] animate-gradient-x transition-opacity duration-500",
         isScrolled ? "opacity-10" : "opacity-0"
       )} />
+      <div className={cn(
+        "absolute inset-0 -z-10 bg-background/90 backdrop-blur-md transition-opacity duration-500",
+        isScrolled ? "opacity-100" : "opacity-0"
+      )} />
       
       <div className="container mx-auto px-4 relative z-10">
-        {/* Desktop View */}
+        {/* Desktop View (LG and up) */}
         <div className={cn(
           "hidden w-full items-center gap-4 lg:flex transition-all duration-500",
           isScrolled ? "h-20" : "h-24"
@@ -105,8 +109,8 @@ export default function Header() {
             <nav className="flex items-center">
               <div className="relative">
                 <Link href="#" className={cn(
-                  "flex items-center gap-1 px-3 py-2 whitespace-nowrap font-semibold text-base transition-colors duration-300",
-                  isScrolled ? "text-accent hover:text-[#8a0b0d]" : "text-white hover:text-[#8a0b0d]"
+                  "flex items-center gap-1 px-3 py-2 whitespace-nowrap font-semibold text-base transition-colors duration-300 bg-transparent",
+                  isScrolled ? "text-accent hover:text-[#8a0b0d]" : "text-white hover:text-accent-foreground"
                 )}>
                   Products <ChevronDown className="h-4 w-4" />
                 </Link>
@@ -173,7 +177,7 @@ export default function Header() {
           </div>
         </div>
 
-        {/* Mobile View */}
+        {/* Mobile View (Below LG) */}
         <div className="w-full lg:hidden flex flex-col py-2 transition-all duration-500">
           <div className="flex w-full items-center justify-between gap-2">
             <Link href="/" className="flex-shrink-0 transition-all duration-500">
@@ -187,26 +191,7 @@ export default function Header() {
               </div>
             </Link>
 
-            {/* Hidden Mobile Search State (Matches Snippet structure) */}
-            <div className="flex-1 min-w-0 transition-all duration-700 ease-in-out overflow-hidden px-1 opacity-0 max-h-0 -translate-y-4 pointer-events-none">
-              <form className="w-full">
-                <div className="relative flex items-center w-full p-1 space-x-1 bg-white border border-gray-200 rounded-[1.5rem] shadow-md h-8 pr-1">
-                  <Input 
-                    type="search" 
-                    className="flex-1 pl-4 pr-2 text-[10px] sm:text-xs h-6 sm:h-7 bg-transparent border-none appearance-none focus-visible:ring-0" 
-                    placeholder="Search Alpha..." 
-                  />
-                  <Button variant="ghost" size="icon" className="shrink-0 rounded-full h-6 w-6 sm:h-7 sm:w-7">
-                    <Camera className="text-gray-500 w-3 h-3 sm:w-4 sm:h-4" />
-                  </Button>
-                  <Button type="submit" className="rounded-full bg-[#28235f] text-white h-6 sm:h-7 px-2 sm:px-3">
-                    <Search className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                  </Button>
-                </div>
-              </form>
-            </div>
-
-            {/* Action Buttons Cluster */}
+            {/* Mobile Action Buttons Cluster */}
             <div className="flex items-center flex-shrink-0">
               <ShoppingCart 
                 triggerClassName={cn(
@@ -236,7 +221,7 @@ export default function Header() {
                 <SheetContent side="right" className="w-[85%] rounded-l-[3rem] p-0 flex flex-col border-none shadow-2xl">
                   <SheetHeader className="p-6 border-b bg-muted/20">
                     <SheetTitle className="text-left font-black uppercase tracking-tighter">Navigation</SheetTitle>
-                    <SheetDescription className="sr-only">Mobile Menu</SheetDescription>
+                    <SheetDescription className="sr-only">Mobile Menu Access Node</SheetDescription>
                   </SheetHeader>
                   <ScrollArea className="flex-1 p-6">
                     <div className="flex flex-col gap-6">
