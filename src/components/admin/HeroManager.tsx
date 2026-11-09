@@ -34,6 +34,14 @@ export const FONT_OPTIONS = [
     { id: 'font-code', label: 'Monospace' }
 ];
 
+export const BOLDNESS_OPTIONS = [
+    { id: 'font-light', label: 'Light' },
+    { id: 'font-normal', label: 'Normal' },
+    { id: 'font-semibold', label: 'SemiBold' },
+    { id: 'font-bold', label: 'Bold' },
+    { id: 'font-black', label: 'Black' }
+];
+
 export default function HeroManager({ initialSlides }: { initialSlides: HeroSlide[] }) {
     const sortSlides = (sArr: HeroSlide[]) => {
         return [...sArr].sort((a, b) => {
@@ -69,6 +77,7 @@ export default function HeroManager({ initialSlides }: { initialSlides: HeroSlid
             active: true,
             headlineColor: '#ffffff',
             headlineSize: 72,
+            headlineWeight: 'font-black',
             subheadingColor: '#ffffff',
             subheadingSize: 24,
             headlineTopMargin: 0,
@@ -142,36 +151,34 @@ export default function HeroManager({ initialSlides }: { initialSlides: HeroSlid
                                           <Textarea 
                                               value={slide.headline} 
                                               onChange={(e) => handleUpdate(slide.id, { headline: e.target.value })} 
-                                              className="font-black text-2xl h-32 rounded-2xl p-4 bg-muted/20 border-none shadow-inner resize-none" 
+                                              className="font-bold text-2xl h-32 rounded-2xl p-4 bg-muted/20 border-none shadow-inner resize-none" 
                                               placeholder="Overall headline text..."
                                           />
                                         </div>
 
-                                        {/* Live Headline Preview in CMS - Preserves Newlines/Spaces and Casing */}
-                                        <div className="p-8 rounded-[2rem] bg-[#0a0f1e] border border-white/5 relative overflow-hidden">
+                                        {/* Live Headline Preview in CMS */}
+                                        <div className="p-8 rounded-[2rem] bg-[#0a0f1e] border border-white/5 relative overflow-hidden min-h-[200px] flex items-center justify-center">
                                            <div className="absolute inset-0 opacity-10" style={{ backgroundImage: `radial-gradient(#1e293b 1px, transparent 0)`, backgroundSize: '20px 20px' }} />
-                                           <div className="relative z-10">
+                                           <div className="relative z-10 text-center">
                                               <p className="text-[8px] font-black uppercase tracking-[0.3em] text-white/40 mb-4">Live Layout Preview</p>
-                                              <h1 className="text-3xl font-black leading-tight tracking-tighter break-words whitespace-pre-wrap">
+                                              <h1 
+                                                className={cn("leading-tight tracking-tighter break-words whitespace-pre-wrap", slide.headlineWeight || 'font-black')}
+                                                style={{ fontSize: slide.headlineSize ? `${slide.headlineSize / 2.5}px` : '32px' }}
+                                              >
                                                 {(() => {
                                                   if (!slide.headline) return <span className="text-white/20">Awaiting input...</span>;
                                                   const styles = slide.wordStyles || [];
-                                                  // Split by whitespace and newlines but keep them in the array
                                                   const parts = slide.headline.split(/(\s+)/);
                                                   
                                                   return parts.map((part, i) => {
-                                                    // If it's a whitespace group (space, tab, newline), render as is
                                                     if (part.trim() === '') return part;
-                                                    
-                                                    // Sanitize word for matching (remove punctuation and trim)
                                                     const cleanPart = part.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"").toLowerCase().trim();
                                                     if (!cleanPart) return part;
-                                                    
                                                     const match = styles.find(s => s.text && s.text.toLowerCase().trim() === cleanPart);
                                                     if (match) {
                                                       return <span key={i} className={match.font} style={{ color: match.color }}>{part}</span>;
                                                     }
-                                                    return <span key={i} className="text-white font-montserrat">{part}</span>;
+                                                    return <span key={i} className="text-white">{part}</span>;
                                                   });
                                                 })()}
                                               </h1>
@@ -179,64 +186,95 @@ export default function HeroManager({ initialSlides }: { initialSlides: HeroSlid
                                         </div>
                                     </div>
 
-                                    <div className="lg:col-span-5 bg-accent/5 p-6 rounded-[2rem] border border-dashed border-accent/20 space-y-4">
-                                        <h4 className="text-[9px] font-black uppercase tracking-[0.2em] text-accent flex items-center gap-2">
-                                          <Palette className="h-3 w-3" /> Triple Word Engine
-                                        </h4>
-                                        
-                                        <div className="space-y-4">
-                                            {[0, 1, 2].map((i) => (
-                                                <div key={i} className="p-3 bg-white/50 rounded-xl border border-accent/5 space-y-2">
-                                                    <div className="flex items-center justify-between">
-                                                        <Label className="text-[8px] font-black uppercase text-muted-foreground tracking-widest">Word {i + 1}</Label>
-                                                    </div>
+                                    <div className="lg:col-span-5 flex flex-col gap-6">
+                                        {/* GENERAL STYLING */}
+                                        <div className="bg-accent/5 p-6 rounded-[2rem] border border-dashed border-accent/20 space-y-4">
+                                            <h4 className="text-[9px] font-black uppercase tracking-[0.2em] text-accent flex items-center gap-2">
+                                              <Palette className="h-3 w-3" /> General Headline Styling
+                                            </h4>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div className="space-y-1.5">
+                                                    <Label className="text-[9px] font-bold text-muted-foreground/60 uppercase">Font Size (px)</Label>
                                                     <Input 
-                                                        value={slide.wordStyles?.[i]?.text || ''} 
-                                                        onChange={(e) => {
-                                                            const ws = [...(slide.wordStyles || [{text:'', color:'#ffffff', font:'font-montserrat'}, {text:'', color:'#ffffff', font:'font-montserrat'}, {text:'', color:'#ffffff', font:'font-montserrat'}])];
-                                                            ws[i] = { ...ws[i], text: e.target.value };
-                                                            handleUpdate(slide.id, { wordStyles: ws });
-                                                        }}
-                                                        placeholder="Enter word..."
-                                                        className="h-9 text-xs rounded-lg font-bold"
+                                                        type="number" 
+                                                        value={slide.headlineSize || 72} 
+                                                        onChange={(e) => handleUpdate(slide.id, { headlineSize: parseInt(e.target.value) || 0 })} 
+                                                        className="h-9 rounded-lg font-bold" 
                                                     />
-                                                    <div className="grid grid-cols-2 gap-2">
-                                                        <div className="flex items-center gap-1.5">
-                                                            <input 
-                                                                type="color" 
-                                                                value={slide.wordStyles?.[i]?.color || '#ffffff'} 
-                                                                onChange={(e) => {
-                                                                    const ws = [...(slide.wordStyles || [{text:'', color:'#ffffff', font:'font-montserrat'}, {text:'', color:'#ffffff', font:'font-montserrat'}, {text:'', color:'#ffffff', font:'font-montserrat'}])];
-                                                                    ws[i] = { ...ws[i], color: e.target.value };
-                                                                    handleUpdate(slide.id, { wordStyles: ws });
-                                                                }}
-                                                                className="h-7 w-7 rounded-md cursor-pointer border-none" 
-                                                            />
-                                                            <span className="text-[8px] font-mono uppercase">{slide.wordStyles?.[i]?.color || '#FFFFFF'}</span>
-                                                        </div>
-                                                        <select
-                                                            value={slide.wordStyles?.[i]?.font || 'font-montserrat'}
-                                                            onChange={(e) => {
-                                                                const ws = [...(slide.wordStyles || [{text:'', color:'#ffffff', font:'font-montserrat'}, {text:'', color:'#ffffff', font:'font-montserrat'}, {text:'', color:'#ffffff', font:'font-montserrat'}])];
-                                                                ws[i] = { ...ws[i], font: e.target.value };
-                                                                handleUpdate(slide.id, { wordStyles: ws });
-                                                            }}
-                                                            className="h-7 text-[8px] font-black uppercase tracking-tighter bg-white border rounded-md px-1"
-                                                        >
-                                                            {FONT_OPTIONS.map(f => <option key={f.id} value={f.id}>{f.label}</option>)}
-                                                        </select>
-                                                    </div>
                                                 </div>
-                                            ))}
+                                                <div className="space-y-1.5">
+                                                    <Label className="text-[9px] font-bold text-muted-foreground/60 uppercase">Boldness (Weight)</Label>
+                                                    <select
+                                                        value={slide.headlineWeight || 'font-black'}
+                                                        onChange={(e) => handleUpdate(slide.id, { headlineWeight: e.target.value })}
+                                                        className="w-full h-9 px-2 rounded-lg border font-bold text-[10px] bg-white"
+                                                    >
+                                                        {BOLDNESS_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
+                                                    </select>
+                                                </div>
+                                            </div>
                                         </div>
 
-                                        <div className="pt-2 border-t border-accent/5">
-                                            <Label className="text-[9px] font-bold text-muted-foreground/60 uppercase flex items-center gap-1.5 mb-2">
-                                                <MoveVertical className="h-3 w-3" /> Vertical Offset (cm)
-                                            </Label>
-                                            <div className="flex items-center gap-3">
-                                                <Input type="number" step="0.5" value={slide.headlineTopMargin || 0} onChange={(e) => handleUpdate(slide.id, { headlineTopMargin: parseFloat(e.target.value) || 0 })} className="h-10 rounded-xl font-black text-lg bg-white w-24" />
-                                                <span className="text-[8px] font-black text-muted-foreground uppercase">From Top</span>
+                                        {/* TRIPLE WORD ENGINE */}
+                                        <div className="bg-accent/5 p-6 rounded-[2rem] border border-dashed border-accent/20 space-y-4">
+                                            <h4 className="text-[9px] font-black uppercase tracking-[0.2em] text-accent flex items-center gap-2">
+                                              <Palette className="h-3 w-3" /> Triple Word Engine
+                                            </h4>
+                                            
+                                            <div className="space-y-4">
+                                                {[0, 1, 2].map((i) => (
+                                                    <div key={i} className="p-3 bg-white/50 rounded-xl border border-accent/5 space-y-2">
+                                                        <div className="flex items-center justify-between">
+                                                            <Label className="text-[8px] font-black uppercase text-muted-foreground tracking-widest">Word {i + 1}</Label>
+                                                        </div>
+                                                        <Input 
+                                                            value={slide.wordStyles?.[i]?.text || ''} 
+                                                            onChange={(e) => {
+                                                                const ws = [...(slide.wordStyles || [])];
+                                                                ws[i] = { ...(ws[i] || {text:'', color:'#ffffff', font:'font-montserrat'}), text: e.target.value };
+                                                                handleUpdate(slide.id, { wordStyles: ws });
+                                                            }}
+                                                            placeholder="Enter word..."
+                                                            className="h-9 text-xs rounded-lg font-bold"
+                                                        />
+                                                        <div className="grid grid-cols-2 gap-2">
+                                                            <div className="flex items-center gap-1.5">
+                                                                <input 
+                                                                    type="color" 
+                                                                    value={slide.wordStyles?.[i]?.color || '#ffffff'} 
+                                                                    onChange={(e) => {
+                                                                        const ws = [...(slide.wordStyles || [])];
+                                                                        ws[i] = { ...(ws[i] || {text:'', color:'#ffffff', font:'font-montserrat'}), color: e.target.value };
+                                                                        handleUpdate(slide.id, { wordStyles: ws });
+                                                                    }}
+                                                                    className="h-7 w-7 rounded-md cursor-pointer border-none" 
+                                                                />
+                                                                <span className="text-[8px] font-mono uppercase">{slide.wordStyles?.[i]?.color || '#FFFFFF'}</span>
+                                                            </div>
+                                                            <select
+                                                                value={slide.wordStyles?.[i]?.font || 'font-montserrat'}
+                                                                onChange={(e) => {
+                                                                    const ws = [...(slide.wordStyles || [])];
+                                                                    ws[i] = { ...(ws[i] || {text:'', color:'#ffffff', font:'font-montserrat'}), font: e.target.value };
+                                                                    handleUpdate(slide.id, { wordStyles: ws });
+                                                                }}
+                                                                className="h-7 text-[8px] font-black uppercase tracking-tighter bg-white border rounded-md px-1"
+                                                            >
+                                                                {FONT_OPTIONS.map(f => <option key={f.id} value={f.id}>{f.label}</option>)}
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+
+                                            <div className="pt-2 border-t border-accent/5">
+                                                <Label className="text-[9px] font-bold text-muted-foreground/60 uppercase flex items-center gap-1.5 mb-2">
+                                                    <MoveVertical className="h-3 w-3" /> Vertical Offset (cm)
+                                                </Label>
+                                                <div className="flex items-center gap-3">
+                                                    <Input type="number" step="0.5" value={slide.headlineTopMargin || 0} onChange={(e) => handleUpdate(slide.id, { headlineTopMargin: parseFloat(e.target.value) || 0 })} className="h-10 rounded-xl font-black text-lg bg-white w-24" />
+                                                    <span className="text-[8px] font-black text-muted-foreground uppercase">From Top</span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>

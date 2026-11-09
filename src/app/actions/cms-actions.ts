@@ -28,6 +28,7 @@ export interface HeroSlide {
     // Advanced Styling
     headlineColor?: string;
     headlineSize?: number;
+    headlineWeight?: string; // 5 levels: font-light, font-normal, font-semibold, font-bold, font-black
     subheadingColor?: string;
     subheadingSize?: number;
     headlineTopMargin?: number; // in centimeters

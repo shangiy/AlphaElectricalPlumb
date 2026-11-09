@@ -13,8 +13,8 @@ const HeroSearch = dynamic(() => import('./HeroSearch'), {
 });
 
 /**
- * Dynamic Detached Hero Section v12.2
- * Features Absolute Input Fidelity: respects casing, indentation, and exact spacing.
+ * Dynamic Detached Hero Section v12.5
+ * Features Absolute Input Fidelity and Global Typography Engine.
  */
 export default function Hero() {
   const [slides, setSlides] = useState<HeroSlide[]>([]);
@@ -79,23 +79,21 @@ export default function Hero() {
         <div className="flex flex-col gap-8 max-w-4xl animate-in fade-in slide-in-from-bottom-8 duration-1000">
           <div className="space-y-4">
             <h1 
-                className="text-5xl md:text-8xl font-black leading-[1.05] tracking-tighter break-words whitespace-pre-wrap"
-                style={{ marginTop: `${slide.headlineTopMargin || 0}cm` }}
+                className={cn("leading-[1.05] tracking-tighter break-words whitespace-pre-wrap", slide.headlineWeight || 'font-black')}
+                style={{ 
+                    marginTop: `${slide.headlineTopMargin || 0}cm`,
+                    fontSize: slide.headlineSize ? `${slide.headlineSize}px` : undefined
+                }}
             >
               {(() => {
                 if (!slide.headline) return null;
                 const styles = slide.wordStyles || [];
-                // Split by whitespace and newlines to preserve exact original formatting including leading spaces
                 const parts = slide.headline.split(/(\s+)/);
                 
                 return parts.map((part, i) => {
-                  // Preserve whitespace segments (spaces, tabs, newlines)
                   if (part.trim() === '') return part; 
-                  
-                  // Clean word for dictionary matching (case-insensitive for convenience but preserves original casing in render)
                   const cleanPart = part.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"").toLowerCase().trim();
                   if (!cleanPart) return part;
-
                   const match = styles.find(s => s.text && s.text.toLowerCase().trim() === cleanPart);
                   
                   if (match) {
@@ -107,7 +105,7 @@ export default function Hero() {
                   }
                   
                   return (
-                    <span key={i} className="text-white font-montserrat">
+                    <span key={i} className="text-white">
                       {part}
                     </span>
                   );
