@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic';
 import { Toaster } from '@/components/ui/toaster';
 import Header from '@/components/common/Header';
 import Footer from '@/components/common/Footer';
+import TopBanner from '@/components/common/TopBanner';
 import { CartProvider } from '@/context/CartProvider';
 import { AuthProvider } from '@/context/AuthProvider';
 import { ProductProvider } from '@/context/ProductProvider';
@@ -37,7 +38,7 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
         document.documentElement.style.pointerEvents = 'auto';
         document.documentElement.style.overflow = 'auto';
         document.body.style.pointerEvents = 'auto';
-        document.body.style.overflow = 'auto';
+        document.body.overflow = 'auto';
         document.body.removeAttribute('data-pointer-events-none');
         document.body.removeAttribute('data-scroll-locked');
       } catch (e) {}
@@ -53,6 +54,7 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
       <ProductProvider>
         <CartProvider>
           <div className="relative flex flex-col min-h-screen">
+            {!isAdminRoute && <TopBanner />}
             <Header />
             <main className="flex-1 flex flex-col">{children}</main>
             {!isAdminRoute && <Footer />}
@@ -62,7 +64,7 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
             <>
               <Chatbot isOpen={isChatbotOpen} setIsOpen={setIsChatbotOpen} />
               
-              <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-4">
+              <div className="fixed bottom-6 right-6 z-[60] flex flex-col items-end gap-4">
                 {!isChatbotOpen && (
                   <Button 
                     onClick={() => setIsChatbotOpen(true)}
