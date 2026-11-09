@@ -119,7 +119,7 @@ export default function UiUxControlCenter() {
   }
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-700 pb-20">
+    <div className="space-y-8 animate-in fade-in duration-500 pb-20">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b pb-8">
         <div>
           <h1 className="text-5xl font-black font-headline text-accent tracking-tighter uppercase flex items-center gap-4">
@@ -150,6 +150,19 @@ export default function UiUxControlCenter() {
                         <CardDescription className="text-white/60 font-medium">Control the typography, style, pace, and items of the announcement marquee.</CardDescription>
                     </CardHeader>
                     <CardContent className="p-10 space-y-10">
+                        
+                        {/* Visibility Controls moved above Marquee Items */}
+                        <div className="flex gap-8 mb-4 bg-muted/20 p-5 rounded-[1.5rem] border border-dashed border-accent/10">
+                            <div className="flex items-center gap-3">
+                                <Switch checked={bannerConfig.showClock} onCheckedChange={(val) => setBannerConfig({...bannerConfig, showClock: val})} />
+                                <Label className="text-[10px] font-black uppercase tracking-widest">Clock Module</Label>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <Switch checked={bannerConfig.showSocial} onCheckedChange={(val) => setBannerConfig({...bannerConfig, showSocial: val})} />
+                                <Label className="text-[10px] font-black uppercase tracking-widest">TikTok Social</Label>
+                            </div>
+                        </div>
+
                         <div className="space-y-4">
                             <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Marquee Items (Separate by comma)</Label>
                             <Textarea 
@@ -215,17 +228,6 @@ export default function UiUxControlCenter() {
                                     {ORIENTATION_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
                                 </select>
                             </div>
-
-                            <div className="flex gap-6 pt-6">
-                                <div className="flex items-center gap-3">
-                                    <Switch checked={bannerConfig.showClock} onCheckedChange={(val) => setBannerConfig({...bannerConfig, showClock: val})} />
-                                    <Label className="text-[10px] font-black uppercase">Clock Module</Label>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                    <Switch checked={bannerConfig.showSocial} onCheckedChange={(val) => setBannerConfig({...bannerConfig, showSocial: val})} />
-                                    <Label className="text-[10px] font-black uppercase">TikTok Social</Label>
-                                </div>
-                            </div>
                         </div>
 
                         <div className="p-6 bg-primary/5 rounded-[2rem] border border-dashed border-primary/20 flex flex-col gap-2">
@@ -277,6 +279,13 @@ export default function UiUxControlCenter() {
 
         <TabsContent value="spotlight"><FeaturedProductManager /></TabsContent>
         <TabsContent value="categories"><CategoryManager initialCards={[]} /></TabsContent>
+        
+        <TabsContent value="moderation">
+            <div className="max-w-4xl mx-auto py-10 text-center space-y-4">
+                <h3 className="text-2xl font-black text-accent uppercase tracking-tighter">Moderation Node</h3>
+                <p className="text-muted-foreground">Community experiences and reviews are handled in their respective inventory nodes.</p>
+            </div>
+        </TabsContent>
       </Tabs>
     </div>
   );
