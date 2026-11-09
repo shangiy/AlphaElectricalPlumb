@@ -34,10 +34,10 @@ import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 
 /**
- * High-Fidelity Light Theme Header v16.0:
- * - Unified branding text as requested.
- * - Soft whitish-blue/lavender background with dynamic scroll gradient.
- * - Dark navy/indigo branding and iconography.
+ * High-Fidelity Light Theme Header v18.0:
+ * - Precise branding block matching reference image (Alpha | Line | Subtext).
+ * - Light theme palette with dark navy branding (#0b0f19).
+ * - Dynamic scroll gradient transitions.
  */
 export default function Header() {
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
@@ -71,12 +71,12 @@ export default function Header() {
         )} 
       />
 
-      <div className="container mx-auto px-4">
+      <div className="container mx-auto px-4 relative z-10">
         {/* DESKTOP VIEW */}
-        <div className="hidden w-full items-center justify-between lg:flex h-36">
-          {/* Logo Section (Left) */}
+        <div className="hidden w-full items-center justify-between lg:flex h-28">
+          {/* Exact Logo & Branding Block (Left) */}
           <NextLink href="/" className="flex flex-shrink-0 items-center gap-4 group">
-            <div className="relative h-[110px] w-[110px]">
+            <div className="relative h-[90px] w-[90px]">
                 <Image 
                   src="/logo Alpha.png" 
                   alt="Alpha Logo" 
@@ -84,8 +84,10 @@ export default function Header() {
                   className="object-contain transition-all duration-500"
                 />
             </div>
-            <div className="text-[#0b0f19] transition-colors duration-300 font-black text-2xl lg:text-3xl leading-tight uppercase tracking-tighter max-w-[280px]">
-              Alpha Electricals & Plumbing Ltd
+            <div className="flex flex-col transition-colors duration-300 text-[#0b0f19] group-hover:text-[#8a0b0d]">
+              <span className="font-bold text-[32px] leading-tight transition-all">Alpha</span>
+              <div className="w-full h-px bg-current"></div>
+              <span className="text-[14px] leading-tight font-medium">Electricals & Plumbing Ltd</span>
             </div>
           </NextLink>
 
@@ -95,33 +97,33 @@ export default function Header() {
           </div>
 
           {/* Navigation & Actions (Right) */}
-          <div className="flex items-center gap-8">
-            <nav className="flex items-center gap-4">
+          <div className="flex items-center gap-6">
+            <nav className="flex items-center gap-2">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="px-5 py-2.5 font-bold transition-all flex items-center gap-2 uppercase text-sm tracking-widest text-[#0b0f19] bg-white border border-purple-500 rounded-xl shadow-sm hover:shadow-md hover:scale-105 active:scale-95">
-                    Products <ChevronDown className="h-4 w-4 text-purple-600" />
+                  <button className="px-4 py-2 font-semibold transition-all flex items-center gap-1 uppercase text-sm tracking-widest text-[#0b0f19] hover:text-[#8a0b0d]">
+                    Products <ChevronDown className="h-4 w-4" />
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="rounded-3xl p-3 w-72 bg-white border-slate-200 shadow-2xl">
-                   <DropdownMenuItem asChild className="cursor-pointer py-4 rounded-xl font-bold text-[#0b0f19] hover:bg-slate-50"><NextLink href="/category/tanks">Water Tanks</NextLink></DropdownMenuItem>
-                   <DropdownMenuItem asChild className="cursor-pointer py-4 rounded-xl font-bold text-[#0b0f19] hover:bg-slate-50"><NextLink href="/category/plumbing">Plumbing Equipment</NextLink></DropdownMenuItem>
-                   <DropdownMenuItem asChild className="cursor-pointer py-4 rounded-xl font-bold text-[#0b0f19] hover:bg-slate-50"><NextLink href="/category/lighting">Lighting & Electrical</NextLink></DropdownMenuItem>
-                   <DropdownMenuItem asChild className="cursor-pointer py-4 rounded-xl font-bold text-[#0b0f19] hover:bg-slate-50"><NextLink href="/category/roofing">Roofing & Construction</NextLink></DropdownMenuItem>
+                <DropdownMenuContent align="start" className="rounded-2xl p-2 w-64 bg-white border-slate-200 shadow-2xl">
+                   <DropdownMenuItem asChild className="cursor-pointer py-3 rounded-xl font-bold text-[#0b0f19] hover:bg-slate-50"><NextLink href="/category/tanks">Water Tanks</NextLink></DropdownMenuItem>
+                   <DropdownMenuItem asChild className="cursor-pointer py-3 rounded-xl font-bold text-[#0b0f19] hover:bg-slate-50"><NextLink href="/category/plumbing">Plumbing Equipment</NextLink></DropdownMenuItem>
+                   <DropdownMenuItem asChild className="cursor-pointer py-3 rounded-xl font-bold text-[#0b0f19] hover:bg-slate-50"><NextLink href="/category/lighting">Lighting & Electrical</NextLink></DropdownMenuItem>
+                   <DropdownMenuItem asChild className="cursor-pointer py-3 rounded-xl font-bold text-[#0b0f19] hover:bg-slate-50"><NextLink href="/category/roofing">Roofing & Construction</NextLink></DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-              <NextLink href="/contact" className="px-3 py-2 font-bold transition-colors uppercase text-sm tracking-widest text-[#0b0f19] hover:text-[#8a0b0d]">Contact Us</NextLink>
-              <NextLink href="/about" className="px-3 py-2 font-bold transition-colors uppercase text-sm tracking-widest text-[#0b0f19] hover:text-[#8a0b0d]">About Us</NextLink>
+              <NextLink href="/contact" className="px-4 py-2 font-semibold transition-colors uppercase text-sm tracking-widest text-[#0b0f19] hover:text-[#8a0b0d]">Contact Us</NextLink>
+              <NextLink href="/about" className="px-4 py-2 font-semibold transition-colors uppercase text-sm tracking-widest text-[#0b0f19] hover:text-[#8a0b0d]">About Us</NextLink>
             </nav>
 
-            <div className="flex items-center gap-6">
-              <ShoppingCartComponent triggerClassName="h-14 w-14 transition-all border border-[#0b0f19]/10 text-[#0b0f19] hover:bg-[#0b0f19]/5 shadow-sm hover:shadow-md" />
+            <div className="flex items-center gap-4">
+              <ShoppingCartComponent triggerClassName="h-12 w-12 transition-all border border-[#0b0f19]/10 text-[#0b0f19] hover:bg-[#0b0f19]/5 shadow-sm hover:shadow-md" />
               <NextLink href="/profile">
                 <Button 
                   variant="ghost" 
-                  className="h-14 px-8 rounded-2xl gap-3 font-black border border-[#0b0f19]/10 text-[#0b0f19] hover:bg-[#0b0f19]/5 shadow-sm hover:shadow-md"
+                  className="h-12 px-5 rounded-xl gap-2 font-black border border-[#0b0f19]/10 text-[#0b0f19] hover:bg-[#0b0f19]/5 shadow-sm hover:shadow-md"
                 >
-                  <User className="h-8 w-8" />
+                  <User className="h-6 w-6" />
                   <span className="hidden xl:inline uppercase text-sm tracking-widest">Log in</span>
                 </Button>
               </NextLink>
@@ -136,8 +138,10 @@ export default function Header() {
                 <Image src="/logo Alpha.png" alt="Alpha Logo" width={60} height={60} className="h-auto" />
             </NextLink>
             {!mobileSearchOpen && (
-                <div className="text-[#0b0f19] transition-opacity duration-500 font-black text-xs leading-tight uppercase tracking-tighter max-w-[140px]">
-                    Alpha Electricals & Plumbing Ltd
+                <div className="flex flex-col text-[#0b0f19] transition-opacity duration-500">
+                    <span className="font-bold text-[18px] leading-tight">Alpha</span>
+                    <div className="w-full h-px bg-current"></div>
+                    <span className="text-[9px] leading-tight font-medium">Electricals & Plumbing Ltd</span>
                 </div>
             )}
           </div>
