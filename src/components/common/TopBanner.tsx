@@ -9,6 +9,7 @@ import Image from 'next/image';
 interface HighlighterRule {
     word: string;
     colors: string[];
+    badgeText?: string;
 }
 
 interface BannerConfig {
@@ -24,9 +25,9 @@ interface BannerConfig {
 }
 
 /**
- * Compact Independent Top Banner v10.0:
- * Features a high-fidelity Keyword Highlighter Engine that splits text and applies
- * cyclic color palettes to specific occurrences of keywords.
+ * Compact Independent Top Banner v11.0:
+ * Features a high-fidelity Keyword Highlighter Engine and a Dynamic Prefix Badge.
+ * Inherits Visual Style Engine and Orientation settings for global continuity.
  */
 export default function TopBanner() {
   const [config, setConfig] = useState<BannerConfig>({
@@ -111,6 +112,7 @@ export default function TopBanner() {
   };
 
   const marqueeItems = [...config.items, ...config.items, ...config.items];
+  const activeBadge = config.highlighters?.find(h => h.badgeText)?.badgeText;
 
   return (
     <div 
@@ -150,6 +152,19 @@ export default function TopBanner() {
                         color: isClipped ? 'transparent' : undefined
                     }}
                 >
+                    {activeBadge && (
+                        <span className={cn(
+                            "px-3 py-0.5 rounded-full text-[9px] font-black mr-3 inline-block animate-gradient-x bg-[length:200%_200%] transform -skew-x-6",
+                            !isClipped ? "bg-gradient-to-r text-white shadow-md" : "bg-white",
+                            !isClipped && getBackgroundColors()
+                        )}>
+                            <span className={cn(
+                                isClipped && cn("bg-gradient-to-r bg-clip-text text-transparent animate-gradient-x bg-[length:200%_200%]", getBackgroundColors())
+                            )}>
+                                {activeBadge}
+                            </span>
+                        </span>
+                    )}
                     {renderHighlightedText(item)}
                 </li>
               );

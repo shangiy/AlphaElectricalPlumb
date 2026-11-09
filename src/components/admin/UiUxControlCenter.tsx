@@ -49,6 +49,7 @@ export const ORIENTATION_OPTIONS = [
 interface HighlighterRule {
     word: string;
     colors: string[];
+    badgeText?: string;
 }
 
 export default function UiUxControlCenter() {
@@ -130,7 +131,7 @@ export default function UiUxControlCenter() {
           ...bannerConfig,
           highlighters: [
               ...(bannerConfig.highlighters || []),
-              { word: '', colors: ['#00808d'] }
+              { word: '', colors: ['#00808d'], badgeText: '' }
           ]
       });
   };
@@ -174,6 +175,8 @@ export default function UiUxControlCenter() {
           </div>
       );
   }
+
+  const activeBadge = bannerConfig.highlighters?.find(h => h.badgeText)?.badgeText;
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500 pb-20">
@@ -280,11 +283,24 @@ export default function UiUxControlCenter() {
                                         onChange={(e) => setPreviewText(e.target.value)}
                                     />
                                     <div className={cn(
-                                        "h-14 rounded-2xl flex items-center justify-center font-black uppercase tracking-widest text-[10px] shadow-lg border border-white/10 overflow-hidden bg-[length:200%_200%] animate-gradient-x",
+                                        "h-14 rounded-2xl flex items-center justify-center px-4 font-black uppercase tracking-widest text-[10px] shadow-lg border border-white/10 overflow-hidden bg-[length:200%_200%] animate-gradient-x",
                                         bannerConfig.styleOrientation !== 'text-clip' && getOrientationClass(bannerConfig.styleOrientation || 'horizontal'),
                                         bannerConfig.styleOrientation !== 'text-clip' && getBackgroundColors(bannerConfig.styleType),
                                         bannerConfig.styleOrientation === 'text-clip' && "bg-white/50 backdrop-blur-sm border-none shadow-none"
                                     )}>
+                                        {activeBadge && (
+                                            <div className={cn(
+                                                "px-3 py-0.5 rounded-full text-[8px] font-black mr-2 animate-gradient-x bg-[length:200%_200%] transform -skew-x-6",
+                                                bannerConfig.styleOrientation !== 'text-clip' ? "text-white shadow-md" : "bg-white",
+                                                bannerConfig.styleOrientation !== 'text-clip' && getBackgroundColors(bannerConfig.styleType)
+                                            )}>
+                                                <span className={cn(
+                                                    bannerConfig.styleOrientation === 'text-clip' && cn("bg-gradient-to-r bg-clip-text text-transparent animate-gradient-x bg-[length:200%_200%]", getBackgroundColors(bannerConfig.styleType))
+                                                )}>
+                                                    {activeBadge}
+                                                </span>
+                                            </div>
+                                        )}
                                         <span className={cn(
                                             "transition-all duration-500",
                                             bannerConfig.styleOrientation === 'text-clip' && cn("bg-gradient-to-r bg-clip-text text-transparent animate-gradient-x bg-[length:200%_200%]", getBackgroundColors(bannerConfig.styleType))
@@ -345,6 +361,15 @@ export default function UiUxControlCenter() {
                                                             value={rule.word} 
                                                             onChange={(e) => updateHighlighterRule(idx, 'word', e.target.value)}
                                                             placeholder="e.g. OFFER"
+                                                            className="h-10 text-xs rounded-lg font-black"
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-1.5">
+                                                        <Label className="text-[8px] font-black uppercase text-muted-foreground">Badge / Pill Text</Label>
+                                                        <Input 
+                                                            value={rule.badgeText || ''} 
+                                                            onChange={(e) => updateHighlighterRule(idx, 'badgeText', e.target.value)}
+                                                            placeholder="e.g. MASHUJAA"
                                                             className="h-10 text-xs rounded-lg font-black"
                                                         />
                                                     </div>
@@ -423,7 +448,7 @@ export default function UiUxControlCenter() {
                                 <span className="text-[10px] font-black uppercase tracking-widest">Logic Hub</span>
                             </div>
                             <p className="text-[11px] text-muted-foreground italic leading-relaxed">
-                                Tip: The Keyword Highlighter allows you to define custom color cycles for specific words. Use the chips above to pick colors visually, or type/paste hex codes directly into the input.
+                                Tip: The Keyword Highlighter allows you to define custom color cycles for specific words. You can now also add a prefix badge (e.g. MASHUJAA) that inherits your active style settings.
                             </p>
                         </div>
 
