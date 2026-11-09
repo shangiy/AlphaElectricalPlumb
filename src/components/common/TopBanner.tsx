@@ -30,11 +30,15 @@ interface BannerConfig {
     holidayStyleType?: string;
     holidayOrientation?: string;
     holidayTextStyle?: string;
+    vibrantText?: string;
+    vibrantStyleType?: string;
+    vibrantOrientation?: string;
+    vibrantTextStyle?: string;
 }
 
 /**
- * High-Fidelity Independent Top Banner v17.0:
- * Features a triple-badge carousel and character-splitting logic for the Kenyan Flag visual style.
+ * High-Fidelity Independent Top Banner v18.0:
+ * Features a quadruple-badge carousel and character-splitting logic for the Kenyan Flag visual style.
  */
 export default function TopBanner() {
   const [config, setConfig] = useState<BannerConfig>({
@@ -59,7 +63,11 @@ export default function TopBanner() {
     holidayText: '',
     holidayStyleType: 'kenyan-flag',
     holidayOrientation: 'vertical',
-    holidayTextStyle: 'bold'
+    holidayTextStyle: 'bold',
+    vibrantText: '',
+    vibrantStyleType: 'kenyan-flag',
+    vibrantOrientation: 'vertical',
+    vibrantTextStyle: 'bold'
   });
 
   useEffect(() => {
@@ -250,6 +258,16 @@ export default function TopBanner() {
                                   config.holidayStyleType || 'kenyan-flag', 
                                   config.holidayOrientation || 'vertical',
                                   config.holidayTextStyle
+                                )}
+                            </span>
+                        )}
+                        {config.vibrantText && (
+                            <span className="mr-4 flex-shrink-0 flex items-center justify-center">
+                                {renderStyledBadgeText(
+                                  config.vibrantText, 
+                                  config.vibrantStyleType || 'kenyan-flag', 
+                                  config.vibrantOrientation || 'vertical',
+                                  config.vibrantTextStyle
                                 )}
                             </span>
                         )}

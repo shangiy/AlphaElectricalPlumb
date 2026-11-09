@@ -102,6 +102,10 @@ interface BannerConfig {
     holidayStyleType?: string;
     holidayOrientation?: string;
     holidayTextStyle?: string;
+    vibrantText?: string;
+    vibrantStyleType?: string;
+    vibrantOrientation?: string;
+    vibrantTextStyle?: string;
 }
 
 const DEFAULT_BANNER: BannerConfig = {
@@ -122,7 +126,11 @@ const DEFAULT_BANNER: BannerConfig = {
     holidayText: '',
     holidayStyleType: 'kenyan-flag',
     holidayOrientation: 'vertical',
-    holidayTextStyle: 'bold'
+    holidayTextStyle: 'bold',
+    vibrantText: '',
+    vibrantStyleType: 'kenyan-flag',
+    vibrantOrientation: 'vertical',
+    vibrantTextStyle: 'bold'
 };
 
 /**
@@ -505,6 +513,17 @@ export default function UiUxControlCenter() {
                                                                 )}
                                                             </div>
                                                         )}
+                                                        {/* Vibrant Display */}
+                                                        {bannerConfig.vibrantText && (
+                                                            <div className="mr-4 flex-shrink-0 flex items-center justify-center">
+                                                                {renderStyledBadgeText(
+                                                                    bannerConfig.vibrantText, 
+                                                                    bannerConfig.vibrantStyleType || 'kenyan-flag', 
+                                                                    bannerConfig.vibrantOrientation || 'vertical',
+                                                                    bannerConfig.vibrantTextStyle
+                                                                )}
+                                                            </div>
+                                                        )}
                                                         {/* Marquee Item */}
                                                         <span 
                                                             className={cn(
@@ -689,6 +708,51 @@ export default function UiUxControlCenter() {
                                     <select 
                                         value={bannerConfig.holidayTextStyle || 'bold'} 
                                         onChange={(e) => setBannerConfig({...bannerConfig, holidayTextStyle: e.target.value})}
+                                        className="w-full h-12 px-4 rounded-xl border font-bold text-sm bg-white"
+                                    >
+                                        {TEXT_STYLE_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
+                                    </select>
+                                </div>
+                            </div>
+
+                            {/* VIBRANT TEXT CONTROLS (No Background) */}
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-8 pt-6 border-t border-dashed">
+                                <div className="space-y-3">
+                                    <Label className="text-[10px] font-black uppercase text-muted-foreground/60 tracking-widest">Vibrant Event Text (Text Only)</Label>
+                                    <Input 
+                                        value={bannerConfig.vibrantText || ''} 
+                                        onChange={(e) => setBannerConfig({...bannerConfig, vibrantText: e.target.value})}
+                                        placeholder="e.g. MASHUJAA"
+                                        className="h-12 rounded-xl font-black"
+                                    />
+                                </div>
+                                <div className="space-y-3">
+                                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Color Style Engine</Label>
+                                    <select 
+                                        value={bannerConfig.vibrantStyleType || 'kenyan-flag'} 
+                                        onChange={(e) => setBannerConfig({...bannerConfig, vibrantStyleType: e.target.value})}
+                                        className="w-full h-12 px-4 rounded-xl border font-bold text-sm bg-white"
+                                    >
+                                        {STYLE_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
+                                    </select>
+                                </div>
+                                
+                                <div className="space-y-3">
+                                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Paint Orientation</Label>
+                                    <select 
+                                        value={bannerConfig.vibrantOrientation || 'vertical'} 
+                                        onChange={(e) => setBannerConfig({...bannerConfig, vibrantOrientation: e.target.value})}
+                                        className="w-full h-12 px-4 rounded-xl border font-bold text-sm bg-white"
+                                    >
+                                        {ORIENTATION_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
+                                    </select>
+                                </div>
+
+                                <div className="space-y-3">
+                                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Typography Mode</Label>
+                                    <select 
+                                        value={bannerConfig.vibrantTextStyle || 'bold'} 
+                                        onChange={(e) => setBannerConfig({...bannerConfig, vibrantTextStyle: e.target.value})}
                                         className="w-full h-12 px-4 rounded-xl border font-bold text-sm bg-white"
                                     >
                                         {TEXT_STYLE_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
