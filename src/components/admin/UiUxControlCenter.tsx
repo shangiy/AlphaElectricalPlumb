@@ -208,12 +208,17 @@ export default function UiUxControlCenter() {
     }
   };
 
-  const getOrientationClass = (orientation: string) => {
+  const getGradientDirection = (orientation: string) => {
     switch(orientation) {
         case 'vertical': return 'bg-gradient-to-b';
         case 'diagonal': return 'bg-gradient-to-br';
         default: return 'bg-gradient-to-r';
     }
+  };
+
+  const getOrientationClass = (orientation: string) => {
+    if (orientation === 'text-clip') return 'bg-transparent';
+    return getGradientDirection(orientation || 'horizontal');
   };
 
   const renderHighlightedText = (text: string) => {
@@ -329,13 +334,15 @@ export default function UiUxControlCenter() {
                                         <div key={i} className="flex items-center">
                                             {bannerConfig.items.map((item, idx) => {
                                                 const isClipped = bannerConfig.styleOrientation === 'text-clip';
+                                                const gradientDir = getGradientDirection(bannerConfig.styleOrientation || 'horizontal');
                                                 return (
                                                     <div key={idx} className="flex items-center mx-12">
                                                         {/* Primary Badge */}
                                                         {bannerConfig.badgeText && (
                                                             <div className="px-3 py-1 rounded-full bg-white mr-4 shadow-lg transform -skew-x-6 flex-shrink-0">
                                                                 <span className={cn(
-                                                                    "font-black text-[10px] bg-clip-text text-transparent animate-gradient-x bg-[length:200%_200%] bg-gradient-to-r uppercase",
+                                                                    "font-black text-xs bg-clip-text text-transparent animate-gradient-x bg-[length:200%_200%] uppercase",
+                                                                    gradientDir,
                                                                     getBackgroundColors(bannerConfig.styleType)
                                                                 )}>
                                                                     {bannerConfig.badgeText}
@@ -346,7 +353,8 @@ export default function UiUxControlCenter() {
                                                         {bannerConfig.halloweenText && (
                                                             <div className="px-3 py-1 rounded-full bg-white mr-4 shadow-lg transform -skew-x-6 flex-shrink-0">
                                                                 <span className={cn(
-                                                                    "font-black text-[10px] bg-clip-text text-transparent animate-gradient-x bg-[length:200%_200%] bg-gradient-to-r uppercase",
+                                                                    "font-black text-xs bg-clip-text text-transparent animate-gradient-x bg-[length:200%_200%] uppercase",
+                                                                    getGradientDirection(bannerConfig.halloweenOrientation || 'horizontal'),
                                                                     getBackgroundColors(bannerConfig.halloweenStyleType || 'fire-emoji'),
                                                                     bannerConfig.halloweenTextStyle === 'italic' && 'italic',
                                                                     bannerConfig.halloweenTextStyle === 'bold' && 'font-bold',
@@ -361,7 +369,7 @@ export default function UiUxControlCenter() {
                                                         <span 
                                                             className={cn(
                                                                 "font-black uppercase tracking-widest",
-                                                                isClipped && cn("bg-gradient-to-r bg-clip-text text-transparent animate-gradient-x bg-[length:200%_200%]", getBackgroundColors(bannerConfig.styleType))
+                                                                isClipped && cn("bg-clip-text text-transparent animate-gradient-x bg-[length:200%_200%]", gradientDir, getBackgroundColors(bannerConfig.styleType))
                                                             )}
                                                             style={{ 
                                                                 fontSize: `${Math.min(bannerConfig.fontSize, 14)}px`,

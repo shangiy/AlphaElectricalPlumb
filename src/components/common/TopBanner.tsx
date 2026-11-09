@@ -29,8 +29,8 @@ interface BannerConfig {
 }
 
 /**
- * High-Fidelity Independent Top Banner v14.0:
- * Optimized for seamless looping using dual-content duplication and w-max containers.
+ * High-Fidelity Independent Top Banner v15.0:
+ * Optimized for seamless looping and dynamic text-clipping on badges.
  */
 export default function TopBanner() {
   const [config, setConfig] = useState<BannerConfig>({
@@ -78,14 +78,17 @@ export default function TopBanner() {
     }
   };
 
-  const getOrientationClass = (orientation: string) => {
-    if (orientation === 'text-clip') return 'bg-transparent';
-    
+  const getGradientDirection = (orientation: string) => {
     switch(orientation) {
         case 'vertical': return 'bg-gradient-to-b';
         case 'diagonal': return 'bg-gradient-to-br';
         default: return 'bg-gradient-to-r';
     }
+  };
+
+  const getOrientationClass = (orientation: string) => {
+    if (orientation === 'text-clip') return 'bg-transparent';
+    return getGradientDirection(orientation || 'horizontal');
   };
 
   const renderHighlightedText = (text: string) => {
@@ -150,13 +153,14 @@ export default function TopBanner() {
               <ul key={i} className="flex items-center [&_li]:mx-12">
                 {config.items.map((item, idx) => {
                   const isClipped = config.styleOrientation === 'text-clip';
+                  const gradientDir = getGradientDirection(config.styleOrientation || 'horizontal');
 
                   return (
                     <li 
                         key={idx} 
                         className={cn(
                             "flex items-center uppercase tracking-widest",
-                            isClipped && cn("bg-gradient-to-r bg-clip-text text-transparent animate-gradient-x bg-[length:200%_200%]", getBackgroundColors(config.styleType))
+                            isClipped && cn("bg-clip-text text-transparent animate-gradient-x bg-[length:200%_200%]", gradientDir, getBackgroundColors(config.styleType))
                         )}
                         style={{ 
                             fontSize: `${Math.min(config.fontSize, 14)}px`,
@@ -166,8 +170,8 @@ export default function TopBanner() {
                         {config.badgeText && (
                             <span className="px-3 py-1 rounded-full bg-white mr-4 shadow-lg transform -skew-x-6 flex-shrink-0">
                                 <span className={cn(
-                                    "font-black bg-clip-text text-transparent animate-gradient-x bg-[length:200%_200%]",
-                                    "bg-gradient-to-r", 
+                                    "font-black bg-clip-text text-transparent animate-gradient-x bg-[length:200%_200%] uppercase",
+                                    gradientDir, 
                                     getBackgroundColors(config.styleType)
                                 )}>
                                     {config.badgeText}
@@ -177,8 +181,8 @@ export default function TopBanner() {
                         {config.halloweenText && (
                             <span className="px-3 py-1 rounded-full bg-white mr-4 shadow-lg transform -skew-x-6 flex-shrink-0">
                                 <span className={cn(
-                                    "font-black bg-clip-text text-transparent animate-gradient-x bg-[length:200%_200%]",
-                                    "bg-gradient-to-r", 
+                                    "font-black bg-clip-text text-transparent animate-gradient-x bg-[length:200%_200%] uppercase",
+                                    getGradientDirection(config.halloweenOrientation || 'horizontal'), 
                                     getBackgroundColors(config.halloweenStyleType || 'fire-emoji'),
                                     config.halloweenTextStyle === 'italic' && 'italic',
                                     config.halloweenTextStyle === 'bold' && 'font-bold',
