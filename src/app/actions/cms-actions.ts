@@ -8,6 +8,12 @@
 import { supabaseAdmin } from '@/lib/supabase-admin';
 import { revalidatePath } from 'next/cache';
 
+export interface WordStyle {
+    text: string;
+    color: string;
+    font: string;
+}
+
 export interface HeroSlide {
     id: string;
     headline: string;
@@ -27,6 +33,8 @@ export interface HeroSlide {
     headlineTopMargin?: number; // in centimeters
     subheadingTopMargin?: number; // in centimeters
     topMargin?: number; // legacy fallback
+    // Triple Word Engine
+    wordStyles?: WordStyle[];
 }
 
 /**
