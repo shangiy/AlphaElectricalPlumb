@@ -34,10 +34,10 @@ import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 
 /**
- * High-Fidelity Light Theme Header v18.0:
- * - Precise branding block matching reference image (Alpha | Line | Subtext).
- * - Light theme palette with dark navy branding (#0b0f19).
- * - Dynamic scroll gradient transitions.
+ * Premium Light Theme Header v19.0:
+ * - Layered background: Glass (Top) over Animated Gradient (Bottom).
+ * - High-fidelity branding block (Alpha | Line | Subtext).
+ * - Exact specification "Products" trigger with purple border.
  */
 export default function Header() {
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
@@ -62,19 +62,32 @@ export default function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full transition-all duration-500 bg-slate-50/90 backdrop-blur-md border-b border-slate-200/60 overflow-hidden">
-      {/* Dynamic Animated Gradient Layer (Fades in on scroll) */}
+    <header 
+      className={cn(
+        "sticky top-0 z-50 w-full transition-all duration-500 overflow-hidden border-b flex items-center h-28 lg:h-36",
+        isScrolled ? "border-slate-200/60" : "border-transparent bg-slate-50/40"
+      )}
+    >
+      {/* LAYER 1 (Bottom): Animated Gradient Background */}
       <div 
         className={cn(
-          "absolute inset-0 -z-10 bg-gradient-to-r from-red-500 via-purple-500 to-blue-500 bg-[length:200%_200%] animate-gradient-x transition-opacity duration-700",
+          "absolute inset-0 -z-20 bg-gradient-to-r from-red-500 via-purple-500 to-blue-500 bg-[length:200%_200%] animate-gradient-x transition-opacity duration-1000",
           isScrolled ? "opacity-100" : "opacity-0"
         )} 
       />
 
+      {/* LAYER 2 (Top): Whitish Frosted Glass over Gradient */}
+      <div 
+        className={cn(
+          "absolute inset-0 -z-10 bg-white/80 backdrop-blur-md transition-opacity duration-1000",
+          isScrolled ? "opacity-100" : "opacity-0"
+        )}
+      />
+
       <div className="container mx-auto px-4 relative z-10">
         {/* DESKTOP VIEW */}
-        <div className="hidden w-full items-center justify-between lg:flex h-28">
-          {/* Exact Logo & Branding Block (Left) */}
+        <div className="hidden w-full items-center justify-between lg:flex">
+          {/* Logo & Branding Block (Left) */}
           <NextLink href="/" className="flex flex-shrink-0 items-center gap-4 group">
             <div className="relative h-[90px] w-[90px]">
                 <Image 
@@ -85,7 +98,7 @@ export default function Header() {
                 />
             </div>
             <div className="flex flex-col transition-colors duration-300 text-[#0b0f19] group-hover:text-[#8a0b0d]">
-              <span className="font-bold text-[32px] leading-tight transition-all">Alpha</span>
+              <span className="font-bold text-[32px] leading-tight transition-all uppercase">Alpha</span>
               <div className="w-full h-px bg-current"></div>
               <span className="text-[14px] leading-tight font-medium">Electricals & Plumbing Ltd</span>
             </div>
@@ -98,10 +111,10 @@ export default function Header() {
 
           {/* Navigation & Actions (Right) */}
           <div className="flex items-center gap-6">
-            <nav className="flex items-center gap-2">
+            <nav className="flex items-center gap-4">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="px-4 py-2 font-semibold transition-all flex items-center gap-1 uppercase text-sm tracking-widest text-[#0b0f19] hover:text-[#8a0b0d]">
+                  <button className="px-5 py-2.5 bg-white border-2 border-purple-500 rounded-xl font-bold transition-all flex items-center gap-2 uppercase text-sm tracking-widest text-[#0b0f19] hover:bg-purple-50">
                     Products <ChevronDown className="h-4 w-4" />
                   </button>
                 </DropdownMenuTrigger>
@@ -112,8 +125,8 @@ export default function Header() {
                    <DropdownMenuItem asChild className="cursor-pointer py-3 rounded-xl font-bold text-[#0b0f19] hover:bg-slate-50"><NextLink href="/category/roofing">Roofing & Construction</NextLink></DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-              <NextLink href="/contact" className="px-4 py-2 font-semibold transition-colors uppercase text-sm tracking-widest text-[#0b0f19] hover:text-[#8a0b0d]">Contact Us</NextLink>
-              <NextLink href="/about" className="px-4 py-2 font-semibold transition-colors uppercase text-sm tracking-widest text-[#0b0f19] hover:text-[#8a0b0d]">About Us</NextLink>
+              <NextLink href="/contact" className="px-4 py-2 font-bold transition-colors uppercase text-sm tracking-widest text-[#0b0f19] hover:text-[#8a0b0d]">Contact Us</NextLink>
+              <NextLink href="/about" className="px-4 py-2 font-bold transition-colors uppercase text-sm tracking-widest text-[#0b0f19] hover:text-[#8a0b0d]">About Us</NextLink>
             </nav>
 
             <div className="flex items-center gap-4">
@@ -139,7 +152,7 @@ export default function Header() {
             </NextLink>
             {!mobileSearchOpen && (
                 <div className="flex flex-col text-[#0b0f19] transition-opacity duration-500">
-                    <span className="font-bold text-[18px] leading-tight">Alpha</span>
+                    <span className="font-bold text-[18px] leading-tight uppercase">Alpha</span>
                     <div className="w-full h-px bg-current"></div>
                     <span className="text-[9px] leading-tight font-medium">Electricals & Plumbing Ltd</span>
                 </div>

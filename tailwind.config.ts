@@ -138,7 +138,7 @@ export default {
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
-        'gradient-x': 'gradient-x 15s ease infinite',
+        'gradient-x': 'gradient-x 20s linear infinite',
         'scroll': 'scroll 60s linear infinite',
         'float-up-fade': 'float-up-fade 2s ease-in-out infinite'
       },
