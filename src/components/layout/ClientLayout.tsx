@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { usePathname } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { Toaster } from '@/components/ui/toaster';
@@ -37,7 +38,7 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
     <AuthProvider>
       <ProductProvider>
         <CartProvider>
-          {/* Main Wrapper: Standard Flex Column in normal document flow */}
+          {/* Main Wrapper: Standard Vertical Flex Column in normal document flow */}
           <div className="w-full flex flex-col min-h-screen">
             {!isAdminRoute && (
               <>

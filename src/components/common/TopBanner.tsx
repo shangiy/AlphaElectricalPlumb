@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useEffect, useState } from 'react';
@@ -17,16 +18,16 @@ interface BannerConfig {
 }
 
 /**
- * Compact Top Banner v6.0:
- * Sits in normal flow and scrolls away naturally.
- * Sizing is restricted to a compact maximum (h-8).
+ * Compact Independent Top Banner v7.0:
+ * Sits in the normal flow at the top of the DOM. 
+ * Height restricted to a compact py-1.5.
  */
 export default function TopBanner() {
   const [config, setConfig] = useState<BannerConfig>({
     items: [
-      "OFFER! OFFER! OFFER! Easter Holiday OFFER",
+      "⚡ EASTER HOLIDAY OFFER! BEST PRICES GUARANTEED",
       "Feel welcomed to Shop with us @best prices",
-      "MASHUJAA DAY OFFER!"
+      "MASHUJAA DAY SPECIAL DISCOUNTS ACTIVE"
     ],
     speed: 30,
     fontSize: 12,
@@ -60,7 +61,7 @@ export default function TopBanner() {
   return (
     <div 
       className={cn(
-        "w-full text-white py-1.5 px-4 bg-gradient-to-r bg-[length:200%_200%] animate-gradient-x text-xs font-medium border-b border-white/5",
+        "w-full text-white py-1.5 px-4 bg-gradient-to-r bg-[length:200%_200%] animate-gradient-x border-b border-white/5",
         getBackground()
       )}
       style={{ color: config.textColor }}
@@ -70,22 +71,26 @@ export default function TopBanner() {
         {config.showClock && (
           <div className="hidden md:flex items-center gap-2 flex-shrink-0">
             <Clock className="h-3.5 w-3.5 opacity-80" />
-            <span className="text-[10px] whitespace-nowrap">Mon - Sat: 8:00 AM – 6:00 PM</span>
+            <span className="text-[10px] whitespace-nowrap font-bold">Mon - Sat: 8:00 AM – 6:00 PM</span>
           </div>
         )}
 
         <div className="flex-1 inline-flex flex-nowrap overflow-hidden [mask-image:_linear-gradient(to_right,transparent_0,_black_64px,_black_calc(100%-64px),transparent_100%)]">
           <ul 
-            className="flex-1 font-bold text-center flex items-center justify-center md:justify-start [&_li]:mx-8 animate-scroll"
+            className="flex-1 font-black text-center flex items-center justify-center md:justify-start [&_li]:mx-12 animate-scroll"
             style={{ animationDuration: `${config.speed}s` }}
           >
             {marqueeItems.map((item, idx) => (
               <li 
                 key={idx} 
-                className="whitespace-nowrap uppercase tracking-widest"
+                className="whitespace-nowrap uppercase tracking-widest flex items-center gap-4"
                 style={{ fontSize: `${Math.min(config.fontSize, 14)}px` }}
               >
-                {item}
+                {item.includes('MASHUJAA') ? (
+                    <span className="bg-white rounded-full px-4 py-0.5 font-black text-black shadow-lg">
+                        {item}
+                    </span>
+                ) : item}
               </li>
             ))}
           </ul>
@@ -102,7 +107,7 @@ export default function TopBanner() {
                rel="noopener noreferrer" 
                className="text-[10px] font-black uppercase tracking-tighter hover:underline"
              >
-               TikTok
+               TikTok @AlphaElectricalsandplumb
              </a>
           </div>
         )}

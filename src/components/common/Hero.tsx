@@ -1,3 +1,4 @@
+
 'use client';
 
 import dynamic from 'next/dynamic';
@@ -8,9 +9,8 @@ const HeroSearch = dynamic(() => import('./HeroSearch'), {
 });
 
 /**
- * Detached Hero Section v9.0
- * Refined positioning to ensure it scrolls BEHIND the sticky header.
- * Branding: Replaced pink (#EC4899) with crimson (#8a0b0d)
+ * Detached Hero Section v10.0
+ * Branding: Removed all pink, using professional crimson (#8a0b0d)
  */
 export default function Hero() {
   const categoryTags = ["Water Tanks", "LED Lights", "PPR Pipes", "Solar Heaters", "Chandeliers", "Sockets"];
