@@ -34,11 +34,9 @@ import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 
 /**
- * Compact Light Theme Header v20.0:
- * - Reduced height: h-20 lg:h-24.
- * - Scaled logo: 60x60.
- * - Compact search: h-12.
- * - Persistent sticky top-0 behavior.
+ * Compact High-Fidelity Header v21.0:
+ * - Brand Teal Highlights: Consistent primary teal accents across all hover states.
+ * - Sticky Architecture: Persistently top-0 behavior.
  */
 export default function Header() {
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
@@ -98,7 +96,7 @@ export default function Header() {
                   className="object-contain transition-all duration-500"
                 />
             </div>
-            <div className="flex flex-col transition-colors duration-300 text-[#0b0f19] group-hover:text-[#8a0b0d]">
+            <div className="flex flex-col transition-colors duration-300 text-[#0b0f19] group-hover:text-primary">
               <span className="font-bold text-2xl leading-tight transition-all uppercase tracking-tighter">Alpha</span>
               <div className="w-full h-px bg-current"></div>
               <span className="text-[11px] leading-tight font-medium uppercase tracking-wide">Electricals & Plumbing Ltd</span>
@@ -120,22 +118,22 @@ export default function Header() {
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start" className="rounded-2xl p-2 w-64 bg-white border-slate-200 shadow-2xl">
-                   <DropdownMenuItem asChild className="cursor-pointer py-3 rounded-xl font-bold text-[#0b0f19] hover:bg-slate-50"><NextLink href="/category/tanks">Water Tanks</NextLink></DropdownMenuItem>
-                   <DropdownMenuItem asChild className="cursor-pointer py-3 rounded-xl font-bold text-[#0b0f19] hover:bg-slate-50"><NextLink href="/category/plumbing">Plumbing Equipment</NextLink></DropdownMenuItem>
-                   <DropdownMenuItem asChild className="cursor-pointer py-3 rounded-xl font-bold text-[#0b0f19] hover:bg-slate-50"><NextLink href="/category/lighting">Lighting & Electrical</NextLink></DropdownMenuItem>
-                   <DropdownMenuItem asChild className="cursor-pointer py-3 rounded-xl font-bold text-[#0b0f19] hover:bg-slate-50"><NextLink href="/category/roofing">Roofing & Construction</NextLink></DropdownMenuItem>
+                   <DropdownMenuItem asChild className="cursor-pointer py-3 rounded-xl font-bold text-[#0b0f19] hover:text-primary hover:bg-primary/5"><NextLink href="/category/tanks">Water Tanks</NextLink></DropdownMenuItem>
+                   <DropdownMenuItem asChild className="cursor-pointer py-3 rounded-xl font-bold text-[#0b0f19] hover:text-primary hover:bg-primary/5"><NextLink href="/category/plumbing">Plumbing Equipment</NextLink></DropdownMenuItem>
+                   <DropdownMenuItem asChild className="cursor-pointer py-3 rounded-xl font-bold text-[#0b0f19] hover:text-primary hover:bg-primary/5"><NextLink href="/category/lighting">Lighting & Electrical</NextLink></DropdownMenuItem>
+                   <DropdownMenuItem asChild className="cursor-pointer py-3 rounded-xl font-bold text-[#0b0f19] hover:text-primary hover:bg-primary/5"><NextLink href="/category/roofing">Roofing & Construction</NextLink></DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-              <NextLink href="/contact" className="px-3 py-2 font-bold transition-colors uppercase text-[12px] tracking-widest text-[#0b0f19] hover:text-[#8a0b0d]">Contact Us</NextLink>
-              <NextLink href="/about" className="px-3 py-2 font-bold transition-colors uppercase text-[12px] tracking-widest text-[#0b0f19] hover:text-[#8a0b0d]">About Us</NextLink>
+              <NextLink href="/contact" className="px-3 py-2 font-bold transition-colors uppercase text-[12px] tracking-widest text-[#0b0f19] hover:text-primary">Contact Us</NextLink>
+              <NextLink href="/about" className="px-3 py-2 font-bold transition-colors uppercase text-[12px] tracking-widest text-[#0b0f19] hover:text-primary">About Us</NextLink>
             </nav>
 
             <div className="flex items-center gap-3">
-              <ShoppingCartComponent triggerClassName="h-10 w-10 transition-all border border-[#0b0f19]/10 text-[#0b0f19] hover:bg-[#0b0f19]/5 shadow-sm hover:shadow-md" />
+              <ShoppingCartComponent triggerClassName="h-10 w-10 transition-all border border-[#0b0f19]/10 text-[#0b0f19] hover:text-primary hover:bg-primary/5 shadow-sm hover:shadow-md" />
               <NextLink href="/profile">
                 <Button 
                   variant="ghost" 
-                  className="h-10 px-4 rounded-xl gap-2 font-black border border-[#0b0f19]/10 text-[#0b0f19] hover:bg-[#0b0f19]/5 shadow-sm hover:shadow-md"
+                  className="h-10 px-4 rounded-xl gap-2 font-black border border-[#0b0f19]/10 text-[#0b0f19] hover:text-primary hover:bg-primary/5 shadow-sm hover:shadow-md"
                 >
                   <User className="h-5 w-5" />
                   <span className="hidden xl:inline uppercase text-[11px] tracking-widest">Log in</span>
@@ -186,7 +184,7 @@ export default function Header() {
                 size="icon" 
                 className={cn(
                   "h-9 w-9 rounded-full shrink-0 transition-all flex items-center justify-center",
-                  mobileSearchOpen ? "text-[#0b0f19] hover:bg-slate-100" : "text-[#0b0f19] hover:bg-[#0b0f19]/5"
+                  mobileSearchOpen ? "text-[#0b0f19] hover:bg-slate-100" : "text-[#0b0f19] hover:text-primary hover:bg-primary/5"
                 )}
                 onClick={() => {
                   if (mobileSearchOpen && searchQuery) {
@@ -200,29 +198,29 @@ export default function Header() {
               </Button>
             </form>
 
-            <ShoppingCartComponent triggerClassName="h-10 w-10 border border-[#0b0f19]/10 rounded-full text-[#0b0f19] flex items-center justify-center" />
+            <ShoppingCartComponent triggerClassName="h-10 w-10 border border-[#0b0f19]/10 rounded-full text-[#0b0f19] flex items-center justify-center hover:text-primary" />
             
             <Sheet>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-10 w-10 border border-[#0b0f19]/10 rounded-full text-[#0b0f19] flex items-center justify-center">
+                <Button variant="ghost" size="icon" className="h-10 w-10 border border-[#0b0f19]/10 rounded-full text-[#0b0f19] flex items-center justify-center hover:text-primary">
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
               <SheetContent side="right" className="bg-white border-l-slate-100 text-[#0b0f19] rounded-l-[3rem] shadow-2xl">
                 <SheetHeader>
                   <SheetTitle className="text-[#0b0f19] text-left font-black uppercase tracking-widest flex items-center gap-2">
-                      <div className="h-8 w-8 bg-purple-500 rounded-lg flex items-center justify-center text-white"><Menu size={18} /></div>
+                      <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center text-white"><Menu size={18} /></div>
                       Alpha Ecosystem
                   </SheetTitle>
                   <SheetDescription className="sr-only">Main Navigation</SheetDescription>
                 </SheetHeader>
                 <div className="flex flex-col gap-6 pt-12">
-                  <SheetClose asChild><NextLink href="/search" className="text-2xl font-black uppercase tracking-tighter hover:text-purple-600 transition-colors">Product Catalogue</NextLink></SheetClose>
-                  <SheetClose asChild><NextLink href="/contact" className="text-2xl font-black uppercase tracking-tighter hover:text-purple-600 transition-colors">Contact Node</NextLink></SheetClose>
-                  <SheetClose asChild><NextLink href="/about" className="text-2xl font-black uppercase tracking-tighter hover:text-purple-600 transition-colors">About Us</NextLink></SheetClose>
+                  <SheetClose asChild><NextLink href="/search" className="text-2xl font-black uppercase tracking-tighter hover:text-primary transition-colors">Product Catalogue</NextLink></SheetClose>
+                  <SheetClose asChild><NextLink href="/contact" className="text-2xl font-black uppercase tracking-tighter hover:text-primary transition-colors">Contact Node</NextLink></SheetClose>
+                  <SheetClose asChild><NextLink href="/about" className="text-2xl font-black uppercase tracking-tighter hover:text-primary transition-colors">About Us</NextLink></SheetClose>
                   <div className="h-px bg-slate-100" />
-                  <SheetClose asChild><NextLink href="/wishlist" className="text-xl font-bold uppercase tracking-tight text-slate-500 hover:text-purple-600 transition-colors">My Favorites</NextLink></SheetClose>
-                  <SheetClose asChild><NextLink href="/profile" className="text-xl font-bold uppercase tracking-tight text-slate-500 hover:text-purple-600 transition-colors">Member Profile</NextLink></SheetClose>
+                  <SheetClose asChild><NextLink href="/wishlist" className="text-xl font-bold uppercase tracking-tight text-slate-500 hover:text-primary transition-colors">My Favorites</NextLink></SheetClose>
+                  <SheetClose asChild><NextLink href="/profile" className="text-xl font-bold uppercase tracking-tight text-slate-500 hover:text-primary transition-colors">Member Profile</NextLink></SheetClose>
                 </div>
               </SheetContent>
             </Sheet>

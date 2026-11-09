@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useEffect, useState } from 'react';
@@ -18,9 +17,9 @@ interface BannerConfig {
 }
 
 /**
- * Compact Independent Top Banner v7.0:
+ * Compact Independent Top Banner v8.0:
  * Sits in the normal flow at the top of the DOM. 
- * Height restricted to a compact py-1.5.
+ * Updated with primary teal hover state for social links.
  */
 export default function TopBanner() {
   const [config, setConfig] = useState<BannerConfig>({
@@ -105,7 +104,7 @@ export default function TopBanner() {
                href="https://www.tiktok.com/@AlphaElectricalsandplumb" 
                target="_blank" 
                rel="noopener noreferrer" 
-               className="text-[10px] font-black uppercase tracking-tighter hover:underline"
+               className="text-[10px] font-black uppercase tracking-tighter hover:text-primary transition-colors hover:underline"
              >
                TikTok @AlphaElectricalsandplumb
              </a>
