@@ -32,6 +32,13 @@ import { useCart } from '@/context/CartProvider';
 import ShoppingCartComponent from './ShoppingCart';
 import HeroSearch from './HeroSearch';
 
+/**
+ * Fixed Navigation Header v9.0
+ * Features:
+ * - Persistent fixed-top positioning
+ * - Enforced Branding: No pink, replaced with #8a0b0d highlights
+ * - Central High-Res Search Bar matching provided reference
+ */
 export default function Header() {
   const { user } = useAuth();
   const { totalItems } = useCart();
@@ -52,16 +59,16 @@ export default function Header() {
                   className="object-contain transition-transform group-hover:scale-110"
                 />
             </div>
-            <div className="flex flex-col text-white group-hover:text-[#EC4899] transition-colors">
+            <div className="flex flex-col text-white group-hover:text-[#8a0b0d] transition-colors">
               <span className="font-black text-lg lg:text-3xl leading-tight uppercase tracking-tighter">Alpha</span>
               <div className="w-full h-px bg-current opacity-40"></div>
               <span className="text-[10px] lg:text-xs leading-tight font-bold uppercase tracking-widest">Electricals & Plumbing Ltd</span>
             </div>
           </NextLink>
 
-          {/* Middle: Centered Search Bar */}
+          {/* Middle: Centered Search Bar (Enlarged Ref Design) */}
           <div className="flex-1 max-w-2xl mx-auto px-8">
-             <HeroSearch className="h-12 lg:h-16 !bg-white/5 !border-white/10" compact />
+             <HeroSearch className="lg:scale-105" />
           </div>
 
           {/* Right: Navigation & Actions */}
@@ -69,7 +76,7 @@ export default function Header() {
             <nav className="flex items-center gap-2">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="px-3 py-2 text-white font-bold hover:text-[#EC4899] transition-colors flex items-center gap-1 uppercase text-sm lg:text-lg tracking-widest">
+                  <button className="px-3 py-2 text-white font-bold hover:text-[#8a0b0d] transition-colors flex items-center gap-1 uppercase text-sm lg:text-lg tracking-widest">
                     Products <ChevronDown className="h-4 w-4" />
                   </button>
                 </DropdownMenuTrigger>
@@ -80,8 +87,8 @@ export default function Header() {
                    <DropdownMenuItem asChild className="hover:bg-white/5 cursor-pointer text-base py-3"><NextLink href="/category/roofing">Roofing & Construction</NextLink></DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-              <NextLink href="/contact" className="px-3 py-2 text-white font-bold hover:text-[#EC4899] transition-colors uppercase text-sm lg:text-lg tracking-widest">Contact</NextLink>
-              <NextLink href="/about" className="px-3 py-2 text-white font-bold hover:text-[#EC4899] transition-colors uppercase text-sm lg:text-lg tracking-widest">About</NextLink>
+              <NextLink href="/contact" className="px-3 py-2 text-white font-bold hover:text-[#8a0b0d] transition-colors uppercase text-sm lg:text-lg tracking-widest">Contact Us</NextLink>
+              <NextLink href="/about" className="px-3 py-2 text-white font-bold hover:text-[#8a0b0d] transition-colors uppercase text-sm lg:text-lg tracking-widest">About Us</NextLink>
             </nav>
 
             <div className="flex items-center gap-4">
@@ -93,7 +100,7 @@ export default function Header() {
                   className="h-12 px-6 rounded-xl gap-3 font-bold text-white hover:bg-white/5 border border-white/10"
                 >
                   <User className="h-6 w-6" />
-                  <span className="hidden xl:inline uppercase text-sm tracking-widest">Account</span>
+                  <span className="hidden xl:inline uppercase text-sm tracking-widest">Log in</span>
                 </Button>
               </NextLink>
             </div>
@@ -136,12 +143,12 @@ export default function Header() {
                   <SheetDescription className="sr-only">Main Navigation</SheetDescription>
                 </SheetHeader>
                 <div className="flex flex-col gap-8 pt-12">
-                  <SheetClose asChild><NextLink href="/search" className="text-2xl font-black uppercase tracking-tighter hover:text-[#EC4899]">All Products</NextLink></SheetClose>
-                  <SheetClose asChild><NextLink href="/contact" className="text-2xl font-black uppercase tracking-tighter hover:text-[#EC4899]">Contact Us</NextLink></SheetClose>
-                  <SheetClose asChild><NextLink href="/about" className="text-2xl font-black uppercase tracking-tighter hover:text-[#EC4899]">About Us</NextLink></SheetClose>
+                  <SheetClose asChild><NextLink href="/search" className="text-2xl font-black uppercase tracking-tighter hover:text-[#8a0b0d]">All Products</NextLink></SheetClose>
+                  <SheetClose asChild><NextLink href="/contact" className="text-2xl font-black uppercase tracking-tighter hover:text-[#8a0b0d]">Contact Us</NextLink></SheetClose>
+                  <SheetClose asChild><NextLink href="/about" className="text-2xl font-black uppercase tracking-tighter hover:text-[#8a0b0d]">About Us</NextLink></SheetClose>
                   <div className="h-px bg-white/10" />
-                  <SheetClose asChild><NextLink href="/wishlist" className="text-2xl font-black uppercase tracking-tighter hover:text-[#EC4899]">My Favorites</NextLink></SheetClose>
-                  <SheetClose asChild><NextLink href="/profile" className="text-2xl font-black uppercase tracking-tighter hover:text-[#EC4899]">My Account</NextLink></SheetClose>
+                  <SheetClose asChild><NextLink href="/wishlist" className="text-2xl font-black uppercase tracking-tighter hover:text-[#8a0b0d]">My Favorites</NextLink></SheetClose>
+                  <SheetClose asChild><NextLink href="/profile" className="text-2xl font-black uppercase tracking-tighter hover:text-[#8a0b0d]">My Account</NextLink></SheetClose>
                 </div>
               </SheetContent>
             </Sheet>
@@ -151,7 +158,7 @@ export default function Header() {
         {/* MOBILE SEARCH OVERLAY */}
         {mobileSearchOpen && (
           <div className="absolute inset-x-0 top-full bg-[#0b0f19] p-4 border-b border-white/10 animate-in fade-in slide-in-from-top-2 lg:hidden">
-             <HeroSearch compact className="h-12 !bg-white/5" onSearch={() => setMobileSearchOpen(false)} />
+             <HeroSearch compact onSearch={() => setMobileSearchOpen(false)} />
           </div>
         )}
       </div>

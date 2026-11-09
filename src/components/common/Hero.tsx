@@ -8,10 +8,9 @@ const HeroSearch = dynamic(() => import('./HeroSearch'), {
 });
 
 /**
- * Detached Hero Section v8.2
+ * Detached Hero Section v9.0
  * Refined positioning to ensure it scrolls BEHIND the sticky header.
- * - Structure: Independent block that detaches from header overlay.
- * - Margins: max-w-7xl mx-auto px-6 py-20 to provide professional safe-zones.
+ * Branding: Replaced pink (#EC4899) with crimson (#8a0b0d)
  */
 export default function Hero() {
   const categoryTags = ["Water Tanks", "LED Lights", "PPR Pipes", "Solar Heaters", "Chandeliers", "Sockets"];
@@ -33,7 +32,7 @@ export default function Hero() {
           <div className="space-y-4">
             <h1 className="text-5xl md:text-7xl font-black font-headline text-white leading-[0.9] tracking-tighter uppercase">
               Welcome to Alpha <br />
-              <span className="text-[#EC4899]">Electricals</span> & <br />
+              <span className="text-[#8a0b0d]">Electricals</span> & <br />
               Plumbing Ltd
             </h1>
             <p className="text-lg md:text-xl text-slate-400 font-bold tracking-tight max-w-2xl mt-6">
@@ -41,11 +40,11 @@ export default function Hero() {
             </p>
           </div>
 
-          {/* Action Center - side-by-side cluster within safe zones */}
+          {/* Action Center */}
           <div className="space-y-8">
             <div className="flex flex-col sm:flex-row items-center gap-4 w-full max-w-2xl">
               <HeroSearch />
-              <button className="h-16 px-10 rounded-full bg-primary text-white font-black uppercase tracking-[0.2em] shadow-2xl hover:scale-105 active:scale-95 transition-all">
+              <button className="h-16 px-10 rounded-full bg-[#2b235f] text-white font-black uppercase tracking-[0.2em] shadow-2xl hover:scale-105 active:scale-95 transition-all">
                 Explore
               </button>
             </div>
@@ -55,7 +54,7 @@ export default function Hero() {
               {categoryTags.map((tag) => (
                 <button 
                   key={tag}
-                  className="px-4 py-1.5 rounded-full bg-slate-800/50 border border-slate-700/50 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:bg-purple-600 hover:text-white hover:border-purple-500 transition-all active:scale-95"
+                  className="px-4 py-1.5 rounded-full bg-slate-800/50 border border-slate-700/50 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:bg-[#8a0b0d] hover:text-white hover:border-[#8a0b0d] transition-all active:scale-95"
                 >
                   {tag}
                 </button>
