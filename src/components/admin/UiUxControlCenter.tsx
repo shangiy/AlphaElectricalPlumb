@@ -24,7 +24,8 @@ import {
   X,
   RotateCcw,
   Eye,
-  LayoutTemplate
+  LayoutTemplate,
+  GripVertical
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import FeaturedProductManager from './FeaturedProductManager';
@@ -37,6 +38,23 @@ import {
   type HeroSlide
 } from '@/app/actions/cms-actions';
 import { cn } from '@/lib/utils';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  rectSortingStrategy,
+  useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 export const STYLE_OPTIONS = [
     { id: 'kenyan-flag', label: '🇰🇪 Kenyan Flag Colors' },
@@ -107,6 +125,48 @@ const DEFAULT_BANNER: BannerConfig = {
     holidayTextStyle: 'bold'
 };
 
+/**
+ * Sortable Keyword Item Component
+ */
+function SortableSearchPhrase({ phrase, id, onRemove }: { phrase: string, id: string, onRemove: (phrase: string) => void }) {
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+        isDragging
+    } = useSortable({ id });
+
+    const style = {
+        transform: CSS.Translate.toString(transform),
+        transition,
+        zIndex: isDragging ? 50 : 0
+    };
+
+    return (
+        <div 
+            ref={setNodeRef} 
+            style={style} 
+            className={cn(
+                "flex items-center gap-3 bg-secondary px-5 py-3 rounded-2xl border group transition-all",
+                isDragging ? "opacity-50 scale-105 shadow-xl border-primary" : "hover:border-primary/40"
+            )}
+        >
+            <button {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-primary">
+                <GripVertical size={16} />
+            </button>
+            <span className="text-base font-bold text-accent">{phrase}</span>
+            <button 
+                onClick={() => onRemove(phrase)}
+                className="text-muted-foreground hover:text-red-500 transition-colors"
+            >
+                <Trash2 size={16} />
+            </button>
+        </div>
+    );
+}
+
 export default function UiUxControlCenter() {
   const { toast } = useToast();
   const searchParams = useSearchParams();
@@ -124,6 +184,13 @@ export default function UiUxControlCenter() {
   const [heroSlides, setHeroSlides] = useState<HeroSlide[]>([]);
   const [categoryCards, setCategoryCards] = useState<any[]>([]);
   const [newPhrase, setNewPhrase] = useState('');
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   const loadAllSettings = useCallback(async () => {
     setLoading(true);
@@ -207,6 +274,17 @@ export default function UiUxControlCenter() {
           ...bannerConfig,
           highlighters: bannerConfig.highlighters?.filter((_, i) => i !== index)
       });
+  };
+
+  const handleSearchPhraseDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (over && active.id !== over.id) {
+      setSearchPhrases((items) => {
+        const oldIndex = items.indexOf(active.id as string);
+        const newIndex = items.indexOf(over.id as string);
+        return arrayMove(items, oldIndex, newIndex);
+      });
+    }
   };
 
   const getBackgroundColors = (styleType: string) => {
@@ -764,16 +842,40 @@ export default function UiUxControlCenter() {
 
                         <div className="flex gap-3">
                             <Input value={newPhrase} onChange={(e) => setNewPhrase(e.target.value)} placeholder="Add product's keyword" className="h-14 rounded-2xl text-lg font-bold" />
-                            <Button onClick={() => { if(newPhrase) { setSearchPhrases([...searchPhrases, newPhrase]); setNewPhrase(''); } }}>Add</Button>
+                            <Button onClick={() => { 
+                                if(newPhrase && !searchPhrases.includes(newPhrase)) { 
+                                    setSearchPhrases([...searchPhrases, newPhrase]); 
+                                    setNewPhrase(''); 
+                                } else if (newPhrase) {
+                                    toast({ variant: 'destructive', description: 'Keyword already exists.' });
+                                }
+                            }}>Add</Button>
                         </div>
-                        <div className="flex flex-wrap gap-3">
-                            {searchPhrases.map((phrase, i) => (
-                                <div key={i} className="flex items-center gap-3 bg-secondary px-5 py-3 rounded-2xl border">
-                                    <span className="text-base font-bold text-accent">{phrase}</span>
-                                    <button onClick={() => setSearchPhrases(searchPhrases.filter((_, idx) => idx !== i))}><Trash2 size={16} /></button>
-                                </div>
-                            ))}
+
+                        <div className="space-y-2">
+                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 mb-3 block">Arrangement Console (Drag to Reorder)</Label>
+                            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleSearchPhraseDragEnd}>
+                                <SortableContext items={searchPhrases} strategy={rectSortingStrategy}>
+                                    <div className="flex flex-wrap gap-3 p-6 bg-muted/20 rounded-[2rem] border border-dashed border-accent/10 min-h-[100px]">
+                                        {searchPhrases.map((phrase) => (
+                                            <SortableSearchPhrase 
+                                                key={phrase} 
+                                                id={phrase} 
+                                                phrase={phrase} 
+                                                onRemove={(p) => setSearchPhrases(searchPhrases.filter(item => item !== p))}
+                                            />
+                                        ))}
+                                        {searchPhrases.length === 0 && (
+                                            <div className="w-full flex flex-col items-center justify-center py-4 opacity-30">
+                                                <Settings2 size={24} />
+                                                <span className="text-[10px] font-black uppercase tracking-widest mt-2">No Keywords Defined</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                </SortableContext>
+                            </DndContext>
                         </div>
+
                         <Button onClick={() => updateStorefrontSetting('search_phrases', searchPhrases)} className="w-full h-14 rounded-full font-black uppercase bg-primary text-white mt-4 shadow-xl">Sync Keywords</Button>
                     </CardContent>
                 </Card>
