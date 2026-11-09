@@ -216,9 +216,60 @@ export default function UiUxControlCenter() {
     }
   };
 
-  const getOrientationClass = (orientation: string) => {
-    if (orientation === 'text-clip') return 'bg-transparent';
-    return getGradientDirection(orientation || 'horizontal');
+  const renderStyledBadgeText = (text: string, styleType: string, orientation: string, textStyle: string = "normal") => {
+    if (!text) return null;
+    
+    const isKenyanFlag = styleType === 'kenyan-flag';
+    const isVertical = orientation === 'vertical';
+
+    if (isKenyanFlag && isVertical) {
+      const upper = text.toUpperCase();
+      let p1 = "", p2 = "", p3 = "";
+      
+      if (upper === "MASHUJAA") {
+        p1 = "MA"; p2 = "SHU"; p3 = "JAA";
+      } else {
+        const len = text.length;
+        const s1 = Math.max(1, Math.ceil(len * 0.25));
+        const s2 = Math.max(s1 + 1, Math.ceil(len * 0.65));
+        p1 = text.substring(0, s1);
+        p2 = text.substring(s1, s2);
+        p3 = text.substring(s2);
+      }
+
+      const styleClasses = cn(
+        "font-black uppercase tracking-tight flex items-center",
+        textStyle === 'italic' && 'italic',
+        textStyle === 'bold' && 'font-black',
+        textStyle === 'underline' && 'underline',
+        textStyle === 'line-through' && 'line-through'
+      );
+
+      return (
+        <span className={styleClasses}>
+          <span className="text-black">{p1}</span>
+          <span className="text-red-600">{p2}</span>
+          <span className="text-green-600">{p3}</span>
+        </span>
+      );
+    }
+
+    const gradientDir = getGradientDirection(orientation);
+    const bgColors = getBackgroundColors(styleType);
+    
+    return (
+      <span className={cn(
+          "font-black bg-clip-text text-transparent animate-gradient-x bg-[length:200%_200%] uppercase whitespace-nowrap",
+          gradientDir, 
+          bgColors,
+          textStyle === 'italic' && 'italic',
+          textStyle === 'bold' && 'font-black',
+          textStyle === 'underline' && 'underline',
+          textStyle === 'line-through' && 'line-through'
+      )}>
+          {text}
+      </span>
+    );
   };
 
   const renderHighlightedText = (text: string) => {
@@ -325,7 +376,7 @@ export default function UiUxControlCenter() {
                             </div>
                             <div className={cn(
                                 "relative w-full overflow-hidden rounded-[2rem] border shadow-xl transition-all duration-500 h-16 flex items-center bg-[length:200%_200%] animate-gradient-x",
-                                bannerConfig.styleOrientation !== 'text-clip' && getOrientationClass(bannerConfig.styleOrientation || 'horizontal'),
+                                bannerConfig.styleOrientation !== 'text-clip' && getGradientDirection(bannerConfig.styleOrientation || 'horizontal'),
                                 bannerConfig.styleOrientation !== 'text-clip' && getBackgroundColors(bannerConfig.styleType),
                                 bannerConfig.styleOrientation === 'text-clip' && "bg-slate-50 border-slate-200"
                             )}>
@@ -339,30 +390,19 @@ export default function UiUxControlCenter() {
                                                     <div key={idx} className="flex items-center mx-12">
                                                         {/* Primary Badge */}
                                                         {bannerConfig.badgeText && (
-                                                            <div className="px-3 py-1 rounded-full bg-white mr-4 shadow-lg transform -skew-x-6 flex-shrink-0">
-                                                                <span className={cn(
-                                                                    "font-black text-xs bg-clip-text text-transparent animate-gradient-x bg-[length:200%_200%] uppercase",
-                                                                    gradientDir,
-                                                                    getBackgroundColors(bannerConfig.styleType)
-                                                                )}>
-                                                                    {bannerConfig.badgeText}
-                                                                </span>
+                                                            <div className="px-3 py-1 rounded-full bg-white mr-4 shadow-lg transform -skew-x-6 flex-shrink-0 flex items-center justify-center">
+                                                                {renderStyledBadgeText(bannerConfig.badgeText, bannerConfig.styleType, bannerConfig.styleOrientation || 'horizontal')}
                                                             </div>
                                                         )}
                                                         {/* Halloween Badge */}
                                                         {bannerConfig.halloweenText && (
-                                                            <div className="px-3 py-1 rounded-full bg-white mr-4 shadow-lg transform -skew-x-6 flex-shrink-0">
-                                                                <span className={cn(
-                                                                    "font-black text-xs bg-clip-text text-transparent animate-gradient-x bg-[length:200%_200%] uppercase",
-                                                                    getGradientDirection(bannerConfig.halloweenOrientation || 'horizontal'),
-                                                                    getBackgroundColors(bannerConfig.halloweenStyleType || 'fire-emoji'),
-                                                                    bannerConfig.halloweenTextStyle === 'italic' && 'italic',
-                                                                    bannerConfig.halloweenTextStyle === 'bold' && 'font-bold',
-                                                                    bannerConfig.halloweenTextStyle === 'underline' && 'underline',
-                                                                    bannerConfig.halloweenTextStyle === 'line-through' && 'line-through'
-                                                                )}>
-                                                                    {bannerConfig.halloweenText}
-                                                                </span>
+                                                            <div className="px-3 py-1 rounded-full bg-white mr-4 shadow-lg transform -skew-x-6 flex-shrink-0 flex items-center justify-center">
+                                                                {renderStyledBadgeText(
+                                                                    bannerConfig.halloweenText, 
+                                                                    bannerConfig.halloweenStyleType || 'fire-emoji', 
+                                                                    bannerConfig.halloweenOrientation || 'horizontal',
+                                                                    bannerConfig.halloweenTextStyle
+                                                                )}
                                                             </div>
                                                         )}
                                                         {/* Marquee Item */}

@@ -29,8 +29,8 @@ interface BannerConfig {
 }
 
 /**
- * High-Fidelity Independent Top Banner v15.0:
- * Optimized for seamless looping and dynamic text-clipping on badges.
+ * High-Fidelity Independent Top Banner v16.0:
+ * Features specialized character-splitting logic for the Kenyan Flag visual style.
  */
 export default function TopBanner() {
   const [config, setConfig] = useState<BannerConfig>({
@@ -86,9 +86,60 @@ export default function TopBanner() {
     }
   };
 
-  const getOrientationClass = (orientation: string) => {
-    if (orientation === 'text-clip') return 'bg-transparent';
-    return getGradientDirection(orientation || 'horizontal');
+  const renderStyledBadgeText = (text: string, styleType: string, orientation: string, textStyle: string = "normal") => {
+    if (!text) return null;
+    
+    const isKenyanFlag = styleType === 'kenyan-flag';
+    const isVertical = orientation === 'vertical';
+
+    if (isKenyanFlag && isVertical) {
+      const upper = text.toUpperCase();
+      let p1 = "", p2 = "", p3 = "";
+      
+      if (upper === "MASHUJAA") {
+        p1 = "MA"; p2 = "SHU"; p3 = "JAA";
+      } else {
+        const len = text.length;
+        const s1 = Math.max(1, Math.ceil(len * 0.25));
+        const s2 = Math.max(s1 + 1, Math.ceil(len * 0.65));
+        p1 = text.substring(0, s1);
+        p2 = text.substring(s1, s2);
+        p3 = text.substring(s2);
+      }
+
+      const styleClasses = cn(
+        "font-black uppercase tracking-tight flex items-center",
+        textStyle === 'italic' && 'italic',
+        textStyle === 'bold' && 'font-black',
+        textStyle === 'underline' && 'underline',
+        textStyle === 'line-through' && 'line-through'
+      );
+
+      return (
+        <span className={styleClasses}>
+          <span className="text-black">{p1}</span>
+          <span className="text-red-600">{p2}</span>
+          <span className="text-green-600">{p3}</span>
+        </span>
+      );
+    }
+
+    const gradientDir = getGradientDirection(orientation);
+    const bgColors = getBackgroundColors(styleType);
+    
+    return (
+      <span className={cn(
+          "font-black bg-clip-text text-transparent animate-gradient-x bg-[length:200%_200%] uppercase whitespace-nowrap",
+          gradientDir, 
+          bgColors,
+          textStyle === 'italic' && 'italic',
+          textStyle === 'bold' && 'font-black',
+          textStyle === 'underline' && 'underline',
+          textStyle === 'line-through' && 'line-through'
+      )}>
+          {text}
+      </span>
+    );
   };
 
   const renderHighlightedText = (text: string) => {
@@ -130,8 +181,9 @@ export default function TopBanner() {
     <div 
       className={cn(
         "w-full text-white py-1.5 px-4 bg-[length:200%_200%] animate-gradient-x border-b border-white/5 overflow-hidden",
-        getOrientationClass(config.styleOrientation || 'horizontal'),
-        config.styleOrientation !== 'text-clip' && getBackgroundColors(config.styleType)
+        config.styleOrientation !== 'text-clip' && getGradientDirection(config.styleOrientation || 'horizontal'),
+        config.styleOrientation !== 'text-clip' && getBackgroundColors(config.styleType),
+        config.styleOrientation === 'text-clip' && "bg-transparent"
       )}
       style={{ color: config.textColor }}
     >
@@ -154,13 +206,14 @@ export default function TopBanner() {
                 {config.items.map((item, idx) => {
                   const isClipped = config.styleOrientation === 'text-clip';
                   const gradientDir = getGradientDirection(config.styleOrientation || 'horizontal');
+                  const bgColors = getBackgroundColors(config.styleType);
 
                   return (
                     <li 
                         key={idx} 
                         className={cn(
                             "flex items-center uppercase tracking-widest",
-                            isClipped && cn("bg-clip-text text-transparent animate-gradient-x bg-[length:200%_200%]", gradientDir, getBackgroundColors(config.styleType))
+                            isClipped && cn("bg-clip-text text-transparent animate-gradient-x bg-[length:200%_200%]", gradientDir, bgColors)
                         )}
                         style={{ 
                             fontSize: `${Math.min(config.fontSize, 14)}px`,
@@ -168,29 +221,18 @@ export default function TopBanner() {
                         }}
                     >
                         {config.badgeText && (
-                            <span className="px-3 py-1 rounded-full bg-white mr-4 shadow-lg transform -skew-x-6 flex-shrink-0">
-                                <span className={cn(
-                                    "font-black bg-clip-text text-transparent animate-gradient-x bg-[length:200%_200%] uppercase",
-                                    gradientDir, 
-                                    getBackgroundColors(config.styleType)
-                                )}>
-                                    {config.badgeText}
-                                </span>
+                            <span className="px-3 py-1 rounded-full bg-white mr-4 shadow-lg transform -skew-x-6 flex-shrink-0 flex items-center justify-center">
+                                {renderStyledBadgeText(config.badgeText, config.styleType, config.styleOrientation || 'horizontal')}
                             </span>
                         )}
                         {config.halloweenText && (
-                            <span className="px-3 py-1 rounded-full bg-white mr-4 shadow-lg transform -skew-x-6 flex-shrink-0">
-                                <span className={cn(
-                                    "font-black bg-clip-text text-transparent animate-gradient-x bg-[length:200%_200%] uppercase",
-                                    getGradientDirection(config.halloweenOrientation || 'horizontal'), 
-                                    getBackgroundColors(config.halloweenStyleType || 'fire-emoji'),
-                                    config.halloweenTextStyle === 'italic' && 'italic',
-                                    config.halloweenTextStyle === 'bold' && 'font-bold',
-                                    config.halloweenTextStyle === 'underline' && 'underline',
-                                    config.halloweenTextStyle === 'line-through' && 'line-through'
-                                )}>
-                                    {config.halloweenText}
-                                </span>
+                            <span className="px-3 py-1 rounded-full bg-white mr-4 shadow-lg transform -skew-x-6 flex-shrink-0 flex items-center justify-center">
+                                {renderStyledBadgeText(
+                                  config.halloweenText, 
+                                  config.halloweenStyleType || 'fire-emoji', 
+                                  config.halloweenOrientation || 'horizontal',
+                                  config.halloweenTextStyle
+                                )}
                             </span>
                         )}
                         {renderHighlightedText(item)}
