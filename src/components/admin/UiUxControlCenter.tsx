@@ -245,7 +245,7 @@ export default function UiUxControlCenter() {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
                             <div className="space-y-3">
                                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Visual Style Engine</Label>
                                 <select 
@@ -267,48 +267,56 @@ export default function UiUxControlCenter() {
                                     {ORIENTATION_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
                                 </select>
                             </div>
+                        </div>
 
-                            <div className="space-y-3">
-                                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 flex items-center gap-2">
-                                    <Settings2 className="h-3.5 w-3.5" /> Keyword Highlighter
-                                </Label>
-                                <div className="p-4 bg-muted/20 rounded-xl border border-dashed border-accent/10 min-h-[48px]">
-                                    {bannerConfig.highlighters && bannerConfig.highlighters.length > 0 ? (
-                                        <div className="space-y-4">
+                        <div className="space-y-3 pt-8 border-t border-dashed mt-4">
+                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 flex items-center gap-2">
+                                <Settings2 className="h-3.5 w-3.5" /> Keyword Highlighter
+                            </Label>
+                            <div className="p-6 bg-muted/20 rounded-2xl border border-dashed border-accent/10 min-h-[48px]">
+                                {bannerConfig.highlighters && bannerConfig.highlighters.length > 0 ? (
+                                    <div className="space-y-6">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                             {bannerConfig.highlighters.map((rule, idx) => (
-                                                <div key={idx} className="space-y-2 border-b border-accent/5 pb-4 last:border-0">
-                                                    <div className="flex items-center gap-2">
-                                                        <Input 
-                                                            value={rule.word} 
-                                                            onChange={(e) => updateHighlighterRule(idx, 'word', e.target.value)}
-                                                            placeholder="Keyword (e.g. OFFER)"
-                                                            className="h-9 text-xs rounded-lg font-bold"
-                                                        />
-                                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500" onClick={() => removeHighlighterRule(idx)}>
+                                                <div key={idx} className="p-4 bg-white rounded-xl border shadow-sm space-y-3 relative group">
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="text-[9px] font-black uppercase text-primary tracking-widest">Rule #{idx + 1}</span>
+                                                        <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => removeHighlighterRule(idx)}>
                                                             <Trash2 size={14} />
                                                         </Button>
                                                     </div>
-                                                    <div className="space-y-1">
-                                                        <Label className="text-[8px] font-black uppercase text-muted-foreground">Color Cycle (Hex sequence)</Label>
+                                                    <div className="space-y-1.5">
+                                                        <Label className="text-[8px] font-black uppercase text-muted-foreground">Keyword</Label>
+                                                        <Input 
+                                                            value={rule.word} 
+                                                            onChange={(e) => updateHighlighterRule(idx, 'word', e.target.value)}
+                                                            placeholder="e.g. OFFER"
+                                                            className="h-10 text-xs rounded-lg font-black"
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-1.5">
+                                                        <Label className="text-[8px] font-black uppercase text-muted-foreground">Color Cycle (Hex)</Label>
                                                         <Input 
                                                             value={rule.colors.join(', ')} 
                                                             onChange={(e) => updateHighlighterRule(idx, 'colors', e.target.value.split(',').map(c => c.trim()))}
-                                                            placeholder="#00808d, #ef4444..."
-                                                            className="h-8 text-[10px] rounded-lg font-mono"
+                                                            placeholder="#00808d, #ef4444"
+                                                            className="h-10 text-[10px] rounded-lg font-mono"
                                                         />
                                                     </div>
                                                 </div>
                                             ))}
-                                            <Button variant="outline" size="sm" className="w-full h-8 text-[10px] font-black uppercase tracking-widest rounded-lg" onClick={addHighlighterRule}>
-                                                <Plus size={10} className="mr-1" /> Add Rule
-                                            </Button>
                                         </div>
-                                    ) : (
-                                        <Button variant="link" size="sm" className="p-0 h-auto text-[10px] font-black uppercase text-primary" onClick={addHighlighterRule}>
+                                        <Button variant="outline" size="sm" className="rounded-full h-10 px-6 font-black uppercase text-[10px] tracking-widest border-primary/40 text-primary hover:bg-primary/5" onClick={addHighlighterRule}>
+                                            <Plus size={14} className="mr-2" /> Add Rule
+                                        </Button>
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-4">
+                                        <Button variant="link" size="sm" className="p-0 h-auto text-[10px] font-black uppercase text-primary tracking-widest" onClick={addHighlighterRule}>
                                             Initialize Highlight Engine
                                         </Button>
-                                    )}
-                                </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
 
