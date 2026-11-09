@@ -15,24 +15,25 @@ const genAI = new GoogleGenerativeAI(apiKey);
 export async function POST(req: Request) {
   try {
     const { message } = await req.json();
-    const query = (message || '').toLowerCase();
+    const query = (message || '').toLowerCase().trim();
 
     // ----------------------------------------------------
-    // STEP 1: Smart Catalog Matching (Only trigger if user wants to buy/find a product)
+    // STEP 1: Expanded Shopping Intent & Catalog Matching
     // ----------------------------------------------------
-    const isShoppingQuery = 
-        query.includes('price') || 
-        query.includes('cost') || 
-        query.includes('buy') || 
-        query.includes('stock') || 
-        query.includes('do you have') || 
-        query.includes('how much');
+    const shoppingIntentWords = [
+      'price', 'cost', 'buy', 'stock', 'do you have', 'how much',
+      'order', 'catalog', 'shop', 'sale', 'available', 'looking for',
+      'find', 'get', 'purchase', 'want', 'show me'
+    ];
+    
+    const hasShoppingIntent = shoppingIntentWords.some(word => query.includes(word));
 
     const productKeywords = ['tank', 'pipe', 'cable', 'wire', 'light', 'heater', 'pump', 'socket', 'bell', 'plumbing', 'electrical', 'roofing'];
     const matchedKeyword = productKeywords.find(kw => query.includes(kw));
 
-    // Only search database if it's a shopping question OR explicitly names a product without "how do i"
-    if (matchedKeyword && (isShoppingQuery || !query.startsWith('how do i'))) {
+    // Only search Supabase if it's explicitly a product search or shopping request
+    // We bypass DB if it looks like a "how to", "what is", or math query
+    if (matchedKeyword && (hasShoppingIntent || (!query.includes('how do i') && !query.includes('what is') && !query.includes('+')))) {
       const { data: products, error } = await supabase
         .from('products')
         .select('name, price, stock_count, category')
@@ -55,16 +56,16 @@ export async function POST(req: Request) {
     }
 
     // ----------------------------------------------------
-    // STEP 2: Fallback to Free Google Gemini API (Handles "How do I...", math, and general advice)
+    // STEP 2: Fallback to Free Google Gemini AI (Math, General, & Technical Advice)
     // ----------------------------------------------------
     if (!apiKey) {
       return NextResponse.json({
-        reply: "Welcome to Alpha Electricals & Plumbing Ltd! Please check our Products menu above or contact our team directly."
+        reply: "Welcome to Alpha Electricals & Plumbing Ltd! Please check our Products menu above or contact our team directly via WhatsApp."
       });
     }
 
     const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-    const prompt = `You are Alpha AI, a helpful shopping and technical assistant for Alpha Electricals & Plumbing Ltd in Kenya. Keep your answers concise, professional, and practical for customers asking about electrical supplies, plumbing equipment, installation guides, or general hardware queries. User query: "${message}"`;
+    const prompt = `You are Alpha AI, a helpful assistant for Alpha Electricals & Plumbing Ltd in Kenya. Provide direct, accurate, and professional answers to user questions (including math, calculations, general inquiries, and technical guides like wiring switches or plumbing setups). User query: "${message}"`;
 
     const result = await model.generateContent(prompt);
     const aiResponse = result.response.text();
@@ -73,9 +74,10 @@ export async function POST(req: Request) {
 
   } catch (error) {
     console.error('Chat API Error:', error);
+    // Returns a friendly fallback text instead of a hard crash 500 error
     return NextResponse.json(
-      { reply: "I'm having a temporary connection issue. Please explore our categories above or reach out via our Contact Us page!" },
-      { status: 500 }
+      { reply: "Welcome to Alpha Electricals & Plumbing! How can I help you today? Feel free to ask about our products or hardware advice, or reach out to our team via the Contact Us page." },
+      { status: 200 } 
     );
   }
 }
