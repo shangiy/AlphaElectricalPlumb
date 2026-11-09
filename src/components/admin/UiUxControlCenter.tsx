@@ -20,7 +20,8 @@ import {
   Zap,
   Type,
   Plus,
-  Settings2
+  Settings2,
+  X
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import FeaturedProductManager from './FeaturedProductManager';
@@ -296,11 +297,54 @@ export default function UiUxControlCenter() {
                                                     </div>
                                                     <div className="space-y-1.5">
                                                         <Label className="text-[8px] font-black uppercase text-muted-foreground">Color Cycle (Hex)</Label>
+                                                        <div className="flex flex-wrap gap-2 mb-2">
+                                                            {rule.colors.map((color, cIdx) => (
+                                                                <div key={cIdx} className="group/color relative">
+                                                                    <input 
+                                                                        type="color" 
+                                                                        value={color.startsWith('#') ? color : '#00808d'} 
+                                                                        onChange={(e) => {
+                                                                            const newColors = [...rule.colors];
+                                                                            newColors[cIdx] = e.target.value;
+                                                                            updateHighlighterRule(idx, 'colors', newColors);
+                                                                        }}
+                                                                        className="h-8 w-8 rounded-full cursor-pointer border-2 border-white shadow-sm hover:scale-110 transition-transform"
+                                                                    />
+                                                                    <button 
+                                                                        type="button"
+                                                                        onClick={() => {
+                                                                            const newColors = rule.colors.filter((_, i) => i !== cIdx);
+                                                                            updateHighlighterRule(idx, 'colors', newColors);
+                                                                        }}
+                                                                        className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover/color:opacity-100 transition-opacity z-10"
+                                                                    >
+                                                                        <X size={8} />
+                                                                    </button>
+                                                                </div>
+                                                            ))}
+                                                            <div className="relative">
+                                                                <Button 
+                                                                    variant="outline" 
+                                                                    size="icon" 
+                                                                    className="h-8 w-8 rounded-full border-dashed"
+                                                                    type="button"
+                                                                >
+                                                                    <Plus size={12} />
+                                                                    <input 
+                                                                        type="color" 
+                                                                        onChange={(e) => {
+                                                                            updateHighlighterRule(idx, 'colors', [...rule.colors, e.target.value]);
+                                                                        }}
+                                                                        className="absolute inset-0 opacity-0 cursor-pointer"
+                                                                    />
+                                                                </Button>
+                                                            </div>
+                                                        </div>
                                                         <Input 
                                                             value={rule.colors.join(', ')} 
                                                             onChange={(e) => updateHighlighterRule(idx, 'colors', e.target.value.split(',').map(c => c.trim()))}
                                                             placeholder="#00808d, #ef4444"
-                                                            className="h-10 text-[10px] rounded-lg font-mono"
+                                                            className="h-8 text-[9px] rounded-lg font-mono bg-muted/10"
                                                         />
                                                     </div>
                                                 </div>
@@ -326,7 +370,7 @@ export default function UiUxControlCenter() {
                                 <span className="text-[10px] font-black uppercase tracking-widest">Logic Hub</span>
                             </div>
                             <p className="text-[11px] text-muted-foreground italic leading-relaxed">
-                                Tip: The Keyword Highlighter allows you to define custom color cycles for specific words. For example, setting <span className="font-bold text-accent">OFFER</span> with a list of colors will color each occurrence in order.
+                                Tip: The Keyword Highlighter allows you to define custom color cycles for specific words. Use the chips above to pick colors visually, or type/paste hex codes directly into the input.
                             </p>
                         </div>
 
