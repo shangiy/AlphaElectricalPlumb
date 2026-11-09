@@ -22,7 +22,8 @@ export interface HeroSlide {
     subheading: string;
     ctaText: string;
     ctaLink: string;
-    imageUrl: string;
+    imageUrl: string; // Legacy fallback
+    imageUrls?: string[]; // Multi-image support
     order: number;
     active: boolean;
     // Advanced Styling

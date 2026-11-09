@@ -13,13 +13,14 @@ const HeroSearch = dynamic(() => import('./HeroSearch'), {
 });
 
 /**
- * Dynamic Detached Hero Section v12.5
- * Features Absolute Input Fidelity and Global Typography Engine.
+ * Dynamic Detached Hero Section v13.0
+ * Features Background Carousels and Multi-Campaign Auto-Play.
  */
 export default function Hero() {
   const [slides, setSlides] = useState<HeroSlide[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeSlideIndex, setActiveSlideIndex] = useState(0);
+  const [bgImageIndex, setBgImageIndex] = useState(0);
 
   useEffect(() => {
     async function loadCampaigns() {
@@ -36,9 +37,36 @@ export default function Hero() {
     loadCampaigns();
   }, []);
 
+  // GLOBAL AUTO-PLAY: Cycles between campaigns
+  useEffect(() => {
+    if (slides.length <= 1) return;
+
+    const interval = setInterval(() => {
+      setActiveSlideIndex((prev) => (prev + 1) % slides.length);
+    }, 8000); // Cycle every 8 seconds
+
+    return () => clearInterval(interval);
+  }, [slides.length]);
+
+  // INTERNAL BACKGROUND CAROUSEL: Cycles backgrounds within a single slide
+  useEffect(() => {
+    const currentSlide = slides[activeSlideIndex];
+    const bgImages = currentSlide?.imageUrls || (currentSlide?.imageUrl ? [currentSlide.imageUrl] : []);
+    
+    if (bgImages.length <= 1) {
+        setBgImageIndex(0);
+        return;
+    }
+
+    const interval = setInterval(() => {
+      setBgImageIndex((prev) => (prev + 1) % bgImages.length);
+    }, 5000); // Internal bg cycle every 5 seconds
+
+    return () => clearInterval(interval);
+  }, [activeSlideIndex, slides]);
+
   const categoryTags = ["Water Tanks", "LED Lights", "PPR Pipes", "Solar Heaters"];
 
-  // Show a fallback if no slides are available
   if (loading || slides.length === 0) {
       return (
         <section className="relative w-full overflow-hidden bg-[#0a0f1e] min-h-[75vh] flex items-center">
@@ -55,27 +83,36 @@ export default function Hero() {
   }
 
   const slide = slides[activeSlideIndex];
+  const bgImages = slide.imageUrls || (slide.imageUrl ? [slide.imageUrl] : []);
 
   return (
-    <section 
-        className="relative w-full overflow-hidden bg-[#0a0f1e] min-h-[85vh] flex items-center transition-all duration-1000"
-        style={{ 
-            backgroundImage: slide.imageUrl ? `url('${slide.imageUrl}')` : 'none',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center'
-        }}
-    >
+    <section className="relative w-full overflow-hidden bg-[#0a0f1e] min-h-[85vh] flex items-center transition-all duration-1000">
+      
+      {/* Dynamic Background Layer (Carousel Support) */}
+      <div className="absolute inset-0 z-0">
+          {bgImages.map((url, idx) => (
+              <div 
+                  key={`${url}-${idx}`}
+                  className={cn(
+                      "absolute inset-0 bg-cover bg-center transition-all duration-[2000ms] ease-in-out transform",
+                      idx === bgImageIndex ? "opacity-100 scale-100" : "opacity-0 scale-110"
+                  )}
+                  style={{ backgroundImage: `url('${url}')` }}
+              />
+          ))}
+      </div>
+
       {/* Blueprint Pattern Overlay */}
       <div 
-        className="absolute inset-0 opacity-20 pointer-events-none"
+        className="absolute inset-0 opacity-20 pointer-events-none z-10"
         style={{ 
           backgroundImage: `radial-gradient(#1e293b 1px, transparent 0)`,
           backgroundSize: '30px 30px'
         }}
       />
-      <div className="absolute inset-0 bg-gradient-to-b from-[#0a0f1e]/90 via-transparent to-[#0a0f1e]" />
+      <div className="absolute inset-0 bg-gradient-to-b from-[#0a0f1e]/90 via-transparent to-[#0a0f1e] z-10" />
 
-      <div className="relative z-10 container mx-auto max-w-7xl px-6 py-20 md:py-32">
+      <div className="relative z-20 container mx-auto max-w-7xl px-6 py-20 md:py-32">
         <div className="flex flex-col gap-8 max-w-4xl animate-in fade-in slide-in-from-bottom-8 duration-1000">
           <div className="space-y-4">
             <h1 
@@ -152,13 +189,16 @@ export default function Hero() {
         </div>
       </div>
 
-      {/* Slide Indicators if multiple */}
+      {/* Slide Indicators */}
       {slides.length > 1 && (
-          <div className="absolute bottom-10 right-10 flex gap-3 z-20">
+          <div className="absolute bottom-10 right-10 flex gap-3 z-30">
               {slides.map((_, i) => (
                   <button 
                     key={i} 
-                    onClick={() => setActiveSlideIndex(i)}
+                    onClick={() => {
+                        setActiveSlideIndex(i);
+                        setBgImageIndex(0);
+                    }}
                     className={cn(
                         "h-1.5 rounded-full transition-all duration-500",
                         activeSlideIndex === i ? "bg-primary w-12" : "bg-white/20 w-4 hover:bg-white/40"

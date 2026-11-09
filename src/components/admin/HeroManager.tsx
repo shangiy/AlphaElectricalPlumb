@@ -18,7 +18,8 @@ import {
     Upload,
     ChevronUp,
     ChevronDown,
-    Image as ImageIcon
+    Image as ImageIcon,
+    X
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
@@ -76,8 +77,15 @@ export default function HeroManager({ initialSlides }: { initialSlides: HeroSlid
         setUploadingId(id);
         try {
             const url = await uploadImage(file, 'Hero div images');
-            handleUpdate(id, { imageUrl: url });
-            toast({ title: "Asset Ready", description: "Background image synchronized with Hero cloud storage." });
+            const currentSlide = slides.find(s => s.id === id);
+            const currentUrls = currentSlide?.imageUrls || (currentSlide?.imageUrl ? [currentSlide.imageUrl] : []);
+            
+            handleUpdate(id, { 
+                imageUrls: [...currentUrls, url],
+                imageUrl: url // Maintain legacy for now
+            });
+            
+            toast({ title: "Asset Ready", description: "Background asset synchronized with Hero cloud storage." });
         } catch (error: any) {
             console.error("Hero upload failed:", error);
             toast({ 
@@ -91,6 +99,19 @@ export default function HeroManager({ initialSlides }: { initialSlides: HeroSlid
         }
     };
 
+    const removeImage = (slideId: string, urlToRemove: string) => {
+        const currentSlide = slides.find(s => s.id === slideId);
+        if (!currentSlide) return;
+        
+        const currentUrls = currentSlide.imageUrls || (currentSlide.imageUrl ? [currentSlide.imageUrl] : []);
+        const updatedUrls = currentUrls.filter(u => u !== urlToRemove);
+        
+        handleUpdate(slideId, { 
+            imageUrls: updatedUrls,
+            imageUrl: updatedUrls[0] || ''
+        });
+    };
+
     const handleAddSlide = () => {
         const newSlide: HeroSlide = {
             id: `slide-${Date.now()}`,
@@ -101,6 +122,7 @@ export default function HeroManager({ initialSlides }: { initialSlides: HeroSlid
             ctaText: 'Shop Now',
             ctaLink: '/search',
             imageUrl: '/background.jpg',
+            imageUrls: ['/background.jpg'],
             order: slides.length + 1,
             active: true,
             headlineColor: '#ffffff',
@@ -151,6 +173,8 @@ export default function HeroManager({ initialSlides }: { initialSlides: HeroSlid
 
             <div className="space-y-12">
                 {slides.map((slide, index) => {
+                    const currentImages = slide.imageUrls || (slide.imageUrl ? [slide.imageUrl] : []);
+                    
                     return (
                         <div key={slide.id} className={cn("bg-white rounded-[3rem] border shadow-xl p-10 relative overflow-hidden transition-all hover:shadow-2xl", !slide.active && "opacity-60 grayscale bg-muted/20")}>
                             <div className="flex justify-between items-center mb-8 border-b pb-6">
@@ -363,63 +387,58 @@ export default function HeroManager({ initialSlides }: { initialSlides: HeroSlid
                                     </div>
                                 </div>
 
-                                {/* MEDIA MANAGEMENT (Cloud Assets & Interactive Preview) */}
+                                {/* MEDIA MANAGEMENT (Cloud Assets & Interactive Gallery) */}
                                 <div className="pt-10 mt-4 border-t border-dashed">
-                                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/60 mb-6 block">Visual Identity & Cloud Assets</span>
-                                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
-                                        {/* Precision Upload Node with Real-time Preview */}
-                                        <div className="lg:col-span-5">
-                                            <div className="relative group cursor-pointer border-2 border-dashed rounded-[2.5rem] p-2 hover:border-primary transition-all duration-500 bg-muted/20 text-center aspect-video flex flex-col items-center justify-center overflow-hidden shadow-inner">
-                                                <input 
-                                                    type="file" 
-                                                    accept="image/*" 
-                                                    className="absolute inset-0 opacity-0 cursor-pointer z-30" 
-                                                    onChange={(e) => handleImageUpload(slide.id, e)}
-                                                    disabled={uploadingId === slide.id}
-                                                />
+                                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/60 mb-6 block">Campaign Assets & Multi-Image Carousel</span>
+                                    
+                                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+                                        {/* Multi-Image Gallery Manager */}
+                                        <div className="lg:col-span-12">
+                                            <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-4 mb-6">
+                                                {currentImages.map((url, i) => (
+                                                    <div key={`${url}-${i}`} className="group relative aspect-video rounded-2xl overflow-hidden border bg-muted shadow-md">
+                                                        <img src={url} alt={`Background ${i + 1}`} className="w-full h-full object-cover" />
+                                                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                                            <button 
+                                                                onClick={() => removeImage(slide.id, url)}
+                                                                className="h-10 w-10 rounded-full bg-red-500 text-white flex items-center justify-center hover:scale-110 transition-transform"
+                                                            >
+                                                                <X size={20} />
+                                                            </button>
+                                                        </div>
+                                                        <div className="absolute bottom-1 left-2">
+                                                            <span className="text-[8px] font-black text-white uppercase drop-shadow-md">Slot {i + 1}</span>
+                                                        </div>
+                                                    </div>
+                                                ))}
                                                 
-                                                {uploadingId === slide.id ? (
-                                                    <div className="flex flex-col items-center gap-3">
-                                                        <Loader2 className="h-12 w-12 animate-spin text-primary" />
-                                                        <span className="text-[10px] font-black text-primary uppercase animate-pulse">Mapping to Supabase...</span>
-                                                    </div>
-                                                ) : slide.imageUrl ? (
-                                                    <>
-                                                        <img src={slide.imageUrl} alt="Background Preview" className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" />
-                                                        <div className="absolute inset-0 bg-accent/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2">
-                                                            <Upload className="text-white h-10 w-10" />
-                                                            <span className="text-[10px] font-black text-white uppercase tracking-widest">Replace Background</span>
+                                                {/* Upload Trigger Node */}
+                                                <div className="relative group cursor-pointer border-2 border-dashed rounded-2xl hover:border-primary transition-all bg-muted/20 aspect-video flex flex-col items-center justify-center">
+                                                    <input 
+                                                        type="file" 
+                                                        accept="image/*" 
+                                                        className="absolute inset-0 opacity-0 cursor-pointer z-30" 
+                                                        onChange={(e) => handleImageUpload(slide.id, e)}
+                                                        disabled={uploadingId === slide.id}
+                                                    />
+                                                    {uploadingId === slide.id ? (
+                                                        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                                                    ) : (
+                                                        <div className="flex flex-col items-center gap-1 opacity-40 group-hover:opacity-100 transition-opacity">
+                                                            <Plus className="h-6 w-6" />
+                                                            <span className="text-[8px] font-black uppercase">Add Image</span>
                                                         </div>
-                                                    </>
-                                                ) : (
-                                                    <div className="flex flex-col items-center gap-4 py-12 text-muted-foreground opacity-40 group-hover:opacity-100 group-hover:scale-105 transition-all">
-                                                        <div className="h-20 w-20 rounded-3xl bg-white shadow-xl flex items-center justify-center">
-                                                            <Upload className="h-10 w-10 text-primary" />
-                                                        </div>
-                                                        <span className="text-[10px] font-black uppercase tracking-[0.2em]">Upload Campaign Asset</span>
-                                                    </div>
-                                                )}
+                                                    )}
+                                                </div>
                                             </div>
-                                        </div>
-                                        
-                                        {/* URL Configuration & Storage Feedback */}
-                                        <div className="lg:col-span-7 space-y-6">
-                                            <div className="space-y-2">
-                                                <Label className="text-[10px] font-black uppercase text-muted-foreground/60 tracking-widest ml-1">Cloud Asset Endpoint (URL)</Label>
-                                                <Input 
-                                                    value={slide.imageUrl} 
-                                                    onChange={(e) => handleUpdate(slide.id, { imageUrl: e.target.value })} 
-                                                    className="h-14 rounded-2xl font-mono text-[11px] bg-muted/20 border-none shadow-inner px-6" 
-                                                    placeholder="Enter secure URL or use upload node ->"
-                                                />
-                                            </div>
+
                                             <div className="p-5 rounded-2xl bg-primary/5 border border-primary/10 flex items-start gap-4">
                                                 <div className="h-10 w-10 rounded-xl bg-white shadow-sm flex items-center justify-center shrink-0">
                                                     <Sparkles className="h-5 w-5 text-primary" />
                                                 </div>
                                                 <div className="text-[11px] leading-relaxed text-muted-foreground font-medium">
-                                                    <span className="block font-black text-accent uppercase mb-1">Rendering Engine Note</span>
-                                                    Uploaded assets are synchronized with the <span className="text-primary font-bold">Hero div images</span> cluster. For maximum visual fidelity on 4K displays, ensure your aspect ratio is 16:9.
+                                                    <span className="block font-black text-accent uppercase mb-1">Background Carousel Active</span>
+                                                    If you upload multiple images, the campaign background will automatically cycle behind the text. This creates a high-impact, dynamic storefront experience. 
                                                 </div>
                                             </div>
                                         </div>
