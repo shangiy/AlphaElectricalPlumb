@@ -31,13 +31,15 @@ import { useAuth } from '@/context/AuthProvider';
 import { useCart } from '@/context/CartProvider';
 import ShoppingCartComponent from './ShoppingCart';
 import HeroSearch from './HeroSearch';
+import { cn } from '@/lib/utils';
 
 /**
- * Fixed Navigation Header v9.0
+ * Fixed Navigation Header v9.2
  * Features:
  * - Persistent fixed-top positioning
  * - Enforced Branding: No pink, replaced with #8a0b0d highlights
  * - Central High-Res Search Bar matching provided reference
+ * - LATERAL BUBBLE MOBILE SEARCH: Expands horizontally to the left in-line.
  */
 export default function Header() {
   const { user } = useAuth();
@@ -108,8 +110,15 @@ export default function Header() {
         </div>
 
         {/* MOBILE VIEW (<LG) */}
-        <div className="w-full lg:hidden flex items-center justify-between h-full">
-          <NextLink href="/" className="flex-shrink-0">
+        <div className="w-full lg:hidden flex items-center justify-between h-full gap-2 overflow-hidden">
+          {/* Logo Node: Shrinks/Fades when search takes over the space */}
+          <NextLink 
+            href="/" 
+            className={cn(
+              "flex-shrink-0 transition-all duration-700 ease-[cubic-bezier(0.19,1,0.22,1)]",
+              mobileSearchOpen ? "scale-0 w-0 opacity-0 invisible" : "scale-100 opacity-100"
+            )}
+          >
             <Image 
               src="/logo Alpha.png" 
               alt="Alpha Logo" 
@@ -119,48 +128,64 @@ export default function Header() {
             />
           </NextLink>
 
-          <div className="flex items-center gap-2">
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="text-white h-10 w-10 border border-white/10 rounded-full"
-              onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
-            >
-              <Search className="h-5 w-5" />
-            </Button>
+          {/* Action Row & Lateral Expansion Interface */}
+          <div className="flex-1 flex items-center justify-end gap-2 h-full">
+            
+            {/* Horizontal Expansion Hub */}
+            <div className={cn(
+              "flex items-center transition-all duration-700 ease-[cubic-bezier(0.19,1,0.22,1)] overflow-hidden",
+              mobileSearchOpen ? "flex-1 opacity-100" : "w-0 opacity-0 pointer-events-none"
+            )}>
+              <div className="w-full pl-1 pr-2 animate-in slide-in-from-right-8 duration-700">
+                <HeroSearch compact onSearch={() => setMobileSearchOpen(false)} />
+              </div>
+            </div>
 
-            <ShoppingCartComponent triggerClassName="h-10 w-10 text-white border border-white/10 rounded-full" />
+            <div className="flex items-center gap-2 flex-shrink-0">
+              {/* Trigger Anchor: Animates rotation and icon swap */}
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className={cn(
+                  "text-white h-10 w-10 border border-white/10 rounded-full transition-all duration-500 hover:bg-white/10 active:scale-90",
+                  mobileSearchOpen && "bg-white/10 rotate-90 border-white/30"
+                )}
+                onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
+              >
+                {mobileSearchOpen ? <X className="h-5 w-5" /> : <Search className="h-5 w-5" />}
+              </Button>
 
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="text-white h-10 w-10 border border-white/10 rounded-full">
-                  <Menu className="h-5 w-5" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="right" className="bg-[#0b0f19] border-l-white/10 text-white">
-                <SheetHeader>
-                  <SheetTitle className="text-white text-left font-black uppercase tracking-widest">Menu</SheetTitle>
-                  <SheetDescription className="sr-only">Main Navigation</SheetDescription>
-                </SheetHeader>
-                <div className="flex flex-col gap-8 pt-12">
-                  <SheetClose asChild><NextLink href="/search" className="text-2xl font-black uppercase tracking-tighter hover:text-[#8a0b0d]">All Products</NextLink></SheetClose>
-                  <SheetClose asChild><NextLink href="/contact" className="text-2xl font-black uppercase tracking-tighter hover:text-[#8a0b0d]">Contact Us</NextLink></SheetClose>
-                  <SheetClose asChild><NextLink href="/about" className="text-2xl font-black uppercase tracking-tighter hover:text-[#8a0b0d]">About Us</NextLink></SheetClose>
-                  <div className="h-px bg-white/10" />
-                  <SheetClose asChild><NextLink href="/wishlist" className="text-2xl font-black uppercase tracking-tighter hover:text-[#8a0b0d]">My Favorites</NextLink></SheetClose>
-                  <SheetClose asChild><NextLink href="/profile" className="text-2xl font-black uppercase tracking-tighter hover:text-[#8a0b0d]">My Account</NextLink></SheetClose>
-                </div>
-              </SheetContent>
-            </Sheet>
+              {/* Auxiliary Icons: Hidden during search focus */}
+              {!mobileSearchOpen && (
+                <>
+                  <ShoppingCartComponent triggerClassName="h-10 w-10 text-white border border-white/10 rounded-full" />
+
+                  <Sheet>
+                    <SheetTrigger asChild>
+                      <Button variant="ghost" size="icon" className="text-white h-10 w-10 border border-white/10 rounded-full">
+                        <Menu className="h-5 w-5" />
+                      </Button>
+                    </SheetTrigger>
+                    <SheetContent side="right" className="bg-[#0b0f19] border-l-white/10 text-white">
+                      <SheetHeader>
+                        <SheetTitle className="text-white text-left font-black uppercase tracking-widest">Menu</SheetTitle>
+                        <SheetDescription className="sr-only">Main Navigation</SheetDescription>
+                      </SheetHeader>
+                      <div className="flex flex-col gap-8 pt-12">
+                        <SheetClose asChild><NextLink href="/search" className="text-2xl font-black uppercase tracking-tighter hover:text-[#8a0b0d]">All Products</NextLink></SheetClose>
+                        <SheetClose asChild><NextLink href="/contact" className="text-2xl font-black uppercase tracking-tighter hover:text-[#8a0b0d]">Contact Us</NextLink></SheetClose>
+                        <SheetClose asChild><NextLink href="/about" className="text-2xl font-black uppercase tracking-tighter hover:text-[#8a0b0d]">About Us</NextLink></SheetClose>
+                        <div className="h-px bg-white/10" />
+                        <SheetClose asChild><NextLink href="/wishlist" className="text-2xl font-black uppercase tracking-tighter hover:text-[#8a0b0d]">My Favorites</NextLink></SheetClose>
+                        <SheetClose asChild><NextLink href="/profile" className="text-2xl font-black uppercase tracking-tighter hover:text-[#8a0b0d]">My Account</NextLink></SheetClose>
+                      </div>
+                    </SheetContent>
+                  </Sheet>
+                </>
+              )}
+            </div>
           </div>
         </div>
-
-        {/* MOBILE SEARCH OVERLAY */}
-        {mobileSearchOpen && (
-          <div className="absolute inset-x-0 top-full bg-[#0b0f19] p-4 border-b border-white/10 animate-in fade-in slide-in-from-top-2 lg:hidden">
-             <HeroSearch compact onSearch={() => setMobileSearchOpen(false)} />
-          </div>
-        )}
       </div>
     </header>
   );
