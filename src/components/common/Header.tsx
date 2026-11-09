@@ -10,7 +10,7 @@ import {
   Menu, 
   Search, 
   X,
-  Camera
+  ShieldCheck
 } from 'lucide-react';
 import { 
   DropdownMenu, 
@@ -32,14 +32,16 @@ import ShoppingCartComponent from './ShoppingCart';
 import HeroSearch from './HeroSearch';
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthProvider';
 
 /**
- * High-Fidelity Header v22.0:
+ * High-Fidelity Header v23.0:
  * - Scaled Logo: Logo increased to twice its size (110px desktop / 80px mobile).
- * - Compact Sticky Bar: Adjusted header height to accommodate larger branding.
- * - Brand Teal Highlights: Consistent primary teal accents.
+ * - Role-Aware UI: Shows "Admin" link for privileged users.
+ * - Primary Teal Highlights: Consistent brand teal accents.
  */
 export default function Header() {
+  const { user } = useAuth();
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -60,6 +62,8 @@ export default function Header() {
       setMobileSearchOpen(false);
     }
   };
+
+  const isAdmin = user?.role === 'admin' || user?.role === 'staff';
 
   return (
     <header 
@@ -112,6 +116,11 @@ export default function Header() {
           {/* Compact Navigation & Actions (Right) */}
           <div className="flex items-center gap-4">
             <nav className="flex items-center gap-3">
+              {isAdmin && (
+                <NextLink href="/admin" className="px-3 py-2 font-black transition-colors uppercase text-[12px] tracking-widest text-primary flex items-center gap-1.5 hover:opacity-80">
+                  <ShieldCheck size={14} /> Admin
+                </NextLink>
+              )}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button className="px-4 py-2 bg-white border border-purple-500 rounded-xl font-bold transition-all flex items-center gap-2 uppercase text-[12px] tracking-widest text-[#0b0f19] hover:bg-purple-50 shadow-sm">
@@ -131,13 +140,15 @@ export default function Header() {
 
             <div className="flex items-center gap-3">
               <ShoppingCartComponent triggerClassName="h-10 w-10 transition-all border border-[#0b0f19]/10 text-[#0b0f19] hover:text-primary hover:bg-primary/5 shadow-sm hover:shadow-md" />
-              <NextLink href="/profile">
+              <NextLink href={user ? "/profile" : "/auth/login"}>
                 <Button 
                   variant="ghost" 
                   className="h-10 px-4 rounded-xl gap-2 font-black border border-[#0b0f19]/10 text-[#0b0f19] hover:text-primary hover:bg-primary/5 shadow-sm hover:shadow-md"
                 >
                   <User className="h-5 w-5" />
-                  <span className="hidden xl:inline uppercase text-[11px] tracking-widest">Log in</span>
+                  <span className="hidden xl:inline uppercase text-[11px] tracking-widest">
+                    {user ? (user.username || 'Profile') : 'Log in'}
+                  </span>
                 </Button>
               </NextLink>
             </div>
@@ -236,6 +247,11 @@ export default function Header() {
                   <SheetDescription className="sr-only">Main Navigation</SheetDescription>
                 </SheetHeader>
                 <div className="flex flex-col gap-6 pt-12">
+                  {isAdmin && (
+                    <SheetClose asChild><NextLink href="/admin" className="text-2xl font-black uppercase tracking-tighter text-primary hover:opacity-80 transition-colors flex items-center gap-2">
+                      <ShieldCheck size={20} /> Admin Dashboard
+                    </NextLink></SheetClose>
+                  )}
                   <SheetClose asChild><NextLink href="/search" className="text-2xl font-black uppercase tracking-tighter hover:text-primary transition-colors">Product Catalogue</NextLink></SheetClose>
                   <SheetClose asChild><NextLink href="/contact" className="text-2xl font-black uppercase tracking-tighter hover:text-primary transition-colors">Contact Node</NextLink></SheetClose>
                   <SheetClose asChild><NextLink href="/about" className="text-2xl font-black uppercase tracking-tighter hover:text-primary transition-colors">About Us</NextLink></SheetClose>

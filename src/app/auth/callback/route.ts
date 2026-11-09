@@ -34,7 +34,23 @@ export async function GET(request: Request) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     
     if (!error) {
-      // Success! Redirect to home
+      // Success! Check role for redirection
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .maybeSingle();
+
+        // If admin or staff, redirect straight to the admin dashboard
+        if (profile?.role === 'admin' || profile?.role === 'staff') {
+          return NextResponse.redirect(`${origin}/admin`);
+        }
+      }
+      
+      // Default fallback for regular users
       return NextResponse.redirect(`${origin}/`);
     }
   }
