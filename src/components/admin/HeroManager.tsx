@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { HeroSlide, saveHeroSlides } from '@/app/actions/cms-actions';
+import { HeroSlide, saveHeroSlides, HeroAnimation } from '@/app/actions/cms-actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -16,11 +16,9 @@ import {
     Sparkles, 
     Loader2,
     Upload,
-    ChevronUp,
-    ChevronDown,
     Image as ImageIcon,
-    X,
-    GripVertical
+    GripVertical,
+    Activity
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
@@ -64,6 +62,13 @@ export const BOLDNESS_OPTIONS = [
     { id: 'font-semibold', label: 'SemiBold' },
     { id: 'font-bold', label: 'Bold' },
     { id: 'font-black', label: 'Black' }
+];
+
+export const ANIMATION_OPTIONS: { id: HeroAnimation; label: string; desc: string }[] = [
+    { id: 'fade', label: 'Silk Smooth Fade', desc: 'Elegant cross-fade with standard opacity cycle.' },
+    { id: 'zoom', label: 'Ken Burns Zoom', desc: 'Cinematic scale-up transition for dynamic focus.' },
+    { id: 'slide', label: 'Dynamic Slide', desc: 'Horizontal motion for a modern, energetic feel.' },
+    { id: 'blur-fade', label: 'Atmospheric Blur', desc: 'Sophisticated blur-to-focus transition effect.' }
 ];
 
 /**
@@ -248,6 +253,7 @@ export default function HeroManager({ initialSlides }: { initialSlides: HeroSlid
             subheadingSize: 24,
             headlineTopMargin: 0,
             subheadingTopMargin: 0,
+            bgAnimation: 'fade',
             wordStyles: [
                 { text: '', color: '#ffffff', font: 'font-montserrat' },
                 { text: '', color: '#ffffff', font: 'font-montserrat' },
@@ -512,6 +518,35 @@ export default function HeroManager({ initialSlides }: { initialSlides: HeroSlid
                                         <div className="flex items-center gap-2 mt-2 md:mt-0">
                                             <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
                                             <span className="text-[8px] font-black text-primary uppercase">Drag Slots to Reorder</span>
+                                        </div>
+                                    </div>
+
+                                    {/* Animation Engine Selector */}
+                                    <div className="mb-8 p-6 bg-accent/5 rounded-[2rem] border border-dashed border-accent/20">
+                                        <div className="flex items-center gap-3 mb-4">
+                                            <Activity className="text-accent h-4 w-4" />
+                                            <Label className="text-[10px] font-black uppercase tracking-widest text-accent">Background Animation Engine</Label>
+                                        </div>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                                            {ANIMATION_OPTIONS.map((opt) => (
+                                                <button
+                                                    key={opt.id}
+                                                    type="button"
+                                                    onClick={() => handleUpdate(slide.id, { bgAnimation: opt.id })}
+                                                    className={cn(
+                                                        "flex flex-col gap-1 p-4 rounded-2xl border text-left transition-all hover:shadow-md",
+                                                        slide.bgAnimation === opt.id 
+                                                            ? "bg-accent border-accent text-white shadow-lg scale-[1.02]" 
+                                                            : "bg-white border-muted-foreground/10 text-accent hover:border-accent/40"
+                                                    )}
+                                                >
+                                                    <span className="text-xs font-black uppercase tracking-tighter">{opt.label}</span>
+                                                    <span className={cn(
+                                                        "text-[9px] font-medium leading-tight",
+                                                        slide.bgAnimation === opt.id ? "text-white/70" : "text-muted-foreground"
+                                                    )}>{opt.desc}</span>
+                                                </button>
+                                            ))}
                                         </div>
                                     </div>
                                     

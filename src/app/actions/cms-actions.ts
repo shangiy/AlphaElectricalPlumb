@@ -14,6 +14,8 @@ export interface WordStyle {
     font: string;
 }
 
+export type HeroAnimation = 'fade' | 'zoom' | 'slide' | 'blur-fade';
+
 export interface HeroSlide {
     id: string;
     headline: string;
@@ -37,6 +39,8 @@ export interface HeroSlide {
     topMargin?: number; // legacy fallback
     // Triple Word Engine
     wordStyles?: WordStyle[];
+    // Animation Engine
+    bgAnimation?: HeroAnimation;
 }
 
 /**

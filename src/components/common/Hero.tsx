@@ -13,8 +13,8 @@ const HeroSearch = dynamic(() => import('./HeroSearch'), {
 });
 
 /**
- * Dynamic Detached Hero Section v13.0
- * Features Background Carousels and Multi-Campaign Auto-Play.
+ * Dynamic Detached Hero Section v14.0
+ * Features Multi-Style Background Animations and Campaign Auto-Play.
  */
 export default function Hero() {
   const [slides, setSlides] = useState<HeroSlide[]>([]);
@@ -61,7 +61,7 @@ export default function Hero() {
 
     const interval = setInterval(() => {
       setBgImageIndex((prev) => (prev + 1) % bgImages.length);
-    }, 5000); // Internal bg cycle every 5 seconds
+    }, 6000); // Internal bg cycle every 6 seconds
 
     return () => clearInterval(interval);
   }, [activeSlideIndex, slides]);
@@ -85,22 +85,31 @@ export default function Hero() {
 
   const slide = slides[activeSlideIndex];
   const bgImages = slide.imageUrls || (slide.imageUrl ? [slide.imageUrl] : []);
+  const animation = slide.bgAnimation || 'fade';
 
   return (
     <section className="relative w-full overflow-hidden bg-[#0a0f1e] min-h-[85vh] flex items-center transition-all duration-1000">
       
-      {/* Dynamic Background Layer (Carousel Support) */}
+      {/* Dynamic Background Layer (Animation Engine Support) */}
       <div className="absolute inset-0 z-0">
-          {bgImages.map((url, idx) => (
-              <div 
-                  key={`${url}-${idx}`}
-                  className={cn(
-                      "absolute inset-0 bg-cover bg-center transition-all duration-[2000ms] ease-in-out transform",
-                      idx === bgImageIndex ? "opacity-100 scale-100" : "opacity-0 scale-110"
-                  )}
-                  style={{ backgroundImage: `url('${url}')` }}
-              />
-          ))}
+          {bgImages.map((url, idx) => {
+              const isActive = idx === bgImageIndex;
+              return (
+                  <div 
+                      key={`${url}-${idx}`}
+                      className={cn(
+                          "absolute inset-0 bg-cover bg-center transition-all duration-[2500ms] ease-in-out transform",
+                          isActive ? "opacity-100" : "opacity-0",
+                          // Animation Switcher Logic
+                          animation === 'zoom' && (isActive ? "scale-110" : "scale-100"),
+                          animation === 'slide' && (isActive ? "translate-x-0" : "-translate-x-full"),
+                          animation === 'blur-fade' && (isActive ? "blur-0" : "blur-xl"),
+                          animation === 'fade' && (isActive ? "scale-100" : "scale-105")
+                      )}
+                      style={{ backgroundImage: `url('${url}')` }}
+                  />
+              );
+          })}
       </div>
 
       {/* Blueprint Pattern Overlay */}
