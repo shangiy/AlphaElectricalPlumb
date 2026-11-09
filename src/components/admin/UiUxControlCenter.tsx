@@ -21,7 +21,8 @@ import {
   Type,
   Plus,
   Settings2,
-  X
+  X,
+  RotateCcw
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import FeaturedProductManager from './FeaturedProductManager';
@@ -52,6 +53,18 @@ interface HighlighterRule {
     badgeText?: string;
 }
 
+const DEFAULT_BANNER = {
+    items: ["EASTER HOLIDAY OFFER! BEST PRICES GUARANTEED", "Feel welcomed to Shop with us @best prices"],
+    speed: 30,
+    fontSize: 12,
+    textColor: '#ffffff',
+    styleType: 'kenyan-flag',
+    styleOrientation: 'horizontal',
+    showClock: true,
+    showSocial: true,
+    highlighters: [] as HighlighterRule[]
+};
+
 export default function UiUxControlCenter() {
   const { toast } = useToast();
   const searchParams = useSearchParams();
@@ -65,18 +78,7 @@ export default function UiUxControlCenter() {
   const [previewText, setPreviewText] = useState('');
 
   // Banner Details State
-  const [bannerConfig, setBannerConfig] = useState({
-      items: ["OFFER! OFFER! OFFER! Easter Holiday OFFER", "Feel welcomed to Shop with us @best prices"],
-      speed: 30,
-      fontSize: 16,
-      textColor: '#ffffff',
-      styleType: 'kenyan-flag',
-      styleOrientation: 'horizontal',
-      showClock: true,
-      showSocial: true,
-      highlighters: [] as HighlighterRule[]
-  });
-
+  const [bannerConfig, setBannerConfig] = useState(DEFAULT_BANNER);
   const [searchPhrases, setSearchPhrases] = useState<string[]>([]);
   const [newPhrase, setNewPhrase] = useState('');
 
@@ -89,7 +91,7 @@ export default function UiUxControlCenter() {
       ]);
       
       if (search) setSearchPhrases(search);
-      if (bannerSet) {
+      if (bannerSet && bannerSet.items && bannerSet.items.length > 0) {
           setBannerConfig(prev => ({
               ...prev,
               ...bannerSet,
@@ -117,13 +119,25 @@ export default function UiUxControlCenter() {
   const handleSaveBanner = async () => {
     setSubmitting(true);
     try {
-        await updateStorefrontSetting('top_banner_config', bannerConfig);
-        toast({ title: "Banner Details Published", description: "Holiday marquee has been updated live." });
+        // Validation: remove empty rules before saving
+        const cleanedConfig = {
+            ...bannerConfig,
+            highlighters: (bannerConfig.highlighters || []).filter(h => h.word && h.word.trim().length > 0)
+        };
+        await updateStorefrontSetting('top_banner_config', cleanedConfig);
+        toast({ title: "Configuration Published", description: "Storefront UI has been synchronized." });
     } catch (err: any) {
-        toast({ variant: "destructive", title: "Error", description: err.message });
+        toast({ variant: "destructive", title: "Sync Error", description: err.message });
     } finally {
         setSubmitting(false);
     }
+  };
+
+  const handleResetBanner = () => {
+      if(confirm("Are you sure you want to reset all banner settings to factory defaults?")) {
+          setBannerConfig(DEFAULT_BANNER);
+          toast({ description: "Settings staged for reset. Click Save to publish." });
+      }
   };
 
   const addHighlighterRule = () => {
@@ -186,8 +200,11 @@ export default function UiUxControlCenter() {
             <LayoutGrid className="text-primary h-12 w-12" />
             Alpha CMS Suite
           </h1>
-          <p className="text-muted-foreground font-bold uppercase tracking-widest text-xs mt-2">Professional Storefront Governance v4.0</p>
+          <p className="text-muted-foreground font-bold uppercase tracking-widest text-xs mt-2">Professional Storefront Governance v4.2</p>
         </div>
+        <Button variant="outline" size="sm" onClick={handleResetBanner} className="rounded-full font-black uppercase text-[10px] tracking-widest">
+            <RotateCcw className="mr-2 h-3 w-3" /> Reset Defaults
+        </Button>
       </div>
 
       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
@@ -241,7 +258,7 @@ export default function UiUxControlCenter() {
                                 <Input 
                                     type="number" 
                                     value={bannerConfig.fontSize} 
-                                    onChange={(e) => setBannerConfig({...bannerConfig, fontSize: parseInt(e.target.value) || 16})}
+                                    onChange={(e) => setBannerConfig({...bannerConfig, fontSize: parseInt(e.target.value) || 12})}
                                     className="h-12 rounded-xl font-bold"
                                 />
                             </div>
@@ -290,9 +307,8 @@ export default function UiUxControlCenter() {
                                     )}>
                                         {activeBadge && (
                                             <div className={cn(
-                                                "px-3 py-0.5 rounded-full text-[8px] font-black mr-2 animate-gradient-x bg-[length:200%_200%] transform -skew-x-6",
-                                                bannerConfig.styleOrientation !== 'text-clip' ? "text-white shadow-md" : "bg-white",
-                                                bannerConfig.styleOrientation !== 'text-clip' && getBackgroundColors(bannerConfig.styleType)
+                                                "px-3 py-0.5 rounded text-[8px] font-black mr-2 animate-gradient-x bg-[length:200%_200%] transform -skew-x-6",
+                                                bannerConfig.styleOrientation !== 'text-clip' ? "bg-white text-primary shadow-md" : "bg-white"
                                             )}>
                                                 <span className={cn(
                                                     bannerConfig.styleOrientation === 'text-clip' && cn("bg-gradient-to-r bg-clip-text text-transparent animate-gradient-x bg-[length:200%_200%]", getBackgroundColors(bannerConfig.styleType))
@@ -445,10 +461,10 @@ export default function UiUxControlCenter() {
                         <div className="p-6 bg-primary/5 rounded-[2rem] border border-dashed border-primary/20 flex flex-col gap-2">
                             <div className="flex items-center gap-2 text-primary">
                                 <Type className="h-5 w-5" />
-                                <span className="text-[10px] font-black uppercase tracking-widest">Logic Hub</span>
+                                <span className="text-[10px] font-black uppercase tracking-widest">Maintenance Logic</span>
                             </div>
                             <p className="text-[11px] text-muted-foreground italic leading-relaxed">
-                                Tip: The Keyword Highlighter allows you to define custom color cycles for specific words. You can now also add a prefix badge (e.g. MASHUJAA) that inherits your active style settings.
+                                Note: Rules with empty keywords are automatically filtered by the rendering engine to prevent character splitting. Ensure each rule has a valid word to avoid layout inconsistencies.
                             </p>
                         </div>
 

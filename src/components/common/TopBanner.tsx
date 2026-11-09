@@ -25,15 +25,15 @@ interface BannerConfig {
 }
 
 /**
- * Compact Independent Top Banner v11.0:
- * Features a high-fidelity Keyword Highlighter Engine and a Dynamic Prefix Badge.
- * Inherits Visual Style Engine and Orientation settings for global continuity.
+ * Compact Independent Top Banner v12.0:
+ * Fixed: Robust Regex logic to prevent character-splitting "garbage" rendering.
+ * Synchronized with Brand Primary Teal for highlighted word pills.
  */
 export default function TopBanner() {
   const [config, setConfig] = useState<BannerConfig>({
     items: [
-      "⚡ EASTER HOLIDAY OFFER! BEST PRICES GUARANTEED",
-      "Feel welcomed to Shop with us @best prices",
+      "EASTER HOLIDAY OFFER! BEST PRICES GUARANTEED",
+      "Welcome to Alpha Electricals & Plumbing Ltd",
       "MASHUJAA DAY SPECIAL DISCOUNTS ACTIVE"
     ],
     speed: 30,
@@ -48,9 +48,13 @@ export default function TopBanner() {
 
   useEffect(() => {
     async function loadConfig() {
-      const data = await getStorefrontSetting('top_banner_config');
-      if (data) {
-          setConfig(prev => ({ ...prev, ...data }));
+      try {
+        const data = await getStorefrontSetting('top_banner_config');
+        if (data && data.items && Array.isArray(data.items)) {
+            setConfig(prev => ({ ...prev, ...data }));
+        }
+      } catch (e) {
+        console.error("TopBanner sync failed", e);
       }
     }
     loadConfig();
@@ -76,32 +80,31 @@ export default function TopBanner() {
     }
   };
 
-  // Helper to render text with keyword highlighting
   const renderHighlightedText = (text: string) => {
-    const rules = config.highlighters || [];
+    const rules = (config.highlighters || []).filter(r => r.word && r.word.trim().length > 0);
     if (rules.length === 0) return text;
 
-    // Create a combined regex for all keywords
-    const regex = new RegExp(`(${rules.map(r => r.word).filter(Boolean).join('|')})`, 'g');
+    // Create a safe regex. If join is empty, this won't run due to check above.
+    const regex = new RegExp(`(${rules.map(r => r.word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`, 'gi');
     const parts = text.split(regex);
     
-    // Track occurrence counts for each keyword in this specific item
     const occurrenceCounters: Record<string, number> = {};
 
     return parts.map((part, i) => {
-        const matchingRule = rules.find(r => r.word === part);
+        const lowerPart = part.toLowerCase();
+        const matchingRule = rules.find(r => r.word.toLowerCase() === lowerPart);
+        
         if (matchingRule) {
-            const count = occurrenceCounters[part] || 0;
-            occurrenceCounters[part] = count + 1;
+            const count = occurrenceCounters[lowerPart] || 0;
+            occurrenceCounters[lowerPart] = count + 1;
             
-            // Get color from the sequence (loop back if count exceeds sequence length)
-            const color = matchingRule.colors[count % matchingRule.colors.length] || config.textColor;
+            const color = matchingRule.colors[count % matchingRule.colors.length] || '#00808d';
 
             return (
                 <span 
                     key={i} 
-                    className="bg-white rounded-full px-3 py-0.5 font-black shadow-lg mx-1 inline-block transform -skew-x-6"
-                    style={{ color: color }}
+                    className="rounded-lg px-2 py-0.5 font-black shadow-lg mx-1 inline-block transform -skew-x-6 text-white"
+                    style={{ backgroundColor: color }}
                 >
                     {part}
                 </span>
@@ -111,13 +114,16 @@ export default function TopBanner() {
     });
   };
 
-  const marqueeItems = [...config.items, ...config.items, ...config.items];
+  // Ensure enough items for smooth scroll
+  const marqueeItems = config.items.length > 0 ? [...config.items, ...config.items, ...config.items] : [];
   const activeBadge = config.highlighters?.find(h => h.badgeText)?.badgeText;
+
+  if (marqueeItems.length === 0) return null;
 
   return (
     <div 
       className={cn(
-        "w-full text-white py-1.5 px-4 bg-[length:200%_200%] animate-gradient-x border-b border-white/5",
+        "w-full text-white py-1.5 px-4 bg-[length:200%_200%] animate-gradient-x border-b border-white/5 overflow-hidden",
         getOrientationClass(),
         config.styleOrientation !== 'text-clip' && getBackgroundColors()
       )}
@@ -126,7 +132,7 @@ export default function TopBanner() {
       <div className="container mx-auto flex justify-between items-center h-5">
         
         {config.showClock && (
-          <div className="hidden md:flex items-center gap-2 flex-shrink-0">
+          <div className="hidden md:flex items-center gap-2 flex-shrink-0 z-10">
             <Clock className="h-3.5 w-3.5 opacity-80" />
             <span className="text-[10px] whitespace-nowrap font-bold">Mon - Sat: 8:00 AM – 6:00 PM</span>
           </div>
@@ -134,7 +140,7 @@ export default function TopBanner() {
 
         <div className="flex-1 inline-flex flex-nowrap overflow-hidden [mask-image:_linear-gradient(to_right,transparent_0,_black_64px,_black_calc(100%-64px),transparent_100%)]">
           <ul 
-            className="flex-1 font-black text-center flex items-center justify-center md:justify-start [&_li]:mx-12 animate-scroll"
+            className="flex-1 font-black text-center flex items-center justify-center md:justify-start [&_li]:mx-12 animate-scroll whitespace-nowrap"
             style={{ animationDuration: `${config.speed}s` }}
           >
             {marqueeItems.map((item, idx) => {
@@ -144,7 +150,7 @@ export default function TopBanner() {
                 <li 
                     key={idx} 
                     className={cn(
-                        "whitespace-nowrap uppercase tracking-widest flex items-center gap-4",
+                        "flex items-center uppercase tracking-widest",
                         isClipped && cn("bg-gradient-to-r bg-clip-text text-transparent animate-gradient-x bg-[length:200%_200%]", getBackgroundColors())
                     )}
                     style={{ 
@@ -154,9 +160,8 @@ export default function TopBanner() {
                 >
                     {activeBadge && (
                         <span className={cn(
-                            "px-3 py-0.5 rounded-full text-[9px] font-black mr-3 inline-block animate-gradient-x bg-[length:200%_200%] transform -skew-x-6",
-                            !isClipped ? "bg-gradient-to-r text-white shadow-md" : "bg-white",
-                            !isClipped && getBackgroundColors()
+                            "px-2 py-0.5 rounded text-[9px] font-black mr-3 inline-block shadow-md transform -skew-x-6",
+                            !isClipped ? "bg-white text-primary" : "bg-white"
                         )}>
                             <span className={cn(
                                 isClipped && cn("bg-gradient-to-r bg-clip-text text-transparent animate-gradient-x bg-[length:200%_200%]", getBackgroundColors())
@@ -173,7 +178,7 @@ export default function TopBanner() {
         </div>
 
         {config.showSocial && (
-          <div className="hidden md:flex items-center gap-2 justify-end flex-shrink-0">
+          <div className="hidden md:flex items-center gap-2 justify-end flex-shrink-0 z-10">
              <div className="relative h-4 w-4">
                 <Image src="/tiktok-V1.png" alt="TikTok" fill className="object-contain" />
              </div>
@@ -183,7 +188,7 @@ export default function TopBanner() {
                rel="noopener noreferrer" 
                className="text-[10px] font-black uppercase tracking-tighter hover:text-primary transition-colors hover:underline"
              >
-               TikTok @AlphaElectricalsandplumb
+               TikTok @AlphaElectrical
              </a>
           </div>
         )}
