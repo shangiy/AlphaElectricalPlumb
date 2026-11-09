@@ -134,7 +134,7 @@ export default function CategoryManager({ initialCards }: { initialCards: Catego
         <div className="max-w-4xl mx-auto animate-in fade-in duration-700">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-10 border-b pb-8">
                 <div>
-                    <h2 className="text-3xl font-black font-headline text-accent tracking-tighter uppercase">Category Carousel CMS</h2>
+                    <h2 className="text-3xl font-black font-headline text-accent tracking-tighter uppercase">Product Carousel CMS</h2>
                     <p className="text-muted-foreground text-sm font-medium mt-1">Drag items to arrange storefront appearance or modify card attributes.</p>
                 </div>
                 <div className="flex gap-3">

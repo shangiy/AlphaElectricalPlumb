@@ -122,15 +122,17 @@ export default function UiUxControlCenter() {
   const [bannerConfig, setBannerConfig] = useState<BannerConfig>(DEFAULT_BANNER);
   const [searchPhrases, setSearchPhrases] = useState<string[]>([]);
   const [heroSlides, setHeroSlides] = useState<HeroSlide[]>([]);
+  const [categoryCards, setCategoryCards] = useState<any[]>([]);
   const [newPhrase, setNewPhrase] = useState('');
 
   const loadAllSettings = useCallback(async () => {
     setLoading(true);
     try {
-      const [search, bannerSet, heroSet] = await Promise.all([
+      const [search, bannerSet, heroSet, catCards] = await Promise.all([
         getStorefrontSetting('search_phrases'),
         getStorefrontSetting('top_banner_config'),
         getStorefrontSetting('hero_slides'),
+        getStorefrontSetting('category_cards'),
       ]);
       
       if (search) setSearchPhrases(search);
@@ -142,6 +144,7 @@ export default function UiUxControlCenter() {
           }));
       }
       if (heroSet) setHeroSlides(heroSet as HeroSlide[]);
+      if (catCards) setCategoryCards(catCards);
     } catch (err) {
       console.error("CMS data fetch failed:", err);
     } finally {
@@ -342,8 +345,8 @@ export default function UiUxControlCenter() {
             <TabsTrigger value="topbanner" className="rounded-[1.5rem] font-black uppercase text-[10px] py-4">Banner CMS</TabsTrigger>
             <TabsTrigger value="search" className="rounded-[1.5rem] font-black uppercase text-[10px] py-4">Search Keywords</TabsTrigger>
             <TabsTrigger value="hero" className="rounded-[1.5rem] font-black uppercase text-[10px] py-4">Hero Edit</TabsTrigger>
+            <TabsTrigger value="categories" className="rounded-[1.5rem] font-black uppercase text-[10px] py-4">Product Carousel</TabsTrigger>
             <TabsTrigger value="spotlight" className="rounded-[1.5rem] font-black uppercase text-[10px] py-4">Spotlight</TabsTrigger>
-            <TabsTrigger value="categories" className="rounded-[1.5rem] font-black uppercase text-[10px] py-4">Collections</TabsTrigger>
             <TabsTrigger value="moderation" className="rounded-[1.5rem] font-black uppercase text-[10px] py-4">Moderation</TabsTrigger>
         </TabsList>
 
@@ -787,8 +790,11 @@ export default function UiUxControlCenter() {
             </div>
         </TabsContent>
 
+        <TabsContent value="categories">
+            <CategoryManager initialCards={categoryCards} />
+        </TabsContent>
+
         <TabsContent value="spotlight"><FeaturedProductManager /></TabsContent>
-        <TabsContent value="categories"><CategoryManager initialCards={[]} /></TabsContent>
         
         <TabsContent value="moderation">
             <div className="max-w-4xl mx-auto py-10 text-center space-y-4">
