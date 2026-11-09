@@ -17,9 +17,9 @@ interface BannerConfig {
 }
 
 /**
- * Compact Top Banner v5.0:
- * Sits in normal flow and scrolls away. 
- * Features specialized "MASHUJAA" and "OFFER!" styling.
+ * Compact Top Banner v6.0:
+ * Sits in normal flow and scrolls away naturally.
+ * Sizing is restricted to a compact maximum (h-8).
  */
 export default function TopBanner() {
   const [config, setConfig] = useState<BannerConfig>({
@@ -46,48 +46,12 @@ export default function TopBanner() {
     loadConfig();
   }, []);
 
-  const renderRichText = (text: string) => {
-    const parts = text.split(/(OFFER!|MASHUJAA)/gi);
-    
-    return parts.map((part, i) => {
-      const lowerPart = part.toLowerCase().trim();
-      
-      if (lowerPart === 'offer!') {
-        return (
-          <span key={i} className="font-black text-[#00c389] mx-1">
-            {part}
-          </span>
-        );
-      }
-
-      if (lowerPart === 'mashujaa') {
-        return (
-          <span key={i} className="inline-flex font-black tracking-tighter bg-white px-2 py-0.5 rounded-full mx-1 border border-white/20 shadow-sm scale-90">
-            <span 
-              style={{
-                background: 'linear-gradient(to right, black 33.3%, #BB0000 33.3% 66.6%, #006600 66.6%)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                display: 'inline-block',
-                lineHeight: '1'
-              }}
-            >
-              MASHUJAA
-            </span>
-          </span>
-        );
-      }
-
-      return <span key={i}>{part}</span>;
-    });
-  };
-
   const getBackground = () => {
     switch(config.styleType) {
-        case 'kenyan-flag': return 'bg-gradient-to-r from-red-600 via-purple-600 to-blue-600';
-        case 'gold-gradient': return 'bg-gradient-to-r from-yellow-600 via-amber-500 to-yellow-800';
-        case 'neon-glow': return 'bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600';
-        default: return 'bg-gradient-to-r from-red-500 via-purple-500 to-blue-500';
+        case 'kenyan-flag': return 'from-red-500 via-purple-500 to-blue-500';
+        case 'gold-gradient': return 'from-yellow-600 via-amber-500 to-yellow-800';
+        case 'neon-glow': return 'from-cyan-600 via-blue-600 to-indigo-600';
+        default: return 'from-red-500 via-purple-500 to-blue-500';
     }
   };
 
@@ -96,17 +60,17 @@ export default function TopBanner() {
   return (
     <div 
       className={cn(
-        "text-white py-1.5 px-4 bg-[length:200%_200%] animate-gradient-x border-b border-white/5 relative z-10 w-full h-8 sm:h-9 flex items-center",
+        "w-full text-white py-1.5 px-4 bg-gradient-to-r bg-[length:200%_200%] animate-gradient-x text-xs font-medium border-b border-white/5",
         getBackground()
       )}
       style={{ color: config.textColor }}
     >
-      <div className="container mx-auto flex justify-between items-center w-full">
+      <div className="container mx-auto flex justify-between items-center h-5">
         
         {config.showClock && (
           <div className="hidden md:flex items-center gap-2 flex-shrink-0">
             <Clock className="h-3.5 w-3.5 opacity-80" />
-            <span className="text-[10px] font-bold opacity-80 whitespace-nowrap">Mon - Sat: 8:00 AM – 6:00 PM</span>
+            <span className="text-[10px] whitespace-nowrap">Mon - Sat: 8:00 AM – 6:00 PM</span>
           </div>
         )}
 
@@ -118,10 +82,10 @@ export default function TopBanner() {
             {marqueeItems.map((item, idx) => (
               <li 
                 key={idx} 
-                className="whitespace-nowrap uppercase tracking-widest flex items-center"
+                className="whitespace-nowrap uppercase tracking-widest"
                 style={{ fontSize: `${Math.min(config.fontSize, 14)}px` }}
               >
-                {renderRichText(item)}
+                {item}
               </li>
             ))}
           </ul>

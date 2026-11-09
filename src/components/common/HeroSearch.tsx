@@ -16,16 +16,12 @@ interface HeroSearchProps {
 }
 
 /**
- * High-Fidelity Search Bar v9.0
- * Matches exact provided reference image:
- * - White rounded-full pill background
- * - Navy blue (#2b235f) search button
- * - Integrated camera icon for visual search
- * - Animated placeholder with "Search for" prefix
+ * High-Fidelity Search Bar v9.1
+ * Includes iron sheets and water tank placeholders.
  */
 export default function HeroSearch({ className, compact = false, onSearch }: HeroSearchProps) {
   const [query, setQuery] = useState('');
-  const [placeholders, setPlaceholders] = useState(["ironsheets", "water tanks", "PPR Pipes", "LED Panels", "Sockets"]);
+  const [placeholders, setPlaceholders] = useState(["iron sheets", "water tanks", "PPR Pipes", "LED Panels", "Sockets"]);
   const router = useRouter();
 
   useEffect(() => {

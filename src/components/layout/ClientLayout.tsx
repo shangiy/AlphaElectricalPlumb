@@ -33,36 +33,22 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isAdminRoute = pathname.startsWith('/admin');
 
-  useEffect(() => {
-    const unlockUI = () => {
-      try {
-        document.documentElement.style.pointerEvents = 'auto';
-        document.documentElement.style.overflow = 'auto';
-        document.body.style.pointerEvents = 'auto';
-        document.body.overflow = 'auto';
-        document.body.removeAttribute('data-pointer-events-none');
-        document.body.removeAttribute('data-scroll-locked');
-      } catch (e) {}
-    };
-
-    unlockUI();
-    const timer = setTimeout(unlockUI, 500);
-    return () => clearTimeout(timer);
-  }, [pathname]);
-
   return (
     <AuthProvider>
       <ProductProvider>
         <CartProvider>
-          {/* Main Page Wrapper in normal flow */}
-          <div className="relative flex flex-col min-h-screen">
-            {!isAdminRoute && <TopBanner />}
-            {!isAdminRoute && <Header />}
+          {/* Main Wrapper: Standard Flex Column in normal document flow */}
+          <div className="w-full flex flex-col min-h-screen">
+            {!isAdminRoute && (
+              <>
+                {/* 1. Top Announcement Banner: Normal Flow, scrolls away naturally */}
+                <TopBanner />
+                {/* 2. Navigation Header: Sticky top-0, stays glued after scroll */}
+                <Header />
+              </>
+            )}
             
-            <main className={cn(
-              "w-full flex-1 flex flex-col",
-              isAdminRoute ? "pt-0" : "pt-0"
-            )}>
+            <main className="w-full flex-1 flex flex-col">
               {children}
               {!isAdminRoute && <Footer />}
             </main>

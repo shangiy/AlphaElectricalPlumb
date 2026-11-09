@@ -8,22 +8,27 @@ interface AnimatedPlaceholderProps {
   className?: string;
 }
 
+/**
+ * Animated Typing Placeholder:
+ * Cycles through provided keywords with a smooth typing effect.
+ * Fixed: Added robust safety checks for placeholders array.
+ */
 export function AnimatedPlaceholder({ placeholders, className }: AnimatedPlaceholderProps) {
   const [currentPlaceholder, setCurrentPlaceholder] = useState('');
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
-    // Robust safety check for the placeholders array
+    // Robust safety guard: Ensure placeholders exists and has items
     if (!placeholders || !Array.isArray(placeholders) || placeholders.length === 0) {
       setCurrentPlaceholder('');
       return;
     }
 
-    const activeIndex = placeholderIndex % placeholders.length;
-    const fullText = placeholders[activeIndex];
+    const safeIndex = placeholderIndex % placeholders.length;
+    const fullText = placeholders[safeIndex];
 
-    // Ensure fullText is a valid string
+    // Ensure fullText is a valid string before operating on it
     if (typeof fullText !== 'string') {
       setCurrentPlaceholder('');
       setPlaceholderIndex((prev) => (prev + 1) % placeholders.length);
