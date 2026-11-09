@@ -19,11 +19,29 @@ import {
     ChevronUp,
     ChevronDown,
     Image as ImageIcon,
-    X
+    X,
+    GripVertical
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { uploadImage } from '@/lib/storage';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  rectSortingStrategy,
+  useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 export const STYLE_OPTIONS = [
     { id: 'kenyan-flag', label: '🇰🇪 Kenyan Flag Colors', previewClass: 'font-black bg-gradient-to-r from-black via-red-600 to-green-600 bg-clip-text text-transparent' },
@@ -48,6 +66,67 @@ export const BOLDNESS_OPTIONS = [
     { id: 'font-black', label: 'Black' }
 ];
 
+/**
+ * Sortable Image Item Component
+ */
+function SortableImageItem({ url, index, isSelected, onClick }: { 
+    url: string; 
+    index: number; 
+    isSelected: boolean;
+    onClick: () => void;
+}) {
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+        isDragging
+    } = useSortable({ id: url });
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        zIndex: isDragging ? 50 : 0
+    };
+
+    return (
+        <div 
+            ref={setNodeRef} 
+            style={style}
+            className={cn(
+                "group relative aspect-video rounded-2xl overflow-hidden border bg-muted shadow-md cursor-pointer transition-all duration-300",
+                isSelected ? "ring-4 ring-primary border-transparent scale-105" : "hover:border-primary/40",
+                isDragging && "opacity-50 grayscale"
+            )}
+            onClick={onClick}
+        >
+            <img src={url} alt={`Slot ${index + 1}`} className="w-full h-full object-cover" />
+            
+            {/* Drag Handle Overlay */}
+            <div 
+                {...attributes} 
+                {...listeners} 
+                className="absolute top-2 left-2 p-1.5 bg-black/40 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing"
+            >
+                <GripVertical size={14} />
+            </div>
+
+            <div className="absolute bottom-1 left-2 pointer-events-none">
+                <span className="text-[8px] font-black text-white uppercase drop-shadow-md">Slot {index + 1}</span>
+            </div>
+            
+            {isSelected && (
+                <div className="absolute inset-0 bg-primary/10 flex items-center justify-center pointer-events-none">
+                    <div className="bg-primary text-white p-1 rounded-full shadow-lg">
+                        <ImageIcon size={16} />
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}
+
 export default function HeroManager({ initialSlides }: { initialSlides: HeroSlide[] }) {
     const sortSlides = (sArr: HeroSlide[]) => {
         return [...sArr].sort((a, b) => {
@@ -59,7 +138,15 @@ export default function HeroManager({ initialSlides }: { initialSlides: HeroSlid
     const [slides, setSlides] = useState<HeroSlide[]>(sortSlides(initialSlides || []));
     const [saving, setSaving] = useState(false);
     const [uploadingId, setUploadingId] = useState<string | null>(null);
+    const [selectedIndices, setSelectedIndices] = useState<Record<string, number>>({});
     const { toast } = useToast();
+
+    const sensors = useSensors(
+        useSensor(PointerSensor),
+        useSensor(KeyboardSensor, {
+            coordinateGetter: sortableKeyboardCoordinates,
+        })
+    );
 
     const handleUpdate = (id: string, updatedFields: Partial<HeroSlide>) => {
         const updated = slides.map(s => s.id === id ? { ...s, ...updatedFields } : s);
@@ -67,6 +154,27 @@ export default function HeroManager({ initialSlides }: { initialSlides: HeroSlid
             setSlides(sortSlides(updated));
         } else {
             setSlides(updated);
+        }
+    };
+
+    const handleDragEnd = (slideId: string, event: DragEndEvent) => {
+        const { active, over } = event;
+        if (over && active.id !== over.id) {
+            const currentSlide = slides.find(s => s.id === slideId);
+            if (!currentSlide) return;
+
+            const urls = currentSlide.imageUrls || (currentSlide.imageUrl ? [currentSlide.imageUrl] : []);
+            const oldIndex = urls.indexOf(active.id as string);
+            const newIndex = urls.indexOf(over.id as string);
+
+            const newUrls = arrayMove(urls, oldIndex, newIndex);
+            handleUpdate(slideId, { imageUrls: newUrls, imageUrl: newUrls[0] });
+            
+            // Update selected index to match moved image if necessary
+            const currentSelected = selectedIndices[slideId] || 0;
+            if (currentSelected === oldIndex) {
+                setSelectedIndices(prev => ({ ...prev, [slideId]: newIndex }));
+            }
         }
     };
 
@@ -80,10 +188,14 @@ export default function HeroManager({ initialSlides }: { initialSlides: HeroSlid
             const currentSlide = slides.find(s => s.id === id);
             const currentUrls = currentSlide?.imageUrls || (currentSlide?.imageUrl ? [currentSlide.imageUrl] : []);
             
+            const newUrls = [...currentUrls, url];
             handleUpdate(id, { 
-                imageUrls: [...currentUrls, url],
+                imageUrls: newUrls,
                 imageUrl: url // Maintain legacy for now
             });
+            
+            // Automatically select the new image
+            setSelectedIndices(prev => ({ ...prev, [id]: newUrls.length - 1 }));
             
             toast({ title: "Asset Ready", description: "Background asset synchronized with Hero cloud storage." });
         } catch (error: any) {
@@ -110,6 +222,10 @@ export default function HeroManager({ initialSlides }: { initialSlides: HeroSlid
             imageUrls: updatedUrls,
             imageUrl: updatedUrls[0] || ''
         });
+        
+        // Reset selection to the first available image
+        setSelectedIndices(prev => ({ ...prev, [slideId]: 0 }));
+        toast({ description: "Asset removed from campaign." });
     };
 
     const handleAddSlide = () => {
@@ -174,6 +290,8 @@ export default function HeroManager({ initialSlides }: { initialSlides: HeroSlid
             <div className="space-y-12">
                 {slides.map((slide, index) => {
                     const currentImages = slide.imageUrls || (slide.imageUrl ? [slide.imageUrl] : []);
+                    const selectedIdx = selectedIndices[slide.id] || 0;
+                    const previewImage = currentImages[selectedIdx] || currentImages[0];
                     
                     return (
                         <div key={slide.id} className={cn("bg-white rounded-[3rem] border shadow-xl p-10 relative overflow-hidden transition-all hover:shadow-2xl", !slide.active && "opacity-60 grayscale bg-muted/20")}>
@@ -389,56 +507,106 @@ export default function HeroManager({ initialSlides }: { initialSlides: HeroSlid
 
                                 {/* MEDIA MANAGEMENT (Cloud Assets & Interactive Gallery) */}
                                 <div className="pt-10 mt-4 border-t border-dashed">
-                                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/60 mb-6 block">Campaign Assets & Multi-Image Carousel</span>
+                                    <div className="flex flex-col md:flex-row md:items-center justify-between mb-6">
+                                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/60">Campaign Assets & Background Carousel</span>
+                                        <div className="flex items-center gap-2 mt-2 md:mt-0">
+                                            <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+                                            <span className="text-[8px] font-black text-primary uppercase">Drag Slots to Reorder</span>
+                                        </div>
+                                    </div>
                                     
-                                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
-                                        {/* Multi-Image Gallery Manager */}
-                                        <div className="lg:col-span-12">
-                                            <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-4 mb-6">
-                                                {currentImages.map((url, i) => (
-                                                    <div key={`${url}-${i}`} className="group relative aspect-video rounded-2xl overflow-hidden border bg-muted shadow-md">
-                                                        <img src={url} alt={`Background ${i + 1}`} className="w-full h-full object-cover" />
-                                                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                                            <button 
-                                                                onClick={() => removeImage(slide.id, url)}
-                                                                className="h-10 w-10 rounded-full bg-red-500 text-white flex items-center justify-center hover:scale-110 transition-transform"
-                                                            >
-                                                                <X size={20} />
-                                                            </button>
+                                    <div className="space-y-10">
+                                        {/* Multi-Image Gallery Manager with DnD */}
+                                        <DndContext 
+                                            sensors={sensors}
+                                            collisionDetection={closestCenter}
+                                            onDragEnd={(event) => handleDragEnd(slide.id, event)}
+                                        >
+                                            <SortableContext 
+                                                items={currentImages}
+                                                strategy={rectSortingStrategy}
+                                            >
+                                                <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-4">
+                                                    {currentImages.map((url, i) => (
+                                                        <SortableImageItem 
+                                                            key={url} 
+                                                            url={url} 
+                                                            index={i} 
+                                                            isSelected={selectedIdx === i}
+                                                            onClick={() => setSelectedIndices(prev => ({ ...prev, [slide.id]: i }))}
+                                                        />
+                                                    ))}
+                                                    
+                                                    {/* Upload Trigger Node */}
+                                                    <div className="relative group cursor-pointer border-2 border-dashed rounded-2xl hover:border-primary transition-all bg-muted/20 aspect-video flex flex-col items-center justify-center">
+                                                        <input 
+                                                            type="file" 
+                                                            accept="image/*" 
+                                                            className="absolute inset-0 opacity-0 cursor-pointer z-30" 
+                                                            onChange={(e) => handleImageUpload(slide.id, e)}
+                                                            disabled={uploadingId === slide.id}
+                                                        />
+                                                        {uploadingId === slide.id ? (
+                                                            <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                                                        ) : (
+                                                            <div className="flex flex-col items-center gap-1 opacity-40 group-hover:opacity-100 transition-opacity">
+                                                                <Plus className="h-6 w-6" />
+                                                                <span className="text-[8px] font-black uppercase">Add Image</span>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </SortableContext>
+                                        </DndContext>
+
+                                        {/* Interactive Large Preview & Command Node */}
+                                        <div className="p-8 rounded-[2.5rem] bg-secondary/10 border border-white/20 shadow-2xl relative overflow-hidden group/preview">
+                                            {/* Blueprint Pattern */}
+                                            <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: `radial-gradient(#1e293b 1px, transparent 0)`, backgroundSize: '30px 30px' }} />
+                                            
+                                            <div className="relative z-10 flex flex-col gap-6">
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="h-8 w-8 rounded-xl bg-primary/20 flex items-center justify-center text-primary">
+                                                            <ImageIcon size={16} />
                                                         </div>
-                                                        <div className="absolute bottom-1 left-2">
-                                                            <span className="text-[8px] font-black text-white uppercase drop-shadow-md">Slot {i + 1}</span>
+                                                        <div>
+                                                            <p className="text-[10px] font-black uppercase tracking-widest text-accent">Slot {selectedIdx + 1} Detail</p>
+                                                            <p className="text-[8px] font-bold text-muted-foreground uppercase">High-Fidelity Campaign Preview</p>
                                                         </div>
                                                     </div>
-                                                ))}
-                                                
-                                                {/* Upload Trigger Node */}
-                                                <div className="relative group cursor-pointer border-2 border-dashed rounded-2xl hover:border-primary transition-all bg-muted/20 aspect-video flex flex-col items-center justify-center">
-                                                    <input 
-                                                        type="file" 
-                                                        accept="image/*" 
-                                                        className="absolute inset-0 opacity-0 cursor-pointer z-30" 
-                                                        onChange={(e) => handleImageUpload(slide.id, e)}
-                                                        disabled={uploadingId === slide.id}
-                                                    />
-                                                    {uploadingId === slide.id ? (
-                                                        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                                                    
+                                                    {currentImages.length > 0 && (
+                                                        <Button 
+                                                            variant="ghost" 
+                                                            size="sm" 
+                                                            className="rounded-full h-8 px-4 text-red-500 hover:bg-red-50 hover:text-red-600 font-black uppercase text-[9px] tracking-widest"
+                                                            onClick={() => removeImage(slide.id, previewImage)}
+                                                        >
+                                                            <Trash2 size={12} className="mr-2" /> Delete Asset
+                                                        </Button>
+                                                    )}
+                                                </div>
+
+                                                <div className="aspect-video w-full rounded-[2rem] overflow-hidden bg-black shadow-2xl border border-white/10">
+                                                    {previewImage ? (
+                                                        <img src={previewImage} alt="Selected Preview" className="w-full h-full object-cover transition-transform duration-[3000ms] group-hover/preview:scale-110" />
                                                     ) : (
-                                                        <div className="flex flex-col items-center gap-1 opacity-40 group-hover:opacity-100 transition-opacity">
-                                                            <Plus className="h-6 w-6" />
-                                                            <span className="text-[8px] font-black uppercase">Add Image</span>
+                                                        <div className="h-full w-full flex flex-col items-center justify-center text-white/20 gap-4">
+                                                            <ImageIcon size={64} />
+                                                            <p className="text-xs font-black uppercase tracking-[0.4em]">Empty Slot</p>
                                                         </div>
                                                     )}
                                                 </div>
-                                            </div>
 
-                                            <div className="p-5 rounded-2xl bg-primary/5 border border-primary/10 flex items-start gap-4">
-                                                <div className="h-10 w-10 rounded-xl bg-white shadow-sm flex items-center justify-center shrink-0">
-                                                    <Sparkles className="h-5 w-5 text-primary" />
-                                                </div>
-                                                <div className="text-[11px] leading-relaxed text-muted-foreground font-medium">
-                                                    <span className="block font-black text-accent uppercase mb-1">Background Carousel Active</span>
-                                                    If you upload multiple images, the campaign background will automatically cycle behind the text. This creates a high-impact, dynamic storefront experience. 
+                                                <div className="p-5 rounded-2xl bg-white/50 backdrop-blur-md border border-white/50 flex items-start gap-4">
+                                                    <div className="h-10 w-10 rounded-xl bg-white shadow-sm flex items-center justify-center shrink-0">
+                                                        <Sparkles className="h-5 w-5 text-primary" />
+                                                    </div>
+                                                    <div className="text-[11px] leading-relaxed text-muted-foreground font-medium">
+                                                        <span className="block font-black text-accent uppercase mb-1">Dynamic Sequence Active</span>
+                                                        The order displayed in the slots above defines your background carousel. Click any slot to preview or remove it. Drag to reorder. 
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>

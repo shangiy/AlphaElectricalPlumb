@@ -43,6 +43,7 @@ export default function Hero() {
 
     const interval = setInterval(() => {
       setActiveSlideIndex((prev) => (prev + 1) % slides.length);
+      setBgImageIndex(0); // Reset background when sliding to new campaign
     }, 8000); // Cycle every 8 seconds
 
     return () => clearInterval(interval);
