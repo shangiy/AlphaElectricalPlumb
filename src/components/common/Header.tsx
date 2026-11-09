@@ -34,10 +34,11 @@ import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 
 /**
- * Premium Light Theme Header v19.0:
- * - Layered background: Glass (Top) over Animated Gradient (Bottom).
- * - High-fidelity branding block (Alpha | Line | Subtext).
- * - Exact specification "Products" trigger with purple border.
+ * Compact Light Theme Header v20.0:
+ * - Reduced height: h-20 lg:h-24.
+ * - Scaled logo: 60x60.
+ * - Compact search: h-12.
+ * - Persistent sticky top-0 behavior.
  */
 export default function Header() {
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
@@ -64,11 +65,11 @@ export default function Header() {
   return (
     <header 
       className={cn(
-        "sticky top-0 z-50 w-full transition-all duration-500 overflow-hidden border-b flex items-center h-28 lg:h-36",
+        "sticky top-0 z-50 w-full transition-all duration-500 overflow-hidden border-b flex items-center h-20 lg:h-24",
         isScrolled ? "border-slate-200/60" : "border-transparent bg-slate-50/40"
       )}
     >
-      {/* LAYER 1 (Bottom): Animated Gradient Background */}
+      {/* LAYER 1 (Bottom): Animated Gradient Background (Slower 20s) */}
       <div 
         className={cn(
           "absolute inset-0 -z-20 bg-gradient-to-r from-red-500 via-purple-500 to-blue-500 bg-[length:200%_200%] animate-gradient-x transition-opacity duration-1000",
@@ -87,9 +88,9 @@ export default function Header() {
       <div className="container mx-auto px-4 relative z-10">
         {/* DESKTOP VIEW */}
         <div className="hidden w-full items-center justify-between lg:flex">
-          {/* Logo & Branding Block (Left) */}
-          <NextLink href="/" className="flex flex-shrink-0 items-center gap-4 group">
-            <div className="relative h-[90px] w-[90px]">
+          {/* Compact Logo & Branding Block (Left) */}
+          <NextLink href="/" className="flex flex-shrink-0 items-center gap-3 group">
+            <div className="relative h-[60px] w-[60px]">
                 <Image 
                   src="/logo Alpha.png" 
                   alt="Alpha Logo" 
@@ -98,24 +99,24 @@ export default function Header() {
                 />
             </div>
             <div className="flex flex-col transition-colors duration-300 text-[#0b0f19] group-hover:text-[#8a0b0d]">
-              <span className="font-bold text-[32px] leading-tight transition-all uppercase">Alpha</span>
+              <span className="font-bold text-2xl leading-tight transition-all uppercase tracking-tighter">Alpha</span>
               <div className="w-full h-px bg-current"></div>
-              <span className="text-[14px] leading-tight font-medium">Electricals & Plumbing Ltd</span>
+              <span className="text-[11px] leading-tight font-medium uppercase tracking-wide">Electricals & Plumbing Ltd</span>
             </div>
           </NextLink>
 
-          {/* Centered Search Engine (Middle) */}
-          <div className="flex-1 max-w-xl mx-auto px-8">
-             <HeroSearch compact={true} className="h-16" />
+          {/* Centered Compact Search Engine (Middle) */}
+          <div className="flex-1 max-w-lg mx-auto px-6">
+             <HeroSearch compact={true} className="h-12" />
           </div>
 
-          {/* Navigation & Actions (Right) */}
-          <div className="flex items-center gap-6">
-            <nav className="flex items-center gap-4">
+          {/* Compact Navigation & Actions (Right) */}
+          <div className="flex items-center gap-4">
+            <nav className="flex items-center gap-3">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="px-5 py-2.5 bg-white border-2 border-purple-500 rounded-xl font-bold transition-all flex items-center gap-2 uppercase text-sm tracking-widest text-[#0b0f19] hover:bg-purple-50">
-                    Products <ChevronDown className="h-4 w-4" />
+                  <button className="px-4 py-2 bg-white border border-purple-500 rounded-xl font-bold transition-all flex items-center gap-2 uppercase text-[12px] tracking-widest text-[#0b0f19] hover:bg-purple-50 shadow-sm">
+                    Products <ChevronDown className="h-3 w-3" />
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start" className="rounded-2xl p-2 w-64 bg-white border-slate-200 shadow-2xl">
@@ -125,19 +126,19 @@ export default function Header() {
                    <DropdownMenuItem asChild className="cursor-pointer py-3 rounded-xl font-bold text-[#0b0f19] hover:bg-slate-50"><NextLink href="/category/roofing">Roofing & Construction</NextLink></DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-              <NextLink href="/contact" className="px-4 py-2 font-bold transition-colors uppercase text-sm tracking-widest text-[#0b0f19] hover:text-[#8a0b0d]">Contact Us</NextLink>
-              <NextLink href="/about" className="px-4 py-2 font-bold transition-colors uppercase text-sm tracking-widest text-[#0b0f19] hover:text-[#8a0b0d]">About Us</NextLink>
+              <NextLink href="/contact" className="px-3 py-2 font-bold transition-colors uppercase text-[12px] tracking-widest text-[#0b0f19] hover:text-[#8a0b0d]">Contact Us</NextLink>
+              <NextLink href="/about" className="px-3 py-2 font-bold transition-colors uppercase text-[12px] tracking-widest text-[#0b0f19] hover:text-[#8a0b0d]">About Us</NextLink>
             </nav>
 
-            <div className="flex items-center gap-4">
-              <ShoppingCartComponent triggerClassName="h-12 w-12 transition-all border border-[#0b0f19]/10 text-[#0b0f19] hover:bg-[#0b0f19]/5 shadow-sm hover:shadow-md" />
+            <div className="flex items-center gap-3">
+              <ShoppingCartComponent triggerClassName="h-10 w-10 transition-all border border-[#0b0f19]/10 text-[#0b0f19] hover:bg-[#0b0f19]/5 shadow-sm hover:shadow-md" />
               <NextLink href="/profile">
                 <Button 
                   variant="ghost" 
-                  className="h-12 px-5 rounded-xl gap-2 font-black border border-[#0b0f19]/10 text-[#0b0f19] hover:bg-[#0b0f19]/5 shadow-sm hover:shadow-md"
+                  className="h-10 px-4 rounded-xl gap-2 font-black border border-[#0b0f19]/10 text-[#0b0f19] hover:bg-[#0b0f19]/5 shadow-sm hover:shadow-md"
                 >
-                  <User className="h-6 w-6" />
-                  <span className="hidden xl:inline uppercase text-sm tracking-widest">Log in</span>
+                  <User className="h-5 w-5" />
+                  <span className="hidden xl:inline uppercase text-[11px] tracking-widest">Log in</span>
                 </Button>
               </NextLink>
             </div>
@@ -145,16 +146,16 @@ export default function Header() {
         </div>
 
         {/* MOBILE VIEW */}
-        <div className="w-full lg:hidden flex items-center justify-between h-20 gap-2">
-          <div className="flex items-center gap-3">
+        <div className="w-full lg:hidden flex items-center justify-between h-16 gap-2">
+          <div className="flex items-center gap-2">
              <NextLink href="/" className={cn("flex-shrink-0 transition-all duration-500", mobileSearchOpen ? "opacity-0 w-0 overflow-hidden" : "opacity-100")}>
-                <Image src="/logo Alpha.png" alt="Alpha Logo" width={60} height={60} className="h-auto" />
+                <Image src="/logo Alpha.png" alt="Alpha Logo" width={45} height={45} className="h-auto" />
             </NextLink>
             {!mobileSearchOpen && (
                 <div className="flex flex-col text-[#0b0f19] transition-opacity duration-500">
-                    <span className="font-bold text-[18px] leading-tight uppercase">Alpha</span>
+                    <span className="font-bold text-[16px] leading-tight uppercase">Alpha</span>
                     <div className="w-full h-px bg-current"></div>
-                    <span className="text-[9px] leading-tight font-medium">Electricals & Plumbing Ltd</span>
+                    <span className="text-[8px] leading-tight font-medium uppercase">Electricals & Plumbing Ltd</span>
                 </div>
             )}
           </div>
@@ -165,7 +166,7 @@ export default function Header() {
               onSubmit={handleSearchSubmit} 
               className={cn(
                 "flex items-center rounded-full transition-all duration-700 ease-[cubic-bezier(0.19,1,0.22,1)]",
-                mobileSearchOpen ? "w-[240px] sm:w-[320px] bg-white border border-slate-200 px-2 shadow-xl ring-4 ring-purple-500/5" : "w-11 h-11 bg-transparent border border-[#0b0f19]/10 justify-center"
+                mobileSearchOpen ? "w-[240px] sm:w-[320px] bg-white border border-slate-200 px-2 shadow-xl ring-4 ring-purple-500/5" : "w-10 h-10 bg-transparent border border-[#0b0f19]/10 justify-center"
               )}
             >
               <input 
@@ -184,7 +185,7 @@ export default function Header() {
                 variant="ghost" 
                 size="icon" 
                 className={cn(
-                  "h-10 w-10 rounded-full shrink-0 transition-all flex items-center justify-center",
+                  "h-9 w-9 rounded-full shrink-0 transition-all flex items-center justify-center",
                   mobileSearchOpen ? "text-[#0b0f19] hover:bg-slate-100" : "text-[#0b0f19] hover:bg-[#0b0f19]/5"
                 )}
                 onClick={() => {
@@ -195,16 +196,16 @@ export default function Header() {
                   }
                 }}
               >
-                {mobileSearchOpen ? <X className="h-5 w-5" /> : <Search className="h-5 w-5" />}
+                {mobileSearchOpen ? <X className="h-4 w-4" /> : <Search className="h-4 w-4" />}
               </Button>
             </form>
 
-            <ShoppingCartComponent triggerClassName="h-11 w-11 border border-[#0b0f19]/10 rounded-full text-[#0b0f19] flex items-center justify-center" />
+            <ShoppingCartComponent triggerClassName="h-10 w-10 border border-[#0b0f19]/10 rounded-full text-[#0b0f19] flex items-center justify-center" />
             
             <Sheet>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-11 w-11 border border-[#0b0f19]/10 rounded-full text-[#0b0f19] flex items-center justify-center">
-                  <Menu className="h-6 w-6" />
+                <Button variant="ghost" size="icon" className="h-10 w-10 border border-[#0b0f19]/10 rounded-full text-[#0b0f19] flex items-center justify-center">
+                  <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
               <SheetContent side="right" className="bg-white border-l-slate-100 text-[#0b0f19] rounded-l-[3rem] shadow-2xl">

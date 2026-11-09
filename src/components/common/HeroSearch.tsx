@@ -16,10 +16,10 @@ interface HeroSearchProps {
 }
 
 /**
- * Light Theme Search Bar v10.0:
+ * High-Fidelity Compact Search Bar v11.0:
+ * - Slimmer profile: h-12 in compact mode.
  * - Crisp white pill container.
  * - Navy action button with white icon.
- * - Integrated Camera search.
  */
 export default function HeroSearch({ className, compact = false, onSearch }: HeroSearchProps) {
   const [query, setQuery] = useState('');
@@ -54,7 +54,7 @@ export default function HeroSearch({ className, compact = false, onSearch }: Her
     <form onSubmit={handleSubmit} className={cn("w-full transition-all duration-500", className)}>
       <div className={cn(
         "relative flex items-center w-full p-1 bg-white rounded-full border border-slate-200 shadow-sm focus-within:shadow-md focus-within:border-purple-200 transition-all",
-        compact ? "h-11" : "h-14 lg:h-16"
+        compact ? "h-11 lg:h-12" : "h-14 lg:h-16"
       )}>
         
         {/* Typo Animation Overlay */}
