@@ -8,14 +8,14 @@ const HeroSearch = dynamic(() => import('./HeroSearch'), {
 });
 
 /**
- * Detached Hero Section v10.0
- * Branding: Removed all pink, using professional crimson (#8a0b0d)
+ * Detached Hero Section v11.0
+ * Updated layout and font (Montserrat) to match reference image exactly.
  */
 export default function Hero() {
-  const categoryTags = ["Water Tanks", "LED Lights", "PPR Pipes", "Solar Heaters", "Chandeliers", "Sockets"];
+  const categoryTags = ["Water Tanks", "LED Lights", "PPR Pipes", "Solar Heaters"];
 
   return (
-    <section className="relative w-full overflow-hidden bg-[#0a0f1e] min-h-[70vh] flex items-center">
+    <section className="relative w-full overflow-hidden bg-[#0a0f1e] min-h-[75vh] flex items-center">
       {/* Blueprint Pattern Overlay */}
       <div 
         className="absolute inset-0 opacity-20 pointer-events-none"
@@ -27,37 +27,34 @@ export default function Hero() {
       <div className="absolute inset-0 bg-gradient-to-b from-[#0a0f1e]/80 via-transparent to-[#0a0f1e]" />
 
       <div className="relative z-10 container mx-auto max-w-7xl px-6 py-20 md:py-32">
-        <div className="flex flex-col gap-10 max-w-3xl animate-in fade-in slide-in-from-bottom-8 duration-1000">
+        <div className="flex flex-col gap-8 max-w-4xl animate-in fade-in slide-in-from-bottom-8 duration-1000">
           <div className="space-y-4">
-            <h1 className="text-5xl md:text-7xl font-black font-headline text-white leading-[0.9] tracking-tighter uppercase">
+            <h1 className="text-5xl md:text-7xl font-black font-montserrat text-white leading-[1.1] tracking-tight uppercase">
               Welcome to Alpha <br />
-              <span className="text-[#8a0b0d]">Electricals</span> & <br />
-              Plumbing Ltd
+              Electricals & Plumbing Ltd
             </h1>
-            <p className="text-lg md:text-xl text-slate-400 font-bold tracking-tight max-w-2xl mt-6">
-              East Africa's premier hub for industrial hardware, smart electrical systems, and professional plumbing infrastructure.
+            <p className="text-xl md:text-2xl text-white font-medium tracking-tight font-montserrat opacity-90">
+              Your trusted source for Tanks, Lighting, Plumbing & More
             </p>
           </div>
 
           {/* Action Center */}
-          <div className="space-y-8">
-            <div className="flex flex-col sm:flex-row items-center gap-4 w-full max-w-2xl">
-              <HeroSearch />
-              <button className="h-16 px-10 rounded-full bg-primary text-white font-black uppercase tracking-[0.2em] shadow-2xl hover:scale-105 hover:bg-primary/90 active:scale-95 transition-all">
-                Explore
-              </button>
-            </div>
+          <div className="space-y-6 max-w-3xl">
+            <HeroSearch />
 
             {/* Category Pill Row */}
-            <div className="flex flex-wrap gap-2 pt-2">
-              {categoryTags.map((tag) => (
-                <button 
-                  key={tag}
-                  className="px-4 py-1.5 rounded-full bg-slate-800/50 border border-slate-700/50 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:bg-[#8a0b0d] hover:text-white hover:border-[#8a0b0d] transition-all active:scale-95"
-                >
-                  {tag}
-                </button>
-              ))}
+            <div className="flex flex-wrap items-center gap-4 pt-2">
+              <span className="text-white font-medium font-montserrat text-sm opacity-80">Frequently searched:</span>
+              <div className="flex flex-wrap gap-2">
+                {categoryTags.map((tag) => (
+                  <button 
+                    key={tag}
+                    className="px-5 py-2 rounded-full border border-white/30 text-xs font-bold text-white hover:bg-white hover:text-[#0a0f1e] transition-all active:scale-95 font-montserrat uppercase tracking-wider"
+                  >
+                    {tag}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </div>

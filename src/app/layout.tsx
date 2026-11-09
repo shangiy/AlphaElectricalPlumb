@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { Poppins, PT_Sans } from 'next/font/google';
+import { Poppins, PT_Sans, Montserrat } from 'next/font/google';
 import './globals.css';
 import { cn } from '@/lib/utils';
 import { ClientLayout } from '@/components/layout/ClientLayout';
@@ -17,6 +17,13 @@ const ptSans = PT_Sans({
   display: 'swap',
   variable: '--font-pt-sans',
   weight: ['400', '700'],
+});
+
+const montserrat = Montserrat({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-montserrat',
+  weight: ['400', '500', '600', '700', '900'],
 });
 
 export const viewport: Viewport = {
@@ -72,7 +79,8 @@ export default function RootLayout({
         className={cn(
           'min-h-screen bg-background font-body antialiased selection:bg-primary selection:text-white',
           poppins.variable,
-          ptSans.variable
+          ptSans.variable,
+          montserrat.variable
         )}
       >
         <ClientLayout>
