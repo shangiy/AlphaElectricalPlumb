@@ -12,6 +12,7 @@ import { AuthProvider } from '@/context/AuthProvider';
 import { ProductProvider } from '@/context/ProductProvider';
 import { Button } from '@/components/ui/button';
 import { MessageSquare } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 // Dynamically import heavy interactive components
 const Chatbot = dynamic(() => import('@/components/common/Chatbot'), {
@@ -54,10 +55,22 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
       <ProductProvider>
         <CartProvider>
           <div className="relative flex flex-col min-h-screen">
-            {!isAdminRoute && <TopBanner />}
-            <Header />
-            <main className="flex-1 flex flex-col">{children}</main>
-            {!isAdminRoute && <Footer />}
+            {/* 1. FIXED WRAPPER CONTAINER: Pins both the banner and header to the top */}
+            {!isAdminRoute && (
+              <div className="fixed top-0 left-0 right-0 z-50 w-full flex flex-col shadow-md">
+                <TopBanner />
+                <Header />
+              </div>
+            )}
+            
+            {/* 2. PAGE CONTENT CONTAINER: Uses pt so content starts BELOW the fixed header */}
+            <main className={cn(
+              "w-full min-h-screen flex flex-col",
+              !isAdminRoute ? "pt-[110px] sm:pt-[125px]" : "pt-0"
+            )}>
+              {children}
+              {!isAdminRoute && <Footer />}
+            </main>
           </div>
           
           {!isAdminRoute && (
