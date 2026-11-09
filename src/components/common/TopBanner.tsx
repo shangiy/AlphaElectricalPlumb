@@ -4,8 +4,8 @@ import React from 'react';
 
 export default function TopBanner() {
   return (
-    <div className="text-white py-1.5 px-4 bg-gradient-to-r from-red-500 via-purple-500 to-blue-500 bg-[length:200%_200%] animate-gradient-x text-xs font-medium border-b border-white/5">
-      <div className="container mx-auto flex justify-between items-center h-6 overflow-hidden">
+    <div className="text-white py-1.5 lg:py-4 px-4 bg-gradient-to-r from-red-500 via-purple-500 to-blue-500 bg-[length:200%_200%] animate-gradient-x text-xs lg:text-base font-medium border-b border-white/5">
+      <div className="container mx-auto flex justify-between items-center h-6 lg:h-10 overflow-hidden">
         {/* Business Hours - Desktop */}
         <div className="hidden md:flex items-center gap-2 flex-shrink-0">
           <span className="opacity-80">Mon - Sat: 8:00 AM – 6:00 PM</span>

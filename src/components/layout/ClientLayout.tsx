@@ -66,7 +66,7 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
             {/* 2. PAGE CONTENT CONTAINER: Uses pt so content starts BELOW the fixed header */}
             <main className={cn(
               "w-full min-h-screen flex flex-col",
-              !isAdminRoute ? "pt-[110px] sm:pt-[125px]" : "pt-0"
+              !isAdminRoute ? "pt-[110px] sm:pt-[125px] lg:pt-[200px]" : "pt-0"
             )}>
               {children}
               {!isAdminRoute && <Footer />}

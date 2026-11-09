@@ -9,7 +9,6 @@ import {
   User, 
   Menu, 
   Search, 
-  Camera, 
   X 
 } from 'lucide-react';
 import { 
@@ -30,7 +29,6 @@ import {
 } from '@/components/ui/sheet';
 import { useAuth } from '@/context/AuthProvider';
 import { useCart } from '@/context/CartProvider';
-import { cn } from '@/lib/utils';
 import ShoppingCartComponent from './ShoppingCart';
 import HeroSearch from './HeroSearch';
 
@@ -40,13 +38,13 @@ export default function Header() {
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
 
   return (
-    <header className="w-full bg-[#0b0f19]/95 backdrop-blur-md border-b border-white/10 h-20 sm:h-24 flex items-center">
+    <header className="w-full bg-[#0b0f19]/95 backdrop-blur-md border-b border-white/10 h-20 sm:h-24 lg:h-36 flex items-center">
       <div className="container mx-auto px-4 relative z-10 h-full">
         {/* DESKTOP VIEW (LG+) */}
         <div className="hidden w-full items-center justify-between gap-4 lg:flex h-full">
           {/* Left: Branding */}
-          <NextLink href="/" className="flex flex-shrink-0 items-center gap-3 group">
-            <div className="relative h-[65px] w-[65px] xl:h-[80px] xl:w-[80px]">
+          <NextLink href="/" className="flex flex-shrink-0 items-center gap-4 group">
+            <div className="relative h-[65px] w-[65px] lg:h-[110px] lg:w-[110px]">
                 <Image 
                   src="/logo Alpha.png" 
                   alt="Alpha Logo" 
@@ -55,47 +53,47 @@ export default function Header() {
                 />
             </div>
             <div className="flex flex-col text-white group-hover:text-[#EC4899] transition-colors">
-              <span className="font-black text-lg xl:text-xl leading-tight uppercase tracking-tighter">Alpha</span>
+              <span className="font-black text-lg lg:text-3xl leading-tight uppercase tracking-tighter">Alpha</span>
               <div className="w-full h-px bg-current opacity-40"></div>
-              <span className="text-[10px] xl:text-[11px] leading-tight font-bold uppercase tracking-widest">Electricals & Plumbing Ltd</span>
+              <span className="text-[10px] lg:text-xs leading-tight font-bold uppercase tracking-widest">Electricals & Plumbing Ltd</span>
             </div>
           </NextLink>
 
           {/* Middle: Centered Search Bar */}
-          <div className="flex-1 max-w-xl mx-auto px-4">
-             <HeroSearch className="h-12 !bg-white/5 !border-white/10" compact />
+          <div className="flex-1 max-w-2xl mx-auto px-8">
+             <HeroSearch className="h-12 lg:h-16 !bg-white/5 !border-white/10" compact />
           </div>
 
           {/* Right: Navigation & Actions */}
-          <div className="flex items-center gap-6">
-            <nav className="flex items-center gap-1">
+          <div className="flex items-center gap-8">
+            <nav className="flex items-center gap-2">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="px-3 py-2 text-white font-bold hover:text-[#EC4899] transition-colors flex items-center gap-1 uppercase text-sm tracking-widest">
-                    Products <ChevronDown className="h-3 w-3" />
+                  <button className="px-3 py-2 text-white font-bold hover:text-[#EC4899] transition-colors flex items-center gap-1 uppercase text-sm lg:text-lg tracking-widest">
+                    Products <ChevronDown className="h-4 w-4" />
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="rounded-2xl p-2 w-56 bg-[#0b0f19] border-white/10 text-white">
-                   <DropdownMenuItem asChild className="hover:bg-white/5 cursor-pointer"><NextLink href="/category/tanks">Water Tanks</NextLink></DropdownMenuItem>
-                   <DropdownMenuItem asChild className="hover:bg-white/5 cursor-pointer"><NextLink href="/category/plumbing">Plumbing Equipment</NextLink></DropdownMenuItem>
-                   <DropdownMenuItem asChild className="hover:bg-white/5 cursor-pointer"><NextLink href="/category/lighting">Lighting & Electrical</NextLink></DropdownMenuItem>
-                   <DropdownMenuItem asChild className="hover:bg-white/5 cursor-pointer"><NextLink href="/category/roofing">Roofing & Construction</NextLink></DropdownMenuItem>
+                <DropdownMenuContent align="start" className="rounded-2xl p-2 w-64 bg-[#0b0f19] border-white/10 text-white">
+                   <DropdownMenuItem asChild className="hover:bg-white/5 cursor-pointer text-base py-3"><NextLink href="/category/tanks">Water Tanks</NextLink></DropdownMenuItem>
+                   <DropdownMenuItem asChild className="hover:bg-white/5 cursor-pointer text-base py-3"><NextLink href="/category/plumbing">Plumbing Equipment</NextLink></DropdownMenuItem>
+                   <DropdownMenuItem asChild className="hover:bg-white/5 cursor-pointer text-base py-3"><NextLink href="/category/lighting">Lighting & Electrical</NextLink></DropdownMenuItem>
+                   <DropdownMenuItem asChild className="hover:bg-white/5 cursor-pointer text-base py-3"><NextLink href="/category/roofing">Roofing & Construction</NextLink></DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-              <NextLink href="/contact" className="px-3 py-2 text-white font-bold hover:text-[#EC4899] transition-colors uppercase text-sm tracking-widest">Contact</NextLink>
-              <NextLink href="/about" className="px-3 py-2 text-white font-bold hover:text-[#EC4899] transition-colors uppercase text-sm tracking-widest">About</NextLink>
+              <NextLink href="/contact" className="px-3 py-2 text-white font-bold hover:text-[#EC4899] transition-colors uppercase text-sm lg:text-lg tracking-widest">Contact</NextLink>
+              <NextLink href="/about" className="px-3 py-2 text-white font-bold hover:text-[#EC4899] transition-colors uppercase text-sm lg:text-lg tracking-widest">About</NextLink>
             </nav>
 
-            <div className="flex items-center gap-3">
-              <ShoppingCartComponent triggerClassName="h-10 w-10 text-white hover:bg-white/5 transition-colors border border-white/10" />
+            <div className="flex items-center gap-4">
+              <ShoppingCartComponent triggerClassName="h-12 w-12 text-white hover:bg-white/5 transition-colors border border-white/10" />
               
               <NextLink href="/profile">
                 <Button 
                   variant="ghost" 
-                  className="h-10 px-4 rounded-xl gap-2 font-bold text-white hover:bg-white/5 border border-white/10"
+                  className="h-12 px-6 rounded-xl gap-3 font-bold text-white hover:bg-white/5 border border-white/10"
                 >
-                  <User className="h-5 w-5" />
-                  <span className="hidden xl:inline uppercase text-xs tracking-widest">Account</span>
+                  <User className="h-6 w-6" />
+                  <span className="hidden xl:inline uppercase text-sm tracking-widest">Account</span>
                 </Button>
               </NextLink>
             </div>
