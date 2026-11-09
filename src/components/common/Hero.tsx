@@ -1,4 +1,3 @@
-
 'use client';
 
 import dynamic from 'next/dynamic';
@@ -44,7 +43,7 @@ export default function Hero() {
           <div className="space-y-8">
             <div className="flex flex-col sm:flex-row items-center gap-4 w-full max-w-2xl">
               <HeroSearch />
-              <button className="h-16 px-10 rounded-full bg-[#2b235f] text-white font-black uppercase tracking-[0.2em] shadow-2xl hover:scale-105 active:scale-95 transition-all">
+              <button className="h-16 px-10 rounded-full bg-primary text-white font-black uppercase tracking-[0.2em] shadow-2xl hover:scale-105 hover:bg-primary/90 active:scale-95 transition-all">
                 Explore
               </button>
             </div>
