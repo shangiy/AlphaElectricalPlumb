@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import { 
     Plus, 
     Trash2, 
@@ -94,7 +95,7 @@ export default function HeroManager({ initialSlides }: { initialSlides: HeroSlid
                     <Button onClick={handleAddSlide} variant="outline" className="rounded-full h-12 px-6 font-bold">
                         <Plus className="w-4 h-4 mr-2" /> Add Slide
                     </Button>
-                    <Button onClick={handleSave} disabled={saving} className="rounded-full h-12 px-10 font-black uppercase tracking-tighter shadow-xl bg-primary text-white">
+                    <Button onClick={handleSave} disabled={saving} className="rounded-full h-12 px-10 font-black uppercase tracking-tighter shadow-lg bg-primary text-white">
                         {saving ? <Loader2 className="animate-spin w-4 h-4 mr-2" /> : <Save className="w-4 h-4 mr-2" />}
                         Publish Changes
                     </Button>
