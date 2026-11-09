@@ -215,9 +215,22 @@ export default function Header() {
               </SheetTrigger>
               <SheetContent side="right" className="bg-white border-l-slate-100 text-[#0b0f19] rounded-l-[3rem] shadow-2xl">
                 <SheetHeader>
-                  <SheetTitle className="text-[#0b0f19] text-left font-black uppercase tracking-widest flex items-center gap-2">
-                      <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center text-white"><Menu size={18} /></div>
-                      Alpha Ecosystem
+                  <SheetTitle className="text-[#0b0f19] text-left">
+                    <NextLink href="/" className="flex items-center gap-3 group">
+                      <div className="relative h-[50px] w-[50px]">
+                          <Image 
+                            src="/logo Alpha.png" 
+                            alt="Alpha Logo" 
+                            fill
+                            className="object-contain transition-all duration-500"
+                          />
+                      </div>
+                      <div className="flex flex-col transition-colors duration-300 group-hover:text-primary">
+                        <span className="font-bold text-xl leading-tight uppercase tracking-tighter">Alpha</span>
+                        <div className="w-full h-px bg-current"></div>
+                        <span className="text-[10px] leading-tight font-medium uppercase tracking-wide">Electricals & Plumbing Ltd</span>
+                      </div>
+                    </NextLink>
                   </SheetTitle>
                   <SheetDescription className="sr-only">Main Navigation</SheetDescription>
                 </SheetHeader>
