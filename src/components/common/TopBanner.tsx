@@ -5,13 +5,14 @@ import { Clock } from 'lucide-react';
 import Image from 'next/image';
 
 /**
- * High-Fidelity Marquee Banner
- * - Background: Animated Gradient (Red-Purple-Blue)
- * - Content: Business hours, Scrolling Offers, TikTok Social
+ * High-Fidelity Marquee Banner (Sticky Node)
+ * - Positioning: sticky top-0 z-[60] to remain glued at the absolute top.
+ * - Background: Animated Gradient Engine.
+ * - Content: Business hours, Horizontal scrolling offers, Social node.
  */
 export default function TopBanner() {
   return (
-    <div className="text-white py-2 px-4 bg-gradient-to-r from-red-500 via-purple-500 to-blue-500 bg-[length:200%_200%] animate-gradient-x">
+    <div className="text-white py-2 px-4 bg-gradient-to-r from-red-500 via-purple-500 to-blue-500 bg-[length:200%_200%] animate-gradient-x sticky top-0 z-[60]">
       <div className="container mx-auto flex justify-between items-center h-6">
         {/* Business Hours - Desktop Only */}
         <div className="hidden md:flex items-center gap-2 flex-shrink-0">
@@ -22,28 +23,29 @@ export default function TopBanner() {
         {/* Marquee Center Container */}
         <div className="w-full inline-flex flex-nowrap overflow-hidden [mask-image:_linear-gradient(to_right,transparent_0,_black_128px,_black_calc(100%-200px),transparent_100%)]">
           <ul className="flex-1 font-bold text-center flex items-center justify-center md:justify-start [&_li]:mx-8 animate-scroll">
-            <li className="whitespace-nowrap text-base md:text-lg">OFFER! OFFER! OFFER! Easter Holiday OFFER</li>
-            <li className="whitespace-nowrap text-base md:text-lg">Feel welcomed to Shop with us @best prices</li>
+            <li className="whitespace-nowrap text-base md:text-lg text-white">OFFER! OFFER! OFFER! Easter Holiday OFFER</li>
+            <li className="whitespace-nowrap text-base md:text-lg text-white">Feel welcomed to Shop with us @best prices</li>
             {/* Duplicated for seamless loop */}
-            <li className="whitespace-nowrap text-base md:text-lg">OFFER! OFFER! OFFER! Easter Holiday OFFER</li>
-            <li className="whitespace-nowrap text-base md:text-lg">Feel welcomed to Shop with us @best prices</li>
+            <li className="whitespace-nowrap text-base md:text-lg text-white">OFFER! OFFER! OFFER! Easter Holiday OFFER</li>
+            <li className="whitespace-nowrap text-base md:text-lg text-white">Feel welcomed to Shop with us @best prices</li>
           </ul>
         </div>
 
         {/* Social Node - Desktop Only */}
         <div className="hidden md:flex items-center gap-2 justify-end flex-shrink-0">
-          <Image 
-            src="/tiktok-V1.png" 
-            alt="TikTok" 
-            width={16} 
-            height={16} 
-            className="object-contain"
-          />
+          <div className="relative h-4 w-4 shrink-0">
+             <Image 
+                src="/tiktok-V1.png" 
+                alt="TikTok" 
+                fill
+                className="object-contain"
+              />
+          </div>
           <a 
             href="https://www.tiktok.com/@AlphaElectricalsandplumb" 
             target="_blank" 
             rel="noopener noreferrer" 
-            className="text-sm hover:underline"
+            className="text-sm hover:underline font-bold"
           >
             Follow us on TikTok
           </a>

@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Link from 'next/image';
 import NextLink from 'next/link';
 import Image from 'next/image';
 import { 
@@ -35,10 +34,10 @@ import { cn } from '@/lib/utils';
 import ShoppingCartComponent from './ShoppingCart';
 
 /**
- * Specification-Compliant Sticky Header
- * - Persistence: Glued to top viewport margin
- * - Transitions: Overlays hero and becomes opaque on scroll
- * - Branding: Crimson hover states and large high-res logo
+ * Specification-Compliant Sticky Header v4.2
+ * - Positioning: sticky top-10 (40px) to stack correctly below the Fixed TopBanner.
+ * - Transitions: Dynamic opacity layers (gradient and glassmorphism) triggered on scroll.
+ * - Branding: High-res logo block with horizontal separator and crimson hover states.
  */
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -59,14 +58,14 @@ export default function Header() {
   );
 
   return (
-    <header className="sticky top-0 z-50 w-full transition-all duration-500 overflow-hidden bg-transparent border-b border-transparent">
+    <header className="sticky top-10 z-50 w-full transition-all duration-500 overflow-hidden bg-transparent border-b border-transparent">
       {/* Background Layer 1: Gradient (Triggered on Scroll) */}
       <div className={cn(
         "absolute inset-0 -z-20 bg-gradient-to-r from-red-500 via-purple-500 to-blue-500 bg-[length:200%_200%] animate-gradient-x transition-opacity duration-500",
-        isScrolled ? "opacity-0" : "opacity-0" // Controlled by the specific opacity levels in the snippet
+        isScrolled ? "opacity-100" : "opacity-0"
       )} />
       
-      {/* Background Layer 2: Opaque Glassmorphism (Triggered on Scroll) */}
+      {/* Background Layer 2: Glassmorphism (Triggered on Scroll) */}
       <div className={cn(
         "absolute inset-0 -z-10 bg-background/90 backdrop-blur-md transition-opacity duration-500",
         isScrolled ? "opacity-100 shadow-md" : "opacity-0"
@@ -80,13 +79,14 @@ export default function Header() {
         )}>
           {/* Logo & Branding Block */}
           <NextLink href="/" className="flex flex-shrink-0 items-center gap-3 group">
-            <Image 
-              src="/logo Alpha.png" 
-              alt="Alpha Electricals & Plumbing Ltd Logo" 
-              width={90} 
-              height={90} 
-              className={cn("h-auto transition-all duration-500", isScrolled ? "scale-90" : "scale-100")}
-            />
+            <div className="relative h-[90px] w-[90px] transition-all duration-500">
+                <Image 
+                src="/logo Alpha.png" 
+                alt="Alpha Electricals & Plumbing Ltd Logo" 
+                fill
+                className={cn("object-contain transition-all duration-500", isScrolled ? "scale-90" : "scale-100")}
+                />
+            </div>
             <div className={cn(
               "hidden sm:flex flex-col transition-colors duration-300 group-hover:text-[#8a0b0d]",
               isScrolled ? "text-accent" : "text-white"
@@ -126,7 +126,7 @@ export default function Header() {
                 isScrolled ? "text-accent" : "text-white"
               )} />
               
-              <NextLink href="/auth/login">
+              <NextLink href="/profile">
                 <Button 
                   variant="ghost" 
                   className={cn(
@@ -135,7 +135,7 @@ export default function Header() {
                   )}
                 >
                   <User className="h-5 w-5" />
-                  <span className="hidden xl:inline">Log in</span>
+                  <span className="hidden xl:inline">Account</span>
                 </Button>
               </NextLink>
             </div>
