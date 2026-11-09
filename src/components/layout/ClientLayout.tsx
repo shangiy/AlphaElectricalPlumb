@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -63,7 +62,7 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
                 {!isChatbotOpen && (
                   <Button 
                     onClick={() => setIsChatbotOpen(true)}
-                    className="h-auto rounded-full bg-[#007bff] px-4 py-2 text-base font-semibold text-white shadow-lg hover:bg-[#0056b3]"
+                    className="h-auto rounded-full bg-primary px-4 py-2 text-base font-semibold text-white shadow-lg hover:bg-primary/90"
                   >
                     <MessageSquare className="mr-2 h-5 w-5" />
                     Alpha AI
