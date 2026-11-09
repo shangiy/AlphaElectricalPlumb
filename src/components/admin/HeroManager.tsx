@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState } from 'react';
@@ -148,19 +147,23 @@ export default function HeroManager({ initialSlides }: { initialSlides: HeroSlid
                                           />
                                         </div>
 
-                                        {/* Live Headline Preview in CMS */}
+                                        {/* Live Headline Preview in CMS - Preserves Newlines/Spaces */}
                                         <div className="p-8 rounded-[2rem] bg-[#0a0f1e] border border-white/5 relative overflow-hidden">
                                            <div className="absolute inset-0 opacity-10" style={{ backgroundImage: `radial-gradient(#1e293b 1px, transparent 0)`, backgroundSize: '20px 20px' }} />
                                            <div className="relative z-10">
                                               <p className="text-[8px] font-black uppercase tracking-[0.3em] text-white/40 mb-4">Live Layout Preview</p>
-                                              <h1 className="text-3xl font-black leading-tight tracking-tighter uppercase break-words">
+                                              <h1 className="text-3xl font-black leading-tight tracking-tighter uppercase break-words whitespace-pre-wrap">
                                                 {(() => {
                                                   if (!slide.headline) return <span className="text-white/20">Awaiting input...</span>;
                                                   const styles = slide.wordStyles || [];
+                                                  // Split by whitespace and newlines but keep them in the array
                                                   const parts = slide.headline.split(/(\s+)/);
                                                   
                                                   return parts.map((part, i) => {
+                                                    // If it's a whitespace group (space, tab, newline), render as is
                                                     if (part.trim() === '') return part;
+                                                    
+                                                    // Sanitize word for matching (remove punctuation and trim)
                                                     const cleanPart = part.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"").toLowerCase().trim();
                                                     if (!cleanPart) return part;
                                                     

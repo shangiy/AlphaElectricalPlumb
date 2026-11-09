@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -14,8 +13,8 @@ const HeroSearch = dynamic(() => import('./HeroSearch'), {
 });
 
 /**
- * Dynamic Detached Hero Section v12.0
- * Features Triple Word Highlight Engine and Cloud-Synchronized Campaigns.
+ * Dynamic Detached Hero Section v12.1
+ * Features Precision Whitespace Preservation and Synchronized Word Styling.
  */
 export default function Hero() {
   const [slides, setSlides] = useState<HeroSlide[]>([]);
@@ -80,19 +79,20 @@ export default function Hero() {
         <div className="flex flex-col gap-8 max-w-4xl animate-in fade-in slide-in-from-bottom-8 duration-1000">
           <div className="space-y-4">
             <h1 
-                className="text-5xl md:text-8xl font-black leading-[1.05] tracking-tighter uppercase"
+                className="text-5xl md:text-8xl font-black leading-[1.05] tracking-tighter uppercase whitespace-pre-wrap"
                 style={{ marginTop: `${slide.headlineTopMargin || 0}cm` }}
             >
               {(() => {
                 if (!slide.headline) return null;
                 const styles = slide.wordStyles || [];
-                // Split by spaces but preserve them in the array to keep formatting
+                // Split by whitespace and newlines to preserve exact original formatting
                 const parts = slide.headline.split(/(\s+)/);
                 
                 return parts.map((part, i) => {
-                  if (part.trim() === '') return part; // Return spaces/newlines as is
+                  // Preserve whitespace segments (spaces, tabs, newlines)
+                  if (part.trim() === '') return part; 
                   
-                  // Match logic: remove punctuation and whitespace for comparison
+                  // Clean word for dictionary matching
                   const cleanPart = part.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"").toLowerCase().trim();
                   if (!cleanPart) return part;
 
