@@ -26,11 +26,15 @@ interface BannerConfig {
     halloweenStyleType?: string;
     halloweenOrientation?: string;
     halloweenTextStyle?: string;
+    holidayText?: string;
+    holidayStyleType?: string;
+    holidayOrientation?: string;
+    holidayTextStyle?: string;
 }
 
 /**
- * High-Fidelity Independent Top Banner v16.0:
- * Features specialized character-splitting logic for the Kenyan Flag visual style.
+ * High-Fidelity Independent Top Banner v17.0:
+ * Features a triple-badge carousel and character-splitting logic for the Kenyan Flag visual style.
  */
 export default function TopBanner() {
   const [config, setConfig] = useState<BannerConfig>({
@@ -51,7 +55,11 @@ export default function TopBanner() {
     halloweenText: '',
     halloweenStyleType: 'fire-emoji',
     halloweenOrientation: 'horizontal',
-    halloweenTextStyle: 'normal'
+    halloweenTextStyle: 'normal',
+    holidayText: '',
+    holidayStyleType: 'kenyan-flag',
+    holidayOrientation: 'vertical',
+    holidayTextStyle: 'bold'
   });
 
   useEffect(() => {
@@ -232,6 +240,16 @@ export default function TopBanner() {
                                   config.halloweenStyleType || 'fire-emoji', 
                                   config.halloweenOrientation || 'horizontal',
                                   config.halloweenTextStyle
+                                )}
+                            </span>
+                        )}
+                        {config.holidayText && (
+                            <span className="px-3 py-1 rounded-full bg-white mr-4 shadow-lg transform -skew-x-6 flex-shrink-0 flex items-center justify-center">
+                                {renderStyledBadgeText(
+                                  config.holidayText, 
+                                  config.holidayStyleType || 'kenyan-flag', 
+                                  config.holidayOrientation || 'vertical',
+                                  config.holidayTextStyle
                                 )}
                             </span>
                         )}

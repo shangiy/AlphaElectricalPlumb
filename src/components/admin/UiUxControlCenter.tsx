@@ -80,6 +80,10 @@ interface BannerConfig {
     halloweenStyleType?: string;
     halloweenOrientation?: string;
     halloweenTextStyle?: string;
+    holidayText?: string;
+    holidayStyleType?: string;
+    holidayOrientation?: string;
+    holidayTextStyle?: string;
 }
 
 const DEFAULT_BANNER: BannerConfig = {
@@ -96,7 +100,11 @@ const DEFAULT_BANNER: BannerConfig = {
     halloweenText: '',
     halloweenStyleType: 'fire-emoji',
     halloweenOrientation: 'horizontal',
-    halloweenTextStyle: 'normal'
+    halloweenTextStyle: 'normal',
+    holidayText: '',
+    holidayStyleType: 'kenyan-flag',
+    holidayOrientation: 'vertical',
+    holidayTextStyle: 'bold'
 };
 
 export default function UiUxControlCenter() {
@@ -405,6 +413,17 @@ export default function UiUxControlCenter() {
                                                                 )}
                                                             </div>
                                                         )}
+                                                        {/* Holiday Badge */}
+                                                        {bannerConfig.holidayText && (
+                                                            <div className="px-3 py-1 rounded-full bg-white mr-4 shadow-lg transform -skew-x-6 flex-shrink-0 flex items-center justify-center">
+                                                                {renderStyledBadgeText(
+                                                                    bannerConfig.holidayText, 
+                                                                    bannerConfig.holidayStyleType || 'kenyan-flag', 
+                                                                    bannerConfig.holidayOrientation || 'vertical',
+                                                                    bannerConfig.holidayTextStyle
+                                                                )}
+                                                            </div>
+                                                        )}
                                                         {/* Marquee Item */}
                                                         <span 
                                                             className={cn(
@@ -544,6 +563,51 @@ export default function UiUxControlCenter() {
                                     <select 
                                         value={bannerConfig.halloweenTextStyle || 'normal'} 
                                         onChange={(e) => setBannerConfig({...bannerConfig, halloweenTextStyle: e.target.value})}
+                                        className="w-full h-12 px-4 rounded-xl border font-bold text-sm bg-white"
+                                    >
+                                        {TEXT_STYLE_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
+                                    </select>
+                                </div>
+                            </div>
+
+                            {/* HOLIDAY TEXT CONTROLS */}
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-8 pt-6 border-t border-dashed">
+                                <div className="space-y-3">
+                                    <Label className="text-[10px] font-black uppercase text-muted-foreground/60 tracking-widest">Holiday Text (Hero Pill)</Label>
+                                    <Input 
+                                        value={bannerConfig.holidayText || ''} 
+                                        onChange={(e) => setBannerConfig({...bannerConfig, holidayText: e.target.value})}
+                                        placeholder="e.g. MASHUJAA"
+                                        className="h-12 rounded-xl font-black"
+                                    />
+                                </div>
+                                <div className="space-y-3">
+                                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Style Engine</Label>
+                                    <select 
+                                        value={bannerConfig.holidayStyleType || 'kenyan-flag'} 
+                                        onChange={(e) => setBannerConfig({...bannerConfig, holidayStyleType: e.target.value})}
+                                        className="w-full h-12 px-4 rounded-xl border font-bold text-sm bg-white"
+                                    >
+                                        {STYLE_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
+                                    </select>
+                                </div>
+                                
+                                <div className="space-y-3">
+                                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Orientation</Label>
+                                    <select 
+                                        value={bannerConfig.holidayOrientation || 'vertical'} 
+                                        onChange={(e) => setBannerConfig({...bannerConfig, holidayOrientation: e.target.value})}
+                                        className="w-full h-12 px-4 rounded-xl border font-bold text-sm bg-white"
+                                    >
+                                        {ORIENTATION_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
+                                    </select>
+                                </div>
+
+                                <div className="space-y-3">
+                                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Text Style</Label>
+                                    <select 
+                                        value={bannerConfig.holidayTextStyle || 'bold'} 
+                                        onChange={(e) => setBannerConfig({...bannerConfig, holidayTextStyle: e.target.value})}
                                         className="w-full h-12 px-4 rounded-xl border font-bold text-sm bg-white"
                                     >
                                         {TEXT_STYLE_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
