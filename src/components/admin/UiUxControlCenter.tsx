@@ -23,15 +23,18 @@ import {
   Settings2,
   X,
   RotateCcw,
-  Eye
+  Eye,
+  LayoutTemplate
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import FeaturedProductManager from './FeaturedProductManager';
 import CategoryManager from './CategoryManager';
 import HeroSearch from '@/components/common/HeroSearch';
+import HeroManager from './HeroManager';
 import { 
   getStorefrontSetting, 
-  updateStorefrontSetting
+  updateStorefrontSetting,
+  type HeroSlide
 } from '@/app/actions/cms-actions';
 import { cn } from '@/lib/utils';
 
@@ -107,17 +110,19 @@ export default function UiUxControlCenter() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
-  // Banner Details State
+  // CMS State
   const [bannerConfig, setBannerConfig] = useState<BannerConfig>(DEFAULT_BANNER);
   const [searchPhrases, setSearchPhrases] = useState<string[]>([]);
+  const [heroSlides, setHeroSlides] = useState<HeroSlide[]>([]);
   const [newPhrase, setNewPhrase] = useState('');
 
   const loadAllSettings = useCallback(async () => {
     setLoading(true);
     try {
-      const [search, bannerSet] = await Promise.all([
+      const [search, bannerSet, heroSet] = await Promise.all([
         getStorefrontSetting('search_phrases'),
         getStorefrontSetting('top_banner_config'),
+        getStorefrontSetting('hero_slides'),
       ]);
       
       if (search) setSearchPhrases(search);
@@ -128,6 +133,7 @@ export default function UiUxControlCenter() {
               highlighters: bannerSet.highlighters || []
           }));
       }
+      if (heroSet) setHeroSlides(heroSet as HeroSlide[]);
     } catch (err) {
       console.error("CMS data fetch failed:", err);
     } finally {
@@ -268,9 +274,10 @@ export default function UiUxControlCenter() {
       </div>
 
       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 h-auto bg-muted/30 p-2 rounded-[2.5rem] mb-12 border shadow-inner">
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-6 h-auto bg-muted/30 p-2 rounded-[2.5rem] mb-12 border shadow-inner">
             <TabsTrigger value="topbanner" className="rounded-[1.5rem] font-black uppercase text-[10px] py-4">Banner CMS</TabsTrigger>
             <TabsTrigger value="search" className="rounded-[1.5rem] font-black uppercase text-[10px] py-4">Search Keywords</TabsTrigger>
+            <TabsTrigger value="hero" className="rounded-[1.5rem] font-black uppercase text-[10px] py-4">Hero Edit</TabsTrigger>
             <TabsTrigger value="spotlight" className="rounded-[1.5rem] font-black uppercase text-[10px] py-4">Spotlight</TabsTrigger>
             <TabsTrigger value="categories" className="rounded-[1.5rem] font-black uppercase text-[10px] py-4">Collections</TabsTrigger>
             <TabsTrigger value="moderation" className="rounded-[1.5rem] font-black uppercase text-[10px] py-4">Moderation</TabsTrigger>
@@ -655,6 +662,16 @@ export default function UiUxControlCenter() {
                         <Button onClick={() => updateStorefrontSetting('search_phrases', searchPhrases)} className="w-full h-14 rounded-full font-black uppercase bg-primary text-white mt-4 shadow-xl">Sync Keywords</Button>
                     </CardContent>
                 </Card>
+            </div>
+        </TabsContent>
+
+        <TabsContent value="hero">
+            <div className="space-y-8">
+                <div className="flex items-center gap-3 mb-4">
+                    <LayoutTemplate className="text-primary h-6 w-6" />
+                    <h2 className="text-2xl font-black font-headline text-accent uppercase tracking-tighter">Hero Section Management</h2>
+                </div>
+                <HeroManager initialSlides={heroSlides} />
             </div>
         </TabsContent>
 
