@@ -316,13 +316,13 @@ export default function UiUxControlCenter() {
                                 bannerConfig.styleOrientation !== 'text-clip' && getBackgroundColors(bannerConfig.styleType),
                                 bannerConfig.styleOrientation === 'text-clip' && "bg-slate-50 border-slate-200"
                             )}>
-                                <div className="flex w-fit items-center flex-nowrap animate-scroll whitespace-nowrap" style={{ animationDuration: `${bannerConfig.speed}s` }}>
-                                    {[...Array(3)].map((_, i) => (
-                                        <div key={i} className="flex items-center mx-8">
+                                <div className="flex w-max items-center flex-nowrap animate-marquee whitespace-nowrap" style={{ animationDuration: `${bannerConfig.speed}s` }}>
+                                    {[...Array(2)].map((_, i) => (
+                                        <div key={i} className="flex items-center">
                                             {bannerConfig.items.map((item, idx) => {
                                                 const isClipped = bannerConfig.styleOrientation === 'text-clip';
                                                 return (
-                                                    <div key={idx} className="flex items-center mx-6">
+                                                    <div key={idx} className="flex items-center mx-12">
                                                         {/* Primary Badge */}
                                                         {bannerConfig.badgeText && (
                                                             <div className="px-3 py-1 rounded-full bg-white mr-4 shadow-lg transform -skew-x-6 flex-shrink-0">

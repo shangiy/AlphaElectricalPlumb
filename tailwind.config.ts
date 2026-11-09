@@ -130,6 +130,10 @@ export default {
           from: { transform: 'translateX(0)' },
           to: { transform: 'translateX(-100%)' },
         },
+        'marquee': {
+          from: { transform: 'translateX(0)' },
+          to: { transform: 'translateX(-50%)' },
+        },
         'float-up-fade': {
           '0%': { transform: 'translateY(0) scale(0.8)', opacity: '0' },
           '20%': { opacity: '1' },
@@ -141,6 +145,7 @@ export default {
         'accordion-up': 'accordion-up 0.2s ease-out',
         'gradient-x': 'gradient-x 20s linear infinite',
         'scroll': 'scroll 60s linear infinite',
+        'marquee': 'marquee 60s linear infinite',
         'float-up-fade': 'float-up-fade 2s ease-in-out infinite'
       },
     },

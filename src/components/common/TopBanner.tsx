@@ -29,8 +29,8 @@ interface BannerConfig {
 }
 
 /**
- * High-Fidelity Independent Top Banner v13.0:
- * Integrated Secondary Event Badge (Halloween Text) and Typography Engine.
+ * High-Fidelity Independent Top Banner v14.0:
+ * Optimized for seamless looping using dual-content duplication and w-max containers.
  */
 export default function TopBanner() {
   const [config, setConfig] = useState<BannerConfig>({
@@ -121,9 +121,7 @@ export default function TopBanner() {
     });
   };
 
-  const marqueeItems = config.items.length > 0 ? [...config.items, ...config.items, ...config.items] : [];
-
-  if (marqueeItems.length === 0) return null;
+  if (!config.items || config.items.length === 0) return null;
 
   return (
     <div 
@@ -137,67 +135,71 @@ export default function TopBanner() {
       <div className="container mx-auto flex justify-between items-center h-5">
         
         {config.showClock && (
-          <div className="hidden md:flex items-center gap-2 flex-shrink-0 z-10">
+          <div className="hidden md:flex items-center gap-2 flex-shrink-0 z-10 mr-4">
             <Clock className="h-3.5 w-3.5 opacity-80" />
             <span className="text-[10px] whitespace-nowrap font-bold">Mon - Sat: 8:00 AM – 6:00 PM</span>
           </div>
         )}
 
         <div className="flex-1 inline-flex flex-nowrap overflow-hidden [mask-image:_linear-gradient(to_right,transparent_0,_black_64px,_black_calc(100%-64px),transparent_100%)]">
-          <ul 
-            className="flex-1 font-black text-center flex items-center justify-center md:justify-start [&_li]:mx-12 animate-scroll whitespace-nowrap"
+          <div 
+            className="flex w-max items-center flex-nowrap animate-marquee whitespace-nowrap"
             style={{ animationDuration: `${config.speed}s` }}
           >
-            {marqueeItems.map((item, idx) => {
-              const isClipped = config.styleOrientation === 'text-clip';
+            {[...Array(2)].map((_, i) => (
+              <ul key={i} className="flex items-center [&_li]:mx-12">
+                {config.items.map((item, idx) => {
+                  const isClipped = config.styleOrientation === 'text-clip';
 
-              return (
-                <li 
-                    key={idx} 
-                    className={cn(
-                        "flex items-center uppercase tracking-widest",
-                        isClipped && cn("bg-gradient-to-r bg-clip-text text-transparent animate-gradient-x bg-[length:200%_200%]", getBackgroundColors(config.styleType))
-                    )}
-                    style={{ 
-                        fontSize: `${Math.min(config.fontSize, 14)}px`,
-                        color: isClipped ? 'transparent' : undefined
-                    }}
-                >
-                    {config.badgeText && (
-                        <span className="px-3 py-1 rounded-full bg-white mr-4 shadow-lg transform -skew-x-6 flex-shrink-0">
-                            <span className={cn(
-                                "font-black bg-clip-text text-transparent animate-gradient-x bg-[length:200%_200%]",
-                                "bg-gradient-to-r", 
-                                getBackgroundColors(config.styleType)
-                            )}>
-                                {config.badgeText}
+                  return (
+                    <li 
+                        key={idx} 
+                        className={cn(
+                            "flex items-center uppercase tracking-widest",
+                            isClipped && cn("bg-gradient-to-r bg-clip-text text-transparent animate-gradient-x bg-[length:200%_200%]", getBackgroundColors(config.styleType))
+                        )}
+                        style={{ 
+                            fontSize: `${Math.min(config.fontSize, 14)}px`,
+                            color: isClipped ? 'transparent' : undefined
+                        }}
+                    >
+                        {config.badgeText && (
+                            <span className="px-3 py-1 rounded-full bg-white mr-4 shadow-lg transform -skew-x-6 flex-shrink-0">
+                                <span className={cn(
+                                    "font-black bg-clip-text text-transparent animate-gradient-x bg-[length:200%_200%]",
+                                    "bg-gradient-to-r", 
+                                    getBackgroundColors(config.styleType)
+                                )}>
+                                    {config.badgeText}
+                                </span>
                             </span>
-                        </span>
-                    )}
-                    {config.halloweenText && (
-                        <span className="px-3 py-1 rounded-full bg-white mr-4 shadow-lg transform -skew-x-6 flex-shrink-0">
-                            <span className={cn(
-                                "font-black bg-clip-text text-transparent animate-gradient-x bg-[length:200%_200%]",
-                                "bg-gradient-to-r", 
-                                getBackgroundColors(config.halloweenStyleType || 'fire-emoji'),
-                                config.halloweenTextStyle === 'italic' && 'italic',
-                                config.halloweenTextStyle === 'bold' && 'font-bold',
-                                config.halloweenTextStyle === 'underline' && 'underline',
-                                config.halloweenTextStyle === 'line-through' && 'line-through'
-                            )}>
-                                {config.halloweenText}
+                        )}
+                        {config.halloweenText && (
+                            <span className="px-3 py-1 rounded-full bg-white mr-4 shadow-lg transform -skew-x-6 flex-shrink-0">
+                                <span className={cn(
+                                    "font-black bg-clip-text text-transparent animate-gradient-x bg-[length:200%_200%]",
+                                    "bg-gradient-to-r", 
+                                    getBackgroundColors(config.halloweenStyleType || 'fire-emoji'),
+                                    config.halloweenTextStyle === 'italic' && 'italic',
+                                    config.halloweenTextStyle === 'bold' && 'font-bold',
+                                    config.halloweenTextStyle === 'underline' && 'underline',
+                                    config.halloweenTextStyle === 'line-through' && 'line-through'
+                                )}>
+                                    {config.halloweenText}
+                                </span>
                             </span>
-                        </span>
-                    )}
-                    {renderHighlightedText(item)}
-                </li>
-              );
-            })}
-          </ul>
+                        )}
+                        {renderHighlightedText(item)}
+                    </li>
+                  );
+                })}
+              </ul>
+            ))}
+          </div>
         </div>
 
         {config.showSocial && (
-          <div className="hidden md:flex items-center gap-2 justify-end flex-shrink-0 z-10">
+          <div className="hidden md:flex items-center gap-2 justify-end flex-shrink-0 z-10 ml-4">
              <div className="relative h-4 w-4">
                 <Image src="/tiktok-V1.png" alt="TikTok" fill className="object-contain" />
              </div>
