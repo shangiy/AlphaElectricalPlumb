@@ -47,6 +47,14 @@ export const ORIENTATION_OPTIONS = [
     { id: 'text-clip', label: '✨ Clipped to Text (Vibrant)' }
 ];
 
+export const TEXT_STYLE_OPTIONS = [
+    { id: 'normal', label: 'Standard' },
+    { id: 'italic', label: 'Italic' },
+    { id: 'bold', label: 'Bold' },
+    { id: 'underline', label: 'Underline' },
+    { id: 'line-through', label: 'Strikethrough' }
+];
+
 interface HighlighterRule {
     word: string;
     colors: string[];
@@ -63,6 +71,11 @@ interface BannerConfig {
     showSocial: boolean;
     highlighters?: HighlighterRule[];
     badgeText?: string;
+    // Event / Halloween Expansion
+    halloweenText?: string;
+    halloweenStyleType?: string;
+    halloweenOrientation?: string;
+    halloweenTextStyle?: string;
 }
 
 const DEFAULT_BANNER: BannerConfig = {
@@ -75,7 +88,11 @@ const DEFAULT_BANNER: BannerConfig = {
     showClock: true,
     showSocial: true,
     highlighters: [] as HighlighterRule[],
-    badgeText: ''
+    badgeText: '',
+    halloweenText: '',
+    halloweenStyleType: 'fire-emoji',
+    halloweenOrientation: 'horizontal',
+    halloweenTextStyle: 'normal'
 };
 
 export default function UiUxControlCenter() {
@@ -325,6 +342,20 @@ export default function UiUxControlCenter() {
                                                 </span>
                                             </div>
                                         )}
+                                        {bannerConfig.halloweenText && (
+                                            <div className="px-3 py-1 rounded-full bg-white mr-2 shadow-md transform -skew-x-6">
+                                                <span className={cn(
+                                                    "bg-gradient-to-r bg-clip-text text-transparent animate-gradient-x bg-[length:200%_200%]",
+                                                    getBackgroundColors(bannerConfig.halloweenStyleType || 'fire-emoji'),
+                                                    bannerConfig.halloweenTextStyle === 'italic' && 'italic',
+                                                    bannerConfig.halloweenTextStyle === 'bold' && 'font-bold',
+                                                    bannerConfig.halloweenTextStyle === 'underline' && 'underline',
+                                                    bannerConfig.halloweenTextStyle === 'line-through' && 'line-through'
+                                                )}>
+                                                    {bannerConfig.halloweenText}
+                                                </span>
+                                            </div>
+                                        )}
                                         <span className={cn(
                                             "transition-all duration-500",
                                             bannerConfig.styleOrientation === 'text-clip' && cn("bg-gradient-to-r bg-clip-text text-transparent animate-gradient-x bg-[length:200%_200%]", getBackgroundColors(bannerConfig.styleType))
@@ -338,36 +369,84 @@ export default function UiUxControlCenter() {
                             </div>
 
                             {/* Controls Group */}
-                            <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-8">
-                                <div className="space-y-3">
-                                    <Label className="text-[10px] font-black uppercase text-muted-foreground/60 tracking-widest">Badge Text (Left Pill)</Label>
-                                    <Input 
-                                        value={bannerConfig.badgeText || ''} 
-                                        onChange={(e) => setBannerConfig({...bannerConfig, badgeText: e.target.value})}
-                                        placeholder="e.g. MASHUJAA"
-                                        className="h-12 rounded-xl font-black"
-                                    />
+                            <div className="lg:col-span-2 space-y-8">
+                                {/* PRIMARY BADGE CONTROLS */}
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                                    <div className="space-y-3">
+                                        <Label className="text-[10px] font-black uppercase text-muted-foreground/60 tracking-widest">Badge Text (Left Pill)</Label>
+                                        <Input 
+                                            value={bannerConfig.badgeText || ''} 
+                                            onChange={(e) => setBannerConfig({...bannerConfig, badgeText: e.target.value})}
+                                            placeholder="e.g. MASHUJAA"
+                                            className="h-12 rounded-xl font-black"
+                                        />
+                                    </div>
+                                    <div className="space-y-3">
+                                        <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Visual Style Engine</Label>
+                                        <select 
+                                            value={bannerConfig.styleType} 
+                                            onChange={(e) => setBannerConfig({...bannerConfig, styleType: e.target.value})}
+                                            className="w-full h-12 px-4 rounded-xl border font-bold text-sm bg-white"
+                                        >
+                                            {STYLE_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
+                                        </select>
+                                    </div>
+                                    
+                                    <div className="space-y-3">
+                                        <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Design Orientation</Label>
+                                        <select 
+                                            value={bannerConfig.styleOrientation || 'horizontal'} 
+                                            onChange={(e) => setBannerConfig({...bannerConfig, styleOrientation: e.target.value})}
+                                            className="w-full h-12 px-4 rounded-xl border font-bold text-sm bg-white"
+                                        >
+                                            {ORIENTATION_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
+                                        </select>
+                                    </div>
                                 </div>
-                                <div className="space-y-3">
-                                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Visual Style Engine</Label>
-                                    <select 
-                                        value={bannerConfig.styleType} 
-                                        onChange={(e) => setBannerConfig({...bannerConfig, styleType: e.target.value})}
-                                        className="w-full h-12 px-4 rounded-xl border font-bold text-sm bg-white"
-                                    >
-                                        {STYLE_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
-                                    </select>
-                                </div>
-                                
-                                <div className="space-y-3">
-                                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Design Orientation</Label>
-                                    <select 
-                                        value={bannerConfig.styleOrientation || 'horizontal'} 
-                                        onChange={(e) => setBannerConfig({...bannerConfig, styleOrientation: e.target.value})}
-                                        className="w-full h-12 px-4 rounded-xl border font-bold text-sm bg-white"
-                                    >
-                                        {ORIENTATION_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
-                                    </select>
+
+                                {/* HALLOWEEN TEXT CONTROLS */}
+                                <div className="grid grid-cols-1 md:grid-cols-4 gap-8 pt-6 border-t border-dashed">
+                                    <div className="space-y-3">
+                                        <Label className="text-[10px] font-black uppercase text-muted-foreground/60 tracking-widest">Halloween Text (Event Pill)</Label>
+                                        <Input 
+                                            value={bannerConfig.halloweenText || ''} 
+                                            onChange={(e) => setBannerConfig({...bannerConfig, halloweenText: e.target.value})}
+                                            placeholder="e.g. MEGA SALE"
+                                            className="h-12 rounded-xl font-black"
+                                        />
+                                    </div>
+                                    <div className="space-y-3">
+                                        <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Style Engine</Label>
+                                        <select 
+                                            value={bannerConfig.halloweenStyleType || 'fire-emoji'} 
+                                            onChange={(e) => setBannerConfig({...bannerConfig, halloweenStyleType: e.target.value})}
+                                            className="w-full h-12 px-4 rounded-xl border font-bold text-sm bg-white"
+                                        >
+                                            {STYLE_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
+                                        </select>
+                                    </div>
+                                    
+                                    <div className="space-y-3">
+                                        <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Orientation</Label>
+                                        <select 
+                                            value={bannerConfig.halloweenOrientation || 'horizontal'} 
+                                            onChange={(e) => setBannerConfig({...bannerConfig, halloweenOrientation: e.target.value})}
+                                            className="w-full h-12 px-4 rounded-xl border font-bold text-sm bg-white"
+                                        >
+                                            {ORIENTATION_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
+                                        </select>
+                                    </div>
+
+                                    <div className="space-y-3">
+                                        <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Text Style</Label>
+                                        <select 
+                                            value={bannerConfig.halloweenTextStyle || 'normal'} 
+                                            onChange={(e) => setBannerConfig({...bannerConfig, halloweenTextStyle: e.target.value})}
+                                            className="w-full h-12 px-4 rounded-xl border font-bold text-sm bg-white"
+                                        >
+                                            {TEXT_STYLE_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
+                                        </select>
+                                    </div>
                                 </div>
                             </div>
                         </div>

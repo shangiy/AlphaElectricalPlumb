@@ -22,11 +22,15 @@ interface BannerConfig {
     showSocial: boolean;
     highlighters?: HighlighterRule[];
     badgeText?: string;
+    halloweenText?: string;
+    halloweenStyleType?: string;
+    halloweenOrientation?: string;
+    halloweenTextStyle?: string;
 }
 
 /**
- * Compact Independent Top Banner v12.1:
- * Fixed: Integrated global Badge Text engine with style inheritance.
+ * High-Fidelity Independent Top Banner v13.0:
+ * Integrated Secondary Event Badge (Halloween Text) and Typography Engine.
  */
 export default function TopBanner() {
   const [config, setConfig] = useState<BannerConfig>({
@@ -43,7 +47,11 @@ export default function TopBanner() {
     showClock: true,
     showSocial: true,
     highlighters: [],
-    badgeText: ''
+    badgeText: '',
+    halloweenText: '',
+    halloweenStyleType: 'fire-emoji',
+    halloweenOrientation: 'horizontal',
+    halloweenTextStyle: 'normal'
   });
 
   useEffect(() => {
@@ -60,8 +68,8 @@ export default function TopBanner() {
     loadConfig();
   }, []);
 
-  const getBackgroundColors = () => {
-    switch(config.styleType) {
+  const getBackgroundColors = (styleType: string) => {
+    switch(styleType) {
         case 'kenyan-flag': return 'from-black via-red-600 to-green-600';
         case 'gold-gradient': return 'from-yellow-600 via-amber-500 to-yellow-800';
         case 'neon-glow': return 'from-cyan-600 via-blue-600 to-indigo-600';
@@ -70,10 +78,10 @@ export default function TopBanner() {
     }
   };
 
-  const getOrientationClass = () => {
-    if (config.styleOrientation === 'text-clip') return 'bg-transparent';
+  const getOrientationClass = (orientation: string) => {
+    if (orientation === 'text-clip') return 'bg-transparent';
     
-    switch(config.styleOrientation) {
+    switch(orientation) {
         case 'vertical': return 'bg-gradient-to-b';
         case 'diagonal': return 'bg-gradient-to-br';
         default: return 'bg-gradient-to-r';
@@ -121,8 +129,8 @@ export default function TopBanner() {
     <div 
       className={cn(
         "w-full text-white py-1.5 px-4 bg-[length:200%_200%] animate-gradient-x border-b border-white/5 overflow-hidden",
-        getOrientationClass(),
-        config.styleOrientation !== 'text-clip' && getBackgroundColors()
+        getOrientationClass(config.styleOrientation || 'horizontal'),
+        config.styleOrientation !== 'text-clip' && getBackgroundColors(config.styleType)
       )}
       style={{ color: config.textColor }}
     >
@@ -148,7 +156,7 @@ export default function TopBanner() {
                     key={idx} 
                     className={cn(
                         "flex items-center uppercase tracking-widest",
-                        isClipped && cn("bg-gradient-to-r bg-clip-text text-transparent animate-gradient-x bg-[length:200%_200%]", getBackgroundColors())
+                        isClipped && cn("bg-gradient-to-r bg-clip-text text-transparent animate-gradient-x bg-[length:200%_200%]", getBackgroundColors(config.styleType))
                     )}
                     style={{ 
                         fontSize: `${Math.min(config.fontSize, 14)}px`,
@@ -159,10 +167,25 @@ export default function TopBanner() {
                         <span className="px-3 py-1 rounded-full bg-white mr-4 shadow-lg transform -skew-x-6 flex-shrink-0">
                             <span className={cn(
                                 "font-black bg-clip-text text-transparent animate-gradient-x bg-[length:200%_200%]",
-                                "bg-gradient-to-r", // Force horizontal for best look in badge
-                                getBackgroundColors()
+                                "bg-gradient-to-r", 
+                                getBackgroundColors(config.styleType)
                             )}>
                                 {config.badgeText}
+                            </span>
+                        </span>
+                    )}
+                    {config.halloweenText && (
+                        <span className="px-3 py-1 rounded-full bg-white mr-4 shadow-lg transform -skew-x-6 flex-shrink-0">
+                            <span className={cn(
+                                "font-black bg-clip-text text-transparent animate-gradient-x bg-[length:200%_200%]",
+                                "bg-gradient-to-r", 
+                                getBackgroundColors(config.halloweenStyleType || 'fire-emoji'),
+                                config.halloweenTextStyle === 'italic' && 'italic',
+                                config.halloweenTextStyle === 'bold' && 'font-bold',
+                                config.halloweenTextStyle === 'underline' && 'underline',
+                                config.halloweenTextStyle === 'line-through' && 'line-through'
+                            )}>
+                                {config.halloweenText}
                             </span>
                         </span>
                     )}
