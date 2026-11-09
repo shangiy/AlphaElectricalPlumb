@@ -217,7 +217,7 @@ export default function Header() {
                   <SheetDescription className="sr-only">Main Navigation</SheetDescription>
                 </SheetHeader>
                 <div className="flex flex-col gap-6 pt-12">
-                  <SheetClose asChild><NextLink href="/search" className="text-2xl font-black uppercase tracking-tighter hover:text-purple-600 transition-colors">Industrial Collections</NextLink></SheetClose>
+                  <SheetClose asChild><NextLink href="/search" className="text-2xl font-black uppercase tracking-tighter hover:text-purple-600 transition-colors">Product Catalogue</NextLink></SheetClose>
                   <SheetClose asChild><NextLink href="/contact" className="text-2xl font-black uppercase tracking-tighter hover:text-purple-600 transition-colors">Contact Node</NextLink></SheetClose>
                   <SheetClose asChild><NextLink href="/about" className="text-2xl font-black uppercase tracking-tighter hover:text-purple-600 transition-colors">About Us</NextLink></SheetClose>
                   <div className="h-px bg-slate-100" />
