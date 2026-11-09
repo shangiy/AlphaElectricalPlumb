@@ -30,6 +30,7 @@ import {
   getStorefrontSetting, 
   updateStorefrontSetting
 } from '@/app/actions/cms-actions';
+import { cn } from '@/lib/utils';
 
 export const STYLE_OPTIONS = [
     { id: 'kenyan-flag', label: '🇰🇪 Kenyan Flag Colors' },
@@ -60,6 +61,7 @@ export default function UiUxControlCenter() {
   
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [previewText, setPreviewText] = useState('');
 
   // Banner Details State
   const [bannerConfig, setBannerConfig] = useState({
@@ -144,6 +146,24 @@ export default function UiUxControlCenter() {
           ...bannerConfig,
           highlighters: bannerConfig.highlighters.filter((_, i) => i !== index)
       });
+  };
+
+  const getBackgroundColors = (styleType: string) => {
+    switch(styleType) {
+        case 'kenyan-flag': return 'from-black via-red-600 to-green-600';
+        case 'gold-gradient': return 'from-yellow-600 via-amber-500 to-yellow-800';
+        case 'neon-glow': return 'from-cyan-600 via-blue-600 to-indigo-600';
+        case 'fire-emoji': return 'from-orange-600 via-red-600 to-yellow-500';
+        default: return 'from-red-500 via-purple-500 to-blue-500';
+    }
+  };
+
+  const getOrientationClass = (orientation: string) => {
+    switch(orientation) {
+        case 'vertical': return 'bg-gradient-to-b';
+        case 'diagonal': return 'bg-gradient-to-br';
+        default: return 'bg-gradient-to-r';
+    }
   };
 
   if (loading) {
@@ -246,27 +266,60 @@ export default function UiUxControlCenter() {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pt-4">
+                            {/* Live Render Test */}
                             <div className="space-y-3">
-                                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Visual Style Engine</Label>
-                                <select 
-                                    value={bannerConfig.styleType} 
-                                    onChange={(e) => setBannerConfig({...bannerConfig, styleType: e.target.value})}
-                                    className="w-full h-12 px-4 rounded-xl border font-bold text-sm bg-white"
-                                >
-                                    {STYLE_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
-                                </select>
+                                <Label className="text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-1.5">
+                                    <Sparkles className="h-3 w-3" /> Live Render Test
+                                </Label>
+                                <div className="space-y-3 p-4 bg-muted/10 rounded-[1.5rem] border border-dashed">
+                                    <Input 
+                                        placeholder="Type test word..." 
+                                        className="h-10 rounded-xl text-xs bg-white"
+                                        value={previewText}
+                                        onChange={(e) => setPreviewText(e.target.value)}
+                                    />
+                                    <div className={cn(
+                                        "h-14 rounded-2xl flex items-center justify-center font-black uppercase tracking-widest text-[10px] shadow-lg border border-white/10 overflow-hidden bg-[length:200%_200%] animate-gradient-x",
+                                        bannerConfig.styleOrientation !== 'text-clip' && getOrientationClass(bannerConfig.styleOrientation || 'horizontal'),
+                                        bannerConfig.styleOrientation !== 'text-clip' && getBackgroundColors(bannerConfig.styleType),
+                                        bannerConfig.styleOrientation === 'text-clip' && "bg-white/50 backdrop-blur-sm border-none shadow-none"
+                                    )}>
+                                        <span className={cn(
+                                            "transition-all duration-500",
+                                            bannerConfig.styleOrientation === 'text-clip' && cn("bg-gradient-to-r bg-clip-text text-transparent animate-gradient-x bg-[length:200%_200%]", getBackgroundColors(bannerConfig.styleType))
+                                        )}
+                                        style={{ color: bannerConfig.styleOrientation === 'text-clip' ? 'transparent' : bannerConfig.textColor }}
+                                        >
+                                            {previewText || 'PREVIEW'}
+                                        </span>
+                                    </div>
+                                </div>
                             </div>
-                            
-                            <div className="space-y-3">
-                                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Design Orientation</Label>
-                                <select 
-                                    value={bannerConfig.styleOrientation || 'horizontal'} 
-                                    onChange={(e) => setBannerConfig({...bannerConfig, styleOrientation: e.target.value})}
-                                    className="w-full h-12 px-4 rounded-xl border font-bold text-sm bg-white"
-                                >
-                                    {ORIENTATION_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
-                                </select>
+
+                            {/* Controls Group */}
+                            <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div className="space-y-3">
+                                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Visual Style Engine</Label>
+                                    <select 
+                                        value={bannerConfig.styleType} 
+                                        onChange={(e) => setBannerConfig({...bannerConfig, styleType: e.target.value})}
+                                        className="w-full h-12 px-4 rounded-xl border font-bold text-sm bg-white"
+                                    >
+                                        {STYLE_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
+                                    </select>
+                                </div>
+                                
+                                <div className="space-y-3">
+                                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Design Orientation</Label>
+                                    <select 
+                                        value={bannerConfig.styleOrientation || 'horizontal'} 
+                                        onChange={(e) => setBannerConfig({...bannerConfig, styleOrientation: e.target.value})}
+                                        className="w-full h-12 px-4 rounded-xl border font-bold text-sm bg-white"
+                                    >
+                                        {ORIENTATION_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
+                                    </select>
+                                </div>
                             </div>
                         </div>
 
