@@ -86,7 +86,7 @@ export default function Header() {
       <div className="container mx-auto px-4 relative z-10">
         {/* DESKTOP VIEW */}
         <div className="hidden w-full items-center justify-between lg:flex">
-          {/* Compact Logo & Branding Block (Left) */}
+          {/* Compact Logo & Branding Block (Left) - Link wraps both */}
           <NextLink href="/" className="flex flex-shrink-0 items-center gap-3 group">
             <div className="relative h-[60px] w-[60px]">
                 <Image 
@@ -145,18 +145,25 @@ export default function Header() {
 
         {/* MOBILE VIEW */}
         <div className="w-full lg:hidden flex items-center justify-between h-16 gap-2">
-          <div className="flex items-center gap-2">
-             <NextLink href="/" className={cn("flex-shrink-0 transition-all duration-500", mobileSearchOpen ? "opacity-0 w-0 overflow-hidden" : "opacity-100")}>
+          {/* Unified Logo & Branding Link (Mobile) */}
+          <NextLink 
+            href="/" 
+            className={cn(
+              "flex items-center gap-2 group transition-all duration-500", 
+              mobileSearchOpen ? "opacity-0 w-0 overflow-hidden" : "opacity-100"
+            )}
+          >
+             <div className="flex-shrink-0">
                 <Image src="/logo Alpha.png" alt="Alpha Logo" width={45} height={45} className="h-auto" />
-            </NextLink>
+            </div>
             {!mobileSearchOpen && (
-                <div className="flex flex-col text-[#0b0f19] transition-opacity duration-500">
+                <div className="flex flex-col text-[#0b0f19] group-hover:text-primary transition-colors duration-300">
                     <span className="font-bold text-[16px] leading-tight uppercase">Alpha</span>
                     <div className="w-full h-px bg-current"></div>
                     <span className="text-[8px] leading-tight font-medium uppercase">Electricals & Plumbing Ltd</span>
                 </div>
             )}
-          </div>
+          </NextLink>
 
           <div className="flex items-center gap-2">
             {/* Morphing Bubble Search Bar */}
