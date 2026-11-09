@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -12,7 +11,6 @@ import { AuthProvider } from '@/context/AuthProvider';
 import { ProductProvider } from '@/context/ProductProvider';
 import { Button } from '@/components/ui/button';
 import { MessageSquare } from 'lucide-react';
-import TopBanner from '@/components/common/TopBanner';
 
 // Dynamically import heavy interactive components
 const Chatbot = dynamic(() => import('@/components/common/Chatbot'), {
@@ -55,7 +53,6 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
       <ProductProvider>
         <CartProvider>
           <div className="relative flex flex-col min-h-screen">
-            <TopBanner />
             <Header />
             <main className="flex-1 flex flex-col">{children}</main>
             {!isAdminRoute && <Footer />}
