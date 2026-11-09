@@ -12,14 +12,14 @@ interface BannerConfig {
     fontSize: number;
     textColor: string;
     styleType: string;
+    styleOrientation?: string;
     showClock: boolean;
     showSocial: boolean;
 }
 
 /**
- * Compact Independent Top Banner v8.0:
- * Sits in the normal flow at the top of the DOM. 
- * Updated with primary teal hover state for social links.
+ * Compact Independent Top Banner v9.0:
+ * Now supports dynamic design orientation (Horizontal, Vertical, Diagonal, and Text Clipping).
  */
 export default function TopBanner() {
   const [config, setConfig] = useState<BannerConfig>({
@@ -32,6 +32,7 @@ export default function TopBanner() {
     fontSize: 12,
     textColor: '#ffffff',
     styleType: 'kenyan-flag',
+    styleOrientation: 'horizontal',
     showClock: true,
     showSocial: true
   });
@@ -46,12 +47,23 @@ export default function TopBanner() {
     loadConfig();
   }, []);
 
-  const getBackground = () => {
+  const getBackgroundColors = () => {
     switch(config.styleType) {
-        case 'kenyan-flag': return 'from-red-500 via-purple-500 to-blue-500';
+        case 'kenyan-flag': return 'from-black via-red-600 to-green-600';
         case 'gold-gradient': return 'from-yellow-600 via-amber-500 to-yellow-800';
         case 'neon-glow': return 'from-cyan-600 via-blue-600 to-indigo-600';
+        case 'fire-emoji': return 'from-orange-600 via-red-600 to-yellow-500';
         default: return 'from-red-500 via-purple-500 to-blue-500';
+    }
+  };
+
+  const getOrientationClass = () => {
+    if (config.styleOrientation === 'text-clip') return 'bg-transparent';
+    
+    switch(config.styleOrientation) {
+        case 'vertical': return 'bg-gradient-to-b';
+        case 'diagonal': return 'bg-gradient-to-br';
+        default: return 'bg-gradient-to-r';
     }
   };
 
@@ -60,8 +72,9 @@ export default function TopBanner() {
   return (
     <div 
       className={cn(
-        "w-full text-white py-1.5 px-4 bg-gradient-to-r bg-[length:200%_200%] animate-gradient-x border-b border-white/5",
-        getBackground()
+        "w-full text-white py-1.5 px-4 bg-[length:200%_200%] animate-gradient-x border-b border-white/5",
+        getOrientationClass(),
+        config.styleOrientation !== 'text-clip' && getBackgroundColors()
       )}
       style={{ color: config.textColor }}
     >
@@ -79,19 +92,30 @@ export default function TopBanner() {
             className="flex-1 font-black text-center flex items-center justify-center md:justify-start [&_li]:mx-12 animate-scroll"
             style={{ animationDuration: `${config.speed}s` }}
           >
-            {marqueeItems.map((item, idx) => (
-              <li 
-                key={idx} 
-                className="whitespace-nowrap uppercase tracking-widest flex items-center gap-4"
-                style={{ fontSize: `${Math.min(config.fontSize, 14)}px` }}
-              >
-                {item.includes('MASHUJAA') ? (
-                    <span className="bg-white rounded-full px-4 py-0.5 font-black text-black shadow-lg">
-                        {item}
-                    </span>
-                ) : item}
-              </li>
-            ))}
+            {marqueeItems.map((item, idx) => {
+              const isMashujaa = item.includes('MASHUJAA');
+              const isClipped = config.styleOrientation === 'text-clip';
+
+              return (
+                <li 
+                    key={idx} 
+                    className={cn(
+                        "whitespace-nowrap uppercase tracking-widest flex items-center gap-4",
+                        isClipped && cn("bg-gradient-to-r bg-clip-text text-transparent animate-gradient-x bg-[length:200%_200%]", getBackgroundColors())
+                    )}
+                    style={{ 
+                        fontSize: `${Math.min(config.fontSize, 14)}px`,
+                        color: isClipped ? 'transparent' : undefined
+                    }}
+                >
+                    {isMashujaa && !isClipped ? (
+                        <span className="bg-white rounded-full px-4 py-0.5 font-black text-black shadow-lg">
+                            {item}
+                        </span>
+                    ) : item}
+                </li>
+              );
+            })}
           </ul>
         </div>
 

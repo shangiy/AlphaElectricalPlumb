@@ -36,6 +36,13 @@ export const STYLE_OPTIONS = [
     { id: 'fire-emoji', label: '🔥 Fire & Energy Mode' }
 ];
 
+export const ORIENTATION_OPTIONS = [
+    { id: 'horizontal', label: '➡️ Horizontal Flow' },
+    { id: 'vertical', label: '⬇️ Vertical Flow' },
+    { id: 'diagonal', label: '↘️ Diagonal Drift' },
+    { id: 'text-clip', label: '✨ Clipped to Text (Vibrant)' }
+];
+
 export default function UiUxControlCenter() {
   const { toast } = useToast();
   const searchParams = useSearchParams();
@@ -54,6 +61,7 @@ export default function UiUxControlCenter() {
       fontSize: 16,
       textColor: '#ffffff',
       styleType: 'kenyan-flag',
+      styleOrientation: 'horizontal',
       showClock: true,
       showSocial: true
   });
@@ -185,9 +193,9 @@ export default function UiUxControlCenter() {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-4">
                             <div className="space-y-3">
-                                <Label className="text-[10px] font-black uppercase text-muted-foreground/60 tracking-widest">Visual Style Engine</Label>
+                                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Visual Style Engine</Label>
                                 <select 
                                     value={bannerConfig.styleType} 
                                     onChange={(e) => setBannerConfig({...bannerConfig, styleType: e.target.value})}
@@ -196,6 +204,18 @@ export default function UiUxControlCenter() {
                                     {STYLE_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
                                 </select>
                             </div>
+                            
+                            <div className="space-y-3">
+                                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Design Orientation</Label>
+                                <select 
+                                    value={bannerConfig.styleOrientation || 'horizontal'} 
+                                    onChange={(e) => setBannerConfig({...bannerConfig, styleOrientation: e.target.value})}
+                                    className="w-full h-12 px-4 rounded-xl border font-bold text-sm bg-white"
+                                >
+                                    {ORIENTATION_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
+                                </select>
+                            </div>
+
                             <div className="flex gap-6 pt-6">
                                 <div className="flex items-center gap-3">
                                     <Switch checked={bannerConfig.showClock} onCheckedChange={(val) => setBannerConfig({...bannerConfig, showClock: val})} />
