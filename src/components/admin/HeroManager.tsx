@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState } from 'react';
@@ -74,9 +75,9 @@ export default function HeroManager({ initialSlides }: { initialSlides: HeroSlid
             headlineTopMargin: 0,
             subheadingTopMargin: 0,
             wordStyles: [
-                { text: 'WELCOME', color: '#ffffff', font: 'font-montserrat' },
-                { text: 'TO', color: '#ffffff', font: 'font-montserrat' },
-                { text: 'ALPHA', color: '#ffffff', font: 'font-montserrat' }
+                { text: '', color: '#ffffff', font: 'font-montserrat' },
+                { text: '', color: '#ffffff', font: 'font-montserrat' },
+                { text: '', color: '#ffffff', font: 'font-montserrat' }
             ]
         };
         setSlides(sortSlides([...slides, newSlide]));
@@ -114,8 +115,6 @@ export default function HeroManager({ initialSlides }: { initialSlides: HeroSlid
 
             <div className="space-y-12">
                 {slides.map((slide, index) => {
-                    const activeStyle = STYLE_OPTIONS.find(opt => opt.id === slide.styleType) || STYLE_OPTIONS[0];
-
                     return (
                         <div key={slide.id} className={cn("bg-white rounded-[3rem] border shadow-xl p-10 relative overflow-hidden transition-all hover:shadow-2xl", !slide.active && "opacity-60 grayscale bg-muted/20")}>
                             <div className="flex justify-between items-center mb-8 border-b pb-6">
@@ -138,15 +137,45 @@ export default function HeroManager({ initialSlides }: { initialSlides: HeroSlid
                             <div className="space-y-12">
                                 {/* HEADLINE HUB */}
                                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
-                                    <div className="lg:col-span-7 space-y-3">
-                                        <label className="text-[10px] font-black uppercase text-muted-foreground/60 tracking-widest ml-1">Hero Main Copy (Legacy/Alt Text)</label>
-                                        <Textarea 
-                                            value={slide.headline} 
-                                            onChange={(e) => handleUpdate(slide.id, { headline: e.target.value })} 
-                                            className="font-black text-2xl h-32 rounded-2xl p-4 bg-muted/20 border-none shadow-inner resize-none" 
-                                            placeholder="Overall headline text..."
-                                        />
+                                    <div className="lg:col-span-7 space-y-4">
+                                        <div className="space-y-2">
+                                          <label className="text-[10px] font-black uppercase text-muted-foreground/60 tracking-widest ml-1">Hero Main Copy (Legacy/Alt Text)</label>
+                                          <Textarea 
+                                              value={slide.headline} 
+                                              onChange={(e) => handleUpdate(slide.id, { headline: e.target.value })} 
+                                              className="font-black text-2xl h-32 rounded-2xl p-4 bg-muted/20 border-none shadow-inner resize-none" 
+                                              placeholder="Overall headline text..."
+                                          />
+                                        </div>
+
+                                        {/* Live Headline Preview in CMS */}
+                                        <div className="p-8 rounded-[2rem] bg-[#0a0f1e] border border-white/5 relative overflow-hidden">
+                                           <div className="absolute inset-0 opacity-10" style={{ backgroundImage: `radial-gradient(#1e293b 1px, transparent 0)`, backgroundSize: '20px 20px' }} />
+                                           <div className="relative z-10">
+                                              <p className="text-[8px] font-black uppercase tracking-[0.3em] text-white/40 mb-4">Live Layout Preview</p>
+                                              <h1 className="text-3xl font-black leading-tight tracking-tighter uppercase break-words">
+                                                {(() => {
+                                                  if (!slide.headline) return <span className="text-white/20">Awaiting input...</span>;
+                                                  const styles = slide.wordStyles || [];
+                                                  const parts = slide.headline.split(/(\s+)/);
+                                                  
+                                                  return parts.map((part, i) => {
+                                                    if (part.trim() === '') return part;
+                                                    const cleanPart = part.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"").toLowerCase().trim();
+                                                    if (!cleanPart) return part;
+                                                    
+                                                    const match = styles.find(s => s.text && s.text.toLowerCase().trim() === cleanPart);
+                                                    if (match) {
+                                                      return <span key={i} className={match.font} style={{ color: match.color }}>{part}</span>;
+                                                    }
+                                                    return <span key={i} className="text-white font-montserrat">{part}</span>;
+                                                  });
+                                                })()}
+                                              </h1>
+                                           </div>
+                                        </div>
                                     </div>
+
                                     <div className="lg:col-span-5 bg-accent/5 p-6 rounded-[2rem] border border-dashed border-accent/20 space-y-4">
                                         <h4 className="text-[9px] font-black uppercase tracking-[0.2em] text-accent flex items-center gap-2">
                                           <Palette className="h-3 w-3" /> Triple Word Engine
@@ -206,31 +235,6 @@ export default function HeroManager({ initialSlides }: { initialSlides: HeroSlid
                                                 <Input type="number" step="0.5" value={slide.headlineTopMargin || 0} onChange={(e) => handleUpdate(slide.id, { headlineTopMargin: parseFloat(e.target.value) || 0 })} className="h-10 rounded-xl font-black text-lg bg-white w-24" />
                                                 <span className="text-[8px] font-black text-muted-foreground uppercase">From Top</span>
                                             </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* HIGHLIGHT BOX */}
-                                <div className="bg-primary/5 p-8 rounded-[2.5rem] border border-primary/10">
-                                    <label className="text-[10px] font-black text-primary uppercase tracking-[0.2em] flex items-center gap-2 mb-4">
-                                        <Sparkles className="w-4 h-4" /> Word Highlighting Engine (Legacy)
-                                    </label>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                        <div className="space-y-1.5">
-                                            <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest block ml-1">Target Word</span>
-                                            <Input value={slide.highlightedText} onChange={(e) => handleUpdate(slide.id, { highlightedText: e.target.value })} placeholder="MASHUJAA" className="h-12 rounded-xl font-bold" />
-                                        </div>
-                                        <div className="space-y-1.5">
-                                            <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest block ml-1">Font Effect</span>
-                                            <select 
-                                                value={slide.styleType} 
-                                                onChange={(e) => handleUpdate(slide.id, { styleType: e.target.value as any })}
-                                                className="w-full h-12 px-3 rounded-xl border border-input bg-white text-xs font-bold"
-                                            >
-                                                {STYLE_OPTIONS.map(opt => (
-                                                    <option key={opt.id} value={opt.id}>{opt.label}</option>
-                                                ))}
-                                            </select>
                                         </div>
                                     </div>
                                 </div>

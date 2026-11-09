@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -82,19 +83,36 @@ export default function Hero() {
                 className="text-5xl md:text-8xl font-black leading-[1.05] tracking-tighter uppercase"
                 style={{ marginTop: `${slide.headlineTopMargin || 0}cm` }}
             >
-              {slide.wordStyles && slide.wordStyles.some(w => w.text) ? (
-                  slide.wordStyles.map((ws, i) => (
-                      <span 
-                        key={i} 
-                        className={cn(ws.font, "mr-5 inline-block")} 
-                        style={{ color: ws.color || '#ffffff' }}
-                      >
-                          {ws.text}
+              {(() => {
+                if (!slide.headline) return null;
+                const styles = slide.wordStyles || [];
+                // Split by spaces but preserve them in the array to keep formatting
+                const parts = slide.headline.split(/(\s+)/);
+                
+                return parts.map((part, i) => {
+                  if (part.trim() === '') return part; // Return spaces/newlines as is
+                  
+                  // Match logic: remove punctuation and whitespace for comparison
+                  const cleanPart = part.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"").toLowerCase().trim();
+                  if (!cleanPart) return part;
+
+                  const match = styles.find(s => s.text && s.text.toLowerCase().trim() === cleanPart);
+                  
+                  if (match) {
+                    return (
+                      <span key={i} className={cn(match.font)} style={{ color: match.color }}>
+                        {part}
                       </span>
-                  ))
-              ) : (
-                  <span className="text-white font-montserrat">{slide.headline}</span>
-              )}
+                    );
+                  }
+                  
+                  return (
+                    <span key={i} className="text-white font-montserrat">
+                      {part}
+                    </span>
+                  );
+                });
+              })()}
             </h1>
             <p 
                 className="text-xl md:text-3xl text-white font-medium tracking-tight font-montserrat opacity-90 leading-relaxed"
