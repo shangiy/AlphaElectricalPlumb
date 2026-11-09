@@ -28,6 +28,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import FeaturedProductManager from './FeaturedProductManager';
 import CategoryManager from './CategoryManager';
+import HeroSearch from '@/components/common/HeroSearch';
 import { 
   getStorefrontSetting, 
   updateStorefrontSetting
@@ -619,6 +620,26 @@ export default function UiUxControlCenter() {
                         </div>
                     </CardHeader>
                     <CardContent className="p-8 space-y-6">
+                        {/* High-Fidelity Engine Preview */}
+                        <div className="space-y-3 mb-8">
+                            <Label className="text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-1.5">
+                                <Eye className="h-3.5 w-3.5" /> Real-time Search Preview
+                            </Label>
+                            <div className="p-10 bg-[#0a0f1e] rounded-[2.5rem] border border-white/5 shadow-2xl relative overflow-hidden">
+                                 {/* Blueprint Pattern to match Hero */}
+                                 <div 
+                                    className="absolute inset-0 opacity-20 pointer-events-none"
+                                    style={{ 
+                                      backgroundImage: `radial-gradient(#1e293b 1px, transparent 0)`,
+                                      backgroundSize: '30px 30px'
+                                    }}
+                                  />
+                                <div className="relative z-10">
+                                    <HeroSearch customPlaceholders={searchPhrases} />
+                                </div>
+                            </div>
+                        </div>
+
                         <div className="flex gap-3">
                             <Input value={newPhrase} onChange={(e) => setNewPhrase(e.target.value)} placeholder="Add product's keyword" className="h-14 rounded-2xl text-lg font-bold" />
                             <Button onClick={() => { if(newPhrase) { setSearchPhrases([...searchPhrases, newPhrase]); setNewPhrase(''); } }}>Add</Button>

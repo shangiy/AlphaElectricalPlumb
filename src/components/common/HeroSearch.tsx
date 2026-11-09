@@ -13,19 +13,27 @@ interface HeroSearchProps {
   className?: string;
   compact?: boolean;
   onSearch?: () => void;
+  customPlaceholders?: string[];
 }
 
 /**
  * High-Fidelity Compact Search Bar v12.0:
  * - Matches image: White pill, navy button with "Search" text.
  * - Camera icon next to search button.
+ * - Supports customPlaceholders for CMS preview.
  */
-export default function HeroSearch({ className, compact = false, onSearch }: HeroSearchProps) {
+export default function HeroSearch({ className, compact = false, onSearch, customPlaceholders }: HeroSearchProps) {
   const [query, setQuery] = useState('');
   const [placeholders, setPlaceholders] = useState(["iron sheets", "water tanks", "PPR Pipes", "LED Panels", "Sockets"]);
   const router = useRouter();
 
   useEffect(() => {
+    // Priority: Use custom placeholders passed as props (usually from CMS state)
+    if (customPlaceholders && customPlaceholders.length > 0) {
+        setPlaceholders(customPlaceholders);
+        return;
+    }
+
     async function loadCMSData() {
         try {
             const val = await getStorefrontSetting('search_phrases');
@@ -37,7 +45,7 @@ export default function HeroSearch({ className, compact = false, onSearch }: Her
         }
     }
     loadCMSData();
-  }, []);
+  }, [customPlaceholders]);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
