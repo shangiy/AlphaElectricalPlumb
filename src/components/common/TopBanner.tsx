@@ -6,6 +6,11 @@ import { cn } from '@/lib/utils';
 import { Clock } from 'lucide-react';
 import Image from 'next/image';
 
+interface HighlighterRule {
+    word: string;
+    colors: string[];
+}
+
 interface BannerConfig {
     items: string[];
     speed: number;
@@ -15,11 +20,13 @@ interface BannerConfig {
     styleOrientation?: string;
     showClock: boolean;
     showSocial: boolean;
+    highlighters?: HighlighterRule[];
 }
 
 /**
- * Compact Independent Top Banner v9.0:
- * Now supports dynamic design orientation (Horizontal, Vertical, Diagonal, and Text Clipping).
+ * Compact Independent Top Banner v10.0:
+ * Features a high-fidelity Keyword Highlighter Engine that splits text and applies
+ * cyclic color palettes to specific occurrences of keywords.
  */
 export default function TopBanner() {
   const [config, setConfig] = useState<BannerConfig>({
@@ -34,7 +41,8 @@ export default function TopBanner() {
     styleType: 'kenyan-flag',
     styleOrientation: 'horizontal',
     showClock: true,
-    showSocial: true
+    showSocial: true,
+    highlighters: []
   });
 
   useEffect(() => {
@@ -67,6 +75,41 @@ export default function TopBanner() {
     }
   };
 
+  // Helper to render text with keyword highlighting
+  const renderHighlightedText = (text: string) => {
+    const rules = config.highlighters || [];
+    if (rules.length === 0) return text;
+
+    // Create a combined regex for all keywords
+    const regex = new RegExp(`(${rules.map(r => r.word).filter(Boolean).join('|')})`, 'g');
+    const parts = text.split(regex);
+    
+    // Track occurrence counts for each keyword in this specific item
+    const occurrenceCounters: Record<string, number> = {};
+
+    return parts.map((part, i) => {
+        const matchingRule = rules.find(r => r.word === part);
+        if (matchingRule) {
+            const count = occurrenceCounters[part] || 0;
+            occurrenceCounters[part] = count + 1;
+            
+            // Get color from the sequence (loop back if count exceeds sequence length)
+            const color = matchingRule.colors[count % matchingRule.colors.length] || config.textColor;
+
+            return (
+                <span 
+                    key={i} 
+                    className="bg-white rounded-full px-3 py-0.5 font-black shadow-lg mx-1 inline-block transform -skew-x-6"
+                    style={{ color: color }}
+                >
+                    {part}
+                </span>
+            );
+        }
+        return <span key={i}>{part}</span>;
+    });
+  };
+
   const marqueeItems = [...config.items, ...config.items, ...config.items];
 
   return (
@@ -93,7 +136,6 @@ export default function TopBanner() {
             style={{ animationDuration: `${config.speed}s` }}
           >
             {marqueeItems.map((item, idx) => {
-              const isMashujaa = item.includes('MASHUJAA');
               const isClipped = config.styleOrientation === 'text-clip';
 
               return (
@@ -108,11 +150,7 @@ export default function TopBanner() {
                         color: isClipped ? 'transparent' : undefined
                     }}
                 >
-                    {isMashujaa && !isClipped ? (
-                        <span className="bg-white rounded-full px-4 py-0.5 font-black text-black shadow-lg">
-                            {item}
-                        </span>
-                    ) : item}
+                    {renderHighlightedText(item)}
                 </li>
               );
             })}

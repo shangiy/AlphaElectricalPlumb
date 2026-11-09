@@ -18,15 +18,16 @@ import {
   Save, 
   Sparkles,
   Zap,
-  Type
+  Type,
+  Plus,
+  Settings2
 } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { Badge } from '@/components/ui/badge';
 import FeaturedProductManager from './FeaturedProductManager';
-import CategoryManager, { type CategoryCardData } from './CategoryManager';
+import CategoryManager from './CategoryManager';
 import { 
   getStorefrontSetting, 
-  updateStorefrontSetting,
-  type HeroSlide
+  updateStorefrontSetting
 } from '@/app/actions/cms-actions';
 
 export const STYLE_OPTIONS = [
@@ -42,6 +43,11 @@ export const ORIENTATION_OPTIONS = [
     { id: 'diagonal', label: '↘️ Diagonal Drift' },
     { id: 'text-clip', label: '✨ Clipped to Text (Vibrant)' }
 ];
+
+interface HighlighterRule {
+    word: string;
+    colors: string[];
+}
 
 export default function UiUxControlCenter() {
   const { toast } = useToast();
@@ -63,7 +69,8 @@ export default function UiUxControlCenter() {
       styleType: 'kenyan-flag',
       styleOrientation: 'horizontal',
       showClock: true,
-      showSocial: true
+      showSocial: true,
+      highlighters: [] as HighlighterRule[]
   });
 
   const [searchPhrases, setSearchPhrases] = useState<string[]>([]);
@@ -78,7 +85,13 @@ export default function UiUxControlCenter() {
       ]);
       
       if (search) setSearchPhrases(search);
-      if (bannerSet) setBannerConfig(bannerSet);
+      if (bannerSet) {
+          setBannerConfig(prev => ({
+              ...prev,
+              ...bannerSet,
+              highlighters: bannerSet.highlighters || []
+          }));
+      }
     } catch (err) {
       console.error("CMS data fetch failed:", err);
     } finally {
@@ -107,6 +120,29 @@ export default function UiUxControlCenter() {
     } finally {
         setSubmitting(false);
     }
+  };
+
+  const addHighlighterRule = () => {
+      setBannerConfig({
+          ...bannerConfig,
+          highlighters: [
+              ...(bannerConfig.highlighters || []),
+              { word: '', colors: ['#00808d'] }
+          ]
+      });
+  };
+
+  const updateHighlighterRule = (index: number, field: keyof HighlighterRule, value: any) => {
+      const updated = [...(bannerConfig.highlighters || [])];
+      updated[index] = { ...updated[index], [field]: value };
+      setBannerConfig({ ...bannerConfig, highlighters: updated });
+  };
+
+  const removeHighlighterRule = (index: number) => {
+      setBannerConfig({
+          ...bannerConfig,
+          highlighters: bannerConfig.highlighters.filter((_, i) => i !== index)
+      });
   };
 
   if (loading) {
@@ -143,15 +179,18 @@ export default function UiUxControlCenter() {
             <div className="max-w-5xl mx-auto space-y-12">
                 <Card className="rounded-[2.5rem] border shadow-2xl overflow-hidden bg-white">
                     <CardHeader className="bg-accent text-white p-8">
-                        <div className="flex items-center gap-3 mb-2">
-                            <Zap className="text-primary h-6 w-6" />
-                            <CardTitle className="text-2xl font-black uppercase tracking-tight">Banner Engineering</CardTitle>
+                        <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-3">
+                                <Zap className="text-primary h-6 w-6" />
+                                <CardTitle className="text-2xl font-black uppercase tracking-tight">Banner Engineering</CardTitle>
+                            </div>
+                            <Badge className="bg-white/10 text-white border-none font-black text-[9px] uppercase tracking-[0.2em]">Engine Sync Active</Badge>
                         </div>
                         <CardDescription className="text-white/60 font-medium">Control the typography, style, pace, and items of the announcement marquee.</CardDescription>
                     </CardHeader>
                     <CardContent className="p-10 space-y-10">
                         
-                        {/* Visibility Controls moved above Marquee Items */}
+                        {/* Visibility Controls */}
                         <div className="flex gap-8 mb-4 bg-muted/20 p-5 rounded-[1.5rem] border border-dashed border-accent/10">
                             <div className="flex items-center gap-3">
                                 <Switch checked={bannerConfig.showClock} onCheckedChange={(val) => setBannerConfig({...bannerConfig, showClock: val})} />
@@ -193,7 +232,7 @@ export default function UiUxControlCenter() {
                                 <p className="text-[9px] text-muted-foreground">Lower = Faster rotation</p>
                             </div>
                             <div className="space-y-3">
-                                <Label className="text-[10px] font-black uppercase text-muted-foreground/60 tracking-widest">Text Color</Label>
+                                <Label className="text-[10px] font-black uppercase text-muted-foreground/60 tracking-widest">Global Text Color</Label>
                                 <div className="flex gap-2">
                                     <input 
                                         type="color" 
@@ -228,15 +267,58 @@ export default function UiUxControlCenter() {
                                     {ORIENTATION_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
                                 </select>
                             </div>
+
+                            <div className="space-y-3">
+                                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 flex items-center gap-2">
+                                    <Settings2 className="h-3.5 w-3.5" /> Keyword Highlighter
+                                </Label>
+                                <div className="p-4 bg-muted/20 rounded-xl border border-dashed border-accent/10 min-h-[48px]">
+                                    {bannerConfig.highlighters && bannerConfig.highlighters.length > 0 ? (
+                                        <div className="space-y-4">
+                                            {bannerConfig.highlighters.map((rule, idx) => (
+                                                <div key={idx} className="space-y-2 border-b border-accent/5 pb-4 last:border-0">
+                                                    <div className="flex items-center gap-2">
+                                                        <Input 
+                                                            value={rule.word} 
+                                                            onChange={(e) => updateHighlighterRule(idx, 'word', e.target.value)}
+                                                            placeholder="Keyword (e.g. OFFER)"
+                                                            className="h-9 text-xs rounded-lg font-bold"
+                                                        />
+                                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500" onClick={() => removeHighlighterRule(idx)}>
+                                                            <Trash2 size={14} />
+                                                        </Button>
+                                                    </div>
+                                                    <div className="space-y-1">
+                                                        <Label className="text-[8px] font-black uppercase text-muted-foreground">Color Cycle (Hex sequence)</Label>
+                                                        <Input 
+                                                            value={rule.colors.join(', ')} 
+                                                            onChange={(e) => updateHighlighterRule(idx, 'colors', e.target.value.split(',').map(c => c.trim()))}
+                                                            placeholder="#00808d, #ef4444..."
+                                                            className="h-8 text-[10px] rounded-lg font-mono"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            ))}
+                                            <Button variant="outline" size="sm" className="w-full h-8 text-[10px] font-black uppercase tracking-widest rounded-lg" onClick={addHighlighterRule}>
+                                                <Plus size={10} className="mr-1" /> Add Rule
+                                            </Button>
+                                        </div>
+                                    ) : (
+                                        <Button variant="link" size="sm" className="p-0 h-auto text-[10px] font-black uppercase text-primary" onClick={addHighlighterRule}>
+                                            Initialize Highlight Engine
+                                        </Button>
+                                    )}
+                                </div>
+                            </div>
                         </div>
 
                         <div className="p-6 bg-primary/5 rounded-[2rem] border border-dashed border-primary/20 flex flex-col gap-2">
                             <div className="flex items-center gap-2 text-primary">
                                 <Type className="h-5 w-5" />
-                                <span className="text-[10px] font-black uppercase tracking-widest">Pill Trigger Logic</span>
+                                <span className="text-[10px] font-black uppercase tracking-widest">Logic Hub</span>
                             </div>
                             <p className="text-[11px] text-muted-foreground italic leading-relaxed">
-                                Tip: Use keywords <span className="font-bold text-accent">MASHUJAA</span> or <span className="font-bold text-[#00c389]">OFFER!</span> in your text to trigger special visual pills and colors as per branding guidelines.
+                                Tip: The Keyword Highlighter allows you to define custom color cycles for specific words. For example, setting <span className="font-bold text-accent">OFFER</span> with a list of colors will color each occurrence in order.
                             </p>
                         </div>
 
