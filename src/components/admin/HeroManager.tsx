@@ -147,12 +147,12 @@ export default function HeroManager({ initialSlides }: { initialSlides: HeroSlid
                                           />
                                         </div>
 
-                                        {/* Live Headline Preview in CMS - Preserves Newlines/Spaces */}
+                                        {/* Live Headline Preview in CMS - Preserves Newlines/Spaces and Casing */}
                                         <div className="p-8 rounded-[2rem] bg-[#0a0f1e] border border-white/5 relative overflow-hidden">
                                            <div className="absolute inset-0 opacity-10" style={{ backgroundImage: `radial-gradient(#1e293b 1px, transparent 0)`, backgroundSize: '20px 20px' }} />
                                            <div className="relative z-10">
                                               <p className="text-[8px] font-black uppercase tracking-[0.3em] text-white/40 mb-4">Live Layout Preview</p>
-                                              <h1 className="text-3xl font-black leading-tight tracking-tighter uppercase break-words whitespace-pre-wrap">
+                                              <h1 className="text-3xl font-black leading-tight tracking-tighter break-words whitespace-pre-wrap">
                                                 {(() => {
                                                   if (!slide.headline) return <span className="text-white/20">Awaiting input...</span>;
                                                   const styles = slide.wordStyles || [];
