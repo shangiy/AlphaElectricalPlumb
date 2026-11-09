@@ -50,10 +50,22 @@ export const ORIENTATION_OPTIONS = [
 interface HighlighterRule {
     word: string;
     colors: string[];
+}
+
+interface BannerConfig {
+    items: string[];
+    speed: number;
+    fontSize: number;
+    textColor: string;
+    styleType: string;
+    styleOrientation?: string;
+    showClock: boolean;
+    showSocial: boolean;
+    highlighters?: HighlighterRule[];
     badgeText?: string;
 }
 
-const DEFAULT_BANNER = {
+const DEFAULT_BANNER: BannerConfig = {
     items: ["EASTER HOLIDAY OFFER! BEST PRICES GUARANTEED", "Feel welcomed to Shop with us @best prices"],
     speed: 30,
     fontSize: 12,
@@ -62,7 +74,8 @@ const DEFAULT_BANNER = {
     styleOrientation: 'horizontal',
     showClock: true,
     showSocial: true,
-    highlighters: [] as HighlighterRule[]
+    highlighters: [] as HighlighterRule[],
+    badgeText: ''
 };
 
 export default function UiUxControlCenter() {
@@ -78,7 +91,7 @@ export default function UiUxControlCenter() {
   const [previewText, setPreviewText] = useState('');
 
   // Banner Details State
-  const [bannerConfig, setBannerConfig] = useState(DEFAULT_BANNER);
+  const [bannerConfig, setBannerConfig] = useState<BannerConfig>(DEFAULT_BANNER);
   const [searchPhrases, setSearchPhrases] = useState<string[]>([]);
   const [newPhrase, setNewPhrase] = useState('');
 
@@ -119,7 +132,6 @@ export default function UiUxControlCenter() {
   const handleSaveBanner = async () => {
     setSubmitting(true);
     try {
-        // Validation: remove empty rules before saving
         const cleanedConfig = {
             ...bannerConfig,
             highlighters: (bannerConfig.highlighters || []).filter(h => h.word && h.word.trim().length > 0)
@@ -145,21 +157,21 @@ export default function UiUxControlCenter() {
           ...bannerConfig,
           highlighters: [
               ...(bannerConfig.highlighters || []),
-              { word: '', colors: ['#00808d'], badgeText: '' }
+              { word: '', colors: ['#00808d'] }
           ]
       });
   };
 
   const updateHighlighterRule = (index: number, field: keyof HighlighterRule, value: any) => {
       const updated = [...(bannerConfig.highlighters || [])];
-      updated[index] = { ...updated[index], [field]: value };
+      updated[index] = { ...updated[index], [field]: value } as HighlighterRule;
       setBannerConfig({ ...bannerConfig, highlighters: updated });
   };
 
   const removeHighlighterRule = (index: number) => {
       setBannerConfig({
           ...bannerConfig,
-          highlighters: bannerConfig.highlighters.filter((_, i) => i !== index)
+          highlighters: bannerConfig.highlighters?.filter((_, i) => i !== index)
       });
   };
 
@@ -189,8 +201,6 @@ export default function UiUxControlCenter() {
           </div>
       );
   }
-
-  const activeBadge = bannerConfig.highlighters?.find(h => h.badgeText)?.badgeText;
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500 pb-20">
@@ -305,15 +315,13 @@ export default function UiUxControlCenter() {
                                         bannerConfig.styleOrientation !== 'text-clip' && getBackgroundColors(bannerConfig.styleType),
                                         bannerConfig.styleOrientation === 'text-clip' && "bg-white/50 backdrop-blur-sm border-none shadow-none"
                                     )}>
-                                        {activeBadge && (
-                                            <div className={cn(
-                                                "px-3 py-0.5 rounded text-[8px] font-black mr-2 animate-gradient-x bg-[length:200%_200%] transform -skew-x-6",
-                                                bannerConfig.styleOrientation !== 'text-clip' ? "bg-white text-primary shadow-md" : "bg-white"
-                                            )}>
+                                        {bannerConfig.badgeText && (
+                                            <div className="px-3 py-1 rounded-full bg-white mr-2 shadow-md transform -skew-x-6">
                                                 <span className={cn(
-                                                    bannerConfig.styleOrientation === 'text-clip' && cn("bg-gradient-to-r bg-clip-text text-transparent animate-gradient-x bg-[length:200%_200%]", getBackgroundColors(bannerConfig.styleType))
+                                                    "bg-gradient-to-r bg-clip-text text-transparent animate-gradient-x bg-[length:200%_200%]",
+                                                    getBackgroundColors(bannerConfig.styleType)
                                                 )}>
-                                                    {activeBadge}
+                                                    {bannerConfig.badgeText}
                                                 </span>
                                             </div>
                                         )}
@@ -330,7 +338,16 @@ export default function UiUxControlCenter() {
                             </div>
 
                             {/* Controls Group */}
-                            <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-8">
+                                <div className="space-y-3">
+                                    <Label className="text-[10px] font-black uppercase text-muted-foreground/60 tracking-widest">Badge Text (Left Pill)</Label>
+                                    <Input 
+                                        value={bannerConfig.badgeText || ''} 
+                                        onChange={(e) => setBannerConfig({...bannerConfig, badgeText: e.target.value})}
+                                        placeholder="e.g. MASHUJAA"
+                                        className="h-12 rounded-xl font-black"
+                                    />
+                                </div>
                                 <div className="space-y-3">
                                     <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Visual Style Engine</Label>
                                     <select 
@@ -377,15 +394,6 @@ export default function UiUxControlCenter() {
                                                             value={rule.word} 
                                                             onChange={(e) => updateHighlighterRule(idx, 'word', e.target.value)}
                                                             placeholder="e.g. OFFER"
-                                                            className="h-10 text-xs rounded-lg font-black"
-                                                        />
-                                                    </div>
-                                                    <div className="space-y-1.5">
-                                                        <Label className="text-[8px] font-black uppercase text-muted-foreground">Badge / Pill Text</Label>
-                                                        <Input 
-                                                            value={rule.badgeText || ''} 
-                                                            onChange={(e) => updateHighlighterRule(idx, 'badgeText', e.target.value)}
-                                                            placeholder="e.g. MASHUJAA"
                                                             className="h-10 text-xs rounded-lg font-black"
                                                         />
                                                     </div>

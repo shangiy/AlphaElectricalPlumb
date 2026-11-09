@@ -9,7 +9,6 @@ import Image from 'next/image';
 interface HighlighterRule {
     word: string;
     colors: string[];
-    badgeText?: string;
 }
 
 interface BannerConfig {
@@ -22,12 +21,12 @@ interface BannerConfig {
     showClock: boolean;
     showSocial: boolean;
     highlighters?: HighlighterRule[];
+    badgeText?: string;
 }
 
 /**
- * Compact Independent Top Banner v12.0:
- * Fixed: Robust Regex logic to prevent character-splitting "garbage" rendering.
- * Synchronized with Brand Primary Teal for highlighted word pills.
+ * Compact Independent Top Banner v12.1:
+ * Fixed: Integrated global Badge Text engine with style inheritance.
  */
 export default function TopBanner() {
   const [config, setConfig] = useState<BannerConfig>({
@@ -43,7 +42,8 @@ export default function TopBanner() {
     styleOrientation: 'horizontal',
     showClock: true,
     showSocial: true,
-    highlighters: []
+    highlighters: [],
+    badgeText: ''
   });
 
   useEffect(() => {
@@ -84,7 +84,6 @@ export default function TopBanner() {
     const rules = (config.highlighters || []).filter(r => r.word && r.word.trim().length > 0);
     if (rules.length === 0) return text;
 
-    // Create a safe regex. If join is empty, this won't run due to check above.
     const regex = new RegExp(`(${rules.map(r => r.word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`, 'gi');
     const parts = text.split(regex);
     
@@ -114,9 +113,7 @@ export default function TopBanner() {
     });
   };
 
-  // Ensure enough items for smooth scroll
   const marqueeItems = config.items.length > 0 ? [...config.items, ...config.items, ...config.items] : [];
-  const activeBadge = config.highlighters?.find(h => h.badgeText)?.badgeText;
 
   if (marqueeItems.length === 0) return null;
 
@@ -158,15 +155,14 @@ export default function TopBanner() {
                         color: isClipped ? 'transparent' : undefined
                     }}
                 >
-                    {activeBadge && (
-                        <span className={cn(
-                            "px-2 py-0.5 rounded text-[9px] font-black mr-3 inline-block shadow-md transform -skew-x-6",
-                            !isClipped ? "bg-white text-primary" : "bg-white"
-                        )}>
+                    {config.badgeText && (
+                        <span className="px-3 py-1 rounded-full bg-white mr-4 shadow-lg transform -skew-x-6 flex-shrink-0">
                             <span className={cn(
-                                isClipped && cn("bg-gradient-to-r bg-clip-text text-transparent animate-gradient-x bg-[length:200%_200%]", getBackgroundColors())
+                                "font-black bg-clip-text text-transparent animate-gradient-x bg-[length:200%_200%]",
+                                "bg-gradient-to-r", // Force horizontal for best look in badge
+                                getBackgroundColors()
                             )}>
-                                {activeBadge}
+                                {config.badgeText}
                             </span>
                         </span>
                     )}
