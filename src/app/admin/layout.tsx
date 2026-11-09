@@ -36,9 +36,9 @@ import { useAuth } from '@/context/AuthProvider';
 import { cn } from '@/lib/utils';
 
 /**
- * Admin Layout v3.9:
+ * Admin Layout v4.0:
  * Features a high-fidelity mobile toggle interface with retracting 
- * Chevrons and automatic navigation closure for a seamless mobile experience.
+ * Chevrons and automatic navigation closure. Updated with twice-scaled logo.
  */
 function AdminSidebarWrapper({ children }: { children: React.ReactNode }) {
   const { logout } = useAuth();
@@ -120,11 +120,11 @@ function AdminSidebarWrapper({ children }: { children: React.ReactNode }) {
 
       <Sidebar className="flex flex-col border-r bg-muted/20">
         <SidebarHeader className="p-6 shrink-0">
-          <Link href="/admin" onClick={handleNavClick} className="flex items-center gap-3 group">
-              <Image src="/logo Alpha.png" alt="Alpha" width={45} height={45} className="transition-transform group-hover:scale-110" />
+          <Link href="/admin" onClick={handleNavClick} className="flex items-center gap-4 group">
+              <Image src="/logo Alpha.png" alt="Alpha" width={90} height={90} className="transition-transform group-hover:scale-110" />
               <div className="flex flex-col">
-                <span className="text-sm font-black text-accent uppercase tracking-tighter leading-none">Admin Panel</span>
-                {!isMobile && <span className="text-[9px] font-bold text-primary uppercase tracking-widest mt-1">Alpha Ecosystem</span>}
+                <span className="text-xl font-black text-accent uppercase tracking-tighter leading-none">Admin</span>
+                {!isMobile && <span className="text-[9px] font-bold text-primary uppercase tracking-[0.2em] mt-1">Ecosystem v4.0</span>}
               </div>
           </Link>
         </SidebarHeader>

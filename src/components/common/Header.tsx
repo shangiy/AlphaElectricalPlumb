@@ -34,9 +34,10 @@ import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 
 /**
- * Compact High-Fidelity Header v21.0:
- * - Brand Teal Highlights: Consistent primary teal accents across all hover states.
- * - Sticky Architecture: Persistently top-0 behavior.
+ * High-Fidelity Header v22.0:
+ * - Scaled Logo: Logo increased to twice its size (110px desktop / 80px mobile).
+ * - Compact Sticky Bar: Adjusted header height to accommodate larger branding.
+ * - Brand Teal Highlights: Consistent primary teal accents.
  */
 export default function Header() {
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
@@ -63,7 +64,7 @@ export default function Header() {
   return (
     <header 
       className={cn(
-        "sticky top-0 z-50 w-full transition-all duration-500 overflow-hidden border-b flex items-center h-20 lg:h-24",
+        "sticky top-0 z-50 w-full transition-all duration-500 overflow-hidden border-b flex items-center h-24 lg:h-32",
         isScrolled ? "border-slate-200/60" : "border-transparent bg-slate-50/40"
       )}
     >
@@ -86,9 +87,9 @@ export default function Header() {
       <div className="container mx-auto px-4 relative z-10">
         {/* DESKTOP VIEW */}
         <div className="hidden w-full items-center justify-between lg:flex">
-          {/* Compact Logo & Branding Block (Left) - Link wraps both */}
-          <NextLink href="/" className="flex flex-shrink-0 items-center gap-3 group">
-            <div className="relative h-[60px] w-[60px]">
+          {/* Scaled Logo & Branding Block (Left) */}
+          <NextLink href="/" className="flex flex-shrink-0 items-center gap-4 group">
+            <div className="relative h-[110px] w-[110px]">
                 <Image 
                   src="/logo Alpha.png" 
                   alt="Alpha Logo" 
@@ -97,13 +98,13 @@ export default function Header() {
                 />
             </div>
             <div className="flex flex-col transition-colors duration-300 text-[#0b0f19] group-hover:text-primary">
-              <span className="font-bold text-2xl leading-tight transition-all uppercase tracking-tighter">Alpha</span>
-              <div className="w-full h-px bg-current"></div>
-              <span className="text-[11px] leading-tight font-medium uppercase tracking-wide">Electricals & Plumbing Ltd</span>
+              <span className="font-bold text-3xl leading-tight transition-all uppercase tracking-tighter">Alpha</span>
+              <div className="w-full h-0.5 bg-current my-1 opacity-20"></div>
+              <span className="text-[12px] leading-tight font-black uppercase tracking-[0.2em]">Electricals & Plumbing Ltd</span>
             </div>
           </NextLink>
 
-          {/* Centered Compact Search Engine (Middle) */}
+          {/* Centered Search Engine (Middle) */}
           <div className="flex-1 max-w-lg mx-auto px-6">
              <HeroSearch compact={true} className="h-12" />
           </div>
@@ -144,23 +145,23 @@ export default function Header() {
         </div>
 
         {/* MOBILE VIEW */}
-        <div className="w-full lg:hidden flex items-center justify-between h-16 gap-2">
+        <div className="w-full lg:hidden flex items-center justify-between h-20 gap-2">
           {/* Unified Logo & Branding Link (Mobile) */}
           <NextLink 
             href="/" 
             className={cn(
-              "flex items-center gap-2 group transition-all duration-500", 
+              "flex items-center gap-3 group transition-all duration-500", 
               mobileSearchOpen ? "opacity-0 w-0 overflow-hidden" : "opacity-100"
             )}
           >
              <div className="flex-shrink-0">
-                <Image src="/logo Alpha.png" alt="Alpha Logo" width={45} height={45} className="h-auto" />
+                <Image src="/logo Alpha.png" alt="Alpha Logo" width={80} height={80} className="h-auto" />
             </div>
             {!mobileSearchOpen && (
                 <div className="flex flex-col text-[#0b0f19] group-hover:text-primary transition-colors duration-300">
-                    <span className="font-bold text-[16px] leading-tight uppercase">Alpha</span>
-                    <div className="w-full h-px bg-current"></div>
-                    <span className="text-[8px] leading-tight font-medium uppercase">Electricals & Plumbing Ltd</span>
+                    <span className="font-bold text-xl leading-tight uppercase tracking-tighter">Alpha</span>
+                    <div className="w-full h-px bg-current opacity-20"></div>
+                    <span className="text-[9px] leading-tight font-black uppercase tracking-widest">Electricals & Plumbing Ltd</span>
                 </div>
             )}
           </NextLink>
@@ -216,8 +217,8 @@ export default function Header() {
               <SheetContent side="right" className="bg-white border-l-slate-100 text-[#0b0f19] rounded-l-[3rem] shadow-2xl">
                 <SheetHeader>
                   <SheetTitle className="text-[#0b0f19] text-left">
-                    <NextLink href="/" className="flex items-center gap-3 group">
-                      <div className="relative h-[50px] w-[50px]">
+                    <NextLink href="/" className="flex items-center gap-4 group">
+                      <div className="relative h-[80px] w-[80px]">
                           <Image 
                             src="/logo Alpha.png" 
                             alt="Alpha Logo" 
@@ -226,9 +227,9 @@ export default function Header() {
                           />
                       </div>
                       <div className="flex flex-col transition-colors duration-300 group-hover:text-primary">
-                        <span className="font-bold text-xl leading-tight uppercase tracking-tighter">Alpha</span>
-                        <div className="w-full h-px bg-current"></div>
-                        <span className="text-[10px] leading-tight font-medium uppercase tracking-wide">Electricals & Plumbing Ltd</span>
+                        <span className="font-bold text-2xl leading-tight uppercase tracking-tighter">Alpha</span>
+                        <div className="w-full h-px bg-current opacity-20 my-1"></div>
+                        <span className="text-[10px] leading-tight font-black uppercase tracking-[0.2em]">Electricals & Plumbing Ltd</span>
                       </div>
                     </NextLink>
                   </SheetTitle>
