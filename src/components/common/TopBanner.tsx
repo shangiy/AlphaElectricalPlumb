@@ -34,6 +34,10 @@ interface BannerConfig {
     vibrantStyleType?: string;
     vibrantOrientation?: string;
     vibrantTextStyle?: string;
+    vibrantText2?: string;
+    vibrantStyleType2?: string;
+    vibrantOrientation2?: string;
+    vibrantTextStyle2?: string;
 }
 
 /**
@@ -67,7 +71,11 @@ export default function TopBanner() {
     vibrantText: '',
     vibrantStyleType: 'kenyan-flag',
     vibrantOrientation: 'vertical',
-    vibrantTextStyle: 'bold'
+    vibrantTextStyle: 'bold',
+    vibrantText2: '',
+    vibrantStyleType2: 'kenyan-flag',
+    vibrantOrientation2: 'vertical',
+    vibrantTextStyle2: 'bold'
   });
 
   useEffect(() => {
@@ -268,6 +276,16 @@ export default function TopBanner() {
                                   config.vibrantStyleType || 'kenyan-flag', 
                                   config.vibrantOrientation || 'vertical',
                                   config.vibrantTextStyle
+                                )}
+                            </span>
+                        )}
+                        {config.vibrantText2 && (
+                            <span className="mr-4 flex-shrink-0 flex items-center justify-center">
+                                {renderStyledBadgeText(
+                                  config.vibrantText2, 
+                                  config.vibrantStyleType2 || 'kenyan-flag', 
+                                  config.vibrantOrientation2 || 'vertical',
+                                  config.vibrantTextStyle2
                                 )}
                             </span>
                         )}
