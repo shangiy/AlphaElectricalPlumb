@@ -34,10 +34,10 @@ import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 
 /**
- * High-Fidelity Light Theme Header v15.0:
+ * High-Fidelity Light Theme Header v16.0:
+ * - Unified branding text as requested.
  * - Soft whitish-blue/lavender background with dynamic scroll gradient.
  * - Dark navy/indigo branding and iconography.
- * - Customized "Products" trigger with purple accent border.
  */
 export default function Header() {
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
@@ -66,7 +66,7 @@ export default function Header() {
       {/* Dynamic Animated Gradient Layer (Fades in on scroll) */}
       <div 
         className={cn(
-          "absolute inset-0 -z-10 bg-gradient-to-r from-red-500/10 via-purple-500/10 to-blue-500/10 bg-[length:200%_200%] animate-gradient-x transition-opacity duration-700",
+          "absolute inset-0 -z-10 bg-gradient-to-r from-red-500 via-purple-500 to-blue-500 bg-[length:200%_200%] animate-gradient-x transition-opacity duration-700",
           isScrolled ? "opacity-100" : "opacity-0"
         )} 
       />
@@ -84,10 +84,8 @@ export default function Header() {
                   className="object-contain transition-all duration-500"
                 />
             </div>
-            <div className="flex flex-col text-[#0b0f19] transition-colors duration-300">
-              <span className="font-black text-2xl lg:text-3xl leading-tight uppercase tracking-tighter">Alpha</span>
-              <div className="w-full h-px bg-[#0b0f19]/20"></div>
-              <span className="text-xs lg:text-sm leading-tight font-bold uppercase tracking-widest text-[#0b0f19]/70">Electricals & Plumbing Ltd</span>
+            <div className="text-[#0b0f19] transition-colors duration-300 font-black text-2xl lg:text-3xl leading-tight uppercase tracking-tighter max-w-[280px]">
+              Alpha Electricals & Plumbing Ltd
             </div>
           </NextLink>
 
@@ -138,9 +136,8 @@ export default function Header() {
                 <Image src="/logo Alpha.png" alt="Alpha Logo" width={60} height={60} className="h-auto" />
             </NextLink>
             {!mobileSearchOpen && (
-                <div className="flex flex-col text-[#0b0f19] transition-opacity duration-500">
-                    <span className="font-black text-lg leading-none">ALPHA</span>
-                    <span className="text-[8px] font-bold uppercase tracking-tighter opacity-70">Electricals</span>
+                <div className="text-[#0b0f19] transition-opacity duration-500 font-black text-xs leading-tight uppercase tracking-tighter max-w-[140px]">
+                    Alpha Electricals & Plumbing Ltd
                 </div>
             )}
           </div>
