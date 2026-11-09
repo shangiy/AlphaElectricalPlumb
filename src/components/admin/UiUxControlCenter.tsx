@@ -620,7 +620,7 @@ export default function UiUxControlCenter() {
                     </CardHeader>
                     <CardContent className="p-8 space-y-6">
                         <div className="flex gap-3">
-                            <Input value={newPhrase} onChange={(e) => setNewPhrase(e.target.value)} placeholder="Add industrial keyword" className="h-14 rounded-2xl text-lg font-bold" />
+                            <Input value={newPhrase} onChange={(e) => setNewPhrase(e.target.value)} placeholder="Add product's keyword" className="h-14 rounded-2xl text-lg font-bold" />
                             <Button onClick={() => { if(newPhrase) { setSearchPhrases([...searchPhrases, newPhrase]); setNewPhrase(''); } }}>Add</Button>
                         </div>
                         <div className="flex flex-wrap gap-3">
