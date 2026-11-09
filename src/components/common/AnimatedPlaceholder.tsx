@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -15,19 +14,19 @@ export function AnimatedPlaceholder({ placeholders, className }: AnimatedPlaceho
   const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
-    // Safety check: if placeholders is empty or undefined, do nothing
-    if (!placeholders || placeholders.length === 0) {
+    // Robust safety check for the placeholders array
+    if (!placeholders || !Array.isArray(placeholders) || placeholders.length === 0) {
       setCurrentPlaceholder('');
       return;
     }
 
-    // Ensure index is within bounds (handles case where placeholders array shrinks)
     const activeIndex = placeholderIndex % placeholders.length;
     const fullText = placeholders[activeIndex];
 
-    // Safety check for individual placeholder string
+    // Ensure fullText is a valid string
     if (typeof fullText !== 'string') {
       setCurrentPlaceholder('');
+      setPlaceholderIndex((prev) => (prev + 1) % placeholders.length);
       return;
     }
 
@@ -37,7 +36,7 @@ export function AnimatedPlaceholder({ placeholders, className }: AnimatedPlaceho
       if (currentPlaceholder.length > 0) {
         timeout = setTimeout(() => {
           setCurrentPlaceholder(prev => prev.slice(0, -1));
-        }, 100); // Speed of deleting
+        }, 100);
       } else {
         setIsDeleting(false);
         setPlaceholderIndex((prevIndex) => (prevIndex + 1) % placeholders.length);
@@ -46,9 +45,8 @@ export function AnimatedPlaceholder({ placeholders, className }: AnimatedPlaceho
       if (currentPlaceholder.length < fullText.length) {
         timeout = setTimeout(() => {
           setCurrentPlaceholder(prev => fullText.slice(0, prev.length + 1));
-        }, 150); // Speed of typing
+        }, 150);
       } else {
-        // Wait before starting to delete
         timeout = setTimeout(() => {
           setIsDeleting(true);
         }, 2000);

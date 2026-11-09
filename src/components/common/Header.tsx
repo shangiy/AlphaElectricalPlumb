@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import NextLink from 'next/link';
 import Image from 'next/image';
 import { 
@@ -9,7 +9,8 @@ import {
   User, 
   Menu, 
   Search, 
-  X 
+  X,
+  Camera
 } from 'lucide-react';
 import { 
   DropdownMenu, 
@@ -28,24 +29,23 @@ import {
   SheetDescription
 } from '@/components/ui/sheet';
 import { useAuth } from '@/context/AuthProvider';
-import { useCart } from '@/context/CartProvider';
 import ShoppingCartComponent from './ShoppingCart';
 import HeroSearch from './HeroSearch';
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 
-/**
- * Persistently Fixed Header v10.0
- * Features:
- * - Glued/Pinned to top-most viewport margin.
- * - Enforced Brand Colors: Crimson (#8a0b0d) highlights, NO PINK.
- * - MORPHING BUBBLE SEARCH: Trigger button grows horizontally to the left into empty space.
- */
-export default function Header() {
+export default function Header({ className }: { className?: string }) {
   const { user } = useAuth();
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isScrolled, setIsScrolled] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    const handleScroll = () => setIsScrolled(window.scrollY > 40);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,13 +56,28 @@ export default function Header() {
   };
 
   return (
-    <header className="w-full bg-[#0b0f19]/95 backdrop-blur-md border-b border-white/10 h-20 sm:h-24 lg:h-36 flex items-center overflow-hidden">
+    <header className={cn(
+      "sticky top-0 z-50 w-full transition-all duration-500 overflow-hidden bg-transparent border-b border-transparent",
+      isScrolled && "h-24 lg:h-28",
+      !isScrolled && "h-20 sm:h-24 lg:h-36",
+      className
+    )}>
+      
+      {/* Background Layers for Dynamic Scroll Effect */}
+      <div className={cn(
+        "absolute inset-0 -z-20 bg-gradient-to-r from-red-500 via-purple-500 to-blue-500 bg-[length:200%_200%] animate-gradient-x transition-opacity duration-500",
+        isScrolled ? "opacity-100" : "opacity-0"
+      )} />
+      <div className={cn(
+        "absolute inset-0 -z-10 bg-background/90 backdrop-blur-md transition-opacity duration-500",
+        isScrolled ? "opacity-100" : "opacity-0"
+      )} />
+
       <div className="container mx-auto px-4 relative z-10 h-full">
-        {/* DESKTOP VIEW (LG+) */}
+        {/* DESKTOP VIEW */}
         <div className="hidden w-full items-center justify-between gap-4 lg:flex h-full">
-          {/* Left: Branding */}
-          <NextLink href="/" className="flex flex-shrink-0 items-center gap-4 group">
-            <div className="relative h-[110px] w-[110px]">
+          <NextLink href="/" className="flex flex-shrink-0 items-center gap-3 group">
+            <div className="relative h-[90px] w-[90px] lg:h-[110px] lg:w-[110px]">
                 <Image 
                   src="/logo Alpha.png" 
                   alt="Alpha Logo" 
@@ -70,88 +85,86 @@ export default function Header() {
                   className="object-contain transition-all duration-500"
                 />
             </div>
-            <div className="flex flex-col text-white group-hover:text-[#8a0b0d] transition-colors duration-300">
-              <span className="font-black text-3xl leading-tight uppercase tracking-tighter">Alpha</span>
+            <div className={cn(
+              "flex flex-col transition-colors duration-300 group-hover:text-[#8a0b0d]",
+              isScrolled ? "text-accent" : "text-white"
+            )}>
+              <span className="font-black text-2xl lg:text-3xl leading-tight uppercase tracking-tighter">Alpha</span>
               <div className="w-full h-px bg-current opacity-40"></div>
-              <span className="text-xs leading-tight font-bold uppercase tracking-widest">Electricals & Plumbing Ltd</span>
+              <span className="text-[10px] lg:text-xs leading-tight font-bold uppercase tracking-widest">Electricals & Plumbing Ltd</span>
             </div>
           </NextLink>
 
-          {/* Middle: Centered Search Bar */}
-          <div className="flex-1 max-w-2xl mx-auto px-8">
-             <HeroSearch className="scale-105" />
+          <div className="flex-1 max-w-2xl mx-auto px-8 transition-all duration-500">
+             <HeroSearch compact={isScrolled} />
           </div>
 
-          {/* Right: Navigation & Actions */}
-          <div className="flex items-center gap-8">
-            <nav className="flex items-center gap-2">
+          <div className="flex items-center gap-6">
+            <nav className="flex items-center gap-1">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="px-3 py-2 text-white font-bold hover:text-[#8a0b0d] transition-colors flex items-center gap-1 uppercase text-lg tracking-widest">
+                  <button className={cn(
+                    "px-3 py-2 font-bold transition-colors flex items-center gap-1 uppercase text-sm tracking-widest",
+                    isScrolled ? "text-accent hover:text-[#8a0b0d]" : "text-white hover:text-[#8a0b0d]"
+                  )}>
                     Products <ChevronDown className="h-4 w-4" />
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="rounded-2xl p-2 w-64 bg-[#0b0f19] border-white/10 text-white">
-                   <DropdownMenuItem asChild className="hover:bg-white/5 cursor-pointer text-base py-3"><NextLink href="/category/tanks">Water Tanks</NextLink></DropdownMenuItem>
-                   <DropdownMenuItem asChild className="hover:bg-white/5 cursor-pointer text-base py-3"><NextLink href="/category/plumbing">Plumbing Equipment</NextLink></DropdownMenuItem>
-                   <DropdownMenuItem asChild className="hover:bg-white/5 cursor-pointer text-base py-3"><NextLink href="/category/lighting">Lighting & Electrical</NextLink></DropdownMenuItem>
-                   <DropdownMenuItem asChild className="hover:bg-white/5 cursor-pointer text-base py-3"><NextLink href="/category/roofing">Roofing & Construction</NextLink></DropdownMenuItem>
+                <DropdownMenuContent align="start" className="rounded-2xl p-2 w-64 bg-background border-border">
+                   <DropdownMenuItem asChild className="cursor-pointer py-3"><NextLink href="/category/tanks">Water Tanks</NextLink></DropdownMenuItem>
+                   <DropdownMenuItem asChild className="cursor-pointer py-3"><NextLink href="/category/plumbing">Plumbing Equipment</NextLink></DropdownMenuItem>
+                   <DropdownMenuItem asChild className="cursor-pointer py-3"><NextLink href="/category/lighting">Lighting & Electrical</NextLink></DropdownMenuItem>
+                   <DropdownMenuItem asChild className="cursor-pointer py-3"><NextLink href="/category/roofing">Roofing & Construction</NextLink></DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-              <NextLink href="/contact" className="px-3 py-2 text-white font-bold hover:text-[#8a0b0d] transition-colors uppercase text-lg tracking-widest">Contact Us</NextLink>
-              <NextLink href="/about" className="px-3 py-2 text-white font-bold hover:text-[#8a0b0d] transition-colors uppercase text-lg tracking-widest">About Us</NextLink>
+              <NextLink href="/contact" className={cn(
+                "px-3 py-2 font-bold transition-colors uppercase text-sm tracking-widest",
+                isScrolled ? "text-accent hover:text-[#8a0b0d]" : "text-white hover:text-[#8a0b0d]"
+              )}>Contact Us</NextLink>
+              <NextLink href="/about" className={cn(
+                "px-3 py-2 font-bold transition-colors uppercase text-sm tracking-widest",
+                isScrolled ? "text-accent hover:text-[#8a0b0d]" : "text-white hover:text-[#8a0b0d]"
+              )}>About Us</NextLink>
             </nav>
 
-            <div className="flex items-center gap-4">
-              <ShoppingCartComponent triggerClassName="h-12 w-12 text-white hover:bg-white/5 transition-colors border border-white/10" />
+            <div className="flex items-center gap-3">
+              <ShoppingCartComponent triggerClassName={cn(
+                "h-11 w-11 transition-colors border",
+                isScrolled ? "text-accent border-accent/10 hover:bg-accent/5" : "text-white border-white/10 hover:bg-white/5"
+              )} />
               
               <NextLink href="/profile">
                 <Button 
                   variant="ghost" 
-                  className="h-12 px-6 rounded-xl gap-3 font-bold text-white hover:bg-white/5 border border-white/10"
+                  className={cn(
+                    "h-11 px-6 rounded-xl gap-3 font-bold border",
+                    isScrolled ? "text-accent border-accent/10 hover:bg-accent/5" : "text-white border-white/10 hover:bg-white/5"
+                  )}
                 >
-                  <User className="h-7 w-7" />
-                  <span className="hidden xl:inline uppercase text-sm tracking-widest">Log in</span>
+                  <User className="h-6 w-6" />
+                  <span className="hidden xl:inline uppercase text-xs tracking-widest">Log in</span>
                 </Button>
               </NextLink>
             </div>
           </div>
         </div>
 
-        {/* MOBILE VIEW (<LG) */}
-        <div className="w-full lg:hidden flex items-center justify-between h-full gap-2 relative">
-          {/* Logo Node: Fades slightly when search is open but remains visible */}
-          <NextLink 
-            href="/" 
-            className={cn(
-              "flex-shrink-0 transition-all duration-500",
-              mobileSearchOpen ? "opacity-30 blur-[1px]" : "opacity-100"
-            )}
-          >
-            <Image 
-              src="/logo Alpha.png" 
-              alt="Alpha Logo" 
-              width={70} 
-              height={70} 
-              className="h-auto"
-            />
+        {/* MOBILE VIEW */}
+        <div className="w-full lg:hidden flex items-center justify-between h-full gap-2">
+          <NextLink href="/" className={cn("flex-shrink-0 transition-all duration-500", mobileSearchOpen ? "opacity-30" : "opacity-100")}>
+            <Image src="/logo Alpha.png" alt="Alpha Logo" width={70} height={70} className="h-auto" />
           </NextLink>
 
-          {/* Morphing Action Hub */}
-          <div className="flex-1 flex items-center justify-end gap-2 h-full z-20">
-            
-            {/* The expanding Search Button Bubble - Grows into left empty space */}
+          <div className="flex-1 flex items-center justify-end gap-2 h-full">
+            {/* Morphing Bubble Search Bubble */}
             <div className={cn(
               "relative flex items-center h-10 transition-all duration-700 ease-[cubic-bezier(0.19,1,0.22,1)] overflow-hidden",
               mobileSearchOpen ? "flex-1 ml-4" : "w-10"
             )}>
-              <form 
-                onSubmit={handleSearchSubmit}
-                className={cn(
+              <form onSubmit={handleSearchSubmit} className={cn(
                   "flex items-center w-full h-full rounded-full transition-all duration-700",
                   mobileSearchOpen ? "bg-white px-1 shadow-2xl" : "bg-transparent"
-                )}
-              >
+                )}>
                 <input 
                   type="search"
                   placeholder="Search Alpha..."
@@ -167,15 +180,13 @@ export default function Header() {
                   variant="ghost" 
                   size="icon" 
                   className={cn(
-                    "text-white h-10 w-10 border border-white/10 rounded-full transition-all duration-500 hover:bg-white/10 active:scale-90 shrink-0",
+                    "h-10 w-10 border rounded-full transition-all duration-500 shrink-0",
+                    isScrolled ? "text-accent border-accent/10" : "text-white border-white/10",
                     mobileSearchOpen && "bg-[#28235f] text-white border-none h-8 w-8 mr-1"
                   )}
                   onClick={() => {
-                    if (mobileSearchOpen && searchQuery) {
-                       handleSearchSubmit({ preventDefault: () => {} } as any);
-                    } else {
-                       setMobileSearchOpen(!mobileSearchOpen);
-                    }
+                    if (mobileSearchOpen && searchQuery) handleSearchSubmit({ preventDefault: () => {} } as any);
+                    else setMobileSearchOpen(!mobileSearchOpen);
                   }}
                 >
                   {mobileSearchOpen ? <X className="h-4 w-4" /> : <Search className="h-5 w-5" />}
@@ -183,16 +194,17 @@ export default function Header() {
               </form>
             </div>
 
-            {/* Cart & Menu stay where they are, no displacement */}
-            <div className={cn(
-              "flex items-center gap-2 transition-all duration-500",
-              mobileSearchOpen ? "opacity-50" : "opacity-100"
-            )}>
-              <ShoppingCartComponent triggerClassName="h-10 w-10 text-white border border-white/10 rounded-full" />
-
+            <div className={cn("flex items-center gap-1 transition-all duration-500", mobileSearchOpen ? "opacity-50" : "opacity-100")}>
+              <ShoppingCartComponent triggerClassName={cn(
+                "h-10 w-10 border rounded-full",
+                isScrolled ? "text-accent border-accent/10" : "text-white border-white/10"
+              )} />
               <Sheet>
                 <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon" className="text-white h-10 w-10 border border-white/10 rounded-full">
+                  <Button variant="ghost" size="icon" className={cn(
+                    "h-10 w-10 border rounded-full",
+                    isScrolled ? "text-accent border-accent/10" : "text-white border-white/10"
+                  )}>
                     <Menu className="h-5 w-5" />
                   </Button>
                 </SheetTrigger>
