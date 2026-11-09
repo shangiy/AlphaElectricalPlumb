@@ -54,12 +54,13 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
     <AuthProvider>
       <ProductProvider>
         <CartProvider>
+          {/* Main Page Wrapper in normal flow */}
           <div className="relative flex flex-col min-h-screen">
             {!isAdminRoute && <TopBanner />}
-            {!isAdminRoute && <Header className="sticky top-0 z-50" />}
+            {!isAdminRoute && <Header />}
             
             <main className={cn(
-              "w-full min-h-screen flex flex-col",
+              "w-full flex-1 flex flex-col",
               isAdminRoute ? "pt-0" : "pt-0"
             )}>
               {children}
