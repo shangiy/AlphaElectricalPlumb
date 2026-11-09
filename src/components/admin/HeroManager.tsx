@@ -11,13 +11,15 @@ import {
     Plus, 
     Trash2, 
     Save, 
-    Palette,
-    MoveVertical,
-    Sparkles,
-    Loader2
+    Palette, 
+    MoveVertical, 
+    Sparkles, 
+    Loader2,
+    Upload
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { uploadImage } from '@/lib/storage';
 
 export const STYLE_OPTIONS = [
     { id: 'kenyan-flag', label: '🇰🇪 Kenyan Flag Colors', previewClass: 'font-black bg-gradient-to-r from-black via-red-600 to-green-600 bg-clip-text text-transparent' },
@@ -52,6 +54,7 @@ export default function HeroManager({ initialSlides }: { initialSlides: HeroSlid
 
     const [slides, setSlides] = useState<HeroSlide[]>(sortSlides(initialSlides || []));
     const [saving, setSaving] = useState(false);
+    const [uploadingId, setUploadingId] = useState<string | null>(null);
     const { toast } = useToast();
 
     const handleUpdate = (id: string, updatedFields: Partial<HeroSlide>) => {
@@ -60,6 +63,30 @@ export default function HeroManager({ initialSlides }: { initialSlides: HeroSlid
             setSlides(sortSlides(updated));
         } else {
             setSlides(updated);
+        }
+    };
+
+    const handleImageUpload = async (id: string, e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setUploadingId(id);
+        try {
+            // Uploading to the specialized Hero images bucket in Supabase
+            const url = await uploadImage(file, 'Hero div images');
+            handleUpdate(id, { imageUrl: url });
+            toast({ title: "Asset Ready", description: "Background image synchronized with Hero cloud storage." });
+        } catch (error: any) {
+            console.error("Hero upload failed:", error);
+            toast({ 
+                variant: "destructive", 
+                title: "Upload Failed", 
+                description: error.message || "Ensure the 'Hero div images' bucket exists and is public." 
+            });
+        } finally {
+            setUploadingId(null);
+            // Clear input
+            e.target.value = '';
         }
     };
 
@@ -134,7 +161,7 @@ export default function HeroManager({ initialSlides }: { initialSlides: HeroSlid
                                     <Switch checked={slide.active} onCheckedChange={(val) => handleUpdate(slide.id, { active: val })} />
                                     <button 
                                         onClick={() => setSlides(slides.filter(s => s.id !== slide.id))} 
-                                        className="bg-red-500 text-white p-2 rounded-xl shadow-lg hover:bg-red-600 transition-colors"
+                                        className="bg-red-50 text-red-500 p-2 rounded-xl border border-red-100 hover:bg-red-100 transition-colors"
                                         title="Delete Banner"
                                     >
                                         <Trash2 size={20} />
@@ -323,8 +350,32 @@ export default function HeroManager({ initialSlides }: { initialSlides: HeroSlid
                                 {/* MEDIA & CTA ROW */}
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6 border-t">
                                     <div className="space-y-2">
-                                        <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Background Image URL</Label>
-                                        <Input value={slide.imageUrl} onChange={(e) => handleUpdate(slide.id, { imageUrl: e.target.value })} className="h-11 rounded-xl" />
+                                        <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Background Asset</Label>
+                                        <div className="flex gap-2">
+                                            <Input 
+                                                value={slide.imageUrl} 
+                                                onChange={(e) => handleUpdate(slide.id, { imageUrl: e.target.value })} 
+                                                className="h-11 rounded-xl flex-1" 
+                                                placeholder="URL or Upload ->"
+                                            />
+                                            <div className="relative">
+                                                <input 
+                                                    type="file" 
+                                                    accept="image/*" 
+                                                    className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10" 
+                                                    onChange={(e) => handleImageUpload(slide.id, e)}
+                                                    disabled={uploadingId === slide.id}
+                                                />
+                                                <Button 
+                                                    size="icon" 
+                                                    variant="outline" 
+                                                    className="h-11 w-11 rounded-xl shrink-0" 
+                                                    disabled={uploadingId === slide.id}
+                                                >
+                                                    {uploadingId === slide.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                                                </Button>
+                                            </div>
+                                        </div>
                                     </div>
                                     <div className="space-y-2">
                                         <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Button Label</Label>
