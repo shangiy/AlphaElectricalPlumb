@@ -22,7 +22,8 @@ import {
   Plus,
   Settings2,
   X,
-  RotateCcw
+  RotateCcw,
+  Eye
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import FeaturedProductManager from './FeaturedProductManager';
@@ -71,7 +72,6 @@ interface BannerConfig {
     showSocial: boolean;
     highlighters?: HighlighterRule[];
     badgeText?: string;
-    // Event / Halloween Expansion
     halloweenText?: string;
     halloweenStyleType?: string;
     halloweenOrientation?: string;
@@ -105,7 +105,6 @@ export default function UiUxControlCenter() {
   
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [previewText, setPreviewText] = useState('');
 
   // Banner Details State
   const [bannerConfig, setBannerConfig] = useState<BannerConfig>(DEFAULT_BANNER);
@@ -210,6 +209,39 @@ export default function UiUxControlCenter() {
     }
   };
 
+  const renderHighlightedText = (text: string) => {
+    const rules = (bannerConfig.highlighters || []).filter(r => r.word && r.word.trim().length > 0);
+    if (rules.length === 0) return text;
+
+    const regex = new RegExp(`(${rules.map(r => r.word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`, 'gi');
+    const parts = text.split(regex);
+    
+    const occurrenceCounters: Record<string, number> = {};
+
+    return parts.map((part, i) => {
+        const lowerPart = part.toLowerCase();
+        const matchingRule = rules.find(r => r.word.toLowerCase() === lowerPart);
+        
+        if (matchingRule) {
+            const count = occurrenceCounters[lowerPart] || 0;
+            occurrenceCounters[lowerPart] = count + 1;
+            
+            const color = matchingRule.colors[count % matchingRule.colors.length] || '#00808d';
+
+            return (
+                <span 
+                    key={i} 
+                    className="rounded-lg px-2 py-0.5 font-black shadow-lg mx-1 inline-block transform -skew-x-6 text-white text-[10px]"
+                    style={{ backgroundColor: color }}
+                >
+                    {part}
+                </span>
+            );
+        }
+        return <span key={i}>{part}</span>;
+    });
+  };
+
   if (loading) {
       return (
           <div className="flex flex-col items-center justify-center py-40 gap-4">
@@ -270,6 +302,76 @@ export default function UiUxControlCenter() {
                             </div>
                         </div>
 
+                        {/* Real-time Engine Preview Node */}
+                        <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                                <Label className="text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-1.5">
+                                    <Eye className="h-3.5 w-3.5" /> Real-time Engine Preview
+                                </Label>
+                                <span className="text-[9px] font-bold text-muted-foreground uppercase">Syncs instantly with your edits below</span>
+                            </div>
+                            <div className={cn(
+                                "relative w-full overflow-hidden rounded-[2rem] border shadow-xl transition-all duration-500 h-16 flex items-center bg-[length:200%_200%] animate-gradient-x",
+                                bannerConfig.styleOrientation !== 'text-clip' && getOrientationClass(bannerConfig.styleOrientation || 'horizontal'),
+                                bannerConfig.styleOrientation !== 'text-clip' && getBackgroundColors(bannerConfig.styleType),
+                                bannerConfig.styleOrientation === 'text-clip' && "bg-slate-50 border-slate-200"
+                            )}>
+                                <div className="flex w-fit items-center flex-nowrap animate-scroll whitespace-nowrap" style={{ animationDuration: `${bannerConfig.speed}s` }}>
+                                    {[...Array(3)].map((_, i) => (
+                                        <div key={i} className="flex items-center mx-8">
+                                            {bannerConfig.items.map((item, idx) => {
+                                                const isClipped = bannerConfig.styleOrientation === 'text-clip';
+                                                return (
+                                                    <div key={idx} className="flex items-center mx-6">
+                                                        {/* Primary Badge */}
+                                                        {bannerConfig.badgeText && (
+                                                            <div className="px-3 py-1 rounded-full bg-white mr-4 shadow-lg transform -skew-x-6 flex-shrink-0">
+                                                                <span className={cn(
+                                                                    "font-black text-[10px] bg-clip-text text-transparent animate-gradient-x bg-[length:200%_200%] bg-gradient-to-r uppercase",
+                                                                    getBackgroundColors(bannerConfig.styleType)
+                                                                )}>
+                                                                    {bannerConfig.badgeText}
+                                                                </span>
+                                                            </div>
+                                                        )}
+                                                        {/* Halloween Badge */}
+                                                        {bannerConfig.halloweenText && (
+                                                            <div className="px-3 py-1 rounded-full bg-white mr-4 shadow-lg transform -skew-x-6 flex-shrink-0">
+                                                                <span className={cn(
+                                                                    "font-black text-[10px] bg-clip-text text-transparent animate-gradient-x bg-[length:200%_200%] bg-gradient-to-r uppercase",
+                                                                    getBackgroundColors(bannerConfig.halloweenStyleType || 'fire-emoji'),
+                                                                    bannerConfig.halloweenTextStyle === 'italic' && 'italic',
+                                                                    bannerConfig.halloweenTextStyle === 'bold' && 'font-bold',
+                                                                    bannerConfig.halloweenTextStyle === 'underline' && 'underline',
+                                                                    bannerConfig.halloweenTextStyle === 'line-through' && 'line-through'
+                                                                )}>
+                                                                    {bannerConfig.halloweenText}
+                                                                </span>
+                                                            </div>
+                                                        )}
+                                                        {/* Marquee Item */}
+                                                        <span 
+                                                            className={cn(
+                                                                "font-black uppercase tracking-widest",
+                                                                isClipped && cn("bg-gradient-to-r bg-clip-text text-transparent animate-gradient-x bg-[length:200%_200%]", getBackgroundColors(bannerConfig.styleType))
+                                                            )}
+                                                            style={{ 
+                                                                fontSize: `${Math.min(bannerConfig.fontSize, 14)}px`,
+                                                                color: isClipped ? 'transparent' : bannerConfig.textColor 
+                                                            }}
+                                                        >
+                                                            {renderHighlightedText(item)}
+                                                        </span>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Marquee Items Input */}
                         <div className="space-y-4">
                             <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Marquee Items (Separate by comma)</Label>
                             <Textarea 
@@ -313,140 +415,83 @@ export default function UiUxControlCenter() {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pt-4">
-                            {/* Live Render Test */}
-                            <div className="space-y-3">
-                                <Label className="text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-1.5">
-                                    <Sparkles className="h-3 w-3" /> Live Render Test
-                                </Label>
-                                <div className="space-y-3 p-4 bg-muted/10 rounded-[1.5rem] border border-dashed">
+                        <div className="space-y-8 pt-4">
+                            {/* PRIMARY BADGE CONTROLS */}
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                                <div className="space-y-3">
+                                    <Label className="text-[10px] font-black uppercase text-muted-foreground/60 tracking-widest">Badge Text (Left Pill)</Label>
                                     <Input 
-                                        placeholder="Type test word..." 
-                                        className="h-10 rounded-xl text-xs bg-white"
-                                        value={previewText}
-                                        onChange={(e) => setPreviewText(e.target.value)}
+                                        value={bannerConfig.badgeText || ''} 
+                                        onChange={(e) => setBannerConfig({...bannerConfig, badgeText: e.target.value})}
+                                        placeholder="e.g. MASHUJAA"
+                                        className="h-12 rounded-xl font-black"
                                     />
-                                    <div className={cn(
-                                        "h-14 rounded-2xl flex items-center justify-center px-4 font-black uppercase tracking-widest text-[10px] shadow-lg border border-white/10 overflow-hidden bg-[length:200%_200%] animate-gradient-x",
-                                        bannerConfig.styleOrientation !== 'text-clip' && getOrientationClass(bannerConfig.styleOrientation || 'horizontal'),
-                                        bannerConfig.styleOrientation !== 'text-clip' && getBackgroundColors(bannerConfig.styleType),
-                                        bannerConfig.styleOrientation === 'text-clip' && "bg-white/50 backdrop-blur-sm border-none shadow-none"
-                                    )}>
-                                        {bannerConfig.badgeText && (
-                                            <div className="px-3 py-1 rounded-full bg-white mr-2 shadow-md transform -skew-x-6">
-                                                <span className={cn(
-                                                    "bg-gradient-to-r bg-clip-text text-transparent animate-gradient-x bg-[length:200%_200%]",
-                                                    getBackgroundColors(bannerConfig.styleType)
-                                                )}>
-                                                    {bannerConfig.badgeText}
-                                                </span>
-                                            </div>
-                                        )}
-                                        {bannerConfig.halloweenText && (
-                                            <div className="px-3 py-1 rounded-full bg-white mr-2 shadow-md transform -skew-x-6">
-                                                <span className={cn(
-                                                    "bg-gradient-to-r bg-clip-text text-transparent animate-gradient-x bg-[length:200%_200%]",
-                                                    getBackgroundColors(bannerConfig.halloweenStyleType || 'fire-emoji'),
-                                                    bannerConfig.halloweenTextStyle === 'italic' && 'italic',
-                                                    bannerConfig.halloweenTextStyle === 'bold' && 'font-bold',
-                                                    bannerConfig.halloweenTextStyle === 'underline' && 'underline',
-                                                    bannerConfig.halloweenTextStyle === 'line-through' && 'line-through'
-                                                )}>
-                                                    {bannerConfig.halloweenText}
-                                                </span>
-                                            </div>
-                                        )}
-                                        <span className={cn(
-                                            "transition-all duration-500",
-                                            bannerConfig.styleOrientation === 'text-clip' && cn("bg-gradient-to-r bg-clip-text text-transparent animate-gradient-x bg-[length:200%_200%]", getBackgroundColors(bannerConfig.styleType))
-                                        )}
-                                        style={{ color: bannerConfig.styleOrientation === 'text-clip' ? 'transparent' : bannerConfig.textColor }}
-                                        >
-                                            {previewText || 'PREVIEW'}
-                                        </span>
-                                    </div>
+                                </div>
+                                <div className="space-y-3">
+                                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Visual Style Engine</Label>
+                                    <select 
+                                        value={bannerConfig.styleType} 
+                                        onChange={(e) => setBannerConfig({...bannerConfig, styleType: e.target.value})}
+                                        className="w-full h-12 px-4 rounded-xl border font-bold text-sm bg-white"
+                                    >
+                                        {STYLE_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
+                                    </select>
+                                </div>
+                                
+                                <div className="space-y-3">
+                                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Design Orientation</Label>
+                                    <select 
+                                        value={bannerConfig.styleOrientation || 'horizontal'} 
+                                        onChange={(e) => setBannerConfig({...bannerConfig, styleOrientation: e.target.value})}
+                                        className="w-full h-12 px-4 rounded-xl border font-bold text-sm bg-white"
+                                    >
+                                        {ORIENTATION_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
+                                    </select>
                                 </div>
                             </div>
 
-                            {/* Controls Group */}
-                            <div className="lg:col-span-2 space-y-8">
-                                {/* PRIMARY BADGE CONTROLS */}
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                                    <div className="space-y-3">
-                                        <Label className="text-[10px] font-black uppercase text-muted-foreground/60 tracking-widest">Badge Text (Left Pill)</Label>
-                                        <Input 
-                                            value={bannerConfig.badgeText || ''} 
-                                            onChange={(e) => setBannerConfig({...bannerConfig, badgeText: e.target.value})}
-                                            placeholder="e.g. MASHUJAA"
-                                            className="h-12 rounded-xl font-black"
-                                        />
-                                    </div>
-                                    <div className="space-y-3">
-                                        <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Visual Style Engine</Label>
-                                        <select 
-                                            value={bannerConfig.styleType} 
-                                            onChange={(e) => setBannerConfig({...bannerConfig, styleType: e.target.value})}
-                                            className="w-full h-12 px-4 rounded-xl border font-bold text-sm bg-white"
-                                        >
-                                            {STYLE_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
-                                        </select>
-                                    </div>
-                                    
-                                    <div className="space-y-3">
-                                        <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Design Orientation</Label>
-                                        <select 
-                                            value={bannerConfig.styleOrientation || 'horizontal'} 
-                                            onChange={(e) => setBannerConfig({...bannerConfig, styleOrientation: e.target.value})}
-                                            className="w-full h-12 px-4 rounded-xl border font-bold text-sm bg-white"
-                                        >
-                                            {ORIENTATION_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
-                                        </select>
-                                    </div>
+                            {/* HALLOWEEN TEXT CONTROLS */}
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-8 pt-6 border-t border-dashed">
+                                <div className="space-y-3">
+                                    <Label className="text-[10px] font-black uppercase text-muted-foreground/60 tracking-widest">Halloween Text (Event Pill)</Label>
+                                    <Input 
+                                        value={bannerConfig.halloweenText || ''} 
+                                        onChange={(e) => setBannerConfig({...bannerConfig, halloweenText: e.target.value})}
+                                        placeholder="e.g. MEGA SALE"
+                                        className="h-12 rounded-xl font-black"
+                                    />
+                                </div>
+                                <div className="space-y-3">
+                                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Style Engine</Label>
+                                    <select 
+                                        value={bannerConfig.halloweenStyleType || 'fire-emoji'} 
+                                        onChange={(e) => setBannerConfig({...bannerConfig, halloweenStyleType: e.target.value})}
+                                        className="w-full h-12 px-4 rounded-xl border font-bold text-sm bg-white"
+                                    >
+                                        {STYLE_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
+                                    </select>
+                                </div>
+                                
+                                <div className="space-y-3">
+                                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Orientation</Label>
+                                    <select 
+                                        value={bannerConfig.halloweenOrientation || 'horizontal'} 
+                                        onChange={(e) => setBannerConfig({...bannerConfig, halloweenOrientation: e.target.value})}
+                                        className="w-full h-12 px-4 rounded-xl border font-bold text-sm bg-white"
+                                    >
+                                        {ORIENTATION_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
+                                    </select>
                                 </div>
 
-                                {/* HALLOWEEN TEXT CONTROLS */}
-                                <div className="grid grid-cols-1 md:grid-cols-4 gap-8 pt-6 border-t border-dashed">
-                                    <div className="space-y-3">
-                                        <Label className="text-[10px] font-black uppercase text-muted-foreground/60 tracking-widest">Halloween Text (Event Pill)</Label>
-                                        <Input 
-                                            value={bannerConfig.halloweenText || ''} 
-                                            onChange={(e) => setBannerConfig({...bannerConfig, halloweenText: e.target.value})}
-                                            placeholder="e.g. MEGA SALE"
-                                            className="h-12 rounded-xl font-black"
-                                        />
-                                    </div>
-                                    <div className="space-y-3">
-                                        <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Style Engine</Label>
-                                        <select 
-                                            value={bannerConfig.halloweenStyleType || 'fire-emoji'} 
-                                            onChange={(e) => setBannerConfig({...bannerConfig, halloweenStyleType: e.target.value})}
-                                            className="w-full h-12 px-4 rounded-xl border font-bold text-sm bg-white"
-                                        >
-                                            {STYLE_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
-                                        </select>
-                                    </div>
-                                    
-                                    <div className="space-y-3">
-                                        <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Orientation</Label>
-                                        <select 
-                                            value={bannerConfig.halloweenOrientation || 'horizontal'} 
-                                            onChange={(e) => setBannerConfig({...bannerConfig, halloweenOrientation: e.target.value})}
-                                            className="w-full h-12 px-4 rounded-xl border font-bold text-sm bg-white"
-                                        >
-                                            {ORIENTATION_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
-                                        </select>
-                                    </div>
-
-                                    <div className="space-y-3">
-                                        <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Text Style</Label>
-                                        <select 
-                                            value={bannerConfig.halloweenTextStyle || 'normal'} 
-                                            onChange={(e) => setBannerConfig({...bannerConfig, halloweenTextStyle: e.target.value})}
-                                            className="w-full h-12 px-4 rounded-xl border font-bold text-sm bg-white"
-                                        >
-                                            {TEXT_STYLE_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
-                                        </select>
-                                    </div>
+                                <div className="space-y-3">
+                                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Text Style</Label>
+                                    <select 
+                                        value={bannerConfig.halloweenTextStyle || 'normal'} 
+                                        onChange={(e) => setBannerConfig({...bannerConfig, halloweenTextStyle: e.target.value})}
+                                        className="w-full h-12 px-4 rounded-xl border font-bold text-sm bg-white"
+                                    >
+                                        {TEXT_STYLE_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
+                                    </select>
                                 </div>
                             </div>
                         </div>
