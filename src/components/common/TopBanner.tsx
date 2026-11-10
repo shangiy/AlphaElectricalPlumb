@@ -7,6 +7,8 @@ import { cn } from '@/lib/utils';
 interface BannerItem {
     text: string;
     color: string;
+    color2?: string;
+    color3?: string;
 }
 
 interface HighlighterRule {
@@ -45,14 +47,14 @@ interface BannerConfig {
 }
 
 /**
- * High-Fidelity Independent Top Banner v4.3.5:
+ * High-Fidelity Independent Top Banner v4.3.6:
  * Features a dynamic changing gradient background and 4-slot vibrant engine.
- * Supports individual item colors via coloredItems mapping and Quad-Slot vibrant highlights.
+ * Supports individual item color palettes with sequential repetition.
  */
 export default function TopBanner() {
   const [config, setConfig] = useState<BannerConfig>({
-    items: ["Welcome to Alpha Ecosystem v4.3.5"],
-    coloredItems: [{ text: "Welcome to Alpha Ecosystem v4.3.5", color: "#ffffff" }],
+    items: ["Welcome to Alpha Ecosystem v4.3.6"],
+    coloredItems: [{ text: "Welcome to Alpha Ecosystem v4.3.6", color: "#ffffff" }],
     speed: 30,
     fontSize: 12,
     textColor: '#ffffff',
@@ -131,13 +133,25 @@ export default function TopBanner() {
             {[0, 1].map(i => (
               <ul key={i} className="flex items-center [&_li]:mx-12">
                 {displayItems.map((item, idx) => (
-                  <li key={idx} className="flex items-center gap-6 uppercase tracking-widest text-[11px] font-bold">
-                    {config.vibrantText && <span>{renderStyledText(config.vibrantText, config.vibrantStyleType || 'kenyan-flag', config.vibrantOrientation || 'vertical', config.vibrantTextStyle)}</span>}
-                    {config.vibrantText2 && <span>{renderStyledText(config.vibrantText2, config.vibrantStyleType2 || 'gold-gradient', config.vibrantOrientation2 || 'horizontal', config.vibrantTextStyle2)}</span>}
-                    {config.vibrantText3 && <span>{renderStyledText(config.vibrantText3, config.vibrantStyleType3 || 'neon-glow', config.vibrantOrientation3 || 'vertical', config.vibrantTextStyle3)}</span>}
-                    {config.vibrantText4 && <span>{renderStyledText(config.vibrantText4, config.vibrantStyleType4 || 'fire-emoji', config.vibrantOrientation4 || 'horizontal', config.vibrantTextStyle4)}</span>}
-                    <span style={{ color: item.color || '#ffffff' }}>{item.text}</span>
-                  </li>
+                  <React.Fragment key={idx}>
+                    <li className="flex items-center gap-6 uppercase tracking-widest text-[11px] font-bold">
+                        {config.vibrantText && <span>{renderStyledText(config.vibrantText, config.vibrantStyleType || 'kenyan-flag', config.vibrantOrientation || 'vertical', config.vibrantTextStyle)}</span>}
+                        {config.vibrantText2 && <span>{renderStyledText(config.vibrantText2, config.vibrantStyleType2 || 'gold-gradient', config.vibrantOrientation2 || 'horizontal', config.vibrantTextStyle2)}</span>}
+                        {config.vibrantText3 && <span>{renderStyledText(config.vibrantText3, config.vibrantStyleType3 || 'neon-glow', config.vibrantOrientation3 || 'vertical', config.vibrantTextStyle3)}</span>}
+                        {config.vibrantText4 && <span>{renderStyledText(config.vibrantText4, config.vibrantStyleType4 || 'fire-emoji', config.vibrantOrientation4 || 'horizontal', config.vibrantTextStyle4)}</span>}
+                        <span style={{ color: item.color || '#ffffff' }}>{item.text}</span>
+                    </li>
+                    {item.color2 && (
+                        <li className="flex items-center gap-6 uppercase tracking-widest text-[11px] font-bold">
+                            <span style={{ color: item.color2 }}>{item.text}</span>
+                        </li>
+                    )}
+                    {item.color3 && (
+                        <li className="flex items-center gap-6 uppercase tracking-widest text-[11px] font-bold">
+                            <span style={{ color: item.color3 }}>{item.text}</span>
+                        </li>
+                    )}
+                  </React.Fragment>
                 ))}
               </ul>
             ))}
@@ -147,4 +161,3 @@ export default function TopBanner() {
     </div>
   );
 }
-
