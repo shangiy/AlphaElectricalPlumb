@@ -35,7 +35,8 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthProvider';
 
 /**
- * High-Fidelity Header v23.3 (Ecosystem v4.3.0):
+ * High-Fidelity Header v23.4 (Ecosystem v4.3.0):
+ * - Hydration Optimized: Uses isMounted check to prevent Radix ID mismatches.
  * - Logo Resilience: Logo remains visible during search expansion.
  * - Mobile User Hub: Dedicated Account icon added to mobile action cluster.
  * - Role-Aware UI: Shows "Admin" link for privileged users.
@@ -46,9 +47,11 @@ export default function Header() {
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
+    setIsMounted(true);
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
     };
@@ -117,24 +120,30 @@ export default function Header() {
           {/* Compact Navigation & Actions (Right) */}
           <div className="flex items-center gap-4">
             <nav className="flex items-center gap-3">
-              {isAdmin && (
+              {isMounted && isAdmin && (
                 <NextLink href="/admin" className="px-3 py-2 font-black transition-colors uppercase text-[12px] tracking-widest text-primary flex items-center gap-1.5 hover:opacity-80">
                   <ShieldCheck size={14} /> Admin
                 </NextLink>
               )}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button className="px-4 py-2 bg-white border border-purple-500 rounded-xl font-bold transition-all flex items-center gap-2 uppercase text-[12px] tracking-widest text-[#28235f] hover:bg-purple-50 shadow-sm">
-                    Products <ChevronDown className="h-3 w-3" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="rounded-2xl p-2 w-64 bg-white border-slate-200 shadow-2xl">
-                   <DropdownMenuItem asChild className="cursor-pointer py-3 rounded-xl font-bold text-[#28235f] hover:text-primary hover:bg-primary/5"><NextLink href="/category/tanks">Water Tanks</NextLink></DropdownMenuItem>
-                   <DropdownMenuItem asChild className="cursor-pointer py-3 rounded-xl font-bold text-[#28235f] hover:text-primary hover:bg-primary/5"><NextLink href="/category/plumbing">Plumbing Equipment</NextLink></DropdownMenuItem>
-                   <DropdownMenuItem asChild className="cursor-pointer py-3 rounded-xl font-bold text-[#28235f] hover:text-primary hover:bg-primary/5"><NextLink href="/category/lighting">Lighting & Electrical</NextLink></DropdownMenuItem>
-                   <DropdownMenuItem asChild className="cursor-pointer py-3 rounded-xl font-bold text-[#28235f] hover:text-primary hover:bg-primary/5"><NextLink href="/category/roofing">Roofing & Construction</NextLink></DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              {isMounted ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button className="px-4 py-2 bg-white border border-purple-500 rounded-xl font-bold transition-all flex items-center gap-2 uppercase text-[12px] tracking-widest text-[#28235f] hover:bg-purple-50 shadow-sm">
+                      Products <ChevronDown className="h-3 w-3" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="rounded-2xl p-2 w-64 bg-white border-slate-200 shadow-2xl">
+                    <DropdownMenuItem asChild className="cursor-pointer py-3 rounded-xl font-bold text-[#28235f] hover:text-primary hover:bg-primary/5"><NextLink href="/category/tanks">Water Tanks</NextLink></DropdownMenuItem>
+                    <DropdownMenuItem asChild className="cursor-pointer py-3 rounded-xl font-bold text-[#28235f] hover:text-primary hover:bg-primary/5"><NextLink href="/category/plumbing">Plumbing Equipment</NextLink></DropdownMenuItem>
+                    <DropdownMenuItem asChild className="cursor-pointer py-3 rounded-xl font-bold text-[#28235f] hover:text-primary hover:bg-primary/5"><NextLink href="/category/lighting">Lighting & Electrical</NextLink></DropdownMenuItem>
+                    <DropdownMenuItem asChild className="cursor-pointer py-3 rounded-xl font-bold text-[#28235f] hover:text-primary hover:bg-primary/5"><NextLink href="/category/roofing">Roofing & Construction</NextLink></DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <button className="px-4 py-2 bg-white border border-purple-500 rounded-xl font-bold flex items-center gap-2 uppercase text-[12px] tracking-widest text-[#28235f] opacity-50">
+                  Products <ChevronDown className="h-3 w-3" />
+                </button>
+              )}
               <NextLink href="/contact" className="px-3 py-2 font-bold transition-colors uppercase text-[12px] tracking-widest text-[#28235f] hover:text-primary">Contact Us</NextLink>
               <NextLink href="/about" className="px-3 py-2 font-bold transition-colors uppercase text-[12px] tracking-widest text-[#28235f] hover:text-primary">About Us</NextLink>
             </nav>
@@ -225,48 +234,54 @@ export default function Header() {
               </Button>
             </NextLink>
 
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-10 w-10 border border-[#28235f]/10 rounded-full text-[#28235f] flex items-center justify-center hover:text-primary shrink-0">
-                  <Menu className="h-5 w-5" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="right" className="bg-white border-l-slate-100 text-[#28235f] rounded-l-[3rem] shadow-2xl">
-                <SheetHeader>
-                  <SheetTitle className="text-[#28235f] text-left">
-                    <NextLink href="/" className="flex items-center gap-4 group">
-                      <div className="relative h-[80px] w-[80px]">
-                          <Image 
-                            src="/logo Alpha.png" 
-                            alt="Alpha Logo" 
-                            fill
-                            className="object-contain transition-all duration-500"
-                          />
-                      </div>
-                      <div className="flex flex-col transition-colors duration-300 group-hover:text-primary">
-                        <span className="font-bold text-2xl leading-tight uppercase tracking-tighter">Alpha</span>
-                        <div className="w-full h-px bg-current opacity-20 my-1"></div>
-                        <span className="text-[10px] leading-tight font-black uppercase tracking-[0.2em]">Electricals & Plumbing Ltd</span>
-                      </div>
-                    </NextLink>
-                  </SheetTitle>
-                  <SheetDescription className="sr-only">Main Navigation</SheetDescription>
-                </SheetHeader>
-                <div className="flex flex-col gap-6 pt-12">
-                  {isAdmin && (
-                    <SheetClose asChild><NextLink href="/admin" className="text-2xl font-black uppercase tracking-tighter text-primary hover:opacity-80 transition-colors flex items-center gap-2">
-                      <ShieldCheck size={20} /> Admin Dashboard
-                    </NextLink></SheetClose>
-                  )}
-                  <SheetClose asChild><NextLink href="/search" className="text-2xl font-black uppercase tracking-tighter hover:text-primary transition-colors">Product Catalogue</NextLink></SheetClose>
-                  <SheetClose asChild><NextLink href="/contact" className="text-2xl font-black uppercase tracking-tighter hover:text-primary transition-colors">Contact Node</NextLink></SheetClose>
-                  <SheetClose asChild><NextLink href="/about" className="text-2xl font-black uppercase tracking-tighter hover:text-primary transition-colors">About Us</NextLink></SheetClose>
-                  <div className="h-px bg-slate-100" />
-                  <SheetClose asChild><NextLink href="/wishlist" className="text-xl font-bold uppercase tracking-tight text-slate-500 hover:text-primary transition-colors">My Favorites</NextLink></SheetClose>
-                  <SheetClose asChild><NextLink href="/profile" className="text-xl font-bold uppercase tracking-tight text-slate-500 hover:text-primary transition-colors">Member Profile</NextLink></SheetClose>
-                </div>
-              </SheetContent>
-            </Sheet>
+            {isMounted ? (
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-10 w-10 border border-[#28235f]/10 rounded-full text-[#28235f] flex items-center justify-center hover:text-primary shrink-0">
+                    <Menu className="h-5 w-5" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="right" className="bg-white border-l-slate-100 text-[#28235f] rounded-l-[3rem] shadow-2xl">
+                  <SheetHeader>
+                    <SheetTitle className="text-[#28235f] text-left">
+                      <NextLink href="/" className="flex items-center gap-4 group">
+                        <div className="relative h-[80px] w-[80px]">
+                            <Image 
+                              src="/logo Alpha.png" 
+                              alt="Alpha Logo" 
+                              fill
+                              className="object-contain transition-all duration-500"
+                            />
+                        </div>
+                        <div className="flex flex-col transition-colors duration-300 group-hover:text-primary">
+                          <span className="font-bold text-2xl leading-tight uppercase tracking-tighter">Alpha</span>
+                          <div className="w-full h-px bg-current opacity-20 my-1"></div>
+                          <span className="text-[10px] leading-tight font-black uppercase tracking-[0.2em]">Electricals & Plumbing Ltd</span>
+                        </div>
+                      </NextLink>
+                    </SheetTitle>
+                    <SheetDescription className="sr-only">Main Navigation</SheetDescription>
+                  </SheetHeader>
+                  <div className="flex flex-col gap-6 pt-12">
+                    {isAdmin && (
+                      <SheetClose asChild><NextLink href="/admin" className="text-2xl font-black uppercase tracking-tighter text-primary hover:opacity-80 transition-colors flex items-center gap-2">
+                        <ShieldCheck size={20} /> Admin Dashboard
+                      </NextLink></SheetClose>
+                    )}
+                    <SheetClose asChild><NextLink href="/search" className="text-2xl font-black uppercase tracking-tighter hover:text-primary transition-colors">Product Catalogue</NextLink></SheetClose>
+                    <SheetClose asChild><NextLink href="/contact" className="text-2xl font-black uppercase tracking-tighter hover:text-primary transition-colors">Contact Node</NextLink></SheetClose>
+                    <SheetClose asChild><NextLink href="/about" className="text-2xl font-black uppercase tracking-tighter hover:text-primary transition-colors">About Us</NextLink></SheetClose>
+                    <div className="h-px bg-slate-100" />
+                    <SheetClose asChild><NextLink href="/wishlist" className="text-xl font-bold uppercase tracking-tight text-slate-500 hover:text-primary transition-colors">My Favorites</NextLink></SheetClose>
+                    <SheetClose asChild><NextLink href="/profile" className="text-xl font-bold uppercase tracking-tight text-slate-500 hover:text-primary transition-colors">Member Profile</NextLink></SheetClose>
+                  </div>
+                </SheetContent>
+              </Sheet>
+            ) : (
+              <Button variant="ghost" size="icon" className="h-10 w-10 border border-[#28235f]/10 rounded-full text-[#28235f] flex items-center justify-center opacity-50 shrink-0">
+                <Menu className="h-5 w-5" />
+              </Button>
+            )}
           </div>
         </div>
       </div>
