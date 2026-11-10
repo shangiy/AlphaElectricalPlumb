@@ -427,7 +427,7 @@ export default function UiUxControlCenter() {
             <LayoutGrid className="text-primary h-12 w-12" />
             Alpha CMS Suite
           </h1>
-          <p className="text-muted-foreground font-bold uppercase tracking-widest text-xs mt-2">Professional Storefront Governance v4.2</p>
+          <p className="text-muted-foreground font-bold uppercase tracking-widest text-xs mt-2">Professional Storefront Governance v4.3.0</p>
         </div>
         <Button variant="outline" size="sm" onClick={handleResetBanner} className="rounded-full font-black uppercase text-[10px] tracking-widest">
             <RotateCcw className="mr-2 h-3 w-3" /> Reset Defaults

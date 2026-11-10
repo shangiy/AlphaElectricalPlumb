@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import Link from 'link';
 import Image from 'next/image';
 import NewsletterForm from './NewsletterForm';
 import { Facebook, Mail, ArrowUpRight, CheckCircle } from 'lucide-react';
@@ -181,9 +181,9 @@ function InteractiveSpiderWeb({ color = "#00808d" }: { color?: string }) {
 }
 
 /**
- * Premium Footer v2.5.2:
+ * Premium Footer v4.3.0:
  * Features cursor-reactive Spider Web Particle Background with CMS Color control.
- * The background is now isolated to the upper content area as requested.
+ * Updated to Ecosystem v4.3.0.
  */
 export default function Footer() {
   const { user } = useAuth();
@@ -256,7 +256,7 @@ export default function Footer() {
                       </div>
                       <div className="flex flex-col">
                           <span className="text-xl font-black font-headline text-accent tracking-tighter uppercase leading-none">ALPHA</span>
-                          <span className="text-[9px] font-bold text-primary uppercase tracking-[0.2em] mt-1">Ecosystem v2.5.0</span>
+                          <span className="text-[9px] font-bold text-primary uppercase tracking-[0.2em] mt-1">Ecosystem v4.3.0</span>
                       </div>
                   </Link>
                   <p className="text-sm text-muted-foreground leading-relaxed max-w-[280px] font-medium">

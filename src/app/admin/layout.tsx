@@ -36,9 +36,9 @@ import { useAuth } from '@/context/AuthProvider';
 import { cn } from '@/lib/utils';
 
 /**
- * Admin Layout v4.0:
+ * Admin Layout v4.3.0:
  * Features a high-fidelity mobile toggle interface with retracting 
- * Chevrons and automatic navigation closure. Updated with twice-scaled logo.
+ * Chevrons and automatic navigation closure. Updated to Ecosystem v4.3.0.
  */
 function AdminSidebarWrapper({ children }: { children: React.ReactNode }) {
   const { logout } = useAuth();
@@ -124,7 +124,7 @@ function AdminSidebarWrapper({ children }: { children: React.ReactNode }) {
               <Image src="/logo Alpha.png" alt="Alpha" width={90} height={90} className="transition-transform group-hover:scale-110" />
               <div className="flex flex-col">
                 <span className="text-xl font-black text-accent uppercase tracking-tighter leading-none">Admin</span>
-                {!isMobile && <span className="text-[9px] font-bold text-primary uppercase tracking-[0.2em] mt-1">Ecosystem v4.0</span>}
+                {!isMobile && <span className="text-[9px] font-bold text-primary uppercase tracking-[0.2em] mt-1">Ecosystem v4.3.0</span>}
               </div>
           </Link>
         </SidebarHeader>

@@ -10,7 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 /**
  * Admin Welcome Dashboard:
- * Re-calibrated to fetch live data from your Supabase inventory.
+ * Re-calibrated to fetch live data from your Supabase inventory. Updated to v4.3.0.
  */
 export default function AdminWelcome() {
     const { user } = useAuth();
@@ -106,7 +106,7 @@ export default function AdminWelcome() {
                             data-ai-hint="elegant abstract background"
                         />
                         <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center p-8 text-center">
-                            <Badge className="mb-4 bg-primary text-white border-none px-6 py-1 rounded-full font-black uppercase tracking-tighter">Alpha Pro v2.5.0</Badge>
+                            <Badge className="mb-4 bg-primary text-white border-none px-6 py-1 rounded-full font-black uppercase tracking-tighter">Alpha Pro v4.3.0</Badge>
                             <h2 className="text-3xl md:text-4xl font-bold text-white font-headline leading-tight">
                                 Manage Your Global Catalog
                             </h2>
