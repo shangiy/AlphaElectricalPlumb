@@ -35,10 +35,11 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthProvider';
 
 /**
- * High-Fidelity Header v23.2 (Ecosystem v4.3.0):
+ * High-Fidelity Header v23.3 (Ecosystem v4.3.0):
  * - Logo Resilience: Logo remains visible during search expansion.
  * - Mobile User Hub: Dedicated Account icon added to mobile action cluster.
  * - Role-Aware UI: Shows "Admin" link for privileged users.
+ * - Interactive Branding: Entire text highlights teal on hover/click.
  */
 export default function Header() {
   const { user } = useAuth();
@@ -101,7 +102,7 @@ export default function Header() {
                   className="object-contain transition-all duration-500"
                 />
             </div>
-            <div className="flex flex-col transition-colors duration-300 text-[#28235f] group-hover:text-primary">
+            <div className="flex flex-col transition-all duration-300 text-[#28235f] group-hover:text-primary active:text-primary">
               <span className="font-bold text-3xl leading-tight transition-all uppercase tracking-tighter">Alpha</span>
               <div className="w-full h-0.5 bg-current my-1 opacity-20"></div>
               <span className="text-[12px] leading-tight font-black uppercase tracking-[0.2em]">Electricals & Plumbing Ltd</span>
@@ -165,12 +166,12 @@ export default function Header() {
                 <Image src="/logo Alpha.png" alt="Alpha Logo" width={55} height={55} className="h-auto" />
             </div>
             <div className={cn(
-                "flex flex-col text-[#28235f] group-hover:text-primary transition-all duration-700 ease-[cubic-bezier(0.19,1,0.22,1)]",
+                "flex flex-col text-[#28235f] group-hover:text-primary active:text-primary transition-all duration-700 ease-[cubic-bezier(0.19,1,0.22,1)]",
                 mobileSearchOpen ? "opacity-0 w-0 overflow-hidden" : "opacity-100"
             )}>
                 <span className="font-black text-xl leading-tight uppercase tracking-tighter">Alpha</span>
                 <div className="w-full h-px bg-current opacity-20 my-0.5"></div>
-                <span className="text-[7px] leading-tight font-black uppercase tracking-widest text-[#28235f]">Electricals & Plumbing Ltd</span>
+                <span className="text-[7px] leading-tight font-black uppercase tracking-widest">Electricals & Plumbing Ltd</span>
             </div>
           </NextLink>
 
