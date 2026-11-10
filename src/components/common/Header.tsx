@@ -101,7 +101,7 @@ export default function Header() {
                   className="object-contain transition-all duration-500"
                 />
             </div>
-            <div className="flex flex-col transition-colors duration-300 text-[#0b0f19] group-hover:text-primary">
+            <div className="flex flex-col transition-colors duration-300 text-[#28235f] group-hover:text-primary">
               <span className="font-bold text-3xl leading-tight transition-all uppercase tracking-tighter">Alpha</span>
               <div className="w-full h-0.5 bg-current my-1 opacity-20"></div>
               <span className="text-[12px] leading-tight font-black uppercase tracking-[0.2em]">Electricals & Plumbing Ltd</span>
@@ -123,27 +123,27 @@ export default function Header() {
               )}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="px-4 py-2 bg-white border border-purple-500 rounded-xl font-bold transition-all flex items-center gap-2 uppercase text-[12px] tracking-widest text-[#0b0f19] hover:bg-purple-50 shadow-sm">
+                  <button className="px-4 py-2 bg-white border border-purple-500 rounded-xl font-bold transition-all flex items-center gap-2 uppercase text-[12px] tracking-widest text-[#28235f] hover:bg-purple-50 shadow-sm">
                     Products <ChevronDown className="h-3 w-3" />
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start" className="rounded-2xl p-2 w-64 bg-white border-slate-200 shadow-2xl">
-                   <DropdownMenuItem asChild className="cursor-pointer py-3 rounded-xl font-bold text-[#0b0f19] hover:text-primary hover:bg-primary/5"><NextLink href="/category/tanks">Water Tanks</NextLink></DropdownMenuItem>
-                   <DropdownMenuItem asChild className="cursor-pointer py-3 rounded-xl font-bold text-[#0b0f19] hover:text-primary hover:bg-primary/5"><NextLink href="/category/plumbing">Plumbing Equipment</NextLink></DropdownMenuItem>
-                   <DropdownMenuItem asChild className="cursor-pointer py-3 rounded-xl font-bold text-[#0b0f19] hover:text-primary hover:bg-primary/5"><NextLink href="/category/lighting">Lighting & Electrical</NextLink></DropdownMenuItem>
-                   <DropdownMenuItem asChild className="cursor-pointer py-3 rounded-xl font-bold text-[#0b0f19] hover:text-primary hover:bg-primary/5"><NextLink href="/category/roofing">Roofing & Construction</NextLink></DropdownMenuItem>
+                   <DropdownMenuItem asChild className="cursor-pointer py-3 rounded-xl font-bold text-[#28235f] hover:text-primary hover:bg-primary/5"><NextLink href="/category/tanks">Water Tanks</NextLink></DropdownMenuItem>
+                   <DropdownMenuItem asChild className="cursor-pointer py-3 rounded-xl font-bold text-[#28235f] hover:text-primary hover:bg-primary/5"><NextLink href="/category/plumbing">Plumbing Equipment</NextLink></DropdownMenuItem>
+                   <DropdownMenuItem asChild className="cursor-pointer py-3 rounded-xl font-bold text-[#28235f] hover:text-primary hover:bg-primary/5"><NextLink href="/category/lighting">Lighting & Electrical</NextLink></DropdownMenuItem>
+                   <DropdownMenuItem asChild className="cursor-pointer py-3 rounded-xl font-bold text-[#28235f] hover:text-primary hover:bg-primary/5"><NextLink href="/category/roofing">Roofing & Construction</NextLink></DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-              <NextLink href="/contact" className="px-3 py-2 font-bold transition-colors uppercase text-[12px] tracking-widest text-[#0b0f19] hover:text-primary">Contact Us</NextLink>
-              <NextLink href="/about" className="px-3 py-2 font-bold transition-colors uppercase text-[12px] tracking-widest text-[#0b0f19] hover:text-primary">About Us</NextLink>
+              <NextLink href="/contact" className="px-3 py-2 font-bold transition-colors uppercase text-[12px] tracking-widest text-[#28235f] hover:text-primary">Contact Us</NextLink>
+              <NextLink href="/about" className="px-3 py-2 font-bold transition-colors uppercase text-[12px] tracking-widest text-[#28235f] hover:text-primary">About Us</NextLink>
             </nav>
 
             <div className="flex items-center gap-3">
-              <ShoppingCartComponent triggerClassName="h-10 w-10 transition-all border border-[#0b0f19]/10 text-[#0b0f19] hover:text-primary hover:bg-primary/5 shadow-sm hover:shadow-md" />
+              <ShoppingCartComponent triggerClassName="h-10 w-10 transition-all border border-[#28235f]/10 text-[#28235f] hover:text-primary hover:bg-primary/5 shadow-sm hover:shadow-md" />
               <NextLink href={user ? "/profile" : "/auth/login"}>
                 <Button 
                   variant="ghost" 
-                  className="h-10 px-4 rounded-xl gap-2 font-black border border-[#0b0f19]/10 text-[#0b0f19] hover:text-primary hover:bg-primary/5 shadow-sm hover:shadow-md"
+                  className="h-10 px-4 rounded-xl gap-2 font-black border border-[#28235f]/10 text-[#28235f] hover:text-primary hover:bg-primary/5 shadow-sm hover:shadow-md"
                 >
                   <User className="h-5 w-5" />
                   <span className="hidden xl:inline uppercase text-[11px] tracking-widest">
@@ -167,7 +167,7 @@ export default function Header() {
             </div>
             {/* Branding text collapses Smoothly when search expands */}
             <div className={cn(
-                "flex flex-col text-[#0b0f19] group-hover:text-primary transition-all duration-700 ease-[cubic-bezier(0.19,1,0.22,1)]",
+                "flex flex-col text-[#28235f] group-hover:text-primary transition-all duration-700 ease-[cubic-bezier(0.19,1,0.22,1)]",
                 mobileSearchOpen ? "opacity-0 w-0 overflow-hidden" : "opacity-100"
             )}>
                 <span className="font-black text-xl leading-tight uppercase tracking-tighter">Alpha</span>
@@ -184,7 +184,7 @@ export default function Header() {
                 "flex items-center rounded-full transition-all duration-700 ease-[cubic-bezier(0.19,1,0.22,1)]",
                 mobileSearchOpen 
                   ? "flex-1 min-w-[140px] max-w-[280px] bg-white border border-slate-200 px-2 shadow-xl ring-4 ring-purple-500/5" 
-                  : "w-10 h-10 bg-transparent border border-[#0b0f19]/10 justify-center"
+                  : "w-10 h-10 bg-transparent border border-[#28235f]/10 justify-center"
               )}
             >
               <input 
@@ -193,7 +193,7 @@ export default function Header() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className={cn(
-                  "bg-transparent border-none text-[#0b0f19] focus:outline-none text-xs h-full transition-all duration-500",
+                  "bg-transparent border-none text-[#28235f] focus:outline-none text-xs h-full transition-all duration-500",
                   mobileSearchOpen ? "flex-1 px-3 opacity-100" : "w-0 opacity-0 pointer-events-none"
                 )}
                 autoFocus={mobileSearchOpen}
@@ -204,7 +204,7 @@ export default function Header() {
                 size="icon" 
                 className={cn(
                   "h-9 w-9 rounded-full shrink-0 transition-all flex items-center justify-center",
-                  mobileSearchOpen ? "text-[#0b0f19] hover:bg-slate-100" : "text-[#0b0f19] hover:text-primary hover:bg-primary/5"
+                  mobileSearchOpen ? "text-[#28235f] hover:bg-slate-100" : "text-[#28235f] hover:text-primary hover:bg-primary/5"
                 )}
                 onClick={() => {
                   if (mobileSearchOpen && searchQuery) {
@@ -218,17 +218,17 @@ export default function Header() {
               </Button>
             </form>
 
-            <ShoppingCartComponent triggerClassName="h-10 w-10 border border-[#0b0f19]/10 rounded-full text-[#0b0f19] flex items-center justify-center hover:text-primary shrink-0" />
+            <ShoppingCartComponent triggerClassName="h-10 w-10 border border-[#28235f]/10 rounded-full text-[#28235f] flex items-center justify-center hover:text-primary shrink-0" />
             
             <Sheet>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-10 w-10 border border-[#0b0f19]/10 rounded-full text-[#0b0f19] flex items-center justify-center hover:text-primary shrink-0">
+                <Button variant="ghost" size="icon" className="h-10 w-10 border border-[#28235f]/10 rounded-full text-[#28235f] flex items-center justify-center hover:text-primary shrink-0">
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="bg-white border-l-slate-100 text-[#0b0f19] rounded-l-[3rem] shadow-2xl">
+              <SheetContent side="right" className="bg-white border-l-slate-100 text-[#28235f] rounded-l-[3rem] shadow-2xl">
                 <SheetHeader>
-                  <SheetTitle className="text-[#0b0f19] text-left">
+                  <SheetTitle className="text-[#28235f] text-left">
                     <NextLink href="/" className="flex items-center gap-4 group">
                       <div className="relative h-[80px] w-[80px]">
                           <Image 
