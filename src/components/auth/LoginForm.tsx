@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useForm } from 'react-hook-form';
@@ -20,9 +21,10 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import { useState, useRef, useEffect } from 'react';
-import { Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, Loader2, ExternalLink, AlertCircle } from 'lucide-react';
 import ReCAPTCHA from 'react-google-recaptcha';
 import { verifyRecaptcha } from '@/app/actions/verify-recaptcha';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email.'),
@@ -100,12 +102,15 @@ export default function LoginForm() {
     const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
     const [isMounted, setIsMounted] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
+    const [isInIframe, setIsInIframe] = useState(false);
     const recaptchaRef = useRef<ReCAPTCHA>(null);
     
     const activeTab = searchParams.get('tab') || 'login';
 
     useEffect(() => {
         setIsMounted(true);
+        // Detect if app is running in an iframe (Sandbox environment)
+        setIsInIframe(window.self !== window.top);
     }, []);
 
     useEffect(() => {
@@ -194,13 +199,17 @@ export default function LoginForm() {
             console.error("Social login error:", error);
             toast({ 
               variant: "destructive", 
-              title: "Social Login Failed", 
-              description: "Redirect blocked by browser. Please open the site in a NEW TAB to continue." 
+              title: "Social Login Blocked", 
+              description: "Redirection was blocked by your browser's security policy. Please open the app in a NEW TAB to continue." 
             });
         } finally {
             setSocialLoading(null);
         }
     }
+
+    const openInNewTab = () => {
+        window.open(window.location.href, '_blank', 'noopener,noreferrer');
+    };
 
     const redirectUrl = searchParams.get('redirect') || '/';
     const redirectQuery = redirectUrl !== '/' ? `&redirect=${encodeURIComponent(redirectUrl)}` : '';
@@ -208,6 +217,24 @@ export default function LoginForm() {
 
     const SocialLoginBlock = () => (
         <div className="space-y-4 pt-4">
+            {isInIframe && (
+                <Alert className="bg-amber-50 border-amber-200 text-amber-900 rounded-2xl animate-in fade-in slide-in-from-top-2">
+                    <AlertCircle className="h-4 w-4 text-amber-600" />
+                    <AlertTitle className="text-xs font-black uppercase tracking-widest mb-1">Preview Restriction</AlertTitle>
+                    <AlertDescription className="text-[11px] leading-relaxed">
+                        Social logins are often blocked in iframes. For a seamless experience, please click below.
+                        <Button 
+                            variant="link" 
+                            size="sm" 
+                            className="p-0 h-auto text-[11px] font-black uppercase tracking-tighter text-amber-700 underline ml-1"
+                            onClick={openInNewTab}
+                        >
+                            Open in New Tab <ExternalLink size={10} className="ml-1" />
+                        </Button>
+                    </AlertDescription>
+                </Alert>
+            )}
+
             <div className="relative">
                 <div className="absolute inset-0 flex items-center"><span className="w-full border-t" /></div>
                 <div className="relative flex justify-center text-xs uppercase">
