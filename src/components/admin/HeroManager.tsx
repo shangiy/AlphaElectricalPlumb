@@ -133,14 +133,8 @@ function SortableImageItem({ url, index, isSelected, onClick }: {
 }
 
 export default function HeroManager({ initialSlides }: { initialSlides: HeroSlide[] }) {
-    const sortSlides = (sArr: HeroSlide[]) => {
-        return [...sArr].sort((a, b) => {
-            if (a.active === b.active) return 0;
-            return a.active ? -1 : 1;
-        });
-    };
-
-    const [slides, setSlides] = useState<HeroSlide[]>(sortSlides(initialSlides || []));
+    // Treat initialSlides as chronological (Newest-to-Oldest or by Order)
+    const [slides, setSlides] = useState<HeroSlide[]>(initialSlides || []);
     const [saving, setSaving] = useState(false);
     const [uploadingId, setUploadingId] = useState<string | null>(null);
     const [selectedIndices, setSelectedIndices] = useState<Record<string, number>>({});
@@ -154,12 +148,7 @@ export default function HeroManager({ initialSlides }: { initialSlides: HeroSlid
     );
 
     const handleUpdate = (id: string, updatedFields: Partial<HeroSlide>) => {
-        const updated = slides.map(s => s.id === id ? { ...s, ...updatedFields } : s);
-        if (updatedFields.active !== undefined) {
-            setSlides(sortSlides(updated));
-        } else {
-            setSlides(updated);
-        }
+        setSlides(prev => prev.map(s => s.id === id ? { ...s, ...updatedFields } : s));
     };
 
     const handleDragEnd = (slideId: string, event: DragEndEvent) => {
@@ -196,7 +185,7 @@ export default function HeroManager({ initialSlides }: { initialSlides: HeroSlid
             const newUrls = [...currentUrls, url];
             handleUpdate(id, { 
                 imageUrls: newUrls,
-                imageUrl: url // Maintain legacy for now
+                imageUrl: url 
             });
             
             // Automatically select the new image
@@ -244,7 +233,7 @@ export default function HeroManager({ initialSlides }: { initialSlides: HeroSlid
             ctaLink: '/search',
             imageUrl: '/background.jpg',
             imageUrls: ['/background.jpg'],
-            order: slides.length + 1,
+            order: 0, // Will be re-indexed on save, but should be at the top
             active: true,
             headlineColor: '#ffffff',
             headlineSize: 72,
@@ -261,14 +250,15 @@ export default function HeroManager({ initialSlides }: { initialSlides: HeroSlid
                 { text: '', color: '#ffffff', font: 'font-montserrat' }
             ]
         };
-        setSlides(sortSlides([...slides, newSlide]));
+        // Prepend new slide to the beginning of the array (Newest First)
+        setSlides(prev => [newSlide, ...prev]);
     };
 
     const handleSave = async () => {
         setSaving(true);
         try {
             await saveHeroSlides(slides);
-            toast({ title: "Banners Published", description: "Storefront carousel has been updated." });
+            toast({ title: "Banners Published", description: "Storefront carousel has been updated. Archival data preserved." });
         } catch (error: any) {
             toast({ variant: "destructive", title: "Sync Failed", description: error.message });
         } finally {
@@ -281,15 +271,15 @@ export default function HeroManager({ initialSlides }: { initialSlides: HeroSlid
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-10 border-b pb-8">
                 <div>
                     <h2 className="text-3xl font-black font-headline text-accent tracking-tighter uppercase">Hero Carousel CMS</h2>
-                    <p className="text-muted-foreground text-sm font-medium mt-1">Manage high-impact headlines. Active slides move to top; inactive slides are moved below for cleanup.</p>
+                    <p className="text-muted-foreground text-sm font-medium mt-1">Manage high-impact headlines. New campaigns appear at the top. Archive data is stored for future reference.</p>
                 </div>
                 <div className="flex gap-3">
                     <Button onClick={handleAddSlide} variant="outline" className="rounded-full h-12 px-6 font-bold">
-                        <Plus className="w-4 h-4 mr-2" /> Add Slide
+                        <Plus className="w-4 h-4 mr-2" /> Add Campaign
                     </Button>
                     <Button onClick={handleSave} disabled={saving} className="rounded-full h-12 px-10 font-black uppercase tracking-tighter shadow-lg bg-primary text-white">
                         {saving ? <Loader2 className="animate-spin w-4 h-4 mr-2" /> : <Save className="w-4 h-4 mr-2" />}
-                        Publish Changes
+                        Publish & Archive
                     </Button>
                 </div>
             </div>
@@ -304,15 +294,28 @@ export default function HeroManager({ initialSlides }: { initialSlides: HeroSlid
                         <div key={slide.id} className={cn("bg-white rounded-[3rem] border shadow-xl p-10 relative overflow-hidden transition-all hover:shadow-2xl", !slide.active && "opacity-60 grayscale bg-muted/20")}>
                             <div className="flex justify-between items-center mb-8 border-b pb-6">
                                 <div className="flex items-center gap-3">
-                                    <span className="h-10 w-10 rounded-full bg-accent text-white flex items-center justify-center font-black text-sm shadow-inner">#{index + 1}</span>
-                                    <span className="font-black text-accent uppercase tracking-widest text-xs">Campaign Slot {!slide.active && "(OFFLINE)"}</span>
+                                    <span className="h-10 w-10 rounded-full bg-accent text-white flex items-center justify-center font-black text-sm shadow-inner">
+                                        #{slides.length - index}
+                                    </span>
+                                    <span className="font-black text-accent uppercase tracking-widest text-xs">Campaign Entry {!slide.active && "(ARCHIVED)"}</span>
                                 </div>
                                 <div className="flex items-center gap-4">
-                                    <Switch checked={slide.active} onCheckedChange={(val) => handleUpdate(slide.id, { active: val })} />
+                                    <div className="flex items-center gap-2 px-3 py-1.5 bg-muted rounded-full">
+                                      <Label htmlFor={`active-${slide.id}`} className="text-[10px] font-black uppercase cursor-pointer">Live Storefront</Label>
+                                      <Switch 
+                                        id={`active-${slide.id}`}
+                                        checked={slide.active} 
+                                        onCheckedChange={(val) => handleUpdate(slide.id, { active: val })} 
+                                      />
+                                    </div>
                                     <button 
-                                        onClick={() => setSlides(slides.filter(s => s.id !== slide.id))} 
+                                        onClick={() => {
+                                          if (confirm("Permanently delete this campaign record? This cannot be undone.")) {
+                                            setSlides(prev => prev.filter(s => s.id !== slide.id));
+                                          }
+                                        }} 
                                         className="bg-red-50 text-red-500 p-2 rounded-xl border border-red-100 hover:bg-red-100 transition-colors"
-                                        title="Delete Banner"
+                                        title="Delete Campaign Record"
                                     >
                                         <Trash2 size={20} />
                                     </button>
@@ -324,7 +327,7 @@ export default function HeroManager({ initialSlides }: { initialSlides: HeroSlid
                                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
                                     <div className="lg:col-span-7 space-y-4">
                                         <div className="space-y-2">
-                                          <label className="text-[10px] font-black uppercase text-muted-foreground/60 tracking-widest ml-1">Hero Main Copy (Legacy/Alt Text)</label>
+                                          <label className="text-[10px] font-black uppercase text-muted-foreground/60 tracking-widest ml-1">Main Headline Reference</label>
                                           <Textarea 
                                               value={slide.headline} 
                                               onChange={(e) => handleUpdate(slide.id, { headline: e.target.value })} 
@@ -334,15 +337,16 @@ export default function HeroManager({ initialSlides }: { initialSlides: HeroSlid
                                         </div>
 
                                         {/* Live Headline Preview in CMS */}
-                                        <div className="p-8 rounded-[2rem] bg-[#0a0f1e] border border-white/5 relative overflow-hidden min-h-[200px] flex items-center justify-center">
+                                        <div className="p-8 rounded-[2rem] bg-[#0a0f1e] border border-white/5 relative overflow-hidden min-h-[250px] flex items-center justify-center">
                                            <div className="absolute inset-0 opacity-10" style={{ backgroundImage: `radial-gradient(#1e293b 1px, transparent 0)`, backgroundSize: '20px 20px' }} />
-                                           <div className="relative z-10 text-center">
+                                           <div className="relative z-10 text-center w-full">
                                               <p className="text-[8px] font-black uppercase tracking-[0.3em] text-white/40 mb-4">Live Layout Preview</p>
                                               <h1 
                                                 className={cn("leading-tight tracking-tighter break-words whitespace-pre-wrap", slide.headlineWeight || 'font-black')}
                                                 style={{ 
                                                     fontSize: slide.headlineSize ? `${slide.headlineSize / 2.5}px` : '32px',
-                                                    marginTop: `${(slide.headlineTopMargin || 0) / 2.5}cm`
+                                                    marginTop: `${(slide.headlineTopMargin || 0) / 2.5}cm`,
+                                                    color: slide.headlineColor || '#ffffff'
                                                 }}
                                               >
                                                 {(() => {
@@ -358,7 +362,7 @@ export default function HeroManager({ initialSlides }: { initialSlides: HeroSlid
                                                     if (match) {
                                                       return <span key={i} className={match.font} style={{ color: match.color }}>{part}</span>;
                                                     }
-                                                    return <span key={i} className="text-white">{part}</span>;
+                                                    return <span key={i}>{part}</span>;
                                                   });
                                                 })()}
                                               </h1>
@@ -405,12 +409,19 @@ export default function HeroManager({ initialSlides }: { initialSlides: HeroSlid
                                                     </select>
                                                 </div>
                                             </div>
+                                            <div className="space-y-1.5">
+                                                <Label className="text-[9px] font-bold text-muted-foreground/60 uppercase">Base Text Color</Label>
+                                                <div className="flex items-center gap-2">
+                                                  <input type="color" value={slide.headlineColor || '#ffffff'} onChange={(e) => handleUpdate(slide.id, { headlineColor: e.target.value })} className="h-9 w-9 rounded-lg cursor-pointer border-none" />
+                                                  <Input value={slide.headlineColor || '#ffffff'} onChange={(e) => handleUpdate(slide.id, { headlineColor: e.target.value })} className="h-9 rounded-lg font-mono text-[10px] uppercase" />
+                                                </div>
+                                            </div>
                                         </div>
 
                                         {/* TRIPLE WORD ENGINE */}
                                         <div className="bg-accent/5 p-6 rounded-[2rem] border border-dashed border-accent/20 space-y-4">
                                             <h4 className="text-[9px] font-black uppercase tracking-[0.2em] text-accent flex items-center gap-2">
-                                              <Palette className="h-3 w-3" /> Triple Word Engine
+                                              <Sparkles className="h-3 w-3" /> Triple Word Engine
                                             </h4>
                                             
                                             <div className="space-y-4">
@@ -426,7 +437,7 @@ export default function HeroManager({ initialSlides }: { initialSlides: HeroSlid
                                                                 ws[i] = { ...(ws[i] || {text:'', color:'#ffffff', font:'font-montserrat'}), text: e.target.value };
                                                                 handleUpdate(slide.id, { wordStyles: ws });
                                                             }}
-                                                            placeholder="Enter word..."
+                                                            placeholder="Enter word to highlight..."
                                                             className="h-9 text-xs rounded-lg font-bold"
                                                         />
                                                         <div className="grid grid-cols-2 gap-2">
