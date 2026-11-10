@@ -251,6 +251,7 @@ export default function HeroManager({ initialSlides }: { initialSlides: HeroSlid
             headlineWeight: 'font-black',
             subheadingColor: '#ffffff',
             subheadingSize: 24,
+            subheadingWeight: 'font-normal',
             headlineTopMargin: 0,
             subheadingTopMargin: 0,
             bgAnimation: 'fade',
@@ -361,6 +362,18 @@ export default function HeroManager({ initialSlides }: { initialSlides: HeroSlid
                                                   });
                                                 })()}
                                               </h1>
+                                              {slide.subheading && (
+                                                <p 
+                                                  className={cn("mt-2 opacity-80 leading-relaxed", slide.subheadingWeight || 'font-normal')}
+                                                  style={{ 
+                                                    color: slide.subheadingColor || '#ffffff', 
+                                                    fontSize: slide.subheadingSize ? `${slide.subheadingSize / 2.5}px` : '10px',
+                                                    marginTop: `${(slide.subheadingTopMargin || 0) / 2.5}cm` 
+                                                  }}
+                                                >
+                                                  {slide.subheading}
+                                                </p>
+                                              )}
                                            </div>
                                         </div>
                                     </div>
@@ -486,6 +499,16 @@ export default function HeroManager({ initialSlides }: { initialSlides: HeroSlid
                                                 <Label className="text-[9px] font-bold text-muted-foreground/60 uppercase">Font Size (px)</Label>
                                                 <Input type="number" value={slide.subheadingSize || 24} onChange={(e) => handleUpdate(slide.id, { subheadingSize: parseInt(e.target.value) || 0 })} className="h-9 rounded-lg font-bold" />
                                             </div>
+                                        </div>
+                                        <div className="space-y-1.5 pt-2">
+                                            <Label className="text-[9px] font-bold text-muted-foreground/60 uppercase">Font Boldness (Weight)</Label>
+                                            <select
+                                                value={slide.subheadingWeight || 'font-normal'}
+                                                onChange={(e) => handleUpdate(slide.id, { subheadingWeight: e.target.value })}
+                                                className="w-full h-9 px-2 rounded-lg border font-bold text-[10px] bg-white"
+                                            >
+                                                {BOLDNESS_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
+                                            </select>
                                         </div>
                                         <div className="pt-2 border-t border-accent/5">
                                             <Label className="text-[9px] font-bold text-muted-foreground/60 uppercase flex items-center gap-1.5 mb-2">

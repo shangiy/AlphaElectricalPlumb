@@ -133,7 +133,7 @@ export default function Hero() {
                 });
               })()}
             </h1>
-            <p className="text-xl md:text-3xl font-medium tracking-tight opacity-90 leading-relaxed" style={{ color: slide.subheadingColor || '#ffffff', fontSize: slide.subheadingSize ? `${slide.subheadingSize}px` : undefined, marginTop: `${slide.subheadingTopMargin || 0}cm` }}>{slide.subheading}</p>
+            <p className={cn("text-xl md:text-3xl tracking-tight opacity-90 leading-relaxed", slide.subheadingWeight || 'font-medium')} style={{ color: slide.subheadingColor || '#ffffff', fontSize: slide.subheadingSize ? `${slide.subheadingSize}px` : undefined, marginTop: `${slide.subheadingTopMargin || 0}cm` }}>{slide.subheading}</p>
           </div>
           <div className="space-y-8 max-w-3xl">
             <HeroSearch />

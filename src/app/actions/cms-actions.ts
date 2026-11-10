@@ -34,6 +34,7 @@ export interface HeroSlide {
     headlineWeight?: string; // 5 levels: font-light, font-normal, font-semibold, font-bold, font-black
     subheadingColor?: string;
     subheadingSize?: number;
+    subheadingWeight?: string; // v4.4.1 addition
     headlineTopMargin?: number; // in centimeters
     subheadingTopMargin?: number; // in centimeters
     topMargin?: number; // legacy fallback
