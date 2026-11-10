@@ -75,14 +75,6 @@ interface BannerConfig {
     showSocial: boolean;
     highlighters?: HighlighterRule[];
     badgeText?: string;
-    halloweenText?: string;
-    halloweenStyleType?: string;
-    halloweenOrientation?: string;
-    halloweenTextStyle?: string;
-    holidayText?: string;
-    holidayStyleType?: string;
-    holidayOrientation?: string;
-    holidayTextStyle?: string;
     vibrantText?: string;
     vibrantStyleType?: string;
     vibrantOrientation?: string;
@@ -91,17 +83,29 @@ interface BannerConfig {
     vibrantStyleType2?: string;
     vibrantOrientation2?: string;
     vibrantTextStyle2?: string;
+    vibrantText3?: string;
+    vibrantStyleType3?: string;
+    vibrantOrientation3?: string;
+    vibrantTextStyle3?: string;
+    vibrantText4?: string;
+    vibrantStyleType4?: string;
+    vibrantOrientation4?: string;
+    vibrantTextStyle4?: string;
 }
 
 const DEFAULT_BANNER: BannerConfig = {
-    items: ["MASHUJAA DAY OFFER! 20% OFF", "Welcome to Alpha Ecosystem v4.3.0"],
+    items: ["MASHUJAA DAY OFFER! 20% OFF", "Welcome to Alpha Ecosystem v4.3.5"],
     coloredItems: [
         { text: "MASHUJAA DAY OFFER! 20% OFF", color: "#ffffff" },
-        { text: "Welcome to Alpha Ecosystem v4.3.0", color: "#ffffff" }
+        { text: "Welcome to Alpha Ecosystem v4.3.5", color: "#ffffff" }
     ],
     speed: 30, fontSize: 12, textColor: '#ffffff',
     styleType: 'kenyan-flag', styleOrientation: 'horizontal',
-    showClock: true, showSocial: true, highlighters: []
+    showClock: true, showSocial: true, highlighters: [],
+    vibrantText: '', vibrantStyleType: 'kenyan-flag', vibrantOrientation: 'vertical', vibrantTextStyle: 'bold',
+    vibrantText2: '', vibrantStyleType2: 'gold-gradient', vibrantOrientation2: 'horizontal', vibrantTextStyle2: 'bold',
+    vibrantText3: '', vibrantStyleType3: 'neon-glow', vibrantOrientation3: 'vertical', vibrantTextStyle3: 'bold',
+    vibrantText4: '', vibrantStyleType4: 'fire-emoji', vibrantOrientation4: 'horizontal', vibrantTextStyle4: 'bold'
 };
 
 function SortableSearchPhrase({ phrase, id, onRemove }: { phrase: string, id: string, onRemove: (phrase: string) => void }) {
@@ -145,7 +149,6 @@ export default function UiUxControlCenter() {
               ...DEFAULT_BANNER,
               ...bannerSet
           };
-          // Ensure coloredItems are initialized if missing
           if (!config.coloredItems || config.coloredItems.length === 0) {
               config.coloredItems = config.items.map((text: string) => ({ text, color: '#ffffff' }));
           }
@@ -167,7 +170,7 @@ export default function UiUxControlCenter() {
     setSubmitting(true);
     try {
         await updateStorefrontSetting('top_banner_config', bannerConfig);
-        toast({ title: "v4.3.3 Published", description: "Banner engine synchronized." });
+        toast({ title: "v4.3.5 Published", description: "Banner engine synchronized." });
     } catch (err: any) { toast({ variant: "destructive", description: err.message }); } finally { setSubmitting(false); }
   };
 
@@ -185,7 +188,6 @@ export default function UiUxControlCenter() {
   const updateMarqueeItems = (val: string) => {
     const rawItems = val.split(',').map(i => i.trim()).filter(Boolean);
     const newColoredItems = rawItems.map(text => {
-        // Try to preserve existing color if item text matches
         const existing = bannerConfig.coloredItems?.find(ci => ci.text === text);
         return existing || { text, color: '#ffffff' };
     });
@@ -255,7 +257,7 @@ export default function UiUxControlCenter() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b pb-8">
         <div>
           <h1 className="text-5xl font-black font-headline text-accent tracking-tighter uppercase">Alpha CMS Suite</h1>
-          <p className="text-muted-foreground font-bold uppercase tracking-widest text-xs mt-2">Professional Storefront Governance v4.3.3</p>
+          <p className="text-muted-foreground font-bold uppercase tracking-widest text-xs mt-2">Professional Storefront Governance v4.3.5</p>
         </div>
       </div>
 
@@ -277,15 +279,16 @@ export default function UiUxControlCenter() {
                         <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">Engine Sync Active</p>
                         <h3 className="text-xl font-black uppercase">Real-time Engine Preview</h3>
                     </div>
-                    <Badge className="bg-primary">v4.3.3 LIVE</Badge>
+                    <Badge className="bg-primary">v4.3.5 LIVE</Badge>
                 </div>
                 <div className="bg-white py-3 flex items-center justify-center overflow-hidden">
                     <div className="flex items-center gap-12 whitespace-nowrap animate-marquee">
                         {[0,1].map(i => (
                             <div key={i} className="flex items-center gap-8">
-                                {bannerConfig.badgeText && <span className="px-3 py-1 rounded-full bg-slate-100 shadow-md transform -skew-x-6 text-xs">{renderStyledBadgeText(bannerConfig.badgeText, bannerConfig.styleType, bannerConfig.styleOrientation || 'horizontal')}</span>}
                                 {bannerConfig.vibrantText && <span>{renderStyledBadgeText(bannerConfig.vibrantText, bannerConfig.vibrantStyleType || 'kenyan-flag', bannerConfig.vibrantOrientation || 'vertical', bannerConfig.vibrantTextStyle)}</span>}
-                                {bannerConfig.vibrantText2 && <span>{renderStyledBadgeText(bannerConfig.vibrantText2, bannerConfig.vibrantStyleType2 || 'kenyan-flag', bannerConfig.vibrantOrientation2 || 'vertical', bannerConfig.vibrantTextStyle2)}</span>}
+                                {bannerConfig.vibrantText2 && <span>{renderStyledBadgeText(bannerConfig.vibrantText2, bannerConfig.vibrantStyleType2 || 'gold-gradient', bannerConfig.vibrantOrientation2 || 'horizontal', bannerConfig.vibrantTextStyle2)}</span>}
+                                {bannerConfig.vibrantText3 && <span>{renderStyledBadgeText(bannerConfig.vibrantText3, bannerConfig.vibrantStyleType3 || 'neon-glow', bannerConfig.vibrantOrientation3 || 'vertical', bannerConfig.vibrantTextStyle3)}</span>}
+                                {bannerConfig.vibrantText4 && <span>{renderStyledBadgeText(bannerConfig.vibrantText4, bannerConfig.vibrantStyleType4 || 'fire-emoji', bannerConfig.vibrantOrientation4 || 'horizontal', bannerConfig.vibrantTextStyle4)}</span>}
                                 
                                 {bannerConfig.coloredItems && bannerConfig.coloredItems.length > 0 ? (
                                     bannerConfig.coloredItems.map((item, idx) => (
@@ -302,7 +305,7 @@ export default function UiUxControlCenter() {
 
             <Card className="rounded-[2.5rem] border shadow-xl overflow-hidden">
                 <CardHeader className="bg-accent text-white p-8">
-                    <CardTitle className="text-2xl font-black uppercase tracking-tight">Banner Engine v4.3.3</CardTitle>
+                    <CardTitle className="text-2xl font-black uppercase tracking-tight">Banner Engine v4.3.5</CardTitle>
                     <CardDescription className="text-white/60">Configure the master announcement marquee and assign individual colors.</CardDescription>
                 </CardHeader>
                 <CardContent className="p-10 space-y-12">
@@ -334,7 +337,6 @@ export default function UiUxControlCenter() {
                                                     onChange={(e) => {
                                                         const newColored = [...(bannerConfig.coloredItems || [])];
                                                         newColored[idx].text = e.target.value;
-                                                        // Update master items list to stay in sync
                                                         const newItems = newColored.map(ci => ci.text);
                                                         setBannerConfig({ ...bannerConfig, items: newItems, coloredItems: newColored });
                                                     }}
@@ -373,94 +375,88 @@ export default function UiUxControlCenter() {
                         </div>
                     )}
 
-                    {/* Vibrant Event Text Cluster */}
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-8 pt-6 border-t border-dashed">
-                        <div className="space-y-3">
-                            <Label className="text-[10px] font-black uppercase">Vibrant Event Text</Label>
-                            <Input 
-                                value={bannerConfig.vibrantText || ''} 
-                                onChange={(e) => setBannerConfig({...bannerConfig, vibrantText: e.target.value})}
-                                placeholder="e.g. MASHUJAA"
-                                className="h-12 rounded-xl"
-                            />
+                    {/* QUAD-SLOT VIBRANT ENGINE */}
+                    <div className="space-y-12">
+                        {/* Slot 1 & 2 Row */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                            <div className="p-8 rounded-[2.5rem] bg-accent/5 border border-dashed border-accent/20 space-y-6">
+                                <Label className="text-[11px] font-black uppercase tracking-[0.2em] text-accent">Highlight Slot 1</Label>
+                                <div className="space-y-4">
+                                    <Input value={bannerConfig.vibrantText || ''} onChange={(e) => setBannerConfig({...bannerConfig, vibrantText: e.target.value})} placeholder="Text or Emoji" className="h-12 rounded-xl" />
+                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                        <select value={bannerConfig.vibrantStyleType || 'kenyan-flag'} onChange={(e) => setBannerConfig({...bannerConfig, vibrantStyleType: e.target.value})} className="h-10 rounded-lg border px-2 text-[10px] font-bold">
+                                            {STYLE_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
+                                        </select>
+                                        <select value={bannerConfig.vibrantOrientation || 'vertical'} onChange={(e) => setBannerConfig({...bannerConfig, vibrantOrientation: e.target.value})} className="h-10 rounded-lg border px-2 text-[10px] font-bold">
+                                            {ORIENTATION_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
+                                        </select>
+                                        <select value={bannerConfig.vibrantTextStyle || 'bold'} onChange={(e) => setBannerConfig({...bannerConfig, vibrantTextStyle: e.target.value})} className="h-10 rounded-lg border px-2 text-[10px] font-bold">
+                                            {TEXT_STYLE_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="p-8 rounded-[2.5rem] bg-accent/5 border border-dashed border-accent/20 space-y-6">
+                                <Label className="text-[11px] font-black uppercase tracking-[0.2em] text-accent">Highlight Slot 2</Label>
+                                <div className="space-y-4">
+                                    <Input value={bannerConfig.vibrantText2 || ''} onChange={(e) => setBannerConfig({...bannerConfig, vibrantText2: e.target.value})} placeholder="Text or Emoji" className="h-12 rounded-xl" />
+                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                        <select value={bannerConfig.vibrantStyleType2 || 'gold-gradient'} onChange={(e) => setBannerConfig({...bannerConfig, vibrantStyleType2: e.target.value})} className="h-10 rounded-lg border px-2 text-[10px] font-bold">
+                                            {STYLE_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
+                                        </select>
+                                        <select value={bannerConfig.vibrantOrientation2 || 'horizontal'} onChange={(e) => setBannerConfig({...bannerConfig, vibrantOrientation2: e.target.value})} className="h-10 rounded-lg border px-2 text-[10px] font-bold">
+                                            {ORIENTATION_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
+                                        </select>
+                                        <select value={bannerConfig.vibrantTextStyle2 || 'bold'} onChange={(e) => setBannerConfig({...bannerConfig, vibrantTextStyle2: e.target.value})} className="h-10 rounded-lg border px-2 text-[10px] font-bold">
+                                            {TEXT_STYLE_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div className="space-y-3">
-                            <Label className="text-[10px] font-black uppercase">Color Style</Label>
-                            <select 
-                                value={bannerConfig.vibrantStyleType || 'kenyan-flag'} 
-                                onChange={(e) => setBannerConfig({...bannerConfig, vibrantStyleType: e.target.value})}
-                                className="w-full h-12 rounded-xl border px-3"
-                            >
-                                {STYLE_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
-                            </select>
-                        </div>
-                        <div className="space-y-3">
-                            <Label className="text-[10px] font-black uppercase">Paint Orientation</Label>
-                            <select 
-                                value={bannerConfig.vibrantOrientation || 'vertical'} 
-                                onChange={(e) => setBannerConfig({...bannerConfig, vibrantOrientation: e.target.value})}
-                                className="w-full h-12 rounded-xl border px-3"
-                            >
-                                {ORIENTATION_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
-                            </select>
-                        </div>
-                        <div className="space-y-3">
-                            <Label className="text-[10px] font-black uppercase">Typography</Label>
-                            <select 
-                                value={bannerConfig.vibrantTextStyle || 'bold'} 
-                                onChange={(e) => setBannerConfig({...bannerConfig, vibrantTextStyle: e.target.value})}
-                                className="w-full h-12 rounded-xl border px-3"
-                            >
-                                {TEXT_STYLE_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
-                            </select>
+
+                        {/* Slot 3 & 4 Row (NEW) */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                            <div className="p-8 rounded-[2.5rem] bg-accent/5 border border-dashed border-accent/20 space-y-6">
+                                <Label className="text-[11px] font-black uppercase tracking-[0.2em] text-accent">Highlight Slot 3</Label>
+                                <div className="space-y-4">
+                                    <Input value={bannerConfig.vibrantText3 || ''} onChange={(e) => setBannerConfig({...bannerConfig, vibrantText3: e.target.value})} placeholder="Text or Emoji" className="h-12 rounded-xl" />
+                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                        <select value={bannerConfig.vibrantStyleType3 || 'neon-glow'} onChange={(e) => setBannerConfig({...bannerConfig, vibrantStyleType3: e.target.value})} className="h-10 rounded-lg border px-2 text-[10px] font-bold">
+                                            {STYLE_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
+                                        </select>
+                                        <select value={bannerConfig.vibrantOrientation3 || 'vertical'} onChange={(e) => setBannerConfig({...bannerConfig, vibrantOrientation3: e.target.value})} className="h-10 rounded-lg border px-2 text-[10px] font-bold">
+                                            {ORIENTATION_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
+                                        </select>
+                                        <select value={bannerConfig.vibrantTextStyle3 || 'bold'} onChange={(e) => setBannerConfig({...bannerConfig, vibrantTextStyle3: e.target.value})} className="h-10 rounded-lg border px-2 text-[10px] font-bold">
+                                            {TEXT_STYLE_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="p-8 rounded-[2.5rem] bg-accent/5 border border-dashed border-accent/20 space-y-6">
+                                <Label className="text-[11px] font-black uppercase tracking-[0.2em] text-accent">Highlight Slot 4</Label>
+                                <div className="space-y-4">
+                                    <Input value={bannerConfig.vibrantText4 || ''} onChange={(e) => setBannerConfig({...bannerConfig, vibrantText4: e.target.value})} placeholder="Text or Emoji" className="h-12 rounded-xl" />
+                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                        <select value={bannerConfig.vibrantStyleType4 || 'fire-emoji'} onChange={(e) => setBannerConfig({...bannerConfig, vibrantStyleType4: e.target.value})} className="h-10 rounded-lg border px-2 text-[10px] font-bold">
+                                            {STYLE_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
+                                        </select>
+                                        <select value={bannerConfig.vibrantOrientation4 || 'horizontal'} onChange={(e) => setBannerConfig({...bannerConfig, vibrantOrientation4: e.target.value})} className="h-10 rounded-lg border px-2 text-[10px] font-bold">
+                                            {ORIENTATION_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
+                                        </select>
+                                        <select value={bannerConfig.vibrantTextStyle4 || 'bold'} onChange={(e) => setBannerConfig({...bannerConfig, vibrantTextStyle4: e.target.value})} className="h-10 rounded-lg border px-2 text-[10px] font-bold">
+                                            {TEXT_STYLE_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-8 pt-6 border-t border-dashed">
-                        <div className="space-y-3">
-                            <Label className="text-[10px] font-black uppercase">Accent Highlight</Label>
-                            <Input 
-                                value={bannerConfig.vibrantText2 || ''} 
-                                onChange={(e) => setBannerConfig({...bannerConfig, vibrantText2: e.target.value})}
-                                placeholder="e.g. 2026 EDITION"
-                                className="h-12 rounded-xl"
-                            />
-                        </div>
-                        <div className="space-y-3">
-                            <Label className="text-[10px] font-black uppercase">Color Style</Label>
-                            <select 
-                                value={bannerConfig.vibrantStyleType2 || 'gold-gradient'} 
-                                onChange={(e) => setBannerConfig({...bannerConfig, vibrantStyleType2: e.target.value})}
-                                className="w-full h-12 rounded-xl border px-3"
-                            >
-                                {STYLE_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
-                            </select>
-                        </div>
-                        <div className="space-y-3">
-                            <Label className="text-[10px] font-black uppercase">Paint Orientation</Label>
-                            <select 
-                                value={bannerConfig.vibrantOrientation2 || 'horizontal'} 
-                                onChange={(e) => setBannerConfig({...bannerConfig, vibrantOrientation2: e.target.value})}
-                                className="w-full h-12 rounded-xl border px-3"
-                            >
-                                {ORIENTATION_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
-                            </select>
-                        </div>
-                        <div className="space-y-3">
-                            <Label className="text-[10px] font-black uppercase">Typography</Label>
-                            <select 
-                                value={bannerConfig.vibrantTextStyle2 || 'bold'} 
-                                onChange={(e) => setBannerConfig({...bannerConfig, vibrantTextStyle2: e.target.value})}
-                                className="w-full h-12 rounded-xl border px-3"
-                            >
-                                {TEXT_STYLE_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
-                            </select>
-                        </div>
-                    </div>
-
-                    <Button onClick={handleSaveBanner} disabled={submitting} className="w-full h-16 rounded-full font-black text-xl uppercase bg-primary text-white">
+                    <Button onClick={handleSaveBanner} disabled={submitting} className="w-full h-16 rounded-full font-black text-xl uppercase bg-primary text-white shadow-2xl transition-all hover:scale-[1.02] active:scale-95">
                         {submitting ? <Loader2 className="animate-spin mr-3" /> : <Save className="mr-3" />}
-                        Sync v4.3.3 Engine
+                        Sync v4.3.5 Engine
                     </Button>
                 </CardContent>
             </Card>
@@ -522,3 +518,4 @@ export default function UiUxControlCenter() {
     </div>
   );
 }
+

@@ -26,14 +26,6 @@ interface BannerConfig {
     showSocial: boolean;
     highlighters?: HighlighterRule[];
     badgeText?: string;
-    halloweenText?: string;
-    halloweenStyleType?: string;
-    halloweenOrientation?: string;
-    halloweenTextStyle?: string;
-    holidayText?: string;
-    holidayStyleType?: string;
-    holidayOrientation?: string;
-    holidayTextStyle?: string;
     vibrantText?: string;
     vibrantStyleType?: string;
     vibrantOrientation?: string;
@@ -42,17 +34,25 @@ interface BannerConfig {
     vibrantStyleType2?: string;
     vibrantOrientation2?: string;
     vibrantTextStyle2?: string;
+    vibrantText3?: string;
+    vibrantStyleType3?: string;
+    vibrantOrientation3?: string;
+    vibrantTextStyle3?: string;
+    vibrantText4?: string;
+    vibrantStyleType4?: string;
+    vibrantOrientation4?: string;
+    vibrantTextStyle4?: string;
 }
 
 /**
- * High-Fidelity Independent Top Banner v4.3.3:
- * Features a dynamic changing gradient background and 5-slot sequential engine.
- * Supports individual item colors via coloredItems mapping.
+ * High-Fidelity Independent Top Banner v4.3.5:
+ * Features a dynamic changing gradient background and 4-slot vibrant engine.
+ * Supports individual item colors via coloredItems mapping and Quad-Slot vibrant highlights.
  */
 export default function TopBanner() {
   const [config, setConfig] = useState<BannerConfig>({
-    items: ["Welcome to Alpha Ecosystem v4.3.3"],
-    coloredItems: [{ text: "Welcome to Alpha Ecosystem v4.3.3", color: "#ffffff" }],
+    items: ["Welcome to Alpha Ecosystem v4.3.5"],
+    coloredItems: [{ text: "Welcome to Alpha Ecosystem v4.3.5", color: "#ffffff" }],
     speed: 30,
     fontSize: 12,
     textColor: '#ffffff',
@@ -61,9 +61,10 @@ export default function TopBanner() {
     showClock: true,
     showSocial: true,
     highlighters: [],
-    badgeText: '',
     vibrantText: '',
-    vibrantText2: ''
+    vibrantText2: '',
+    vibrantText3: '',
+    vibrantText4: ''
   });
 
   useEffect(() => {
@@ -112,7 +113,8 @@ export default function TopBanner() {
       <span className={cn(
           "font-black bg-clip-text text-transparent animate-gradient-x bg-[length:200%_200%] uppercase whitespace-nowrap bg-gradient-to-r",
           getBg(styleType),
-          textStyle === 'italic' && 'italic'
+          textStyle === 'italic' && 'italic',
+          textStyle === 'bold' && 'font-black'
       )}>{text}</span>
     );
   };
@@ -130,9 +132,10 @@ export default function TopBanner() {
               <ul key={i} className="flex items-center [&_li]:mx-12">
                 {displayItems.map((item, idx) => (
                   <li key={idx} className="flex items-center gap-6 uppercase tracking-widest text-[11px] font-bold">
-                    {config.badgeText && <span className="px-3 py-1 rounded-full bg-white shadow-lg transform -skew-x-6">{renderStyledText(config.badgeText, config.styleType, config.styleOrientation || 'horizontal')}</span>}
                     {config.vibrantText && <span>{renderStyledText(config.vibrantText, config.vibrantStyleType || 'kenyan-flag', config.vibrantOrientation || 'vertical', config.vibrantTextStyle)}</span>}
                     {config.vibrantText2 && <span>{renderStyledText(config.vibrantText2, config.vibrantStyleType2 || 'gold-gradient', config.vibrantOrientation2 || 'horizontal', config.vibrantTextStyle2)}</span>}
+                    {config.vibrantText3 && <span>{renderStyledText(config.vibrantText3, config.vibrantStyleType3 || 'neon-glow', config.vibrantOrientation3 || 'vertical', config.vibrantTextStyle3)}</span>}
+                    {config.vibrantText4 && <span>{renderStyledText(config.vibrantText4, config.vibrantStyleType4 || 'fire-emoji', config.vibrantOrientation4 || 'horizontal', config.vibrantTextStyle4)}</span>}
                     <span style={{ color: item.color || '#ffffff' }}>{item.text}</span>
                   </li>
                 ))}
@@ -144,3 +147,4 @@ export default function TopBanner() {
     </div>
   );
 }
+
