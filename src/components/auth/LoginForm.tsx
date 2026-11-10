@@ -18,12 +18,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useAuth } from '@/context/AuthProvider';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
-import Link from 'next/link';
 import { useState, useRef, useEffect } from 'react';
-import { Eye, EyeOff, Loader2, ExternalLink, AlertCircle } from 'lucide-react';
+import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import ReCAPTCHA from 'react-google-recaptcha';
 import { verifyRecaptcha } from '@/app/actions/verify-recaptcha';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email.'),
@@ -95,14 +93,12 @@ export default function LoginForm() {
     const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
     const [isMounted, setIsMounted] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
-    const [isInIframe, setIsInIframe] = useState(false);
     const recaptchaRef = useRef<ReCAPTCHA>(null);
     
     const activeTab = searchParams.get('tab') || 'login';
 
     useEffect(() => {
         setIsMounted(true);
-        setIsInIframe(window.self !== window.top);
     }, []);
 
     useEffect(() => {
@@ -193,10 +189,6 @@ export default function LoginForm() {
         }
     }
 
-    const openInNewTab = () => {
-        window.open(window.location.href, '_blank', 'noopener,noreferrer');
-    };
-
     const recaptchaSiteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
 
   return (
@@ -259,19 +251,6 @@ export default function LoginForm() {
                                 </Button>
                                 
                                 <div className="space-y-4 pt-4">
-                                    {isInIframe && (
-                                        <Alert className="bg-amber-50 border-amber-200 text-amber-900 rounded-2xl">
-                                            <AlertCircle className="h-4 w-4 text-amber-600" />
-                                            <AlertTitle className="text-xs font-black uppercase tracking-widest mb-1">Sandboxed View</AlertTitle>
-                                            <AlertDescription className="text-[11px]">
-                                                Social logins may be restricted in this view.
-                                                <Button variant="link" size="sm" className="p-0 h-auto text-[11px] font-black text-amber-700 ml-1" onClick={openInNewTab}>
-                                                    Open in New Tab <ExternalLink size={10} className="ml-1" />
-                                                </Button>
-                                            </AlertDescription>
-                                        </Alert>
-                                    )}
-
                                     <div className="relative">
                                         <div className="absolute inset-0 flex items-center"><span className="w-full border-t" /></div>
                                         <div className="relative flex justify-center text-xs uppercase"><span className="bg-card px-2 text-muted-foreground font-bold">Or</span></div>
