@@ -6,6 +6,7 @@ import Link from 'next/link';
 import Script from 'next/script';
 import { getStorefrontSetting } from '@/app/actions/cms-actions';
 import { Loader2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface SocialLink {
     platform: string;
@@ -120,7 +121,7 @@ export default function ConnectWithUs() {
                         <Button 
                             key={idx}
                             asChild 
-                            size="xl" 
+                            size="lg" 
                             className={cn(
                                 "h-16 px-10 rounded-full font-black uppercase tracking-widest text-lg transition-all hover:scale-110 shadow-2xl",
                                 link.platform === 'tiktok' ? "bg-[#00f2ea] text-black hover:bg-[#00f2ea]/80" : "bg-[#1877f2] text-white hover:bg-[#1877f2]/80"
