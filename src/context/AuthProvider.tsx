@@ -3,6 +3,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '@/lib/supabase';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
+import { useSession, signIn as nextAuthSignIn, signOut as nextAuthSignOut } from 'next-auth/react';
 
 export interface User {
   id: string;
@@ -47,6 +48,26 @@ export function useAuth() {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const { data: nextAuthSession, status: nextAuthStatus } = useSession();
+
+  // NEXTAUTH SYNC ENGINE: 
+  // Bridges the local-domain Google session into Supabase silently.
+  useEffect(() => {
+    const syncWithSupabase = async () => {
+      if (nextAuthStatus === 'authenticated' && (nextAuthSession as any)?.id_token && !user && supabase) {
+        const { error } = await supabase.auth.signInWithIdToken({
+          provider: 'google',
+          token: (nextAuthSession as any).id_token,
+        });
+        
+        if (error) {
+          console.error("Supabase Token Bridge Error:", error.message);
+        }
+      }
+    };
+    
+    syncWithSupabase();
+  }, [nextAuthSession, nextAuthStatus, user]);
 
   useEffect(() => {
     if (!supabase) {
@@ -80,7 +101,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const fetchProfile = async (supabaseUser: SupabaseUser) => {
     if (!supabase) return;
     try {
-      // 1. Attempt to fetch existing profile using maybeSingle to avoid 406/PGRST116 errors
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('*')
@@ -88,9 +108,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .maybeSingle();
 
       if (profileError) {
-          // Check for infinite recursion specifically to guide the user
           if (profileError.message.includes('infinite recursion')) {
-              console.error("DATABASE SECURITY ERROR: Infinite recursion detected in 'profiles' RLS policy. Please run the 'Emergency RLS Reset' script from README.md in your Supabase SQL Editor.");
+              console.error("DATABASE SECURITY ERROR: Infinite recursion detected in 'profiles' RLS policy.");
           } else {
               console.error("Error checking profile existence:", profileError.message);
           }
@@ -99,10 +118,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (profile) {
         const role = profile.role || 'user';
         const fullName = profile.full_name || profile.name || supabaseUser.user_metadata.full_name || 'User';
-
-        if (role === 'admin') {
-          console.log(`Welcome Admin, ${fullName}! (Supabase Sync Verified)`);
-        }
 
         setUser({
           id: supabaseUser.id,
@@ -113,7 +128,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           avatarUrl: profile.avatar_url || supabaseUser.user_metadata.avatar_url,
         });
       } else {
-        // 2. Provision new user if profile definitely doesn't exist
         const assignedRole = 'user'; 
         const newUser: User = {
           id: supabaseUser.id,
@@ -124,8 +138,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           avatarUrl: supabaseUser.user_metadata.avatar_url,
         };
         
-        // Use UPSERT with onConflict to prevent "duplicate key" errors
-        const { error: insertError } = await supabase.from('profiles').upsert({
+        await supabase.from('profiles').upsert({
           id: supabaseUser.id,
           full_name: newUser.name,
           username: newUser.username,
@@ -134,15 +147,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           email: newUser.email,
           updated_at: new Date().toISOString()
         }, { onConflict: 'id' });
-        
-        if (insertError) {
-          if (insertError.code === '23505') {
-              // Row was likely created by parallel request, ignore and move on
-              console.log("Profile conflict resolved via concurrency check.");
-          } else {
-              console.error("Profile auto-provisioning failed:", insertError.message);
-          }
-        }
         
         setUser(newUser);
       }
@@ -173,14 +177,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signInWithGoogle = async () => {
-    if (!supabase) throw new Error("Authentication service is unavailable.");
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: typeof window !== 'undefined' ? `${window.location.origin}/auth/callback` : undefined
-      }
-    });
-    if (error) throw error;
+    // BYPASS SUPABASE REDIRECT: Use NextAuth to handle the flow on the custom domain.
+    // This removes ".supabase.co" from the browser's view.
+    await nextAuthSignIn('google');
   };
 
   const signInWithFacebook = async () => {
@@ -225,7 +224,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     if (!supabase) return;
+    // Sign out from Supabase (clears DB tokens)
     await supabase.auth.signOut();
+    // Sign out from NextAuth (clears domain cookies)
+    await nextAuthSignOut({ redirect: false });
     setUser(null);
   };
 
@@ -239,7 +241,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signInWithGithub,
     updateUser,
     logout,
-    loading,
+    loading: loading || nextAuthStatus === 'loading',
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
