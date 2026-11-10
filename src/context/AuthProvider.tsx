@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 import { useSession, signIn as nextAuthSignIn, signOut as nextAuthSignOut } from 'next-auth/react';
@@ -50,55 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const { data: nextAuthSession, status: nextAuthStatus } = useSession();
 
-  // NEXTAUTH SYNC ENGINE: 
-  // Bridges the local-domain Google session into Supabase silently.
-  useEffect(() => {
-    const syncWithSupabase = async () => {
-      if (nextAuthStatus === 'authenticated' && (nextAuthSession as any)?.id_token && !user && supabase) {
-        const { error } = await supabase.auth.signInWithIdToken({
-          provider: 'google',
-          token: (nextAuthSession as any).id_token,
-        });
-        
-        if (error) {
-          console.error("Supabase Token Bridge Error:", error.message);
-        }
-      }
-    };
-    
-    syncWithSupabase();
-  }, [nextAuthSession, nextAuthStatus, user]);
-
-  useEffect(() => {
-    if (!supabase) {
-      setLoading(false);
-      return;
-    }
-
-    const checkUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        await fetchProfile(session.user);
-      } else {
-        setLoading(false);
-      }
-    };
-
-    checkUser();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      if (session?.user) {
-        await fetchProfile(session.user);
-      } else {
-        setUser(null);
-      }
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  const fetchProfile = async (supabaseUser: SupabaseUser) => {
+  const fetchProfile = useCallback(async (supabaseUser: SupabaseUser) => {
     if (!supabase) return;
     try {
       const { data: profile, error: profileError } = await supabase
@@ -108,11 +60,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .maybeSingle();
 
       if (profileError) {
-          if (profileError.message.includes('infinite recursion')) {
-              console.error("DATABASE SECURITY ERROR: Infinite recursion detected in 'profiles' RLS policy.");
-          } else {
-              console.error("Error checking profile existence:", profileError.message);
-          }
+          console.error("Profile Fetch Error:", profileError.message);
       }
 
       if (profile) {
@@ -152,8 +100,58 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     } catch (err) {
       console.error('Unexpected error in profile cycle:', err);
+    } finally {
+      setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    const syncWithSupabase = async () => {
+      if (nextAuthStatus === 'authenticated' && (nextAuthSession as any)?.id_token && !user && supabase) {
+        const { data, error } = await supabase.auth.signInWithIdToken({
+          provider: 'google',
+          token: (nextAuthSession as any).id_token,
+        });
+        
+        if (error) {
+          console.error("Supabase Token Bridge Error:", error.message);
+        } else if (data.user) {
+          await fetchProfile(data.user);
+        }
+      }
+    };
+    
+    syncWithSupabase();
+  }, [nextAuthSession, nextAuthStatus, user, fetchProfile]);
+
+  useEffect(() => {
+    if (!supabase) {
+      setLoading(false);
+      return;
+    }
+
+    const checkUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        await fetchProfile(session.user);
+      } else {
+        setLoading(false);
+      }
+    };
+
+    checkUser();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session?.user) {
+        await fetchProfile(session.user);
+      } else if (event === 'SIGNED_OUT') {
+        setUser(null);
+        setLoading(false);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [fetchProfile]);
 
   const login = async (email: string, password: string) => {
     if (!supabase) throw new Error("Authentication service is unavailable.");
@@ -177,8 +175,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signInWithGoogle = async () => {
-    // BYPASS SUPABASE REDIRECT: Use NextAuth to handle the flow on the custom domain.
-    // This removes ".supabase.co" from the browser's view.
+    // Professional custom-domain login bypasses standard Supabase redirect
     await nextAuthSignIn('google');
   };
 
@@ -223,10 +220,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = async () => {
-    if (!supabase) return;
-    // Sign out from Supabase (clears DB tokens)
-    await supabase.auth.signOut();
-    // Sign out from NextAuth (clears domain cookies)
+    if (supabase) {
+      await supabase.auth.signOut();
+    }
     await nextAuthSignOut({ redirect: false });
     setUser(null);
   };
