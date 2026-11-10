@@ -108,10 +108,10 @@ interface BannerConfig {
 }
 
 const DEFAULT_BANNER: BannerConfig = {
-    items: ["MASHUJAA DAY OFFER! 20% OFF", "Welcome to Alpha Ecosystem v4.3.7", "FLASH SALE", "NEW ARRIVALS"],
+    items: ["MASHUJAA DAY OFFER! 20% OFF", "Welcome to Alpha Ecosystem v4.3.8", "FLASH SALE", "NEW ARRIVALS"],
     coloredItems: [
         { text: "MASHUJAA DAY OFFER! 20% OFF", color: "#ffffff" },
-        { text: "Welcome to Alpha Ecosystem v4.3.7", color: "#ffffff" },
+        { text: "Welcome to Alpha Ecosystem v4.3.8", color: "#ffffff" },
         { text: "FLASH SALE", color: "#ffcc00" },
         { text: "NEW ARRIVALS", color: "#ffffff" }
     ],
@@ -206,7 +206,7 @@ export default function UiUxControlCenter() {
     setSubmitting(true);
     try {
         await updateStorefrontSetting('top_banner_config', bannerConfig);
-        toast({ title: "v4.3.7 Published", description: "Banner Engine with Motion and Background controls synchronized." });
+        toast({ title: "v4.3.8 Published", description: "Spectrum Flow Engine synchronized across the cluster." });
     } catch (err: any) { toast({ variant: "destructive", description: err.message }); } finally { setSubmitting(false); }
   };
 
@@ -300,7 +300,7 @@ export default function UiUxControlCenter() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b pb-8">
         <div>
           <h1 className="text-5xl font-black font-headline text-accent tracking-tighter uppercase">Alpha CMS Suite</h1>
-          <p className="text-muted-foreground font-bold uppercase tracking-widest text-xs mt-2">Professional Storefront Governance v4.3.7</p>
+          <p className="text-muted-foreground font-bold uppercase tracking-widest text-xs mt-2">Professional Storefront Governance v4.3.8</p>
         </div>
       </div>
 
@@ -322,14 +322,14 @@ export default function UiUxControlCenter() {
                         <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-60">Engine Sync Active</p>
                         <h3 className="text-xl font-black uppercase">Real-time Engine Preview</h3>
                     </div>
-                    <Badge className="bg-primary text-white border-none">v4.3.7 LIVE</Badge>
+                    <Badge className="bg-primary text-white border-none">v4.3.8 LIVE</Badge>
                 </div>
                 <div className={cn(
                     "py-3 flex items-center justify-center overflow-hidden transition-colors",
                     bannerConfig.bgType === 'white' ? 'bg-white' : 
                     bannerConfig.bgType === 'blue' ? 'bg-blue-600' :
                     bannerConfig.bgType === 'red' ? 'bg-red-600' :
-                    'bg-gradient-to-r from-[#28235f] via-[#4c3b99] to-[#28235f] bg-[length:200%_200%] animate-gradient-x'
+                    'bg-gradient-to-r from-red-600 via-orange-600 via-yellow-600 via-green-600 via-blue-600 via-purple-600 via-pink-600 to-red-600 bg-[length:400%_400%] animate-gradient-x'
                 )}
                 style={{ direction: bannerConfig.gradientDirection === 'right' ? 'rtl' : 'ltr' }}
                 >
@@ -361,8 +361,8 @@ export default function UiUxControlCenter() {
 
             <Card className="rounded-[2.5rem] border shadow-xl overflow-hidden">
                 <CardHeader className="bg-accent text-white p-8">
-                    <CardTitle className="text-2xl font-black uppercase tracking-tight">Banner Engine v4.3.7</CardTitle>
-                    <CardDescription className="text-white/60">Configure atmospheric controls, typography, and motion pace.</CardDescription>
+                    <CardTitle className="text-2xl font-black uppercase tracking-tight">Banner Engine v4.3.8</CardTitle>
+                    <CardDescription className="text-white/60">Configure atmospheric controls, typography, and spectrum pace.</CardDescription>
                 </CardHeader>
                 <CardContent className="p-10 space-y-12">
                     <div className="space-y-3">
@@ -609,7 +609,7 @@ export default function UiUxControlCenter() {
 
                     <Button onClick={handleSaveBanner} disabled={submitting} className="w-full h-16 rounded-full font-black text-xl uppercase bg-primary text-white shadow-2xl transition-all hover:scale-[1.02] active:scale-95">
                         {submitting ? <Loader2 className="animate-spin mr-3" /> : <Save className="mr-3" />}
-                        Sync v4.3.7 Engine
+                        Sync v4.3.8 Engine
                     </Button>
                 </CardContent>
             </Card>

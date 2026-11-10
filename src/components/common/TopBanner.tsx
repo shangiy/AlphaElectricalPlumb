@@ -48,13 +48,13 @@ interface BannerConfig {
 }
 
 /**
- * High-Fidelity Independent Top Banner v4.3.7:
- * Features atmospheric background logic, paced motion, and cloud-flow direction.
+ * High-Fidelity Independent Top Banner v4.3.8:
+ * Features Spectrum Flow atmospheric background logic with multi-color dynamic cycling.
  */
 export default function TopBanner() {
   const [config, setConfig] = useState<BannerConfig>({
-    items: ["Welcome to Alpha Ecosystem v4.3.7"],
-    coloredItems: [{ text: "Welcome to Alpha Ecosystem v4.3.7", color: "#ffffff" }],
+    items: ["Welcome to Alpha Ecosystem v4.3.8"],
+    coloredItems: [{ text: "Welcome to Alpha Ecosystem v4.3.8", color: "#ffffff" }],
     speed: 30,
     fontSize: 12,
     fontWeight: 'font-bold',
@@ -131,9 +131,9 @@ export default function TopBanner() {
       
       const direction = config.gradientDirection === 'right' ? 'bg-gradient-to-l' : 'bg-gradient-to-r';
       return cn(
-          "text-white bg-[length:200%_200%] animate-gradient-x border-white/5",
+          "text-white bg-[length:400%_400%] animate-gradient-x border-white/5",
           direction,
-          "from-[#28235f] via-[#4c3b99] to-[#28235f]"
+          "from-red-600 via-orange-600 via-yellow-600 via-green-600 via-blue-600 via-purple-600 via-pink-600 to-red-600"
       );
   };
 
