@@ -29,7 +29,8 @@ import {
   Activity,
   Youtube,
   Share2,
-  Video
+  Video,
+  Upload
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import FeaturedProductManager from './FeaturedProductManager';
@@ -41,6 +42,7 @@ import { cn } from '@/lib/utils';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, rectSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { uploadFile } from '@/lib/storage';
 
 export const STYLE_OPTIONS = [
     { id: 'kenyan-flag', label: '🇰🇪 Kenyan Flag Colors' },
@@ -170,6 +172,12 @@ const DEFAULT_CONNECT: ConnectConfig = {
     ]
 };
 
+interface VideoItem {
+    id: string;
+    type: 'tiktok' | 'supabase';
+    value: string;
+}
+
 function SortableSearchPhrase({ phrase, id, onRemove }: { phrase: string, id: string, onRemove: (phrase: string) => void }) {
     const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id });
     const style = { transform: CSS.Translate.toString(transform), transition };
@@ -194,6 +202,8 @@ export default function UiUxControlCenter() {
   const [searchPhrases, setSearchPhrases] = useState<string[]>([]);
   const [heroSlides, setHeroSlides] = useState<HeroSlide[]>([]);
   const [connectConfig, setConnectConfig] = useState<ConnectConfig>(DEFAULT_CONNECT);
+  const [videoStream, setVideoStream] = useState<VideoItem[]>([]);
+  const [uploadingId, setUploadingId] = useState<string | null>(null);
   const [newPhrase, setNewPhrase] = useState('');
 
   const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }));
@@ -201,11 +211,12 @@ export default function UiUxControlCenter() {
   const loadAllSettings = useCallback(async () => {
     setLoading(true);
     try {
-      const [search, bannerSet, slides, connect] = await Promise.all([
+      const [search, bannerSet, slides, connect, videoConfig] = await Promise.all([
         getStorefrontSetting('search_phrases'),
         getStorefrontSetting('top_banner_config'),
         getStorefrontSetting('hero_slides'),
         getStorefrontSetting('connect_with_us_config'),
+        getStorefrontSetting('video_stream_config')
       ]);
       if (search) setSearchPhrases(search);
       if (bannerSet) {
@@ -220,6 +231,7 @@ export default function UiUxControlCenter() {
       }
       if (slides) setHeroSlides(slides);
       if (connect) setConnectConfig({ ...DEFAULT_CONNECT, ...connect });
+      if (videoConfig && videoConfig.items) setVideoStream(videoConfig.items);
     } catch (err) { console.error(err); } finally { setLoading(false); }
   }, []);
 
@@ -247,6 +259,50 @@ export default function UiUxControlCenter() {
     } catch (err: any) { toast({ variant: "destructive", description: err.message }); } finally { setSubmitting(false); }
   };
 
+  const handleAddVideoSlot = () => {
+    setVideoStream([...videoStream, { id: `video-${Date.now()}`, type: 'tiktok', value: '' }]);
+  };
+
+  const handleRemoveVideoSlot = (id: string) => {
+    setVideoStream(videoStream.filter(v => v.id !== id));
+  };
+
+  const handleUpdateVideoType = (id: string, type: 'tiktok' | 'supabase') => {
+    setVideoStream(videoStream.map(v => v.id === id ? { ...v, type, value: '' } : v));
+  };
+
+  const handleUpdateVideoValue = (id: string, value: string) => {
+    setVideoStream(videoStream.map(v => v.id === id ? { ...v, value } : v));
+  };
+
+  const handleVideoUpload = async (id: string, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    setUploadingId(id);
+    try {
+        const url = await uploadFile(file, 'connect-Us video', 'social-assets');
+        handleUpdateVideoValue(id, url);
+        toast({ title: "Asset Synchronized", description: "Native video successfully hosted in Supabase Cloud." });
+    } catch (err: any) {
+        toast({ variant: "destructive", title: "Upload Failed", description: err.message });
+    } finally {
+        setUploadingId(null);
+    }
+  };
+
+  const handleSaveVideoStream = async () => {
+    setSubmitting(true);
+    try {
+        await updateStorefrontSetting('video_stream_config', { items: videoStream });
+        toast({ title: "Stream Published", description: "Video logic synchronized with global storefront." });
+    } catch (err: any) {
+        toast({ variant: "destructive", description: err.message });
+    } finally {
+        setSubmitting(false);
+    }
+  };
+
   const handleSearchPhraseDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (over && active.id !== over.id) {
@@ -261,7 +317,6 @@ export default function UiUxControlCenter() {
   const updateMarqueeItems = (val: string) => {
     const rawItems = val.split(',').map(i => i.trim()).filter(Boolean);
     const newColoredItems = rawItems.map((text, index) => {
-        // Ordinal Mapping: Use the color from the existing item at this same index
         const existing = bannerConfig.coloredItems?.[index];
         return { 
             text, 
@@ -342,7 +397,7 @@ export default function UiUxControlCenter() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b pb-8">
         <div>
           <h1 className="text-5xl font-black font-headline text-accent tracking-tighter uppercase">Alpha CMS Suite</h1>
-          <p className="text-muted-foreground font-bold uppercase tracking-widest text-xs mt-2">Professional Storefront Governance v4.4.3</p>
+          <p className="text-muted-foreground font-bold uppercase tracking-widest text-xs mt-2">Professional Storefront Governance v4.4.4</p>
         </div>
       </div>
 
@@ -354,11 +409,10 @@ export default function UiUxControlCenter() {
             <TabsTrigger value="categories" className="rounded-[1.5rem] font-black uppercase text-[10px] py-4">Product Carousel</TabsTrigger>
             <TabsTrigger value="spotlight" className="rounded-[1.5rem] font-black uppercase text-[10px] py-4">Spotlight</TabsTrigger>
             <TabsTrigger value="social" className="rounded-[1.5rem] font-black uppercase text-[10px] py-4">Social Hub</TabsTrigger>
-            <TabsTrigger value="moderation" className="rounded-[1.5rem] font-black uppercase text-[10px] py-4">Moderation</TabsTrigger>
+            <TabsTrigger value="videos" className="rounded-[1.5rem] font-black uppercase text-[10px] py-4">Video Stream</TabsTrigger>
         </TabsList>
 
         <TabsContent value="topbanner" className="space-y-8">
-            {/* Real-time Preview */}
             <Card className={cn("rounded-[2.5rem] border shadow-2xl overflow-hidden sticky top-24 z-30 transition-all duration-500", getBannerPreviewBg())}>
                 <div className="p-8 border-b border-black/5 flex justify-between items-center bg-black/5">
                     <div>
@@ -406,7 +460,7 @@ export default function UiUxControlCenter() {
             <Card className="rounded-[2.5rem] border shadow-xl overflow-hidden">
                 <CardHeader className="bg-accent text-white p-8">
                     <CardTitle className="text-2xl font-black uppercase tracking-tight">Banner Engine v4.4.0</CardTitle>
-                    <CardDescription className="text-white/60">Configure atmospheric controls, typography, and spectrum pace. Spacing is normalized by the template list below.</CardDescription>
+                    <CardDescription className="text-white/60">Configure atmospheric controls, typography, and spectrum pace.</CardDescription>
                 </CardHeader>
                 <CardContent className="p-10 space-y-12">
                     <div className="space-y-3">
@@ -419,7 +473,6 @@ export default function UiUxControlCenter() {
                         />
                     </div>
 
-                    {/* GLOBAL ENGINE CONFIGURATION */}
                     <div className="p-8 rounded-[2.5rem] bg-secondary/10 border border-dashed border-accent/20 space-y-10 animate-in fade-in duration-700">
                         <div className="flex items-center gap-3">
                             <Settings2 className="text-accent h-5 w-5" />
@@ -427,7 +480,6 @@ export default function UiUxControlCenter() {
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-                            {/* PACE & TYPOGRAPHY */}
                             <div className="space-y-8">
                                 <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/60 block">Pace & Typography</span>
                                 <div className="grid grid-cols-2 gap-6">
@@ -462,7 +514,6 @@ export default function UiUxControlCenter() {
                                 </div>
                             </div>
 
-                            {/* ATMOSPHERIC CONTROLS */}
                             <div className="space-y-8">
                                 <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/60 block">Atmospheric Controls</span>
                                 <div className="space-y-2">
@@ -512,7 +563,6 @@ export default function UiUxControlCenter() {
                         </div>
                     </div>
 
-                    {/* DYNAMIC ITEM SLOT GENERATOR */}
                     {bannerConfig.coloredItems && bannerConfig.coloredItems.length > 0 && (
                         <div className="p-8 rounded-[2.5rem] bg-secondary/10 border border-dashed border-accent/20 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
                             <div className="flex items-center gap-3 mb-2">
@@ -625,6 +675,7 @@ export default function UiUxControlCenter() {
         <TabsContent value="hero"><HeroManager initialSlides={heroSlides} /></TabsContent>
         <TabsContent value="categories"><CategoryManager initialCards={[]} /></TabsContent>
         <TabsContent value="spotlight"><FeaturedProductManager /></TabsContent>
+        
         <TabsContent value="social" className="space-y-8">
             <Card className="rounded-[2.5rem] border shadow-xl overflow-hidden">
                 <CardHeader className="bg-accent text-white p-8">
@@ -632,10 +683,9 @@ export default function UiUxControlCenter() {
                         <Share2 className="text-primary h-6 w-6" />
                         <CardTitle className="text-2xl font-black uppercase tracking-tight">Social Hub CMS</CardTitle>
                     </div>
-                    <CardDescription className="text-white/60">Control your digital presence and curated video streams.</CardDescription>
+                    <CardDescription className="text-white/60">Control your digital presence and atmospheric brand headlines.</CardDescription>
                 </CardHeader>
                 <CardContent className="p-10 space-y-12">
-                    {/* Copy Hub */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div className="space-y-2">
                             <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Section Headline</Label>
@@ -655,44 +705,6 @@ export default function UiUxControlCenter() {
                         </div>
                     </div>
 
-                    {/* Video Stream Hub */}
-                    <div className="p-8 rounded-[2.5rem] bg-secondary/10 border border-dashed border-accent/20 space-y-8">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <Video className="text-accent h-5 w-5" />
-                                <h3 className="text-sm font-black text-accent uppercase tracking-widest">TikTok Asset Manager</h3>
-                            </div>
-                            <Button variant="outline" size="sm" className="rounded-full" onClick={() => setConnectConfig({...connectConfig, tiktokVideoIds: [...connectConfig.tiktokVideoIds, ""]})}>
-                                <Plus size={14} className="mr-2" /> Add Video Slot
-                            </Button>
-                        </div>
-                        
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                            {connectConfig.tiktokVideoIds.map((id, idx) => (
-                                <div key={idx} className="flex flex-col gap-2 p-4 bg-white rounded-2xl border shadow-sm group">
-                                    <div className="flex items-center justify-between">
-                                        <Label className="text-[8px] font-black uppercase text-muted-foreground">Video Slot {idx + 1}</Label>
-                                        <button onClick={() => setConnectConfig({...connectConfig, tiktokVideoIds: connectConfig.tiktokVideoIds.filter((_, i) => i !== idx)})} className="text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <Trash2 size={12} />
-                                        </button>
-                                    </div>
-                                    <Input 
-                                        value={id} 
-                                        onChange={(e) => {
-                                            const newIds = [...connectConfig.tiktokVideoIds];
-                                            newIds[idx] = e.target.value;
-                                            setConnectConfig({...connectConfig, tiktokVideoIds: newIds});
-                                        }}
-                                        placeholder="Enter TikTok Video ID (e.g., 7506...)"
-                                        className="h-10 rounded-xl font-mono text-xs"
-                                    />
-                                    <p className="text-[8px] text-muted-foreground italic font-medium">Extract the ID from the video URL (the string of numbers at the end).</p>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Social Logic Hub */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         {connectConfig.socialLinks.map((link, idx) => (
                             <div key={idx} className="p-6 rounded-3xl bg-muted/30 border space-y-4">
@@ -737,6 +749,118 @@ export default function UiUxControlCenter() {
                 </CardContent>
             </Card>
         </TabsContent>
+
+        <TabsContent value="videos" className="space-y-8">
+            <Card className="rounded-[2.5rem] border shadow-xl overflow-hidden">
+                <CardHeader className="bg-accent text-white p-8">
+                    <div className="flex items-center gap-3">
+                        <Video className="text-primary h-6 w-6" />
+                        <CardTitle className="text-2xl font-black uppercase tracking-tight">Digital Asset Stream</CardTitle>
+                    </div>
+                    <CardDescription className="text-white/60">Upload native videos to Supabase or link TikTok content for the Social Hub.</CardDescription>
+                </CardHeader>
+                <CardContent className="p-10 space-y-12">
+                    <div className="flex justify-between items-center">
+                        <div>
+                            <h3 className="text-sm font-black text-accent uppercase tracking-widest">Active Stream Slots</h3>
+                            <p className="text-[10px] text-muted-foreground mt-1 uppercase font-bold tracking-widest">Synchronizing with "connect-Us video" bucket</p>
+                        </div>
+                        <Button onClick={handleAddVideoSlot} variant="outline" className="rounded-full h-11 px-6 font-black uppercase tracking-tighter">
+                            <Plus size={16} className="mr-2" /> Add Stream Slot
+                        </Button>
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        {videoStream.map((item, idx) => (
+                            <div key={item.id} className="p-8 rounded-[2.5rem] bg-secondary/10 border border-dashed border-accent/20 space-y-6 relative group/slot animate-in fade-in slide-in-from-bottom-2">
+                                <div className="absolute top-4 right-4 opacity-0 group-hover/slot:opacity-100 transition-opacity">
+                                    <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full text-red-500 hover:bg-red-50" onClick={() => handleRemoveVideoSlot(item.id)}>
+                                        <Trash2 size={18} />
+                                    </Button>
+                                </div>
+
+                                <div className="flex items-center gap-4 mb-4">
+                                    <span className="h-10 w-10 rounded-2xl bg-accent text-white flex items-center justify-center font-black text-sm shadow-lg">#{idx + 1}</span>
+                                    <div className="flex bg-white rounded-full p-1 border shadow-sm">
+                                        <button 
+                                            onClick={() => handleUpdateVideoType(item.id, 'tiktok')}
+                                            className={cn("px-6 py-2 rounded-full text-[10px] font-black uppercase transition-all tracking-widest", item.type === 'tiktok' ? "bg-accent text-white shadow-md" : "text-muted-foreground hover:bg-muted/50")}
+                                        >TikTok</button>
+                                        <button 
+                                            onClick={() => handleUpdateVideoType(item.id, 'supabase')}
+                                            className={cn("px-6 py-2 rounded-full text-[10px] font-black uppercase transition-all tracking-widest", item.type === 'supabase' ? "bg-accent text-white shadow-md" : "text-muted-foreground hover:bg-muted/50")}
+                                        >Upload</button>
+                                    </div>
+                                </div>
+
+                                {item.type === 'tiktok' ? (
+                                    <div className="space-y-3">
+                                        <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">TikTok Video ID</Label>
+                                        <Input 
+                                            value={item.value} 
+                                            onChange={(e) => handleUpdateVideoValue(item.id, e.target.value)}
+                                            placeholder="Enter numeric ID (e.g. 7506...)"
+                                            className="h-14 rounded-2xl font-mono text-base shadow-sm border-none bg-white"
+                                        />
+                                        <p className="text-[9px] text-muted-foreground italic font-medium leading-tight">Extract the ID from the video URL (the string of numbers at the end).</p>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-4">
+                                        <div className="relative group cursor-pointer border-2 border-dashed rounded-[2rem] p-10 text-center bg-white hover:border-primary transition-all duration-500 shadow-sm">
+                                            <input 
+                                                type="file" 
+                                                accept="video/*" 
+                                                className="absolute inset-0 opacity-0 cursor-pointer z-10"
+                                                onChange={(e) => handleVideoUpload(item.id, e)}
+                                                disabled={!!uploadingId}
+                                            />
+                                            {uploadingId === item.id ? (
+                                                <div className="flex flex-col items-center gap-3">
+                                                    <Loader2 className="h-10 w-10 animate-spin text-primary" />
+                                                    <span className="text-[10px] font-black uppercase text-primary animate-pulse tracking-widest">Syncing with Cloud Node...</span>
+                                                </div>
+                                            ) : (
+                                                <div className="flex flex-col items-center gap-3 text-muted-foreground">
+                                                    <Upload className="h-10 w-10 opacity-30 group-hover:opacity-100 group-hover:scale-110 transition-all" />
+                                                    <div>
+                                                        <p className="text-xs font-black uppercase tracking-tight text-accent">Upload Native Asset</p>
+                                                        <p className="text-[9px] font-bold uppercase tracking-widest mt-1">MP4 • MOV • WEBM (Max 50MB)</p>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                        
+                                        {item.value && (
+                                            <div className="p-6 rounded-3xl bg-primary/5 border border-primary/10 space-y-3 animate-in slide-in-from-top-2 duration-500">
+                                                <Label className="text-[9px] font-black uppercase text-primary tracking-widest flex items-center gap-2">
+                                                    <Zap size={10} /> Supabase Public Content URL
+                                                </Label>
+                                                <div className="flex gap-3">
+                                                    <Input 
+                                                        value={item.value} 
+                                                        readOnly 
+                                                        className="h-11 rounded-xl bg-white text-[10px] font-mono border-none shadow-inner truncate" 
+                                                    />
+                                                    <Button variant="outline" size="sm" className="h-11 rounded-xl px-5 text-[10px] font-black uppercase tracking-widest hover:bg-primary hover:text-white transition-all shadow-sm" onClick={() => window.open(item.value, '_blank')}>
+                                                        <Eye size={14} className="mr-2" /> View
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+
+                    <Button onClick={handleSaveVideoStream} disabled={submitting} className="w-full h-16 rounded-full font-black text-xl uppercase bg-primary text-white shadow-2xl transition-all hover:scale-[1.02] active:scale-95">
+                        {submitting ? <Loader2 className="animate-spin mr-3" /> : <Save className="mr-3" />}
+                        Sync Asset Stream
+                    </Button>
+                </CardContent>
+            </Card>
+        </TabsContent>
+
         <TabsContent value="moderation" className="space-y-8">
             <Card className="rounded-[2.5rem] border shadow-xl p-10 text-center">
                 <BookOpen className="mx-auto h-12 w-12 text-muted-foreground opacity-20 mb-6" />

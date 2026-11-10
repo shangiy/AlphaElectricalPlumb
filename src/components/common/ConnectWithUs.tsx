@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { getStorefrontSetting } from '@/app/actions/cms-actions';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Sparkles, Video } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface SocialLink {
@@ -23,31 +23,40 @@ interface ConnectConfig {
 const FALLBACK_CONFIG: ConnectConfig = {
     headline: "Connect with us!",
     subheading: "As You Enquire or make purchases",
-    tiktokVideoIds: ["7506475821771640070", "7496094826002222342"],
+    tiktokVideoIds: [],
     socialLinks: [
         { platform: "tiktok", label: "FOLLOW US ON TIKTOK →", url: "https://www.tiktok.com/@AlphaElectricalsandplumb" },
         { platform: "facebook", label: "LIKE US ON FACEBOOK →", url: "https://www.facebook.com/Alphaelectricalsandplumbing" }
     ]
 };
 
+interface VideoItem {
+    id: string;
+    type: 'tiktok' | 'supabase';
+    value: string;
+}
+
 export default function ConnectWithUs() {
   const [config, setConfig] = useState<ConnectConfig>(FALLBACK_CONFIG);
+  const [videoConfig, setVideoConfig] = useState<{ items: VideoItem[] }>({ items: [] });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function loadSocialSettings() {
+    async function loadData() {
         try {
-            const data = await getStorefrontSetting('connect_with_us_config');
-            if (data && data.socialLinks) {
-                setConfig(data);
-            }
+            const [social, videos] = await Promise.all([
+                getStorefrontSetting('connect_with_us_config'),
+                getStorefrontSetting('video_stream_config')
+            ]);
+            if (social && social.socialLinks) setConfig(social);
+            if (videos && videos.items) setVideoConfig(videos);
         } catch (e) {
-            console.error("Social hub fetch failed:", e);
+            console.error("Social data fetch failed:", e);
         } finally {
             setLoading(false);
         }
     }
-    loadSocialSettings();
+    loadData();
   }, []);
 
   return (
@@ -58,26 +67,80 @@ export default function ConnectWithUs() {
         style={{ backgroundImage: "url('/connect-bg.jpg')" }}
         data-ai-hint="team background"
       ></div>
-      <div className="absolute inset-0 bg-black/80 backdrop-blur-[2px]"></div>
+      <div className="absolute inset-0 bg-black/85 backdrop-blur-[2px]"></div>
       
-      <div className="relative z-10 mx-auto flex flex-col items-center justify-center px-4 text-center container max-w-6xl">
+      <div className="relative z-10 mx-auto flex flex-col items-center justify-center px-4 text-center container max-w-7xl">
         {loading ? (
            <div className="py-20 flex flex-col items-center gap-4">
               <Loader2 className="animate-spin text-primary h-12 w-12" />
-              <p className="font-black uppercase tracking-[0.3em] text-white/40">Syncing Social Node...</p>
+              <p className="font-black uppercase tracking-[0.3em] text-white/40">Syncing Digital Hub...</p>
            </div>
         ) : (
           <>
-              <div className="animate-in fade-in slide-in-from-top-4 duration-700">
-                  <h2 className="text-6xl font-black font-headline tracking-tighter uppercase leading-[0.8] mb-4">
+              <div className="animate-in fade-in slide-in-from-top-4 duration-700 mb-16">
+                  <div className="flex items-center justify-center gap-2 text-primary font-black uppercase tracking-[0.3em] mb-4">
+                      <Sparkles size={16} /> Community Stream
+                  </div>
+                  <h2 className="text-6xl md:text-7xl font-black font-headline tracking-tighter uppercase leading-[0.8] mb-4">
                       {config.headline}
                   </h2>
-                  <p className="text-xl text-white/60 font-medium tracking-tight">
+                  <p className="text-xl text-white/60 font-medium tracking-tight max-w-2xl mx-auto">
                       {config.subheading}
                   </p>
               </div>
 
-              <div className="mt-20 flex flex-col gap-6 sm:flex-row animate-in fade-in slide-in-from-bottom-4 duration-1000">
+              {/* Dynamic Video Stream Grid */}
+              {videoConfig.items && videoConfig.items.length > 0 && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 w-full mb-20 animate-in fade-in slide-in-from-bottom-8 duration-1000">
+                      {videoConfig.items.map((item, idx) => (
+                          <div 
+                              key={item.id || idx} 
+                              className="bg-white/5 p-4 rounded-[3rem] border border-white/10 shadow-2xl hover:border-primary/40 transition-all duration-500 hover:-translate-y-4 group/video overflow-hidden aspect-[9/16] relative flex items-center justify-center"
+                          >
+                              {item.type === 'tiktok' ? (
+                                  item.value ? (
+                                      <iframe
+                                          src={`https://www.tiktok.com/embed/v2/${item.value}?lang=en-US&fontFamily=Poppins&fontWeight=700`}
+                                          className="w-full h-full border-none rounded-[2rem]"
+                                          allowFullScreen
+                                          loading="lazy"
+                                      />
+                                  ) : (
+                                      <div className="flex flex-col items-center gap-4 text-white/20">
+                                          <Video size={48} />
+                                          <span className="text-[10px] font-black uppercase tracking-widest">Awaiting TikTok ID</span>
+                                      </div>
+                                  )
+                              ) : (
+                                  item.value ? (
+                                      <video 
+                                          src={item.value} 
+                                          className="w-full h-full object-cover rounded-[2rem] shadow-inner" 
+                                          controls 
+                                          playsInline
+                                          loop
+                                          muted
+                                          preload="metadata"
+                                      />
+                                  ) : (
+                                      <div className="flex flex-col items-center gap-4 text-white/20">
+                                          <Video size={48} />
+                                          <span className="text-[10px] font-black uppercase tracking-widest">Awaiting Upload</span>
+                                      </div>
+                                  )
+                              )}
+                              
+                              <div className="absolute bottom-6 left-6 opacity-0 group-hover/video:opacity-100 transition-opacity">
+                                  <Badge className="bg-primary/20 backdrop-blur-md text-primary border-primary/20 font-black uppercase text-[8px] tracking-[0.2em] px-3">
+                                      {item.type === 'tiktok' ? 'LIVE TIKTOK' : 'NATIVE ASSET'}
+                                  </Badge>
+                              </div>
+                          </div>
+                      ))}
+                  </div>
+              )}
+
+              <div className="flex flex-col gap-6 sm:flex-row animate-in fade-in slide-in-from-bottom-4 duration-1000">
                   {config.socialLinks.map((link, idx) => (
                       <Button 
                           key={idx}

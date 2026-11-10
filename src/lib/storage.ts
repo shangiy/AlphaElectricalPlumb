@@ -7,24 +7,36 @@ import { uploadToStorageAdmin } from '@/app/actions/storage-actions';
  * to prevent RLS (Row Level Security) violation errors.
  */
 export async function uploadImage(file: File | string, bucket: string = 'product-images'): Promise<string> {
+    return uploadFile(file, bucket, 'uploads');
+}
+
+/**
+ * Generic File Upload Utility:
+ * Routes all uploads (Images, Videos, PDFs) through a Server Action using the Service Role key.
+ */
+export async function uploadFile(file: File | string, bucket: string, folder: string = 'uploads'): Promise<string> {
     try {
-        const fileName = `${uuidv4()}.webp`;
-        const filePath = `uploads/${fileName}`;
+        const extension = file instanceof File 
+            ? file.name.split('.').pop() 
+            : (typeof file === 'string' && file.startsWith('data:image')) ? 'webp' : 'mp4';
+            
+        const fileName = `${uuidv4()}.${extension}`;
+        const filePath = `${folder}/${fileName}`;
         
         let fileToUpload: File;
 
-        // Handle Data URIs (Base64) from camera captures
+        // Handle Data URIs (Base64) from camera captures or similar
         if (typeof file === 'string' && file.startsWith('data:')) {
             const response = await fetch(file);
             const blob = await response.blob();
-            fileToUpload = new File([blob], fileName, { type: blob.type || 'image/webp' });
+            fileToUpload = new File([blob], fileName, { type: blob.type });
         } 
         // Handle standard File objects from input fields
         else if (file instanceof File) {
             fileToUpload = file;
         } 
         else {
-            throw new Error("Unsupported file format provided to uploadImage.");
+            throw new Error("Unsupported file format provided to storage utility.");
         }
 
         // Prepare FormData for the Server Action
@@ -43,6 +55,6 @@ export async function uploadImage(file: File | string, bucket: string = 'product
         return result.publicUrl;
     } catch (error: any) {
         console.error("Storage Service Error: ", error.message);
-        throw new Error(error.message || `Failed to upload image to Supabase Storage bucket "${bucket}".`);
+        throw new Error(error.message || `Failed to upload file to Supabase Storage bucket "${bucket}".`);
     }
 }
