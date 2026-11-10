@@ -108,12 +108,12 @@ interface BannerConfig {
 }
 
 const DEFAULT_BANNER: BannerConfig = {
-    items: ["MASHUJAA DAY OFFER! 20% OFF", "Welcome to Alpha Ecosystem v4.3.8", "FLASH SALE", "NEW ARRIVALS"],
+    items: ["OFFER", "OFFER", "OFFER", "NOVEMBER Flash SALES!"],
     coloredItems: [
-        { text: "MASHUJAA DAY OFFER! 20% OFF", color: "#ffffff" },
-        { text: "Welcome to Alpha Ecosystem v4.3.8", color: "#ffffff" },
-        { text: "FLASH SALE", color: "#ffcc00" },
-        { text: "NEW ARRIVALS", color: "#ffffff" }
+        { text: "OFFER", color: "#ffffff" },
+        { text: "OFFER", color: "#ffffff" },
+        { text: "OFFER", color: "#ffffff" },
+        { text: "NOVEMBER Flash SALES!", color: "#ffffff" }
     ],
     speed: 30,
     fontSize: 12,
@@ -206,7 +206,7 @@ export default function UiUxControlCenter() {
     setSubmitting(true);
     try {
         await updateStorefrontSetting('top_banner_config', bannerConfig);
-        toast({ title: "v4.3.8 Published", description: "Spectrum Flow Engine synchronized across the cluster." });
+        toast({ title: "v4.3.9 Published", description: "Spectrum Flow Engine with Ordinal Mapping synchronized." });
     } catch (err: any) { toast({ variant: "destructive", description: err.message }); } finally { setSubmitting(false); }
   };
 
@@ -223,9 +223,13 @@ export default function UiUxControlCenter() {
 
   const updateMarqueeItems = (val: string) => {
     const rawItems = val.split(',').map(i => i.trim()).filter(Boolean);
-    const newColoredItems = rawItems.map(text => {
-        const existing = bannerConfig.coloredItems?.find(ci => ci.text === text);
-        return existing || { text, color: '#ffffff' };
+    const newColoredItems = rawItems.map((text, index) => {
+        // Ordinal Mapping: Use the color from the existing item at this same index
+        const existing = bannerConfig.coloredItems?.[index];
+        return { 
+            text, 
+            color: existing ? existing.color : '#ffffff' 
+        };
     });
     setBannerConfig({ ...bannerConfig, items: rawItems, coloredItems: newColoredItems });
   };
@@ -300,7 +304,7 @@ export default function UiUxControlCenter() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b pb-8">
         <div>
           <h1 className="text-5xl font-black font-headline text-accent tracking-tighter uppercase">Alpha CMS Suite</h1>
-          <p className="text-muted-foreground font-bold uppercase tracking-widest text-xs mt-2">Professional Storefront Governance v4.3.8</p>
+          <p className="text-muted-foreground font-bold uppercase tracking-widest text-xs mt-2">Professional Storefront Governance v4.3.9</p>
         </div>
       </div>
 
@@ -322,7 +326,7 @@ export default function UiUxControlCenter() {
                         <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-60">Engine Sync Active</p>
                         <h3 className="text-xl font-black uppercase">Real-time Engine Preview</h3>
                     </div>
-                    <Badge className="bg-primary text-white border-none">v4.3.8 LIVE</Badge>
+                    <Badge className="bg-primary text-white border-none">v4.3.9 LIVE</Badge>
                 </div>
                 <div className={cn(
                     "py-3 flex items-center justify-center overflow-hidden transition-colors",
@@ -361,8 +365,8 @@ export default function UiUxControlCenter() {
 
             <Card className="rounded-[2.5rem] border shadow-xl overflow-hidden">
                 <CardHeader className="bg-accent text-white p-8">
-                    <CardTitle className="text-2xl font-black uppercase tracking-tight">Banner Engine v4.3.8</CardTitle>
-                    <CardDescription className="text-white/60">Configure atmospheric controls, typography, and spectrum pace.</CardDescription>
+                    <CardTitle className="text-2xl font-black uppercase tracking-tight">Banner Engine v4.3.9</CardTitle>
+                    <CardDescription className="text-white/60">Configure atmospheric controls, typography, and spectrum pace. Spacing is normalized by the template list below.</CardDescription>
                 </CardHeader>
                 <CardContent className="p-10 space-y-12">
                     <div className="space-y-3">
@@ -371,7 +375,7 @@ export default function UiUxControlCenter() {
                             value={bannerConfig.items.join(', ')} 
                             onChange={(e) => updateMarqueeItems(e.target.value)}
                             className="rounded-2xl h-24 font-bold"
-                            placeholder="MASHUJAA DAY, FLASH SALE, NEW STOCK"
+                            placeholder="OFFER, OFFER, OFFER, NOVEMBER Flash SALES!"
                         />
                     </div>
 
@@ -473,7 +477,7 @@ export default function UiUxControlCenter() {
                         <div className="p-8 rounded-[2.5rem] bg-secondary/10 border border-dashed border-accent/20 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
                             <div className="flex items-center gap-3 mb-2">
                                 <Paintbrush className="text-accent h-5 w-5" />
-                                <h3 className="text-sm font-black text-accent uppercase tracking-widest">Marquee Item Stylizer</h3>
+                                <h3 className="text-sm font-black text-accent uppercase tracking-widest">Marquee Item Stylizer (Ordinal Sequence)</h3>
                             </div>
                             
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-8">
@@ -609,7 +613,7 @@ export default function UiUxControlCenter() {
 
                     <Button onClick={handleSaveBanner} disabled={submitting} className="w-full h-16 rounded-full font-black text-xl uppercase bg-primary text-white shadow-2xl transition-all hover:scale-[1.02] active:scale-95">
                         {submitting ? <Loader2 className="animate-spin mr-3" /> : <Save className="mr-3" />}
-                        Sync v4.3.8 Engine
+                        Sync v4.3.9 Engine
                     </Button>
                 </CardContent>
             </Card>

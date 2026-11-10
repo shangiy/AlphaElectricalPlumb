@@ -48,13 +48,19 @@ interface BannerConfig {
 }
 
 /**
- * High-Fidelity Independent Top Banner v4.3.8:
+ * High-Fidelity Independent Top Banner v4.3.9:
  * Features Spectrum Flow atmospheric background logic with multi-color dynamic cycling.
+ * Ordinal Mapping Engine: Spacing and colors are synchronized to the template list order.
  */
 export default function TopBanner() {
   const [config, setConfig] = useState<BannerConfig>({
-    items: ["Welcome to Alpha Ecosystem v4.3.8"],
-    coloredItems: [{ text: "Welcome to Alpha Ecosystem v4.3.8", color: "#ffffff" }],
+    items: ["OFFER", "OFFER", "OFFER", "NOVEMBER Flash SALES!"],
+    coloredItems: [
+        { text: "OFFER", color: "#ffffff" },
+        { text: "OFFER", color: "#ffffff" },
+        { text: "OFFER", color: "#ffffff" },
+        { text: "NOVEMBER Flash SALES!", color: "#ffffff" }
+    ],
     speed: 30,
     fontSize: 12,
     fontWeight: 'font-bold',
@@ -146,16 +152,14 @@ export default function TopBanner() {
       <div className="container mx-auto flex justify-between items-center h-5">
         <div className={cn(
             "flex-1 inline-flex flex-nowrap overflow-hidden",
-            config.bgType === 'white' 
-                ? "[mask-image:_linear-gradient(to_right,transparent_0,_black_64px,_black_calc(100%-64px),transparent_100%)]" 
-                : "[mask-image:_linear-gradient(to_right,transparent_0,_black_64px,_black_calc(100%-64px),transparent_100%)]"
+            "[mask-image:_linear-gradient(to_right,transparent_0,_black_64px,_black_calc(100%-64px),transparent_100%)]"
         )}>
           <div className="flex w-max items-center flex-nowrap animate-marquee whitespace-nowrap" style={{ animationDuration: `${config.speed}s` }}>
             {[0, 1].map(i => (
-              <ul key={i} className="flex items-center [&_li]:mx-12">
+              <ul key={i} className="flex items-center gap-x-16">
                 {displayItems.map((item, idx) => (
                   <React.Fragment key={idx}>
-                    <li className={cn("flex items-center gap-6 uppercase tracking-widest", config.fontWeight || 'font-bold')} style={{ fontSize: `${config.fontSize}px` }}>
+                    <li className={cn("flex items-center gap-4 uppercase tracking-widest", config.fontWeight || 'font-bold')} style={{ fontSize: `${config.fontSize}px` }}>
                         {config.vibrantText && <span>{renderStyledText(config.vibrantText, config.vibrantStyleType || 'kenyan-flag', config.vibrantOrientation || 'vertical', config.vibrantTextStyle)}</span>}
                         {config.vibrantText2 && <span>{renderStyledText(config.vibrantText2, config.vibrantStyleType2 || 'gold-gradient', config.vibrantOrientation2 || 'horizontal', config.vibrantTextStyle2)}</span>}
                         {config.vibrantText3 && <span>{renderStyledText(config.vibrantText3, config.vibrantStyleType3 || 'neon-glow', config.vibrantOrientation3 || 'vertical', config.vibrantTextStyle3)}</span>}
