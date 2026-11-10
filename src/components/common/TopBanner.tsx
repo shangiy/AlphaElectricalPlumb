@@ -19,6 +19,7 @@ interface BannerConfig {
     coloredItems?: BannerItem[];
     speed: number;
     fontSize: number;
+    fontWeight?: string;
     textColor: string;
     styleType: string;
     styleOrientation?: string;
@@ -42,19 +43,21 @@ interface BannerConfig {
     vibrantStyleType4?: string;
     vibrantOrientation4?: string;
     vibrantTextStyle4?: string;
+    bgType?: 'white' | 'blue' | 'red' | 'dynamic';
+    gradientDirection?: 'left' | 'right';
 }
 
 /**
- * High-Fidelity Independent Top Banner v4.3.6:
- * Features a dynamic changing gradient background and 4-slot vibrant engine.
- * Renders individual colored items from the CMS configuration.
+ * High-Fidelity Independent Top Banner v4.3.7:
+ * Features atmospheric background logic, paced motion, and cloud-flow direction.
  */
 export default function TopBanner() {
   const [config, setConfig] = useState<BannerConfig>({
-    items: ["Welcome to Alpha Ecosystem v4.3.6"],
-    coloredItems: [{ text: "Welcome to Alpha Ecosystem v4.3.6", color: "#ffffff" }],
+    items: ["Welcome to Alpha Ecosystem v4.3.7"],
+    coloredItems: [{ text: "Welcome to Alpha Ecosystem v4.3.7", color: "#ffffff" }],
     speed: 30,
     fontSize: 12,
+    fontWeight: 'font-bold',
     textColor: '#ffffff',
     styleType: 'kenyan-flag',
     styleOrientation: 'horizontal',
@@ -64,7 +67,9 @@ export default function TopBanner() {
     vibrantText: '',
     vibrantText2: '',
     vibrantText3: '',
-    vibrantText4: ''
+    vibrantText4: '',
+    bgType: 'dynamic',
+    gradientDirection: 'left'
   });
 
   useEffect(() => {
@@ -119,25 +124,44 @@ export default function TopBanner() {
     );
   };
 
+  const getBgClasses = () => {
+      if (config.bgType === 'white') return 'bg-white text-[#28235f] border-b';
+      if (config.bgType === 'blue') return 'bg-blue-600 text-white';
+      if (config.bgType === 'red') return 'bg-red-600 text-white';
+      
+      const direction = config.gradientDirection === 'right' ? 'bg-gradient-to-l' : 'bg-gradient-to-r';
+      return cn(
+          "text-white bg-[length:200%_200%] animate-gradient-x border-white/5",
+          direction,
+          "from-[#28235f] via-[#4c3b99] to-[#28235f]"
+      );
+  };
+
   const displayItems = config.coloredItems && config.coloredItems.length > 0 
     ? config.coloredItems 
     : config.items.map(text => ({ text, color: '#ffffff' }));
 
   return (
-    <div className="w-full text-white py-1.5 px-4 bg-gradient-to-r from-[#28235f] via-[#4c3b99] to-[#28235f] bg-[length:200%_200%] animate-gradient-x border-b border-white/5 overflow-hidden">
+    <div className={cn("w-full py-1.5 px-4 overflow-hidden transition-all duration-700", getBgClasses())}>
       <div className="container mx-auto flex justify-between items-center h-5">
-        <div className="flex-1 inline-flex flex-nowrap overflow-hidden [mask-image:_linear-gradient(to_right,transparent_0,_black_64px,_black_calc(100%-64px),transparent_100%)]">
+        <div className={cn(
+            "flex-1 inline-flex flex-nowrap overflow-hidden",
+            config.bgType === 'white' 
+                ? "[mask-image:_linear-gradient(to_right,transparent_0,_black_64px,_black_calc(100%-64px),transparent_100%)]" 
+                : "[mask-image:_linear-gradient(to_right,transparent_0,_black_64px,_black_calc(100%-64px),transparent_100%)]"
+        )}>
           <div className="flex w-max items-center flex-nowrap animate-marquee whitespace-nowrap" style={{ animationDuration: `${config.speed}s` }}>
             {[0, 1].map(i => (
               <ul key={i} className="flex items-center [&_li]:mx-12">
                 {displayItems.map((item, idx) => (
                   <React.Fragment key={idx}>
-                    <li className="flex items-center gap-6 uppercase tracking-widest text-[11px] font-bold">
+                    <li className={cn("flex items-center gap-6 uppercase tracking-widest", config.fontWeight || 'font-bold')} style={{ fontSize: `${config.fontSize}px` }}>
                         {config.vibrantText && <span>{renderStyledText(config.vibrantText, config.vibrantStyleType || 'kenyan-flag', config.vibrantOrientation || 'vertical', config.vibrantTextStyle)}</span>}
                         {config.vibrantText2 && <span>{renderStyledText(config.vibrantText2, config.vibrantStyleType2 || 'gold-gradient', config.vibrantOrientation2 || 'horizontal', config.vibrantTextStyle2)}</span>}
                         {config.vibrantText3 && <span>{renderStyledText(config.vibrantText3, config.vibrantStyleType3 || 'neon-glow', config.vibrantOrientation3 || 'vertical', config.vibrantTextStyle3)}</span>}
                         {config.vibrantText4 && <span>{renderStyledText(config.vibrantText4, config.vibrantStyleType4 || 'fire-emoji', config.vibrantOrientation4 || 'horizontal', config.vibrantTextStyle4)}</span>}
-                        <span style={{ color: item.color || '#ffffff' }}>{item.text}</span>
+                        
+                        <span style={{ color: config.bgType === 'white' && item.color === '#ffffff' ? '#28235f' : item.color }}>{item.text}</span>
                     </li>
                   </React.Fragment>
                 ))}

@@ -23,7 +23,10 @@ import {
   Eye,
   GripVertical,
   BookOpen,
-  Paintbrush
+  Paintbrush,
+  MoveHorizontal,
+  Type,
+  Activity
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import FeaturedProductManager from './FeaturedProductManager';
@@ -56,6 +59,14 @@ export const TEXT_STYLE_OPTIONS = [
     { id: 'bold', label: 'Bold' }
 ];
 
+export const BOLDNESS_OPTIONS = [
+    { id: 'font-light', label: 'Light' },
+    { id: 'font-normal', label: 'Normal' },
+    { id: 'font-semibold', label: 'SemiBold' },
+    { id: 'font-bold', label: 'Bold' },
+    { id: 'font-black', label: 'Black' }
+];
+
 interface BannerItem {
     text: string;
     color: string;
@@ -68,6 +79,7 @@ interface BannerConfig {
     coloredItems?: BannerItem[];
     speed: number;
     fontSize: number;
+    fontWeight?: string;
     textColor: string;
     styleType: string;
     styleOrientation?: string;
@@ -91,23 +103,45 @@ interface BannerConfig {
     vibrantStyleType4?: string;
     vibrantOrientation4?: string;
     vibrantTextStyle4?: string;
+    bgType?: 'white' | 'blue' | 'red' | 'dynamic';
+    gradientDirection?: 'left' | 'right';
 }
 
 const DEFAULT_BANNER: BannerConfig = {
-    items: ["MASHUJAA DAY OFFER! 20% OFF", "Welcome to Alpha Ecosystem v4.3.6", "FLASH SALE", "NEW ARRIVALS"],
+    items: ["MASHUJAA DAY OFFER! 20% OFF", "Welcome to Alpha Ecosystem v4.3.7", "FLASH SALE", "NEW ARRIVALS"],
     coloredItems: [
         { text: "MASHUJAA DAY OFFER! 20% OFF", color: "#ffffff" },
-        { text: "Welcome to Alpha Ecosystem v4.3.6", color: "#ffffff" },
+        { text: "Welcome to Alpha Ecosystem v4.3.7", color: "#ffffff" },
         { text: "FLASH SALE", color: "#ffcc00" },
         { text: "NEW ARRIVALS", color: "#ffffff" }
     ],
-    speed: 30, fontSize: 12, textColor: '#ffffff',
-    styleType: 'kenyan-flag', styleOrientation: 'horizontal',
-    showClock: true, showSocial: true, highlighters: [],
-    vibrantText: '', vibrantStyleType: 'kenyan-flag', vibrantOrientation: 'vertical', vibrantTextStyle: 'bold',
-    vibrantText2: '', vibrantStyleType2: 'gold-gradient', vibrantOrientation2: 'horizontal', vibrantTextStyle2: 'bold',
-    vibrantText3: '', vibrantStyleType3: 'neon-glow', vibrantOrientation3: 'vertical', vibrantTextStyle3: 'bold',
-    vibrantText4: '', vibrantStyleType4: 'fire-emoji', vibrantOrientation4: 'horizontal', vibrantTextStyle4: 'bold'
+    speed: 30,
+    fontSize: 12,
+    fontWeight: 'font-bold',
+    textColor: '#ffffff',
+    styleType: 'kenyan-flag',
+    styleOrientation: 'horizontal',
+    showClock: true,
+    showSocial: true,
+    highlighters: [],
+    vibrantText: '',
+    vibrantStyleType: 'kenyan-flag',
+    vibrantOrientation: 'vertical',
+    vibrantTextStyle: 'bold',
+    vibrantText2: '',
+    vibrantStyleType2: 'gold-gradient',
+    vibrantOrientation2: 'horizontal',
+    vibrantTextStyle2: 'bold',
+    vibrantText3: '',
+    vibrantStyleType3: 'neon-glow',
+    vibrantOrientation3: 'vertical',
+    vibrantTextStyle3: 'bold',
+    vibrantText4: '',
+    vibrantStyleType4: 'fire-emoji',
+    vibrantOrientation4: 'horizontal',
+    vibrantTextStyle4: 'bold',
+    bgType: 'dynamic',
+    gradientDirection: 'left'
 };
 
 function SortableSearchPhrase({ phrase, id, onRemove }: { phrase: string, id: string, onRemove: (phrase: string) => void }) {
@@ -172,7 +206,7 @@ export default function UiUxControlCenter() {
     setSubmitting(true);
     try {
         await updateStorefrontSetting('top_banner_config', bannerConfig);
-        toast({ title: "v4.3.6 Published", description: "Banner Engine with Multi-Slot styling synchronized." });
+        toast({ title: "v4.3.7 Published", description: "Banner Engine with Motion and Background controls synchronized." });
     } catch (err: any) { toast({ variant: "destructive", description: err.message }); } finally { setSubmitting(false); }
   };
 
@@ -254,12 +288,19 @@ export default function UiUxControlCenter() {
     );
   };
 
+  const getBannerPreviewBg = () => {
+    if (bannerConfig.bgType === 'white') return 'bg-white text-accent border';
+    if (bannerConfig.bgType === 'blue') return 'bg-blue-600 text-white';
+    if (bannerConfig.bgType === 'red') return 'bg-red-600 text-white';
+    return 'bg-accent text-white';
+  };
+
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b pb-8">
         <div>
           <h1 className="text-5xl font-black font-headline text-accent tracking-tighter uppercase">Alpha CMS Suite</h1>
-          <p className="text-muted-foreground font-bold uppercase tracking-widest text-xs mt-2">Professional Storefront Governance v4.3.6</p>
+          <p className="text-muted-foreground font-bold uppercase tracking-widest text-xs mt-2">Professional Storefront Governance v4.3.7</p>
         </div>
       </div>
 
@@ -275,25 +316,42 @@ export default function UiUxControlCenter() {
 
         <TabsContent value="topbanner" className="space-y-8">
             {/* Real-time Preview */}
-            <Card className="rounded-[2.5rem] border shadow-2xl bg-accent text-white overflow-hidden sticky top-24 z-30">
-                <div className="p-8 border-b border-white/5 flex justify-between items-center bg-black/20">
+            <Card className={cn("rounded-[2.5rem] border shadow-2xl overflow-hidden sticky top-24 z-30 transition-all duration-500", getBannerPreviewBg())}>
+                <div className="p-8 border-b border-black/5 flex justify-between items-center bg-black/5">
                     <div>
-                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">Engine Sync Active</p>
+                        <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-60">Engine Sync Active</p>
                         <h3 className="text-xl font-black uppercase">Real-time Engine Preview</h3>
                     </div>
-                    <Badge className="bg-primary">v4.3.6 LIVE</Badge>
+                    <Badge className="bg-primary text-white border-none">v4.3.7 LIVE</Badge>
                 </div>
-                <div className="bg-white py-3 flex items-center justify-center overflow-hidden">
+                <div className={cn(
+                    "py-3 flex items-center justify-center overflow-hidden transition-colors",
+                    bannerConfig.bgType === 'white' ? 'bg-white' : 
+                    bannerConfig.bgType === 'blue' ? 'bg-blue-600' :
+                    bannerConfig.bgType === 'red' ? 'bg-red-600' :
+                    'bg-gradient-to-r from-[#28235f] via-[#4c3b99] to-[#28235f] bg-[length:200%_200%] animate-gradient-x'
+                )}
+                style={{ direction: bannerConfig.gradientDirection === 'right' ? 'rtl' : 'ltr' }}
+                >
                     <div className="flex items-center gap-12 whitespace-nowrap animate-marquee">
                         {[0,1].map(i => (
-                            <div key={i} className="flex items-center gap-8">
+                            <div key={i} className="flex items-center gap-8" style={{ direction: 'ltr' }}>
                                 {bannerConfig.vibrantText && <span>{renderStyledBadgeText(bannerConfig.vibrantText, bannerConfig.vibrantStyleType || 'kenyan-flag', bannerConfig.vibrantOrientation || 'vertical', bannerConfig.vibrantTextStyle)}</span>}
                                 {bannerConfig.vibrantText2 && <span>{renderStyledBadgeText(bannerConfig.vibrantText2, bannerConfig.vibrantStyleType2 || 'gold-gradient', bannerConfig.vibrantOrientation2 || 'horizontal', bannerConfig.vibrantTextStyle2)}</span>}
                                 {bannerConfig.vibrantText3 && <span>{renderStyledBadgeText(bannerConfig.vibrantText3, bannerConfig.vibrantStyleType3 || 'neon-glow', bannerConfig.vibrantOrientation3 || 'vertical', bannerConfig.vibrantTextStyle3)}</span>}
                                 {bannerConfig.vibrantText4 && <span>{renderStyledBadgeText(bannerConfig.vibrantText4, bannerConfig.vibrantStyleType4 || 'fire-emoji', bannerConfig.vibrantOrientation4 || 'horizontal', bannerConfig.vibrantTextStyle4)}</span>}
                                 
                                 {bannerConfig.coloredItems?.map((item, idx) => (
-                                    <span key={idx} className="font-bold uppercase tracking-widest text-[12px]" style={{ color: item.color || '#28235f' }}>{item.text}</span>
+                                    <span 
+                                        key={idx} 
+                                        className={cn("uppercase tracking-widest", bannerConfig.fontWeight || 'font-bold')}
+                                        style={{ 
+                                            color: bannerConfig.bgType === 'white' && item.color === '#ffffff' ? '#28235f' : item.color,
+                                            fontSize: `${bannerConfig.fontSize}px`
+                                        }}
+                                    >
+                                        {item.text}
+                                    </span>
                                 ))}
                             </div>
                         ))}
@@ -303,8 +361,8 @@ export default function UiUxControlCenter() {
 
             <Card className="rounded-[2.5rem] border shadow-xl overflow-hidden">
                 <CardHeader className="bg-accent text-white p-8">
-                    <CardTitle className="text-2xl font-black uppercase tracking-tight">Banner Engine v4.3.6</CardTitle>
-                    <CardDescription className="text-white/60">Configure the master announcement marquee and assign individual colors to each offer Slot.</CardDescription>
+                    <CardTitle className="text-2xl font-black uppercase tracking-tight">Banner Engine v4.3.7</CardTitle>
+                    <CardDescription className="text-white/60">Configure atmospheric controls, typography, and motion pace.</CardDescription>
                 </CardHeader>
                 <CardContent className="p-10 space-y-12">
                     <div className="space-y-3">
@@ -315,6 +373,99 @@ export default function UiUxControlCenter() {
                             className="rounded-2xl h-24 font-bold"
                             placeholder="MASHUJAA DAY, FLASH SALE, NEW STOCK"
                         />
+                    </div>
+
+                    {/* GLOBAL ENGINE CONFIGURATION */}
+                    <div className="p-8 rounded-[2.5rem] bg-secondary/10 border border-dashed border-accent/20 space-y-10 animate-in fade-in duration-700">
+                        <div className="flex items-center gap-3">
+                            <Settings2 className="text-accent h-5 w-5" />
+                            <h3 className="text-sm font-black text-accent uppercase tracking-widest">Global Engine Configuration</h3>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                            {/* PACE & TYPOGRAPHY */}
+                            <div className="space-y-8">
+                                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/60 block">Pace & Typography</span>
+                                <div className="grid grid-cols-2 gap-6">
+                                    <div className="space-y-2">
+                                        <Label className="text-[9px] font-black uppercase text-muted-foreground/60 flex items-center gap-1.5"><Activity size={12}/> Motion Pace (Seconds)</Label>
+                                        <Input 
+                                            type="number" 
+                                            value={bannerConfig.speed} 
+                                            onChange={(e) => setBannerConfig({...bannerConfig, speed: parseInt(e.target.value) || 0})}
+                                            className="h-12 rounded-xl font-black text-lg"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-[9px] font-black uppercase text-muted-foreground/60 flex items-center gap-1.5"><Type size={12}/> Font Size (px)</Label>
+                                        <Input 
+                                            type="number" 
+                                            value={bannerConfig.fontSize} 
+                                            onChange={(e) => setBannerConfig({...bannerConfig, fontSize: parseInt(e.target.value) || 0})}
+                                            className="h-12 rounded-xl font-black text-lg"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label className="text-[9px] font-black uppercase text-muted-foreground/60">Character Weight (Thickness)</Label>
+                                    <select 
+                                        value={bannerConfig.fontWeight || 'font-bold'}
+                                        onChange={(e) => setBannerConfig({...bannerConfig, fontWeight: e.target.value})}
+                                        className="w-full h-12 rounded-xl border px-3 font-bold bg-white"
+                                    >
+                                        {BOLDNESS_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
+                                    </select>
+                                </div>
+                            </div>
+
+                            {/* ATMOSPHERIC CONTROLS */}
+                            <div className="space-y-8">
+                                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/60 block">Atmospheric Controls</span>
+                                <div className="space-y-2">
+                                    <Label className="text-[9px] font-black uppercase text-muted-foreground/60 flex items-center gap-1.5"><Palette size={12}/> Background Logic</Label>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        {['white', 'blue', 'red', 'dynamic'].map((type) => (
+                                            <button
+                                                key={type}
+                                                onClick={() => setBannerConfig({...bannerConfig, bgType: type as any})}
+                                                className={cn(
+                                                    "h-12 rounded-xl border text-[10px] font-black uppercase transition-all",
+                                                    bannerConfig.bgType === type ? "bg-accent text-white border-accent shadow-lg scale-105" : "bg-white text-accent hover:border-accent/40"
+                                                )}
+                                            >
+                                                {type}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {bannerConfig.bgType === 'dynamic' && (
+                                    <div className="space-y-2 pt-4 border-t border-dashed animate-in slide-in-from-top-2 duration-500">
+                                        <Label className="text-[9px] font-black uppercase text-muted-foreground/60 flex items-center gap-1.5"><MoveHorizontal size={12}/> Cloud Flow Direction</Label>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <button
+                                                onClick={() => setBannerConfig({...bannerConfig, gradientDirection: 'left'})}
+                                                className={cn(
+                                                    "h-10 rounded-xl border text-[9px] font-bold uppercase",
+                                                    bannerConfig.gradientDirection === 'left' ? "bg-primary text-white" : "bg-white"
+                                                )}
+                                            >
+                                                ⬅️ Left-to-Right
+                                            </button>
+                                            <button
+                                                onClick={() => setBannerConfig({...bannerConfig, gradientDirection: 'right'})}
+                                                className={cn(
+                                                    "h-10 rounded-xl border text-[9px] font-bold uppercase",
+                                                    bannerConfig.gradientDirection === 'right' ? "bg-primary text-white" : "bg-white"
+                                                )}
+                                            >
+                                                ➡️ Right-to-Left
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
                     </div>
 
                     {/* DYNAMIC ITEM SLOT GENERATOR */}
@@ -427,10 +578,10 @@ export default function UiUxControlCenter() {
                                         <select value={bannerConfig.vibrantStyleType3 || 'neon-glow'} onChange={(e) => setBannerConfig({...bannerConfig, vibrantStyleType3: e.target.value})} className="h-10 rounded-lg border px-2 text-[10px] font-bold">
                                             {STYLE_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
                                         </select>
-                                        <select value={bannerConfig.vibrantOrientation3 || 'vertical'} onChange={(e) => setBannerConfig({...bannerConfig, vibrantOrientation3: e.target.value})} className="h-10 rounded-lg border px-2 text-[10px] font-bold">
+                                        <select value={bannerConfig.vibrantOrientation3 || 'vertical'} onChange={(e) => setBannerConfig({...bannerConfig, vibrantOrientation: e.target.value})} className="h-10 rounded-lg border px-2 text-[10px] font-bold">
                                             {ORIENTATION_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
                                         </select>
-                                        <select value={bannerConfig.vibrantTextStyle3 || 'bold'} onChange={(e) => setBannerConfig({...bannerConfig, vibrantTextStyle3: e.target.value})} className="h-10 rounded-lg border px-2 text-[10px] font-bold">
+                                        <select value={bannerConfig.vibrantTextStyle3 || 'bold'} onChange={(e) => setBannerConfig({...bannerConfig, vibrantTextStyle: e.target.value})} className="h-10 rounded-lg border px-2 text-[10px] font-bold">
                                             {TEXT_STYLE_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
                                         </select>
                                     </div>
@@ -444,10 +595,10 @@ export default function UiUxControlCenter() {
                                         <select value={bannerConfig.vibrantStyleType4 || 'fire-emoji'} onChange={(e) => setBannerConfig({...bannerConfig, vibrantStyleType4: e.target.value})} className="h-10 rounded-lg border px-2 text-[10px] font-bold">
                                             {STYLE_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
                                         </select>
-                                        <select value={bannerConfig.vibrantOrientation4 || 'horizontal'} onChange={(e) => setBannerConfig({...bannerConfig, vibrantOrientation4: e.target.value})} className="h-10 rounded-lg border px-2 text-[10px] font-bold">
+                                        <select value={bannerConfig.vibrantOrientation4 || 'horizontal'} onChange={(e) => setBannerConfig({...bannerConfig, vibrantOrientation2: e.target.value})} className="h-10 rounded-lg border px-2 text-[10px] font-bold">
                                             {ORIENTATION_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
                                         </select>
-                                        <select value={bannerConfig.vibrantTextStyle4 || 'bold'} onChange={(e) => setBannerConfig({...bannerConfig, vibrantTextStyle4: e.target.value})} className="h-10 rounded-lg border px-2 text-[10px] font-bold">
+                                        <select value={bannerConfig.vibrantTextStyle4 || 'bold'} onChange={(e) => setBannerConfig({...bannerConfig, vibrantTextStyle2: e.target.value})} className="h-10 rounded-lg border px-2 text-[10px] font-bold">
                                             {TEXT_STYLE_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
                                         </select>
                                     </div>
@@ -458,7 +609,7 @@ export default function UiUxControlCenter() {
 
                     <Button onClick={handleSaveBanner} disabled={submitting} className="w-full h-16 rounded-full font-black text-xl uppercase bg-primary text-white shadow-2xl transition-all hover:scale-[1.02] active:scale-95">
                         {submitting ? <Loader2 className="animate-spin mr-3" /> : <Save className="mr-3" />}
-                        Sync v4.3.6 Engine
+                        Sync v4.3.7 Engine
                     </Button>
                 </CardContent>
             </Card>
