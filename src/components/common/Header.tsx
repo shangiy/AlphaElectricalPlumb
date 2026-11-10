@@ -170,9 +170,9 @@ export default function Header() {
                 "flex flex-col text-[#0b0f19] group-hover:text-primary transition-all duration-700 ease-[cubic-bezier(0.19,1,0.22,1)]",
                 mobileSearchOpen ? "opacity-0 w-0 overflow-hidden" : "opacity-100"
             )}>
-                <span className="font-bold text-lg leading-tight uppercase tracking-tighter">Alpha</span>
+                <span className="font-black text-xl leading-tight uppercase tracking-tighter">Alpha</span>
                 <div className="w-full h-px bg-current opacity-20"></div>
-                <span className="text-[8px] leading-tight font-black uppercase tracking-widest">Electricals</span>
+                <span className="text-[7px] leading-tight font-black uppercase tracking-widest">& Plumbing Ltd</span>
             </div>
           </NextLink>
 
