@@ -3,8 +3,6 @@
 import React, { useEffect, useState } from 'react';
 import { getStorefrontSetting } from '@/app/actions/cms-actions';
 import { cn } from '@/lib/utils';
-import { Clock } from 'lucide-react';
-import Image from 'next/image';
 
 interface HighlighterRule {
     word: string;
@@ -41,8 +39,8 @@ interface BannerConfig {
 }
 
 /**
- * High-Fidelity Independent Top Banner v4.3.0:
- * Features a 5-slot sequential engine with dynamic flag character-splitting.
+ * High-Fidelity Independent Top Banner v4.3.1:
+ * Features a dynamic changing gradient background and 5-slot sequential engine.
  */
 export default function TopBanner() {
   const [config, setConfig] = useState<BannerConfig>({
@@ -112,7 +110,7 @@ export default function TopBanner() {
   };
 
   return (
-    <div className="w-full text-white py-1.5 px-4 bg-gradient-to-r from-accent via-accent/90 to-accent border-b border-white/5 overflow-hidden">
+    <div className="w-full text-white py-1.5 px-4 bg-gradient-to-r from-[#28235f] via-[#4c3b99] to-[#28235f] bg-[length:200%_200%] animate-gradient-x border-b border-white/5 overflow-hidden">
       <div className="container mx-auto flex justify-between items-center h-5">
         <div className="flex-1 inline-flex flex-nowrap overflow-hidden [mask-image:_linear-gradient(to_right,transparent_0,_black_64px,_black_calc(100%-64px),transparent_100%)]">
           <div className="flex w-max items-center flex-nowrap animate-marquee whitespace-nowrap" style={{ animationDuration: `${config.speed}s` }}>
