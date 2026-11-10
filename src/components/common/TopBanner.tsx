@@ -43,14 +43,14 @@ interface BannerConfig {
     vibrantStyleType4?: string;
     vibrantOrientation4?: string;
     vibrantTextStyle4?: string;
-    bgType?: 'white' | 'blue' | 'red' | 'dynamic';
+    bgType?: 'white' | 'blue' | 'red' | 'dynamic' | 'vibrant';
     gradientDirection?: 'left' | 'right';
 }
 
 /**
- * High-Fidelity Independent Top Banner v4.3.9:
+ * High-Fidelity Independent Top Banner v4.4.0:
  * Features Spectrum Flow atmospheric background logic with multi-color dynamic cycling.
- * Ordinal Mapping Engine: Spacing and colors are synchronized to the template list order.
+ * vibrant Mode: Red → Orange → Yellow → Green → Purple → Blue cycle.
  */
 export default function TopBanner() {
   const [config, setConfig] = useState<BannerConfig>({
@@ -136,6 +136,15 @@ export default function TopBanner() {
       if (config.bgType === 'red') return 'bg-red-600 text-white';
       
       const direction = config.gradientDirection === 'right' ? 'bg-gradient-to-l' : 'bg-gradient-to-r';
+      
+      if (config.bgType === 'vibrant') {
+          return cn(
+              "text-white bg-[length:400%_400%] animate-gradient-x border-white/5",
+              direction,
+              "from-red-500 via-orange-500 via-yellow-400 via-green-500 via-purple-600 to-blue-600"
+          );
+      }
+
       return cn(
           "text-white bg-[length:400%_400%] animate-gradient-x border-white/5",
           direction,

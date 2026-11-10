@@ -103,7 +103,7 @@ interface BannerConfig {
     vibrantStyleType4?: string;
     vibrantOrientation4?: string;
     vibrantTextStyle4?: string;
-    bgType?: 'white' | 'blue' | 'red' | 'dynamic';
+    bgType?: 'white' | 'blue' | 'red' | 'dynamic' | 'vibrant';
     gradientDirection?: 'left' | 'right';
 }
 
@@ -206,7 +206,7 @@ export default function UiUxControlCenter() {
     setSubmitting(true);
     try {
         await updateStorefrontSetting('top_banner_config', bannerConfig);
-        toast({ title: "v4.3.9 Published", description: "Spectrum Flow Engine with Ordinal Mapping synchronized." });
+        toast({ title: "v4.4.0 Published", description: "Vibrant Spectrum Engine with Ordinal Mapping synchronized." });
     } catch (err: any) { toast({ variant: "destructive", description: err.message }); } finally { setSubmitting(false); }
   };
 
@@ -296,6 +296,7 @@ export default function UiUxControlCenter() {
     if (bannerConfig.bgType === 'white') return 'bg-white text-accent border';
     if (bannerConfig.bgType === 'blue') return 'bg-blue-600 text-white';
     if (bannerConfig.bgType === 'red') return 'bg-red-600 text-white';
+    if (bannerConfig.bgType === 'vibrant') return 'bg-gradient-to-r from-red-500 via-orange-500 via-yellow-400 via-green-500 via-purple-600 to-blue-600 bg-[length:400%_400%] animate-gradient-x text-white';
     return 'bg-accent text-white';
   };
 
@@ -304,7 +305,7 @@ export default function UiUxControlCenter() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b pb-8">
         <div>
           <h1 className="text-5xl font-black font-headline text-accent tracking-tighter uppercase">Alpha CMS Suite</h1>
-          <p className="text-muted-foreground font-bold uppercase tracking-widest text-xs mt-2">Professional Storefront Governance v4.3.9</p>
+          <p className="text-muted-foreground font-bold uppercase tracking-widest text-xs mt-2">Professional Storefront Governance v4.4.0</p>
         </div>
       </div>
 
@@ -326,13 +327,14 @@ export default function UiUxControlCenter() {
                         <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-60">Engine Sync Active</p>
                         <h3 className="text-xl font-black uppercase">Real-time Engine Preview</h3>
                     </div>
-                    <Badge className="bg-primary text-white border-none">v4.3.9 LIVE</Badge>
+                    <Badge className="bg-primary text-white border-none">v4.4.0 LIVE</Badge>
                 </div>
                 <div className={cn(
                     "py-3 flex items-center justify-center overflow-hidden transition-colors",
                     bannerConfig.bgType === 'white' ? 'bg-white' : 
                     bannerConfig.bgType === 'blue' ? 'bg-blue-600' :
                     bannerConfig.bgType === 'red' ? 'bg-red-600' :
+                    bannerConfig.bgType === 'vibrant' ? 'bg-gradient-to-r from-red-500 via-orange-500 via-yellow-400 via-green-500 via-purple-600 to-blue-600 bg-[length:400%_400%] animate-gradient-x' :
                     'bg-gradient-to-r from-red-600 via-orange-600 via-yellow-600 via-green-600 via-blue-600 via-purple-600 via-pink-600 to-red-600 bg-[length:400%_400%] animate-gradient-x'
                 )}
                 style={{ direction: bannerConfig.gradientDirection === 'right' ? 'rtl' : 'ltr' }}
@@ -365,7 +367,7 @@ export default function UiUxControlCenter() {
 
             <Card className="rounded-[2.5rem] border shadow-xl overflow-hidden">
                 <CardHeader className="bg-accent text-white p-8">
-                    <CardTitle className="text-2xl font-black uppercase tracking-tight">Banner Engine v4.3.9</CardTitle>
+                    <CardTitle className="text-2xl font-black uppercase tracking-tight">Banner Engine v4.4.0</CardTitle>
                     <CardDescription className="text-white/60">Configure atmospheric controls, typography, and spectrum pace. Spacing is normalized by the template list below.</CardDescription>
                 </CardHeader>
                 <CardContent className="p-10 space-y-12">
@@ -428,7 +430,7 @@ export default function UiUxControlCenter() {
                                 <div className="space-y-2">
                                     <Label className="text-[9px] font-black uppercase text-muted-foreground/60 flex items-center gap-1.5"><Palette size={12}/> Background Logic</Label>
                                     <div className="grid grid-cols-2 gap-3">
-                                        {['white', 'blue', 'red', 'dynamic'].map((type) => (
+                                        {['white', 'blue', 'red', 'dynamic', 'vibrant'].map((type) => (
                                             <button
                                                 key={type}
                                                 onClick={() => setBannerConfig({...bannerConfig, bgType: type as any})}
@@ -443,7 +445,7 @@ export default function UiUxControlCenter() {
                                     </div>
                                 </div>
 
-                                {bannerConfig.bgType === 'dynamic' && (
+                                {(bannerConfig.bgType === 'dynamic' || bannerConfig.bgType === 'vibrant') && (
                                     <div className="space-y-2 pt-4 border-t border-dashed animate-in slide-in-from-top-2 duration-500">
                                         <Label className="text-[9px] font-black uppercase text-muted-foreground/60 flex items-center gap-1.5"><MoveHorizontal size={12}/> Cloud Flow Direction</Label>
                                         <div className="grid grid-cols-2 gap-3">
@@ -613,7 +615,7 @@ export default function UiUxControlCenter() {
 
                     <Button onClick={handleSaveBanner} disabled={submitting} className="w-full h-16 rounded-full font-black text-xl uppercase bg-primary text-white shadow-2xl transition-all hover:scale-[1.02] active:scale-95">
                         {submitting ? <Loader2 className="animate-spin mr-3" /> : <Save className="mr-3" />}
-                        Sync v4.3.9 Engine
+                        Sync v4.4.0 Engine
                     </Button>
                 </CardContent>
             </Card>
