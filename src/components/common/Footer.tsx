@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'link';
+import Link from 'next/link';
 import Image from 'next/image';
 import NewsletterForm from './NewsletterForm';
 import { Facebook, Mail, ArrowUpRight, CheckCircle } from 'lucide-react';
