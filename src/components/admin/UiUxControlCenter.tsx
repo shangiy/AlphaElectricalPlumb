@@ -59,8 +59,6 @@ export const TEXT_STYLE_OPTIONS = [
 interface BannerItem {
     text: string;
     color: string;
-    color2?: string;
-    color3?: string;
 }
 
 interface HighlighterRule { word: string; colors: string[]; }
@@ -98,9 +96,9 @@ interface BannerConfig {
 const DEFAULT_BANNER: BannerConfig = {
     items: ["MASHUJAA DAY OFFER! 20% OFF", "Welcome to Alpha Ecosystem v4.3.6", "FLASH SALE", "NEW ARRIVALS"],
     coloredItems: [
-        { text: "MASHUJAA DAY OFFER! 20% OFF", color: "#ffffff", color2: "#ff0000", color3: "#0000ff" },
+        { text: "MASHUJAA DAY OFFER! 20% OFF", color: "#ffffff" },
         { text: "Welcome to Alpha Ecosystem v4.3.6", color: "#ffffff" },
-        { text: "FLASH SALE", color: "#ffcc00", color2: "#ffffff" },
+        { text: "FLASH SALE", color: "#ffcc00" },
         { text: "NEW ARRIVALS", color: "#ffffff" }
     ],
     speed: 30, fontSize: 12, textColor: '#ffffff',
@@ -174,7 +172,7 @@ export default function UiUxControlCenter() {
     setSubmitting(true);
     try {
         await updateStorefrontSetting('top_banner_config', bannerConfig);
-        toast({ title: "v4.3.6 Published", description: "Banner Engine with Multi-Color Palettes synchronized." });
+        toast({ title: "v4.3.6 Published", description: "Banner Engine with Multi-Slot styling synchronized." });
     } catch (err: any) { toast({ variant: "destructive", description: err.message }); } finally { setSubmitting(false); }
   };
 
@@ -193,7 +191,7 @@ export default function UiUxControlCenter() {
     const rawItems = val.split(',').map(i => i.trim()).filter(Boolean);
     const newColoredItems = rawItems.map(text => {
         const existing = bannerConfig.coloredItems?.find(ci => ci.text === text);
-        return existing || { text, color: '#ffffff', color2: '', color3: '' };
+        return existing || { text, color: '#ffffff' };
     });
     setBannerConfig({ ...bannerConfig, items: rawItems, coloredItems: newColoredItems });
   };
@@ -295,11 +293,7 @@ export default function UiUxControlCenter() {
                                 {bannerConfig.vibrantText4 && <span>{renderStyledBadgeText(bannerConfig.vibrantText4, bannerConfig.vibrantStyleType4 || 'fire-emoji', bannerConfig.vibrantOrientation4 || 'horizontal', bannerConfig.vibrantTextStyle4)}</span>}
                                 
                                 {bannerConfig.coloredItems?.map((item, idx) => (
-                                    <div key={idx} className="flex items-center gap-8">
-                                        <span className="font-bold uppercase tracking-widest text-[12px]" style={{ color: item.color || '#28235f' }}>{item.text}</span>
-                                        {item.color2 && <span className="font-bold uppercase tracking-widest text-[12px]" style={{ color: item.color2 }}>{item.text}</span>}
-                                        {item.color3 && <span className="font-bold uppercase tracking-widest text-[12px]" style={{ color: item.color3 }}>{item.text}</span>}
-                                    </div>
+                                    <span key={idx} className="font-bold uppercase tracking-widest text-[12px]" style={{ color: item.color || '#28235f' }}>{item.text}</span>
                                 ))}
                             </div>
                         ))}
@@ -310,7 +304,7 @@ export default function UiUxControlCenter() {
             <Card className="rounded-[2.5rem] border shadow-xl overflow-hidden">
                 <CardHeader className="bg-accent text-white p-8">
                     <CardTitle className="text-2xl font-black uppercase tracking-tight">Banner Engine v4.3.6</CardTitle>
-                    <CardDescription className="text-white/60">Configure the master announcement marquee and assign multi-color palettes to individual items.</CardDescription>
+                    <CardDescription className="text-white/60">Configure the master announcement marquee and assign individual colors to each offer Slot.</CardDescription>
                 </CardHeader>
                 <CardContent className="p-10 space-y-12">
                     <div className="space-y-3">
@@ -323,7 +317,7 @@ export default function UiUxControlCenter() {
                         />
                     </div>
 
-                    {/* DYNAMIC COLOR-MAPPED ROW GENERATOR */}
+                    {/* DYNAMIC ITEM SLOT GENERATOR */}
                     {bannerConfig.coloredItems && bannerConfig.coloredItems.length > 0 && (
                         <div className="p-8 rounded-[2.5rem] bg-secondary/10 border border-dashed border-accent/20 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
                             <div className="flex items-center gap-3 mb-2">
@@ -353,51 +347,28 @@ export default function UiUxControlCenter() {
                                             />
                                         </div>
 
-                                        <div className="space-y-4">
-                                            <Label className="text-[9px] font-black uppercase text-muted-foreground/60 tracking-widest">Color Palette Engine</Label>
-                                            <div className="grid grid-cols-3 gap-4">
-                                                {/* Color 1 */}
-                                                <div className="flex flex-col gap-2">
-                                                    <span className="text-[8px] font-bold text-center text-muted-foreground uppercase">Primary</span>
-                                                    <input 
-                                                        type="color" 
-                                                        value={item.color || '#ffffff'} 
-                                                        onChange={(e) => {
-                                                            const newColored = [...(bannerConfig.coloredItems || [])];
-                                                            newColored[idx].color = e.target.value;
-                                                            setBannerConfig({ ...bannerConfig, coloredItems: newColored });
-                                                        }}
-                                                        className="h-12 w-full rounded-xl cursor-pointer border-none shadow-inner"
-                                                    />
-                                                </div>
-                                                {/* Color 2 */}
-                                                <div className="flex flex-col gap-2">
-                                                    <span className="text-[8px] font-bold text-center text-muted-foreground uppercase">Accent A</span>
-                                                    <input 
-                                                        type="color" 
-                                                        value={item.color2 || ''} 
-                                                        onChange={(e) => {
-                                                            const newColored = [...(bannerConfig.coloredItems || [])];
-                                                            newColored[idx].color2 = e.target.value;
-                                                            setBannerConfig({ ...bannerConfig, coloredItems: newColored });
-                                                        }}
-                                                        className="h-12 w-full rounded-xl cursor-pointer border-none shadow-inner opacity-60 hover:opacity-100 transition-opacity"
-                                                    />
-                                                </div>
-                                                {/* Color 3 */}
-                                                <div className="flex flex-col gap-2">
-                                                    <span className="text-[8px] font-bold text-center text-muted-foreground uppercase">Accent B</span>
-                                                    <input 
-                                                        type="color" 
-                                                        value={item.color3 || ''} 
-                                                        onChange={(e) => {
-                                                            const newColored = [...(bannerConfig.coloredItems || [])];
-                                                            newColored[idx].color3 = e.target.value;
-                                                            setBannerConfig({ ...bannerConfig, coloredItems: newColored });
-                                                        }}
-                                                        className="h-12 w-full rounded-xl cursor-pointer border-none shadow-inner opacity-60 hover:opacity-100 transition-opacity"
-                                                    />
-                                                </div>
+                                        <div className="space-y-2">
+                                            <Label className="text-[9px] font-black uppercase text-muted-foreground/60 tracking-widest">Accent Color</Label>
+                                            <div className="flex items-center gap-4">
+                                                <input 
+                                                    type="color" 
+                                                    value={item.color || '#ffffff'} 
+                                                    onChange={(e) => {
+                                                        const newColored = [...(bannerConfig.coloredItems || [])];
+                                                        newColored[idx].color = e.target.value;
+                                                        setBannerConfig({ ...bannerConfig, coloredItems: newColored });
+                                                    }}
+                                                    className="h-12 w-12 rounded-xl cursor-pointer border-none shadow-inner shrink-0"
+                                                />
+                                                <Input 
+                                                    value={item.color || '#ffffff'} 
+                                                    onChange={(e) => {
+                                                        const newColored = [...(bannerConfig.coloredItems || [])];
+                                                        newColored[idx].color = e.target.value;
+                                                        setBannerConfig({ ...bannerConfig, coloredItems: newColored });
+                                                    }}
+                                                    className="h-12 rounded-xl font-mono uppercase text-xs"
+                                                />
                                             </div>
                                         </div>
                                     </div>
@@ -446,7 +417,7 @@ export default function UiUxControlCenter() {
                             </div>
                         </div>
 
-                        {/* Slot 3 & 4 Row (NEW) */}
+                        {/* Slot 3 & 4 Row */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                             <div className="p-8 rounded-[2.5rem] bg-accent/5 border border-dashed border-accent/20 space-y-6">
                                 <Label className="text-[11px] font-black uppercase tracking-[0.2em] text-accent">Highlight Slot 3</Label>

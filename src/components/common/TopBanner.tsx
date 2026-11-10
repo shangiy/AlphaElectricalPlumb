@@ -7,8 +7,6 @@ import { cn } from '@/lib/utils';
 interface BannerItem {
     text: string;
     color: string;
-    color2?: string;
-    color3?: string;
 }
 
 interface HighlighterRule {
@@ -49,7 +47,7 @@ interface BannerConfig {
 /**
  * High-Fidelity Independent Top Banner v4.3.6:
  * Features a dynamic changing gradient background and 4-slot vibrant engine.
- * Supports individual item color palettes with sequential repetition.
+ * Renders individual colored items from the CMS configuration.
  */
 export default function TopBanner() {
   const [config, setConfig] = useState<BannerConfig>({
@@ -141,16 +139,6 @@ export default function TopBanner() {
                         {config.vibrantText4 && <span>{renderStyledText(config.vibrantText4, config.vibrantStyleType4 || 'fire-emoji', config.vibrantOrientation4 || 'horizontal', config.vibrantTextStyle4)}</span>}
                         <span style={{ color: item.color || '#ffffff' }}>{item.text}</span>
                     </li>
-                    {item.color2 && (
-                        <li className="flex items-center gap-6 uppercase tracking-widest text-[11px] font-bold">
-                            <span style={{ color: item.color2 }}>{item.text}</span>
-                        </li>
-                    )}
-                    {item.color3 && (
-                        <li className="flex items-center gap-6 uppercase tracking-widest text-[11px] font-bold">
-                            <span style={{ color: item.color3 }}>{item.text}</span>
-                        </li>
-                    )}
                   </React.Fragment>
                 ))}
               </ul>
