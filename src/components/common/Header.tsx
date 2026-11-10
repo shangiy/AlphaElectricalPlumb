@@ -171,8 +171,8 @@ export default function Header() {
                 mobileSearchOpen ? "opacity-0 w-0 overflow-hidden" : "opacity-100"
             )}>
                 <span className="font-black text-xl leading-tight uppercase tracking-tighter">Alpha</span>
-                <div className="w-full h-px bg-current opacity-20"></div>
-                <span className="text-[7px] leading-tight font-black uppercase tracking-widest">& Plumbing Ltd</span>
+                <div className="w-full h-px bg-current opacity-20 my-0.5"></div>
+                <span className="text-[7px] leading-tight font-black uppercase tracking-widest">Electricals & Plumbing Ltd</span>
             </div>
           </NextLink>
 
