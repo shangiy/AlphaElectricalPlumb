@@ -291,10 +291,10 @@ export default function UiUxControlCenter() {
                             Since your marquee items are comma-separated, the frontend renderer can split the input string into an array, then loop through them using their numeric position (index) to assign specific color classes.
                             <br/><br/>
                             <div className="p-4 bg-accent rounded-xl text-white font-mono text-[10px] overflow-x-auto">
-                                items.map((text, index) => &#123; <br/>
-                                &nbsp;&nbsp;const colorClass = colorPalette[index % colorPalette.length];<br/>
-                                &nbsp;&nbsp;return `&lt;span class="$&#123;colorClass&#125;"&gt;$&#123;text&#125;&lt;/span&gt;`;<br/>
-                                &#125;);
+                              <pre>{`items.map((text, index) => {
+    const colorClass = colorPalette[index % colorPalette.length];
+    return \`<span class="\${colorClass}">\${text}</span>\`;
+});`}</pre>
                             </div>
                         </div>
                     </div>
