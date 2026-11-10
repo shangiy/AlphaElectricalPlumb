@@ -35,9 +35,9 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthProvider';
 
 /**
- * High-Fidelity Header v23.1 (Ecosystem v4.3.0):
+ * High-Fidelity Header v23.2 (Ecosystem v4.3.0):
  * - Logo Resilience: Logo remains visible during search expansion.
- * - Dynamic Proportions: Mobile search bar respects space boundaries.
+ * - Mobile User Hub: Dedicated Account icon added to mobile action cluster.
  * - Role-Aware UI: Shows "Admin" link for privileged users.
  */
 export default function Header() {
@@ -157,7 +157,6 @@ export default function Header() {
 
         {/* MOBILE VIEW (Ecosystem v4.3.0 Standard) */}
         <div className="w-full lg:hidden flex items-center justify-between h-20 gap-3">
-          {/* Logo Resilience: Remains visible at all times */}
           <NextLink 
             href="/" 
             className="flex items-center gap-2 group transition-all duration-500 shrink-0"
@@ -165,19 +164,17 @@ export default function Header() {
              <div className="flex-shrink-0">
                 <Image src="/logo Alpha.png" alt="Alpha Logo" width={55} height={55} className="h-auto" />
             </div>
-            {/* Branding text collapses Smoothly when search expands */}
             <div className={cn(
                 "flex flex-col text-[#28235f] group-hover:text-primary transition-all duration-700 ease-[cubic-bezier(0.19,1,0.22,1)]",
                 mobileSearchOpen ? "opacity-0 w-0 overflow-hidden" : "opacity-100"
             )}>
                 <span className="font-black text-xl leading-tight uppercase tracking-tighter">Alpha</span>
                 <div className="w-full h-px bg-current opacity-20 my-0.5"></div>
-                <span className="text-[7px] leading-tight font-black uppercase tracking-widest">Electricals & Plumbing Ltd</span>
+                <span className="text-[7px] leading-tight font-black uppercase tracking-widest text-[#28235f]">Electricals & Plumbing Ltd</span>
             </div>
           </NextLink>
 
           <div className="flex items-center gap-2 flex-1 justify-end min-w-0">
-            {/* Morphing Bubble Search Bar: Expansion is relative to available space */}
             <form 
               onSubmit={handleSearchSubmit} 
               className={cn(
@@ -220,6 +217,13 @@ export default function Header() {
 
             <ShoppingCartComponent triggerClassName="h-10 w-10 border border-[#28235f]/10 rounded-full text-[#28235f] flex items-center justify-center hover:text-primary shrink-0" />
             
+            {/* Mobile Account Icon */}
+            <NextLink href={user ? "/profile" : "/auth/login"}>
+              <Button variant="ghost" size="icon" className="h-10 w-10 border border-[#28235f]/10 rounded-full text-[#28235f] flex items-center justify-center hover:text-primary shrink-0">
+                <User className="h-5 w-5" />
+              </Button>
+            </NextLink>
+
             <Sheet>
               <SheetTrigger asChild>
                 <Button variant="ghost" size="icon" className="h-10 w-10 border border-[#28235f]/10 rounded-full text-[#28235f] flex items-center justify-center hover:text-primary shrink-0">

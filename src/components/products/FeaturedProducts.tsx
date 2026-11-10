@@ -11,6 +11,7 @@ import Link from 'next/link';
 /**
  * FeaturedProducts Component - Client Component.
  * Displays a grid of products marked as featured, sorted by customized order.
+ * Now includes a persistent ID for anchor-based navigation and redirection.
  */
 export default function FeaturedProducts() {
   const { products, loading: contextLoading } = useProducts();
@@ -63,7 +64,7 @@ export default function FeaturedProducts() {
   if (products.length === 0) return null;
 
   return (
-    <section className="bg-white py-16">
+    <section id="featured-products" className="bg-white py-16 scroll-mt-24">
       <div className="container mx-auto px-4">
         <div className="text-center">
             <h2 className="text-3xl font-bold font-headline mb-4 text-[#28235f]">Featured Products</h2>

@@ -43,8 +43,20 @@ export default function LoginForm() {
 
     useEffect(() => {
         if (user) {
-            const redir = searchParams.get('redirect') || (user.role === 'user' ? '/' : '/admin');
-            router.push(redir);
+            // Priority Redirect logic:
+            // 1. If explicit 'redirect' param exists (e.g. from browsing a product), go there.
+            // 2. If no redirect param, go to homepage and scroll to featured products.
+            // 3. For Admins/Staff, go to dashboard.
+            
+            const redirectParam = searchParams.get('redirect');
+            let target = redirectParam || (user.role === 'user' ? '/#featured-products' : '/admin');
+            
+            // Special case: if target is homepage and user is standard, ensure we hit the featured anchor
+            if (target === '/' && user.role === 'user') {
+              target = '/#featured-products';
+            }
+            
+            router.push(target);
         }
     }, [user, router, searchParams]);
 
@@ -72,11 +84,24 @@ export default function LoginForm() {
                         </CardHeader>
                         <CardContent className="pt-8">
                             <Form {...lForm}>
-                                <form onSubmit={lForm.handleSubmit(async d => { setProcessing(true); try { await login(d.email, d.password); } catch(e:any) { toast({ variant: 'destructive', description: e.message }); } finally { setProcessing(false); } })} className="space-y-5">
+                                <form 
+                                    autoComplete="off"
+                                    onSubmit={lForm.handleSubmit(async d => { setProcessing(true); try { await login(d.email, d.password); } catch(e:any) { toast({ variant: 'destructive', description: e.message }); } finally { setProcessing(false); } })} 
+                                    className="space-y-5"
+                                >
                                     <FormField control={lForm.control} name="email" render={({ field }) => (
                                         <FormItem>
                                             <FormLabel className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Email</FormLabel>
-                                            <FormControl><Input placeholder="you@email.com" {...field} autoComplete="nope" readOnly onFocus={(e) => e.target.removeAttribute('readonly')} className="h-12 rounded-xl" /></FormControl>
+                                            <FormControl>
+                                                <Input 
+                                                    placeholder="you@email.com" 
+                                                    {...field} 
+                                                    autoComplete="nope" 
+                                                    readOnly 
+                                                    onFocus={(e) => e.target.removeAttribute('readonly')} 
+                                                    className="h-12 rounded-xl" 
+                                                />
+                                            </FormControl>
                                             <FormMessage />
                                         </FormItem>
                                     )} />
@@ -84,7 +109,14 @@ export default function LoginForm() {
                                         <FormItem>
                                             <FormLabel className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Password</FormLabel>
                                             <div className="relative">
-                                                <Input type={showPass ? "text" : "password"} {...field} autoComplete="new-password" readOnly onFocus={(e) => e.target.removeAttribute('readonly')} className="h-12 rounded-xl" />
+                                                <Input 
+                                                    type={showPass ? "text" : "password"} 
+                                                    {...field} 
+                                                    autoComplete="new-password" 
+                                                    readOnly 
+                                                    onFocus={(e) => e.target.removeAttribute('readonly')} 
+                                                    className="h-12 rounded-xl" 
+                                                />
                                                 <button type="button" onClick={() => setShowPass(!showPass)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">{showPass ? <EyeOff size={16} /> : <Eye size={16} />}</button>
                                             </div>
                                             <FormMessage />
@@ -106,7 +138,11 @@ export default function LoginForm() {
                         <CardHeader className="bg-muted/10 pb-8"><CardTitle className="text-2xl font-black uppercase text-accent">Join Alpha</CardTitle></CardHeader>
                         <CardContent className="pt-8">
                             <Form {...sForm}>
-                                <form onSubmit={sForm.handleSubmit(async d => { setProcessing(true); try { await signUp(d); } catch(e:any) { toast({ variant: 'destructive', description: e.message }); } finally { setProcessing(false); } })} className="space-y-4">
+                                <form 
+                                    autoComplete="off"
+                                    onSubmit={sForm.handleSubmit(async d => { setProcessing(true); try { await signUp(d); } catch(e:any) { toast({ variant: 'destructive', description: e.message }); } finally { setProcessing(false); } })} 
+                                    className="space-y-4"
+                                >
                                     <FormField control={sForm.control} name="name" render={({ field }) => (
                                         <FormItem><FormLabel className="text-[10px] font-black uppercase text-muted-foreground">Name</FormLabel><FormControl><Input placeholder="Full Name" {...field} className="h-11 rounded-xl" /></FormControl><FormMessage /></FormItem>
                                     )} />
