@@ -228,7 +228,7 @@ export default function UserDirectory() {
                                 <TableRow className="bg-muted/50 hover:bg-muted/50 border-b">
                                     <TableHead className="pl-8 py-5 text-[10px] font-black uppercase tracking-widest text-accent">User Persona</TableHead>
                                     <TableHead className="text-[10px] font-black uppercase tracking-widest text-accent">Clearance</TableHead>
-                                    <TableHead className="text-[10px] font-black uppercase tracking-widest text-accent">Collection Size</TableHead>
+                                    <TableHead className="text-[10px] font-black uppercase tracking-widest text-accent">Wishlist Collection</TableHead>
                                     <TableHead className="hidden lg:table-cell text-[10px] font-black uppercase tracking-widest text-accent">Digital Footprint</TableHead>
                                     <TableHead className="w-[80px]"></TableHead>
                                 </TableRow>
