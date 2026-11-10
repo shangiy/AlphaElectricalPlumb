@@ -22,6 +22,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import ReCAPTCHA from 'react-google-recaptcha';
 import { verifyRecaptcha } from '@/app/actions/verify-recaptcha';
+import { signIn as nextAuthSignIn } from 'next-auth/react';
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email.'),
@@ -81,7 +82,6 @@ export default function LoginForm() {
         user, 
         login, 
         signUp, 
-        signInWithGoogle, 
         signInWithFacebook, 
         signInWithApple, 
         signInWithGithub 
@@ -169,20 +169,24 @@ export default function LoginForm() {
     const handleSocialSignIn = async (provider: 'google' | 'facebook' | 'apple' | 'github') => {
         setSocialLoading(provider);
         try {
-            let signInMethod;
-            switch(provider) {
-                case 'google': signInMethod = signInWithGoogle; break;
-                case 'facebook': signInMethod = signInWithFacebook; break;
-                case 'apple': signInMethod = signInWithApple; break;
-                case 'github': signInMethod = signInWithGithub; break;
+            if (provider === 'google') {
+                // NextAuth bridge to eliminate .supabase.co branding
+                await nextAuthSignIn('google');
+            } else {
+                let signInMethod;
+                switch(provider) {
+                    case 'facebook': signInMethod = signInWithFacebook; break;
+                    case 'apple': signInMethod = signInWithApple; break;
+                    case 'github': signInMethod = signInWithGithub; break;
+                }
+                if (signInMethod) await signInMethod();
             }
-            await signInMethod();
         } catch (error: any) {
             console.error("Social login error:", error);
             toast({ 
               variant: "destructive", 
-              title: "Handshake Blocked", 
-              description: "Please open the site in a NEW TAB to complete social authentication." 
+              title: "Authentication Failed", 
+              description: "Could not complete social sign-in. Please try again or use email." 
             });
         } finally {
             setSocialLoading(null);

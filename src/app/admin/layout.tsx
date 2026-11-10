@@ -26,8 +26,6 @@ import {
   LayoutTemplate,
   ChevronUp,
   ChevronDown,
-  ChevronLeft,
-  ChevronRight,
   ChevronsLeft,
   ChevronsRight
 } from 'lucide-react';
