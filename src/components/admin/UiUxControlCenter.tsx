@@ -26,7 +26,10 @@ import {
   Paintbrush,
   MoveHorizontal,
   Type,
-  Activity
+  Activity,
+  Youtube,
+  Share2,
+  Video
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import FeaturedProductManager from './FeaturedProductManager';
@@ -144,6 +147,29 @@ const DEFAULT_BANNER: BannerConfig = {
     gradientDirection: 'left'
 };
 
+interface SocialLink {
+    platform: string;
+    label: string;
+    url: string;
+}
+
+interface ConnectConfig {
+    headline: string;
+    subheading: string;
+    tiktokVideoIds: string[];
+    socialLinks: SocialLink[];
+}
+
+const DEFAULT_CONNECT: ConnectConfig = {
+    headline: "Connect with us!",
+    subheading: "As You Enquire or make purchases",
+    tiktokVideoIds: ["7506475821771640070", "7496094826002222342"],
+    socialLinks: [
+        { platform: "tiktok", label: "FOLLOW US ON TIKTOK →", url: "https://www.tiktok.com/@AlphaElectricalsandplumb" },
+        { platform: "facebook", label: "LIKE US ON FACEBOOK →", url: "https://www.facebook.com/Alphaelectricalsandplumbing" }
+    ]
+};
+
 function SortableSearchPhrase({ phrase, id, onRemove }: { phrase: string, id: string, onRemove: (phrase: string) => void }) {
     const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id });
     const style = { transform: CSS.Translate.toString(transform), transition };
@@ -167,6 +193,7 @@ export default function UiUxControlCenter() {
   const [bannerConfig, setBannerConfig] = useState<BannerConfig>(DEFAULT_BANNER);
   const [searchPhrases, setSearchPhrases] = useState<string[]>([]);
   const [heroSlides, setHeroSlides] = useState<HeroSlide[]>([]);
+  const [connectConfig, setConnectConfig] = useState<ConnectConfig>(DEFAULT_CONNECT);
   const [newPhrase, setNewPhrase] = useState('');
 
   const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }));
@@ -174,10 +201,11 @@ export default function UiUxControlCenter() {
   const loadAllSettings = useCallback(async () => {
     setLoading(true);
     try {
-      const [search, bannerSet, slides] = await Promise.all([
+      const [search, bannerSet, slides, connect] = await Promise.all([
         getStorefrontSetting('search_phrases'),
         getStorefrontSetting('top_banner_config'),
         getStorefrontSetting('hero_slides'),
+        getStorefrontSetting('connect_with_us_config'),
       ]);
       if (search) setSearchPhrases(search);
       if (bannerSet) {
@@ -191,6 +219,7 @@ export default function UiUxControlCenter() {
           setBannerConfig(config);
       }
       if (slides) setHeroSlides(slides);
+      if (connect) setConnectConfig({ ...DEFAULT_CONNECT, ...connect });
     } catch (err) { console.error(err); } finally { setLoading(false); }
   }, []);
 
@@ -207,6 +236,14 @@ export default function UiUxControlCenter() {
     try {
         await updateStorefrontSetting('top_banner_config', bannerConfig);
         toast({ title: "v4.4.0 Published", description: "Vibrant Spectrum Engine with Ordinal Mapping synchronized." });
+    } catch (err: any) { toast({ variant: "destructive", description: err.message }); } finally { setSubmitting(false); }
+  };
+
+  const handleSaveConnect = async () => {
+    setSubmitting(true);
+    try {
+        await updateStorefrontSetting('connect_with_us_config', connectConfig);
+        toast({ title: "Social Hub Published", description: "Your digital presence node has been synchronized with the storefront." });
     } catch (err: any) { toast({ variant: "destructive", description: err.message }); } finally { setSubmitting(false); }
   };
 
@@ -305,17 +342,18 @@ export default function UiUxControlCenter() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b pb-8">
         <div>
           <h1 className="text-5xl font-black font-headline text-accent tracking-tighter uppercase">Alpha CMS Suite</h1>
-          <p className="text-muted-foreground font-bold uppercase tracking-widest text-xs mt-2">Professional Storefront Governance v4.4.0</p>
+          <p className="text-muted-foreground font-bold uppercase tracking-widest text-xs mt-2">Professional Storefront Governance v4.4.3</p>
         </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-6 h-auto bg-muted/30 p-2 rounded-[2.5rem] mb-12 border">
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-7 h-auto bg-muted/30 p-2 rounded-[2.5rem] mb-12 border">
             <TabsTrigger value="topbanner" className="rounded-[1.5rem] font-black uppercase text-[10px] py-4">Banner CMS</TabsTrigger>
             <TabsTrigger value="search" className="rounded-[1.5rem] font-black uppercase text-[10px] py-4">Search Keywords</TabsTrigger>
             <TabsTrigger value="hero" className="rounded-[1.5rem] font-black uppercase text-[10px] py-4">Hero Edit</TabsTrigger>
             <TabsTrigger value="categories" className="rounded-[1.5rem] font-black uppercase text-[10px] py-4">Product Carousel</TabsTrigger>
             <TabsTrigger value="spotlight" className="rounded-[1.5rem] font-black uppercase text-[10px] py-4">Spotlight</TabsTrigger>
+            <TabsTrigger value="social" className="rounded-[1.5rem] font-black uppercase text-[10px] py-4">Social Hub</TabsTrigger>
             <TabsTrigger value="moderation" className="rounded-[1.5rem] font-black uppercase text-[10px] py-4">Moderation</TabsTrigger>
         </TabsList>
 
@@ -534,85 +572,6 @@ export default function UiUxControlCenter() {
                         </div>
                     )}
 
-                    {/* QUAD-SLOT VIBRANT ENGINE */}
-                    <div className="space-y-12">
-                        {/* Slot 1 & 2 Row */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                            <div className="p-8 rounded-[2.5rem] bg-accent/5 border border-dashed border-accent/20 space-y-6">
-                                <Label className="text-[11px] font-black uppercase tracking-[0.2em] text-accent">Highlight Slot 1</Label>
-                                <div className="space-y-4">
-                                    <Input value={bannerConfig.vibrantText || ''} onChange={(e) => setBannerConfig({...bannerConfig, vibrantText: e.target.value})} placeholder="Text or Emoji" className="h-12 rounded-xl" />
-                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                                        <select value={bannerConfig.vibrantStyleType || 'kenyan-flag'} onChange={(e) => setBannerConfig({...bannerConfig, vibrantStyleType: e.target.value})} className="h-10 rounded-lg border px-2 text-[10px] font-bold">
-                                            {STYLE_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
-                                        </select>
-                                        <select value={bannerConfig.vibrantOrientation || 'vertical'} onChange={(e) => setBannerConfig({...bannerConfig, vibrantOrientation: e.target.value})} className="h-10 rounded-lg border px-2 text-[10px] font-bold">
-                                            {ORIENTATION_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
-                                        </select>
-                                        <select value={bannerConfig.vibrantTextStyle || 'bold'} onChange={(e) => setBannerConfig({...bannerConfig, vibrantTextStyle: e.target.value})} className="h-10 rounded-lg border px-2 text-[10px] font-bold">
-                                            {TEXT_STYLE_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="p-8 rounded-[2.5rem] bg-accent/5 border border-dashed border-accent/20 space-y-6">
-                                <Label className="text-[11px] font-black uppercase tracking-[0.2em] text-accent">Highlight Slot 2</Label>
-                                <div className="space-y-4">
-                                    <Input value={bannerConfig.vibrantText2 || ''} onChange={(e) => setBannerConfig({...bannerConfig, vibrantText2: e.target.value})} placeholder="Text or Emoji" className="h-12 rounded-xl" />
-                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                                        <select value={bannerConfig.vibrantStyleType2 || 'gold-gradient'} onChange={(e) => setBannerConfig({...bannerConfig, vibrantStyleType2: e.target.value})} className="h-10 rounded-lg border px-2 text-[10px] font-bold">
-                                            {STYLE_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
-                                        </select>
-                                        <select value={bannerConfig.vibrantOrientation2 || 'horizontal'} onChange={(e) => setBannerConfig({...bannerConfig, vibrantOrientation2: e.target.value})} className="h-10 rounded-lg border px-2 text-[10px] font-bold">
-                                            {ORIENTATION_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
-                                        </select>
-                                        <select value={bannerConfig.vibrantTextStyle2 || 'bold'} onChange={(e) => setBannerConfig({...bannerConfig, vibrantTextStyle2: e.target.value})} className="h-10 rounded-lg border px-2 text-[10px] font-bold">
-                                            {TEXT_STYLE_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Slot 3 & 4 Row */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                            <div className="p-8 rounded-[2.5rem] bg-accent/5 border border-dashed border-accent/20 space-y-6">
-                                <Label className="text-[11px] font-black uppercase tracking-[0.2em] text-accent">Highlight Slot 3</Label>
-                                <div className="space-y-4">
-                                    <Input value={bannerConfig.vibrantText3 || ''} onChange={(e) => setBannerConfig({...bannerConfig, vibrantText3: e.target.value})} placeholder="Text or Emoji" className="h-12 rounded-xl" />
-                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                                        <select value={bannerConfig.vibrantStyleType3 || 'neon-glow'} onChange={(e) => setBannerConfig({...bannerConfig, vibrantStyleType3: e.target.value})} className="h-10 rounded-lg border px-2 text-[10px] font-bold">
-                                            {STYLE_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
-                                        </select>
-                                        <select value={bannerConfig.vibrantOrientation3 || 'vertical'} onChange={(e) => setBannerConfig({...bannerConfig, vibrantOrientation: e.target.value})} className="h-10 rounded-lg border px-2 text-[10px] font-bold">
-                                            {ORIENTATION_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
-                                        </select>
-                                        <select value={bannerConfig.vibrantTextStyle3 || 'bold'} onChange={(e) => setBannerConfig({...bannerConfig, vibrantTextStyle: e.target.value})} className="h-10 rounded-lg border px-2 text-[10px] font-bold">
-                                            {TEXT_STYLE_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="p-8 rounded-[2.5rem] bg-accent/5 border border-dashed border-accent/20 space-y-6">
-                                <Label className="text-[11px] font-black uppercase tracking-[0.2em] text-accent">Highlight Slot 4</Label>
-                                <div className="space-y-4">
-                                    <Input value={bannerConfig.vibrantText4 || ''} onChange={(e) => setBannerConfig({...bannerConfig, vibrantText4: e.target.value})} placeholder="Text or Emoji" className="h-12 rounded-xl" />
-                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                                        <select value={bannerConfig.vibrantStyleType4 || 'fire-emoji'} onChange={(e) => setBannerConfig({...bannerConfig, vibrantStyleType4: e.target.value})} className="h-10 rounded-lg border px-2 text-[10px] font-bold">
-                                            {STYLE_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
-                                        </select>
-                                        <select value={bannerConfig.vibrantOrientation4 || 'horizontal'} onChange={(e) => setBannerConfig({...bannerConfig, vibrantOrientation2: e.target.value})} className="h-10 rounded-lg border px-2 text-[10px] font-bold">
-                                            {ORIENTATION_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
-                                        </select>
-                                        <select value={bannerConfig.vibrantTextStyle4 || 'bold'} onChange={(e) => setBannerConfig({...bannerConfig, vibrantTextStyle2: e.target.value})} className="h-10 rounded-lg border px-2 text-[10px] font-bold">
-                                            {TEXT_STYLE_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
                     <Button onClick={handleSaveBanner} disabled={submitting} className="w-full h-16 rounded-full font-black text-xl uppercase bg-primary text-white shadow-2xl transition-all hover:scale-[1.02] active:scale-95">
                         {submitting ? <Loader2 className="animate-spin mr-3" /> : <Save className="mr-3" />}
                         Sync v4.4.0 Engine
@@ -666,6 +625,118 @@ export default function UiUxControlCenter() {
         <TabsContent value="hero"><HeroManager initialSlides={heroSlides} /></TabsContent>
         <TabsContent value="categories"><CategoryManager initialCards={[]} /></TabsContent>
         <TabsContent value="spotlight"><FeaturedProductManager /></TabsContent>
+        <TabsContent value="social" className="space-y-8">
+            <Card className="rounded-[2.5rem] border shadow-xl overflow-hidden">
+                <CardHeader className="bg-accent text-white p-8">
+                    <div className="flex items-center gap-3">
+                        <Share2 className="text-primary h-6 w-6" />
+                        <CardTitle className="text-2xl font-black uppercase tracking-tight">Social Hub CMS</CardTitle>
+                    </div>
+                    <CardDescription className="text-white/60">Control your digital presence and curated video streams.</CardDescription>
+                </CardHeader>
+                <CardContent className="p-10 space-y-12">
+                    {/* Copy Hub */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="space-y-2">
+                            <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Section Headline</Label>
+                            <Input 
+                                value={connectConfig.headline} 
+                                onChange={(e) => setConnectConfig({...connectConfig, headline: e.target.value})}
+                                className="h-14 rounded-2xl font-black text-xl uppercase"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Section Subheading</Label>
+                            <Input 
+                                value={connectConfig.subheading} 
+                                onChange={(e) => setConnectConfig({...connectConfig, subheading: e.target.value})}
+                                className="h-14 rounded-2xl font-bold"
+                            />
+                        </div>
+                    </div>
+
+                    {/* Video Stream Hub */}
+                    <div className="p-8 rounded-[2.5rem] bg-secondary/10 border border-dashed border-accent/20 space-y-8">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <Video className="text-accent h-5 w-5" />
+                                <h3 className="text-sm font-black text-accent uppercase tracking-widest">TikTok Asset Manager</h3>
+                            </div>
+                            <Button variant="outline" size="sm" className="rounded-full" onClick={() => setConnectConfig({...connectConfig, tiktokVideoIds: [...connectConfig.tiktokVideoIds, ""]})}>
+                                <Plus size={14} className="mr-2" /> Add Video Slot
+                            </Button>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                            {connectConfig.tiktokVideoIds.map((id, idx) => (
+                                <div key={idx} className="flex flex-col gap-2 p-4 bg-white rounded-2xl border shadow-sm group">
+                                    <div className="flex items-center justify-between">
+                                        <Label className="text-[8px] font-black uppercase text-muted-foreground">Video Slot {idx + 1}</Label>
+                                        <button onClick={() => setConnectConfig({...connectConfig, tiktokVideoIds: connectConfig.tiktokVideoIds.filter((_, i) => i !== idx)})} className="text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <Trash2 size={12} />
+                                        </button>
+                                    </div>
+                                    <Input 
+                                        value={id} 
+                                        onChange={(e) => {
+                                            const newIds = [...connectConfig.tiktokVideoIds];
+                                            newIds[idx] = e.target.value;
+                                            setConnectConfig({...connectConfig, tiktokVideoIds: newIds});
+                                        }}
+                                        placeholder="Enter TikTok Video ID (e.g., 7506...)"
+                                        className="h-10 rounded-xl font-mono text-xs"
+                                    />
+                                    <p className="text-[8px] text-muted-foreground italic font-medium">Extract the ID from the video URL (the string of numbers at the end).</p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Social Logic Hub */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        {connectConfig.socialLinks.map((link, idx) => (
+                            <div key={idx} className="p-6 rounded-3xl bg-muted/30 border space-y-4">
+                                <div className="flex items-center gap-2">
+                                    {link.platform === 'tiktok' ? <Youtube size={16} className="text-accent" /> : <Share2 size={16} className="text-accent" />}
+                                    <h4 className="text-[10px] font-black uppercase tracking-widest text-accent">{link.platform} Configuration</h4>
+                                </div>
+                                <div className="space-y-3">
+                                    <div className="space-y-1">
+                                        <Label className="text-[9px] font-bold uppercase text-muted-foreground">Button Label</Label>
+                                        <Input 
+                                            value={link.label} 
+                                            onChange={(e) => {
+                                                const newLinks = [...connectConfig.socialLinks];
+                                                newLinks[idx].label = e.target.value;
+                                                setConnectConfig({...connectConfig, socialLinks: newLinks});
+                                            }}
+                                            className="h-10 rounded-xl font-bold"
+                                        />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <Label className="text-[9px] font-bold uppercase text-muted-foreground">Destination URL</Label>
+                                        <Input 
+                                            value={link.url} 
+                                            onChange={(e) => {
+                                                const newLinks = [...connectConfig.socialLinks];
+                                                newLinks[idx].url = e.target.value;
+                                                setConnectConfig({...connectConfig, socialLinks: newLinks});
+                                            }}
+                                            className="h-10 rounded-xl text-xs"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    <Button onClick={handleSaveConnect} disabled={submitting} className="w-full h-16 rounded-full font-black text-xl uppercase bg-primary text-white shadow-2xl transition-all hover:scale-[1.02] active:scale-95">
+                        {submitting ? <Loader2 className="animate-spin mr-3" /> : <Save className="mr-3" />}
+                        Save Global Node
+                    </Button>
+                </CardContent>
+            </Card>
+        </TabsContent>
         <TabsContent value="moderation" className="space-y-8">
             <Card className="rounded-[2.5rem] border shadow-xl p-10 text-center">
                 <BookOpen className="mx-auto h-12 w-12 text-muted-foreground opacity-20 mb-6" />
