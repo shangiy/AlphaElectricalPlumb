@@ -251,7 +251,7 @@ export default function LoginForm() {
                     </CardHeader>
                     <CardContent className="pt-8">
                        <Form {...loginForm}>
-                            <form onSubmit={loginForm.handleSubmit(onLogin)} className="space-y-5">
+                            <form onSubmit={loginForm.handleSubmit(onLogin)} className="space-y-5" autoComplete="off">
                                 <FormField
                                     control={loginForm.control}
                                     name="email"
@@ -259,7 +259,15 @@ export default function LoginForm() {
                                         <FormItem>
                                             <FormLabel className="text-xs font-black uppercase tracking-widest text-muted-foreground">Email Address</FormLabel>
                                             <FormControl>
-                                                <Input type="email" placeholder="example@email.com" {...field} autoComplete="email" className="h-12 rounded-xl" />
+                                                <Input 
+                                                    type="email" 
+                                                    placeholder="example@email.com" 
+                                                    {...field} 
+                                                    autoComplete="nope" 
+                                                    readOnly={true}
+                                                    onFocus={(e) => e.target.removeAttribute('readonly')}
+                                                    className="h-12 rounded-xl" 
+                                                />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -272,7 +280,13 @@ export default function LoginForm() {
                                         <FormItem>
                                             <FormLabel className="text-xs font-black uppercase tracking-widest text-muted-foreground">Password</FormLabel>
                                             <FormControl>
-                                                <PasswordInput field={field} placeholder="••••••••" autoComplete="current-password" />
+                                                <PasswordInput 
+                                                    field={field} 
+                                                    placeholder="••••••••" 
+                                                    autoComplete="new-password" 
+                                                    readOnly={true}
+                                                    onFocus={(e: any) => e.target.removeAttribute('readonly')}
+                                                />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -302,7 +316,7 @@ export default function LoginForm() {
                     </CardHeader>
                     <CardContent className="pt-8">
                         <Form {...signUpForm}>
-                            <form onSubmit={signUpForm.handleSubmit(onSignUp)} className="space-y-4">
+                            <form onSubmit={signUpForm.handleSubmit(onSignUp)} className="space-y-4" autoComplete="off">
                                  <FormField control={signUpForm.control} name="name" render={({ field }) => (
                                         <FormItem>
                                             <FormLabel className="text-xs font-black uppercase tracking-widest text-muted-foreground">Full Name</FormLabel>
@@ -322,7 +336,17 @@ export default function LoginForm() {
                                 <FormField control={signUpForm.control} name="email" render={({ field }) => (
                                         <FormItem>
                                             <FormLabel className="text-xs font-black uppercase tracking-widest text-muted-foreground">Email</FormLabel>
-                                            <FormControl><Input type="email" placeholder="you@example.com" {...field} className="h-11 rounded-xl" /></FormControl>
+                                            <FormControl>
+                                                <Input 
+                                                    type="email" 
+                                                    placeholder="you@example.com" 
+                                                    {...field} 
+                                                    autoComplete="nope"
+                                                    readOnly={true}
+                                                    onFocus={(e) => e.target.removeAttribute('readonly')}
+                                                    className="h-11 rounded-xl" 
+                                                />
+                                            </FormControl>
                                             <FormMessage />
                                         </FormItem>
                                     )}
@@ -330,7 +354,15 @@ export default function LoginForm() {
                                 <FormField control={signUpForm.control} name="password" render={({ field }) => (
                                         <FormItem>
                                             <FormLabel className="text-xs font-black uppercase tracking-widest text-muted-foreground">New Password</FormLabel>
-                                            <FormControl><PasswordInput field={field} placeholder="••••••••" /></FormControl>
+                                            <FormControl>
+                                                <PasswordInput 
+                                                    field={field} 
+                                                    placeholder="••••••••" 
+                                                    autoComplete="new-password"
+                                                    readOnly={true}
+                                                    onFocus={(e: any) => e.target.removeAttribute('readonly')}
+                                                />
+                                            </FormControl>
                                             <FormMessage />
                                         </FormItem>
                                     )}
@@ -338,7 +370,15 @@ export default function LoginForm() {
                                 <FormField control={signUpForm.control} name="confirmPassword" render={({ field }) => (
                                         <FormItem>
                                             <FormLabel className="text-xs font-black uppercase tracking-widest text-muted-foreground">Confirm Password</FormLabel>
-                                            <FormControl><PasswordInput field={field} placeholder="••••••••" /></FormControl>
+                                            <FormControl>
+                                                <PasswordInput 
+                                                    field={field} 
+                                                    placeholder="••••••••" 
+                                                    autoComplete="new-password"
+                                                    readOnly={true}
+                                                    onFocus={(e: any) => e.target.removeAttribute('readonly')}
+                                                />
+                                            </FormControl>
                                             <FormMessage />
                                         </FormItem>
                                     )}
