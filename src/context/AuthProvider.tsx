@@ -53,190 +53,59 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const fetchProfile = useCallback(async (supabaseUser: SupabaseUser) => {
     if (!supabase) return;
     try {
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', supabaseUser.id)
-        .maybeSingle();
-
-      if (profileError) {
-          console.error("Profile Fetch Error:", profileError.message);
-      }
-
+      const { data: profile } = await supabase.from('profiles').select('*').eq('id', supabaseUser.id).maybeSingle();
       if (profile) {
-        const role = profile.role || 'user';
-        const fullName = profile.full_name || profile.name || supabaseUser.user_metadata.full_name || 'User';
-
         setUser({
           id: supabaseUser.id,
-          name: fullName,
+          name: profile.full_name || supabaseUser.user_metadata.full_name || 'User',
           username: profile.username || supabaseUser.email?.split('@')[0] || 'user',
           email: supabaseUser.email!,
-          role: role as 'admin' | 'staff' | 'user',
+          role: (profile.role || 'user') as 'admin' | 'staff' | 'user',
           avatarUrl: profile.avatar_url || supabaseUser.user_metadata.avatar_url,
         });
       } else {
-        const assignedRole = 'user'; 
         const newUser: User = {
           id: supabaseUser.id,
           name: supabaseUser.user_metadata.full_name || 'User',
           username: supabaseUser.email?.split('@')[0] || 'user',
           email: supabaseUser.email!,
-          role: assignedRole,
+          role: 'user',
           avatarUrl: supabaseUser.user_metadata.avatar_url,
         };
-        
-        await supabase.from('profiles').upsert({
-          id: supabaseUser.id,
-          full_name: newUser.name,
-          username: newUser.username,
-          role: assignedRole,
-          avatar_url: newUser.avatarUrl,
-          email: newUser.email,
-          updated_at: new Date().toISOString()
-        }, { onConflict: 'id' });
-        
+        await supabase.from('profiles').upsert({ id: newUser.id, full_name: newUser.name, username: newUser.username, role: 'user', email: newUser.email });
         setUser(newUser);
       }
-    } catch (err) {
-      console.error('Unexpected error in profile cycle:', err);
-    } finally {
-      setLoading(false);
-    }
+    } finally { setLoading(false); }
   }, []);
 
   useEffect(() => {
-    const syncWithSupabase = async () => {
-      if (nextAuthStatus === 'authenticated' && (nextAuthSession as any)?.id_token && !user && supabase) {
-        const { data, error } = await supabase.auth.signInWithIdToken({
-          provider: 'google',
-          token: (nextAuthSession as any).id_token,
-        });
-        
-        if (error) {
-          console.error("Supabase Token Bridge Error:", error.message);
-        } else if (data.user) {
-          await fetchProfile(data.user);
-        }
-      }
-    };
-    
-    syncWithSupabase();
+    if (nextAuthStatus === 'authenticated' && (nextAuthSession as any)?.id_token && !user && supabase) {
+      supabase.auth.signInWithIdToken({ provider: 'google', token: (nextAuthSession as any).id_token }).then(({ data }) => {
+        if (data.user) fetchProfile(data.user);
+      });
+    }
   }, [nextAuthSession, nextAuthStatus, user, fetchProfile]);
 
   useEffect(() => {
-    if (!supabase) {
-      setLoading(false);
-      return;
-    }
-
-    const checkUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        await fetchProfile(session.user);
-      } else {
-        setLoading(false);
-      }
-    };
-
-    checkUser();
-
+    if (!supabase) { setLoading(false); return; }
+    supabase.auth.getSession().then(({ data: { session } }) => { if (session?.user) fetchProfile(session.user); else setLoading(false); });
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (session?.user) {
-        await fetchProfile(session.user);
-      } else if (event === 'SIGNED_OUT') {
-        setUser(null);
-        setLoading(false);
-      }
+      if (session?.user) fetchProfile(session.user);
+      else if (event === 'SIGNED_OUT') { setUser(null); setLoading(false); }
     });
-
     return () => subscription.unsubscribe();
   }, [fetchProfile]);
 
-  const login = async (email: string, password: string) => {
-    if (!supabase) throw new Error("Authentication service is unavailable.");
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) throw error;
-  };
-
-  const signUp = async (data: SignUpData) => {
-    if (!supabase) throw new Error("Authentication service is unavailable.");
-    const { error } = await supabase.auth.signUp({
-      email: data.email,
-      password: data.password!,
-      options: {
-        data: {
-          full_name: data.name,
-          username: data.username,
-        }
-      }
-    });
-    if (error) throw error;
-  };
-
-  const signInWithGoogle = async () => {
-    // Professional custom-domain login bypasses standard Supabase redirect
-    await nextAuthSignIn('google');
-  };
-
-  const signInWithFacebook = async () => {
-    if (!supabase) throw new Error("Authentication service is unavailable.");
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'facebook',
-      options: {
-        redirectTo: typeof window !== 'undefined' ? `${window.location.origin}/auth/callback` : undefined
-      }
-    });
-    if (error) throw error;
-  };
-
-  const signInWithApple = async () => {
-    if (!supabase) throw new Error("Authentication service is unavailable.");
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'apple',
-      options: {
-        redirectTo: typeof window !== 'undefined' ? `${window.location.origin}/auth/callback` : undefined
-      }
-    });
-    if (error) throw error;
-  };
-
-  const signInWithGithub = async () => {
-    if (!supabase) throw new Error("Authentication service is unavailable.");
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'github',
-      options: {
-        redirectTo: typeof window !== 'undefined' ? `${window.location.origin}/auth/callback` : undefined
-      }
-    });
-    if (error) throw error;
-  };
-
-  const updateUser = (updatedData: Partial<User>) => {
-    setUser(currentUser => {
-        if (!currentUser) return null;
-        return { ...currentUser, ...updatedData };
-    });
-  };
-
-  const logout = async () => {
-    if (supabase) {
-      await supabase.auth.signOut();
-    }
-    await nextAuthSignOut({ redirect: false });
-    setUser(null);
-  };
-
   const value = {
     user,
-    login,
-    signUp,
-    signInWithGoogle,
-    signInWithFacebook,
-    signInWithApple,
-    signInWithGithub,
-    updateUser,
-    logout,
+    login: async (email, password) => { await supabase.auth.signInWithPassword({ email, password }); },
+    signUp: async (data) => { await supabase.auth.signUp({ email: data.email, password: data.password!, options: { data: { full_name: data.name, username: data.username } } }); },
+    signInWithGoogle: async () => { await nextAuthSignIn('google'); },
+    signInWithFacebook: async () => { await supabase.auth.signInWithOAuth({ provider: 'facebook', options: { redirectTo: `${window.location.origin}/auth/callback` } }); },
+    signInWithApple: async () => { await supabase.auth.signInWithOAuth({ provider: 'apple', options: { redirectTo: `${window.location.origin}/auth/callback` } }); },
+    signInWithGithub: async () => { await supabase.auth.signInWithOAuth({ provider: 'github', options: { redirectTo: `${window.location.origin}/auth/callback` } }); },
+    updateUser: (data) => setUser(u => u ? { ...u, ...data } : null),
+    logout: async () => { await supabase.auth.signOut(); await nextAuthSignOut({ redirect: false }); setUser(null); },
     loading: loading || nextAuthStatus === 'loading',
   };
 

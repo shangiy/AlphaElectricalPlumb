@@ -66,17 +66,15 @@ export default function Hero() {
     return () => clearInterval(interval);
   }, [activeSlideIndex, slides]);
 
-  const categoryTags = ["Water Tanks", "LED Lights", "PPR Pipes", "Solar Heaters"];
-
   if (loading || slides.length === 0) {
       return (
         <section className="relative w-full overflow-hidden bg-[#0a0f1e] min-h-[75vh] flex items-center">
             <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: `radial-gradient(#1e293b 1px, transparent 0)`, backgroundSize: '30px 30px' }} />
-            <div className="relative z-10 container mx-auto px-6 py-20">
+            <div className="relative z-10 container mx-auto px-6 py-20 text-center">
                 <div className="space-y-6 animate-pulse">
-                    <div className="h-20 w-3/4 bg-white/10 rounded-2xl" />
-                    <div className="h-10 w-1/2 bg-white/10 rounded-xl" />
-                    <div className="h-16 w-full max-w-xl bg-white/10 rounded-full" />
+                    <div className="h-20 w-3/4 bg-white/10 rounded-2xl mx-auto" />
+                    <div className="h-10 w-1/2 bg-white/10 rounded-xl mx-auto" />
+                    <div className="h-16 w-full max-w-xl bg-white/10 rounded-full mx-auto" />
                 </div>
             </div>
         </section>
@@ -100,7 +98,6 @@ export default function Hero() {
                       className={cn(
                           "absolute inset-0 bg-cover bg-center transition-all duration-[2500ms] ease-in-out transform",
                           isActive ? "opacity-100" : "opacity-0",
-                          // Animation Switcher Logic
                           animation === 'zoom' && (isActive ? "scale-110" : "scale-100"),
                           animation === 'slide' && (isActive ? "translate-x-0" : "-translate-x-full"),
                           animation === 'blur-fade' && (isActive ? "blur-0" : "blur-xl"),
@@ -112,15 +109,7 @@ export default function Hero() {
           })}
       </div>
 
-      {/* Blueprint Pattern Overlay */}
-      <div 
-        className="absolute inset-0 opacity-20 pointer-events-none z-10"
-        style={{ 
-          backgroundImage: `radial-gradient(#1e293b 1px, transparent 0)`,
-          backgroundSize: '30px 30px'
-        }}
-      />
-      <div className="absolute inset-0 bg-gradient-to-b from-[#0a0f1e]/90 via-transparent to-[#0a0f1e] z-10" />
+      <div className="absolute inset-0 bg-gradient-to-b from-[#0a0f1e]/80 via-transparent to-[#0a0f1e] z-10" />
 
       <div className="relative z-20 container mx-auto max-w-7xl px-6 py-20 md:py-32">
         <div className="flex flex-col gap-8 max-w-4xl animate-in fade-in slide-in-from-bottom-8 duration-1000">
@@ -129,94 +118,31 @@ export default function Hero() {
                 className={cn("leading-[1.05] tracking-tighter break-words whitespace-pre-wrap", slide.headlineWeight || 'font-black')}
                 style={{ 
                     marginTop: `${slide.headlineTopMargin || 0}cm`,
-                    fontSize: slide.headlineSize ? `${slide.headlineSize}px` : undefined
+                    fontSize: slide.headlineSize ? `${slide.headlineSize}px` : undefined,
+                    color: slide.headlineColor || '#ffffff'
                 }}
             >
               {(() => {
                 if (!slide.headline) return null;
                 const styles = slide.wordStyles || [];
                 const parts = slide.headline.split(/(\s+)/);
-                
                 return parts.map((part, i) => {
-                  if (part.trim() === '') return part; 
-                  const cleanPart = part.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"").toLowerCase().trim();
-                  if (!cleanPart) return part;
-                  const match = styles.find(s => s.text && s.text.toLowerCase().trim() === cleanPart);
-                  
-                  if (match) {
-                    return (
-                      <span key={i} className={cn(match.font)} style={{ color: match.color }}>
-                        {part}
-                      </span>
-                    );
-                  }
-                  
-                  return (
-                    <span key={i} className="text-white">
-                      {part}
-                    </span>
-                  );
+                  const clean = part.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"").toLowerCase().trim();
+                  const match = styles.find(s => s.text && s.text.toLowerCase().trim() === clean);
+                  return match ? <span key={i} className={match.font} style={{ color: match.color }}>{part}</span> : <span key={i}>{part}</span>;
                 });
               })()}
             </h1>
-            <p 
-                className="text-xl md:text-3xl text-white font-medium tracking-tight font-montserrat opacity-90 leading-relaxed"
-                style={{ 
-                    color: slide.subheadingColor || '#ffffff', 
-                    fontSize: slide.subheadingSize ? `${slide.subheadingSize}px` : undefined,
-                    marginTop: `${slide.subheadingTopMargin || 0}cm`
-                }}
-            >
-              {slide.subheading}
-            </p>
+            <p className="text-xl md:text-3xl font-medium tracking-tight opacity-90 leading-relaxed" style={{ color: slide.subheadingColor || '#ffffff', fontSize: slide.subheadingSize ? `${slide.subheadingSize}px` : undefined, marginTop: `${slide.subheadingTopMargin || 0}cm` }}>{slide.subheading}</p>
           </div>
-
-          {/* Action Center */}
           <div className="space-y-8 max-w-3xl">
             <HeroSearch />
-
-            <div className="flex items-center gap-6">
-                <Button asChild size="lg" className="rounded-full px-12 py-8 bg-primary hover:scale-105 transition-transform font-black uppercase tracking-widest text-lg shadow-2xl">
-                    <Link href={slide.ctaLink || '/search'}>{slide.ctaText || 'Shop Now'}</Link>
-                </Button>
-                
-                {/* Category Pill Row */}
-                <div className="hidden md:flex flex-wrap items-center gap-4">
-                    <span className="text-white font-medium font-montserrat text-sm opacity-60">Popular:</span>
-                    <div className="flex flex-wrap gap-2">
-                        {categoryTags.map((tag) => (
-                        <button 
-                            key={tag}
-                            className="px-4 py-1.5 rounded-full border border-white/20 text-[10px] font-black text-white/70 hover:bg-white hover:text-[#0a0f1e] transition-all active:scale-95 font-montserrat uppercase tracking-wider"
-                        >
-                            {tag}
-                        </button>
-                        ))}
-                    </div>
-                </div>
-            </div>
+            <Button asChild size="lg" className="rounded-full px-12 py-8 bg-primary hover:scale-105 transition-transform font-black uppercase tracking-widest text-lg shadow-2xl">
+                <Link href={slide.ctaLink || '/search'}>{slide.ctaText || 'Shop Now'}</Link>
+            </Button>
           </div>
         </div>
       </div>
-
-      {/* Slide Indicators */}
-      {slides.length > 1 && (
-          <div className="absolute bottom-10 right-10 flex gap-3 z-30">
-              {slides.map((_, i) => (
-                  <button 
-                    key={i} 
-                    onClick={() => {
-                        setActiveSlideIndex(i);
-                        setBgImageIndex(0);
-                    }}
-                    className={cn(
-                        "h-1.5 rounded-full transition-all duration-500",
-                        activeSlideIndex === i ? "bg-primary w-12" : "bg-white/20 w-4 hover:bg-white/40"
-                    )}
-                  />
-              ))}
-          </div>
-      )}
     </section>
   );
 }
