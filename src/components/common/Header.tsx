@@ -35,10 +35,10 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthProvider';
 
 /**
- * High-Fidelity Header v23.0:
- * - Scaled Logo: Logo increased to twice its size (110px desktop / 80px mobile).
+ * High-Fidelity Header v23.1 (Ecosystem v4.3.0):
+ * - Logo Resilience: Logo remains visible during search expansion.
+ * - Dynamic Proportions: Mobile search bar respects space boundaries.
  * - Role-Aware UI: Shows "Admin" link for privileged users.
- * - Primary Teal Highlights: Consistent brand teal accents.
  */
 export default function Header() {
   const { user } = useAuth();
@@ -72,7 +72,7 @@ export default function Header() {
         isScrolled ? "border-slate-200/60" : "border-transparent bg-slate-50/40"
       )}
     >
-      {/* LAYER 1 (Bottom): Animated Gradient Background (Slower 20s) */}
+      {/* LAYER 1 (Bottom): Animated Gradient Background */}
       <div 
         className={cn(
           "absolute inset-0 -z-20 bg-gradient-to-r from-red-500 via-purple-500 to-blue-500 bg-[length:200%_200%] animate-gradient-x transition-opacity duration-1000",
@@ -155,40 +155,41 @@ export default function Header() {
           </div>
         </div>
 
-        {/* MOBILE VIEW */}
-        <div className="w-full lg:hidden flex items-center justify-between h-20 gap-2">
-          {/* Unified Logo & Branding Link (Mobile) */}
+        {/* MOBILE VIEW (Ecosystem v4.3.0 Standard) */}
+        <div className="w-full lg:hidden flex items-center justify-between h-20 gap-3">
+          {/* Logo Resilience: Remains visible at all times */}
           <NextLink 
             href="/" 
-            className={cn(
-              "flex items-center gap-3 group transition-all duration-500", 
-              mobileSearchOpen ? "opacity-0 w-0 overflow-hidden" : "opacity-100"
-            )}
+            className="flex items-center gap-2 group transition-all duration-500 shrink-0"
           >
              <div className="flex-shrink-0">
-                <Image src="/logo Alpha.png" alt="Alpha Logo" width={80} height={80} className="h-auto" />
+                <Image src="/logo Alpha.png" alt="Alpha Logo" width={55} height={55} className="h-auto" />
             </div>
-            {!mobileSearchOpen && (
-                <div className="flex flex-col text-[#0b0f19] group-hover:text-primary transition-colors duration-300">
-                    <span className="font-bold text-xl leading-tight uppercase tracking-tighter">Alpha</span>
-                    <div className="w-full h-px bg-current opacity-20"></div>
-                    <span className="text-[9px] leading-tight font-black uppercase tracking-widest">Electricals & Plumbing Ltd</span>
-                </div>
-            )}
+            {/* Branding text collapses Smoothly when search expands */}
+            <div className={cn(
+                "flex flex-col text-[#0b0f19] group-hover:text-primary transition-all duration-700 ease-[cubic-bezier(0.19,1,0.22,1)]",
+                mobileSearchOpen ? "opacity-0 w-0 overflow-hidden" : "opacity-100"
+            )}>
+                <span className="font-bold text-lg leading-tight uppercase tracking-tighter">Alpha</span>
+                <div className="w-full h-px bg-current opacity-20"></div>
+                <span className="text-[8px] leading-tight font-black uppercase tracking-widest">Electricals</span>
+            </div>
           </NextLink>
 
-          <div className="flex items-center gap-2">
-            {/* Morphing Bubble Search Bar */}
+          <div className="flex items-center gap-2 flex-1 justify-end min-w-0">
+            {/* Morphing Bubble Search Bar: Expansion is relative to available space */}
             <form 
               onSubmit={handleSearchSubmit} 
               className={cn(
                 "flex items-center rounded-full transition-all duration-700 ease-[cubic-bezier(0.19,1,0.22,1)]",
-                mobileSearchOpen ? "w-[240px] sm:w-[320px] bg-white border border-slate-200 px-2 shadow-xl ring-4 ring-purple-500/5" : "w-10 h-10 bg-transparent border border-[#0b0f19]/10 justify-center"
+                mobileSearchOpen 
+                  ? "flex-1 min-w-[140px] max-w-[280px] bg-white border border-slate-200 px-2 shadow-xl ring-4 ring-purple-500/5" 
+                  : "w-10 h-10 bg-transparent border border-[#0b0f19]/10 justify-center"
               )}
             >
               <input 
                 type="search"
-                placeholder="Search Alpha..."
+                placeholder="Search..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className={cn(
@@ -217,11 +218,11 @@ export default function Header() {
               </Button>
             </form>
 
-            <ShoppingCartComponent triggerClassName="h-10 w-10 border border-[#0b0f19]/10 rounded-full text-[#0b0f19] flex items-center justify-center hover:text-primary" />
+            <ShoppingCartComponent triggerClassName="h-10 w-10 border border-[#0b0f19]/10 rounded-full text-[#0b0f19] flex items-center justify-center hover:text-primary shrink-0" />
             
             <Sheet>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-10 w-10 border border-[#0b0f19]/10 rounded-full text-[#0b0f19] flex items-center justify-center hover:text-primary">
+                <Button variant="ghost" size="icon" className="h-10 w-10 border border-[#0b0f19]/10 rounded-full text-[#0b0f19] flex items-center justify-center hover:text-primary shrink-0">
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
