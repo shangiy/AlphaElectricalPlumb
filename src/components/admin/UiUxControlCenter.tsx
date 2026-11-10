@@ -22,7 +22,8 @@ import {
   Settings2,
   Eye,
   GripVertical,
-  BookOpen
+  BookOpen,
+  Paintbrush
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import FeaturedProductManager from './FeaturedProductManager';
@@ -55,10 +56,16 @@ export const TEXT_STYLE_OPTIONS = [
     { id: 'bold', label: 'Bold' }
 ];
 
+interface BannerItem {
+    text: string;
+    color: string;
+}
+
 interface HighlighterRule { word: string; colors: string[]; }
 
 interface BannerConfig {
     items: string[];
+    coloredItems?: BannerItem[];
     speed: number;
     fontSize: number;
     textColor: string;
@@ -88,6 +95,10 @@ interface BannerConfig {
 
 const DEFAULT_BANNER: BannerConfig = {
     items: ["MASHUJAA DAY OFFER! 20% OFF", "Welcome to Alpha Ecosystem v4.3.0"],
+    coloredItems: [
+        { text: "MASHUJAA DAY OFFER! 20% OFF", color: "#ffffff" },
+        { text: "Welcome to Alpha Ecosystem v4.3.0", color: "#ffffff" }
+    ],
     speed: 30, fontSize: 12, textColor: '#ffffff',
     styleType: 'kenyan-flag', styleOrientation: 'horizontal',
     showClock: true, showSocial: true, highlighters: []
@@ -129,7 +140,17 @@ export default function UiUxControlCenter() {
         getStorefrontSetting('hero_slides'),
       ]);
       if (search) setSearchPhrases(search);
-      if (bannerSet) setBannerConfig(prev => ({ ...prev, ...bannerSet }));
+      if (bannerSet) {
+          const config = {
+              ...DEFAULT_BANNER,
+              ...bannerSet
+          };
+          // Ensure coloredItems are initialized if missing
+          if (!config.coloredItems || config.coloredItems.length === 0) {
+              config.coloredItems = config.items.map((text: string) => ({ text, color: '#ffffff' }));
+          }
+          setBannerConfig(config);
+      }
       if (slides) setHeroSlides(slides);
     } catch (err) { console.error(err); } finally { setLoading(false); }
   }, []);
@@ -146,7 +167,7 @@ export default function UiUxControlCenter() {
     setSubmitting(true);
     try {
         await updateStorefrontSetting('top_banner_config', bannerConfig);
-        toast({ title: "v4.3.0 Published", description: "Banner engine synchronized." });
+        toast({ title: "v4.3.3 Published", description: "Banner engine synchronized." });
     } catch (err: any) { toast({ variant: "destructive", description: err.message }); } finally { setSubmitting(false); }
   };
 
@@ -159,6 +180,16 @@ export default function UiUxControlCenter() {
             return arrayMove(items, oldIndex, newIndex);
         });
     }
+  };
+
+  const updateMarqueeItems = (val: string) => {
+    const rawItems = val.split(',').map(i => i.trim()).filter(Boolean);
+    const newColoredItems = rawItems.map(text => {
+        // Try to preserve existing color if item text matches
+        const existing = bannerConfig.coloredItems?.find(ci => ci.text === text);
+        return existing || { text, color: '#ffffff' };
+    });
+    setBannerConfig({ ...bannerConfig, items: rawItems, coloredItems: newColoredItems });
   };
 
   const renderStyledBadgeText = (text: string, styleType: string, orientation: string, textStyle: string = "normal") => {
@@ -224,7 +255,7 @@ export default function UiUxControlCenter() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b pb-8">
         <div>
           <h1 className="text-5xl font-black font-headline text-accent tracking-tighter uppercase">Alpha CMS Suite</h1>
-          <p className="text-muted-foreground font-bold uppercase tracking-widest text-xs mt-2">Professional Storefront Governance v4.3.0</p>
+          <p className="text-muted-foreground font-bold uppercase tracking-widest text-xs mt-2">Professional Storefront Governance v4.3.3</p>
         </div>
       </div>
 
@@ -246,7 +277,7 @@ export default function UiUxControlCenter() {
                         <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">Engine Sync Active</p>
                         <h3 className="text-xl font-black uppercase">Real-time Engine Preview</h3>
                     </div>
-                    <Badge className="bg-primary">v4.3.0 LIVE</Badge>
+                    <Badge className="bg-primary">v4.3.3 LIVE</Badge>
                 </div>
                 <div className="bg-white py-3 flex items-center justify-center overflow-hidden">
                     <div className="flex items-center gap-12 whitespace-nowrap animate-marquee">
@@ -255,7 +286,14 @@ export default function UiUxControlCenter() {
                                 {bannerConfig.badgeText && <span className="px-3 py-1 rounded-full bg-slate-100 shadow-md transform -skew-x-6 text-xs">{renderStyledBadgeText(bannerConfig.badgeText, bannerConfig.styleType, bannerConfig.styleOrientation || 'horizontal')}</span>}
                                 {bannerConfig.vibrantText && <span>{renderStyledBadgeText(bannerConfig.vibrantText, bannerConfig.vibrantStyleType || 'kenyan-flag', bannerConfig.vibrantOrientation || 'vertical', bannerConfig.vibrantTextStyle)}</span>}
                                 {bannerConfig.vibrantText2 && <span>{renderStyledBadgeText(bannerConfig.vibrantText2, bannerConfig.vibrantStyleType2 || 'kenyan-flag', bannerConfig.vibrantOrientation2 || 'vertical', bannerConfig.vibrantTextStyle2)}</span>}
-                                <span className="text-accent font-bold uppercase tracking-widest text-[12px]">{bannerConfig.items[0]}</span>
+                                
+                                {bannerConfig.coloredItems && bannerConfig.coloredItems.length > 0 ? (
+                                    bannerConfig.coloredItems.map((item, idx) => (
+                                        <span key={idx} className="font-bold uppercase tracking-widest text-[12px]" style={{ color: item.color || '#28235f' }}>{item.text}</span>
+                                    ))
+                                ) : (
+                                    <span className="text-accent font-bold uppercase tracking-widest text-[12px]">{bannerConfig.items[0]}</span>
+                                )}
                             </div>
                         ))}
                     </div>
@@ -264,42 +302,67 @@ export default function UiUxControlCenter() {
 
             <Card className="rounded-[2.5rem] border shadow-xl overflow-hidden">
                 <CardHeader className="bg-accent text-white p-8">
-                    <CardTitle className="text-2xl font-black uppercase tracking-tight">Banner Engine v4.3.0</CardTitle>
-                    <CardDescription className="text-white/60">Configure the master announcement marquee.</CardDescription>
+                    <CardTitle className="text-2xl font-black uppercase tracking-tight">Banner Engine v4.3.3</CardTitle>
+                    <CardDescription className="text-white/60">Configure the master announcement marquee and assign individual colors.</CardDescription>
                 </CardHeader>
                 <CardContent className="p-10 space-y-12">
                     <div className="space-y-3">
                         <Label className="text-[10px] font-black uppercase">Marquee Items (Comma Separated)</Label>
                         <Textarea 
                             value={bannerConfig.items.join(', ')} 
-                            onChange={(e) => setBannerConfig({...bannerConfig, items: e.target.value.split(',').map(i => i.trim())})}
+                            onChange={(e) => updateMarqueeItems(e.target.value)}
                             className="rounded-2xl h-24 font-bold"
+                            placeholder="MASHUJAA DAY, FLASH SALE, NEW STOCK"
                         />
                     </div>
 
-                    {/* Technical Instructions Block */}
-                    <div className="p-8 rounded-[2.5rem] bg-secondary/10 border border-dashed border-accent/20 flex gap-6 items-start animate-in fade-in slide-in-from-bottom-4 duration-1000">
-                        <div className="h-12 w-12 rounded-2xl bg-white shadow-xl flex items-center justify-center shrink-0">
-                            <BookOpen className="text-primary h-6 w-6" />
-                        </div>
-                        <div className="text-sm leading-relaxed text-muted-foreground font-medium">
-                            <p className="font-black text-accent uppercase tracking-tighter mb-2">Strategy: Index-Based Coloring</p>
-                            To achieve position-based or time-based coloring for your marquee items (where the 1st offer is red, the 2nd is blue, and the 3rd uses a custom color), you can design your admin CMS to split the comma-separated string into an array and map individual styles based on its index position or a cyclic time interval. 
-                            <br/><br/>
-                            <strong className="text-accent">Approach 1: Index-Based Position Mapping</strong>
-                            <br/>
-                            Since your marquee items are comma-separated, the frontend renderer can split the input string into an array, then loop through them using their numeric position (index) to assign specific color classes.
-                            <br/><br/>
-                            <div className="p-4 bg-accent rounded-xl text-white font-mono text-[10px] overflow-x-auto">
-                              <pre>{`items.map((text, index) => {
-    const colorClass = colorPalette[index % colorPalette.length];
-    return \`<span class="\${colorClass}">\${text}</span>\`;
-});`}</pre>
+                    {/* DYNAMIC COLOR-MAPPED ROW GENERATOR */}
+                    {bannerConfig.coloredItems && bannerConfig.coloredItems.length > 0 && (
+                        <div className="p-8 rounded-[2.5rem] bg-secondary/10 border border-dashed border-accent/20 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                            <div className="flex items-center gap-3 mb-2">
+                                <Paintbrush className="text-accent h-5 w-5" />
+                                <h3 className="text-sm font-black text-accent uppercase tracking-widest">Marquee Item Stylizer</h3>
+                            </div>
+                            
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {bannerConfig.coloredItems.map((item, idx) => (
+                                    <div key={idx} className="flex flex-col gap-3 p-5 bg-white rounded-2xl border shadow-sm group hover:border-primary transition-all">
+                                        <div className="flex items-center justify-between overflow-hidden">
+                                            <Badge variant="outline" className="text-[9px] font-black uppercase bg-muted border-none truncate max-w-[150px]">
+                                                {item.text}
+                                            </Badge>
+                                            <span className="text-[8px] font-bold text-muted-foreground uppercase">Item {idx + 1}</span>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            <input 
+                                                type="color" 
+                                                value={item.color || '#ffffff'} 
+                                                onChange={(e) => {
+                                                    const newColored = [...(bannerConfig.coloredItems || [])];
+                                                    newColored[idx].color = e.target.value;
+                                                    setBannerConfig({ ...bannerConfig, coloredItems: newColored });
+                                                }}
+                                                className="h-10 w-10 rounded-xl cursor-pointer border-none shadow-inner"
+                                            />
+                                            <div className="flex-1">
+                                                <Input 
+                                                    value={item.color || '#ffffff'} 
+                                                    onChange={(e) => {
+                                                        const newColored = [...(bannerConfig.coloredItems || [])];
+                                                        newColored[idx].color = e.target.value;
+                                                        setBannerConfig({ ...bannerConfig, coloredItems: newColored });
+                                                    }}
+                                                    className="h-8 rounded-lg font-mono text-[10px] uppercase bg-muted/20 border-none"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
                         </div>
-                    </div>
+                    )}
 
-                    {/* Slot 4: Vibrant Event Text (Text Only) */}
+                    {/* Vibrant Event Text Cluster */}
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-8 pt-6 border-t border-dashed">
                         <div className="space-y-3">
                             <Label className="text-[10px] font-black uppercase">Vibrant Event Text</Label>
@@ -342,7 +405,6 @@ export default function UiUxControlCenter() {
                         </div>
                     </div>
 
-                    {/* Slot 5: Accent Highlight (Text Only) */}
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-8 pt-6 border-t border-dashed">
                         <div className="space-y-3">
                             <Label className="text-[10px] font-black uppercase">Accent Highlight</Label>
@@ -387,7 +449,7 @@ export default function UiUxControlCenter() {
 
                     <Button onClick={handleSaveBanner} disabled={submitting} className="w-full h-16 rounded-full font-black text-xl uppercase bg-primary text-white">
                         {submitting ? <Loader2 className="animate-spin mr-3" /> : <Save className="mr-3" />}
-                        Sync v4.3.0 Engine
+                        Sync v4.3.3 Engine
                     </Button>
                 </CardContent>
             </Card>
@@ -438,6 +500,13 @@ export default function UiUxControlCenter() {
         <TabsContent value="hero"><HeroManager initialSlides={heroSlides} /></TabsContent>
         <TabsContent value="categories"><CategoryManager initialCards={[]} /></TabsContent>
         <TabsContent value="spotlight"><FeaturedProductManager /></TabsContent>
+        <TabsContent value="moderation" className="space-y-8">
+            <Card className="rounded-[2.5rem] border shadow-xl p-10 text-center">
+                <BookOpen className="mx-auto h-12 w-12 text-muted-foreground opacity-20 mb-6" />
+                <h3 className="text-2xl font-black uppercase tracking-tighter text-accent">Review Moderation Node</h3>
+                <p className="text-muted-foreground max-w-sm mx-auto mt-2">Manage customer feedback visibility and site testimonials.</p>
+            </Card>
+        </TabsContent>
       </Tabs>
     </div>
   );

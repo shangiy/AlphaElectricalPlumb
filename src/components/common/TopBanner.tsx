@@ -4,6 +4,11 @@ import React, { useEffect, useState } from 'react';
 import { getStorefrontSetting } from '@/app/actions/cms-actions';
 import { cn } from '@/lib/utils';
 
+interface BannerItem {
+    text: string;
+    color: string;
+}
+
 interface HighlighterRule {
     word: string;
     colors: string[];
@@ -11,6 +16,7 @@ interface HighlighterRule {
 
 interface BannerConfig {
     items: string[];
+    coloredItems?: BannerItem[];
     speed: number;
     fontSize: number;
     textColor: string;
@@ -39,12 +45,14 @@ interface BannerConfig {
 }
 
 /**
- * High-Fidelity Independent Top Banner v4.3.1:
+ * High-Fidelity Independent Top Banner v4.3.3:
  * Features a dynamic changing gradient background and 5-slot sequential engine.
+ * Supports individual item colors via coloredItems mapping.
  */
 export default function TopBanner() {
   const [config, setConfig] = useState<BannerConfig>({
-    items: ["Welcome to Alpha Ecosystem v4.3.0"],
+    items: ["Welcome to Alpha Ecosystem v4.3.3"],
+    coloredItems: [{ text: "Welcome to Alpha Ecosystem v4.3.3", color: "#ffffff" }],
     speed: 30,
     fontSize: 12,
     textColor: '#ffffff',
@@ -109,6 +117,10 @@ export default function TopBanner() {
     );
   };
 
+  const displayItems = config.coloredItems && config.coloredItems.length > 0 
+    ? config.coloredItems 
+    : config.items.map(text => ({ text, color: '#ffffff' }));
+
   return (
     <div className="w-full text-white py-1.5 px-4 bg-gradient-to-r from-[#28235f] via-[#4c3b99] to-[#28235f] bg-[length:200%_200%] animate-gradient-x border-b border-white/5 overflow-hidden">
       <div className="container mx-auto flex justify-between items-center h-5">
@@ -116,12 +128,12 @@ export default function TopBanner() {
           <div className="flex w-max items-center flex-nowrap animate-marquee whitespace-nowrap" style={{ animationDuration: `${config.speed}s` }}>
             {[0, 1].map(i => (
               <ul key={i} className="flex items-center [&_li]:mx-12">
-                {config.items.map((item, idx) => (
+                {displayItems.map((item, idx) => (
                   <li key={idx} className="flex items-center gap-6 uppercase tracking-widest text-[11px] font-bold">
                     {config.badgeText && <span className="px-3 py-1 rounded-full bg-white shadow-lg transform -skew-x-6">{renderStyledText(config.badgeText, config.styleType, config.styleOrientation || 'horizontal')}</span>}
                     {config.vibrantText && <span>{renderStyledText(config.vibrantText, config.vibrantStyleType || 'kenyan-flag', config.vibrantOrientation || 'vertical', config.vibrantTextStyle)}</span>}
                     {config.vibrantText2 && <span>{renderStyledText(config.vibrantText2, config.vibrantStyleType2 || 'gold-gradient', config.vibrantOrientation2 || 'horizontal', config.vibrantTextStyle2)}</span>}
-                    <span>{item}</span>
+                    <span style={{ color: item.color || '#ffffff' }}>{item.text}</span>
                   </li>
                 ))}
               </ul>
