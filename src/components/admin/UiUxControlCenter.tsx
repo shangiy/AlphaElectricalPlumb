@@ -327,11 +327,22 @@ export default function UiUxControlCenter() {
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {bannerConfig.coloredItems.map((item, idx) => (
                                     <div key={idx} className="flex flex-col gap-3 p-5 bg-white rounded-2xl border shadow-sm group hover:border-primary transition-all">
-                                        <div className="flex items-center justify-between overflow-hidden">
-                                            <Badge variant="outline" className="text-[9px] font-black uppercase bg-muted border-none truncate max-w-[150px]">
-                                                {item.text}
-                                            </Badge>
-                                            <span className="text-[8px] font-bold text-muted-foreground uppercase">Item {idx + 1}</span>
+                                        <div className="flex items-center justify-between overflow-hidden gap-2">
+                                            <div className="flex-1">
+                                                <Input 
+                                                    value={item.text} 
+                                                    onChange={(e) => {
+                                                        const newColored = [...(bannerConfig.coloredItems || [])];
+                                                        newColored[idx].text = e.target.value;
+                                                        // Update master items list to stay in sync
+                                                        const newItems = newColored.map(ci => ci.text);
+                                                        setBannerConfig({ ...bannerConfig, items: newItems, coloredItems: newColored });
+                                                    }}
+                                                    placeholder="Item text or emoji"
+                                                    className="h-8 rounded-lg text-[10px] font-bold bg-muted/20 border-none focus:bg-white transition-all uppercase"
+                                                />
+                                            </div>
+                                            <span className="text-[8px] font-bold text-muted-foreground uppercase shrink-0">Slot {idx + 1}</span>
                                         </div>
                                         <div className="flex items-center gap-3">
                                             <input 
