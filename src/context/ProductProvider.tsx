@@ -17,7 +17,8 @@ interface ProductProviderProps {
   children: ReactNode;
 }
 
-export type ProductFormData = Omit<Product, 'id' | 'rating' | 'reviews'>;
+// Allow 'reviews' to be part of the form data so admins can edit it
+export type ProductFormData = Omit<Product, 'id' | 'rating'>;
 
 /** URL-safe slug; the random suffix keeps it unique (products.slug is NOT NULL UNIQUE). */
 const makeSlug = (name: string) =>
@@ -92,6 +93,7 @@ export function ProductProvider({ children }: ProductProviderProps) {
         name: productData.name,
         slug: makeSlug(productData.name),
         price: productData.price,
+        old_price: productData.oldPrice || 0,
         category: productData.category,
         description: productData.description,
         long_description: productData.longDescription,
@@ -100,7 +102,8 @@ export function ProductProvider({ children }: ProductProviderProps) {
         image: productData.imageUrls?.[0] || '',
         is_featured: productData.isFeatured ?? false,
         stock_count: productData.stockCount ?? 0,
-        unit: productData.unit || 'item'
+        unit: productData.unit || 'item',
+        reviews: productData.reviews || 0
       };
 
       if (productData.barcode) payload.barcode = productData.barcode;
@@ -119,6 +122,7 @@ export function ProductProvider({ children }: ProductProviderProps) {
       const payload: Record<string, any> = {};
       if (productData.name !== undefined) payload.name = productData.name;
       if (productData.price !== undefined) payload.price = productData.price;
+      if (productData.oldPrice !== undefined) payload.old_price = productData.oldPrice;
       if (productData.category !== undefined) payload.category = productData.category;
       if (productData.description !== undefined) payload.description = productData.description;
       if (productData.longDescription !== undefined) payload.long_description = productData.longDescription;
@@ -131,6 +135,7 @@ export function ProductProvider({ children }: ProductProviderProps) {
       if (productData.stockCount !== undefined) payload.stock_count = productData.stockCount;
       if (productData.barcode !== undefined) payload.barcode = productData.barcode;
       if (productData.unit !== undefined) payload.unit = productData.unit;
+      if (productData.reviews !== undefined) payload.reviews = productData.reviews;
       payload.updated_at = new Date().toISOString();
 
       // Use Server Action to bypass RLS via Service Role Key

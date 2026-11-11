@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -20,7 +19,7 @@ interface ReviewFormProps {
 /**
  * Modern Unified Review Form:
  * Handles both Storefront (homepage) and Product-specific submissions.
- * Refined to be more compact (v4.4.15).
+ * Features: Automated Review Count Increment for Products.
  */
 export default function ReviewForm({ productId, onReviewSubmitted }: ReviewFormProps) {
   const [rating, setRating] = useState(5);
@@ -55,6 +54,24 @@ export default function ReviewForm({ productId, onReviewSubmitted }: ReviewFormP
       });
 
       if (error) throw error;
+
+      // 4. Automated Synchronization: Increment the product's review count
+      if (productId) {
+          // Fetch current review count from the product record
+          const { data: productData, error: productFetchError } = await supabase
+              .from('products')
+              .select('reviews')
+              .eq('id', productId)
+              .single();
+          
+          if (!productFetchError && productData) {
+              // Atomically increment the count by 1
+              await supabase
+                  .from('products')
+                  .update({ reviews: (productData.reviews || 0) + 1 })
+                  .eq('id', productId);
+          }
+      }
 
       toast({
         title: "Feedback Recorded",

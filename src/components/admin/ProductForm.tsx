@@ -39,11 +39,13 @@ const productFormSchema = z.object({
   description: z.string().min(10, 'Description must be at least 10 characters.'),
   longDescription: z.string().min(20, 'Long description is required for details page.'),
   price: z.coerce.number().min(0, 'Price must be a positive number.'),
+  oldPrice: z.coerce.number().min(0, 'Old price must be a positive number.').optional(),
   category: z.string().min(1, 'Please select a category.'),
   barcode: z.string().optional(),
   isFeatured: z.boolean().default(false),
   stockCount: z.coerce.number().default(0),
   unit: z.string().default('item'),
+  reviews: z.coerce.number().min(0).default(0),
   imageUrls: z.array(z.string()).min(1, 'Please add at least one image.'),
 });
 
@@ -79,11 +81,13 @@ export default function ProductForm({ product }: ProductFormProps) {
             description: product?.description || '',
             longDescription: product?.longDescription || '',
             price: product?.price || 0,
+            oldPrice: product?.oldPrice || 0,
             category: product?.category || '',
             barcode: product?.barcode || '',
             isFeatured: product?.isFeatured || false,
             stockCount: product?.stockCount || 50,
             unit: product?.unit || 'item',
+            reviews: product?.reviews || 0,
             imageUrls: product?.imageUrls || [],
         },
     });
@@ -200,7 +204,7 @@ export default function ProductForm({ product }: ProductFormProps) {
                                     name="price"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel className="text-xs font-black uppercase tracking-widest text-muted-foreground">Price (KES)</FormLabel>
+                                            <FormLabel className="text-xs font-black uppercase tracking-widest text-muted-foreground">Current Price (KES)</FormLabel>
                                             <FormControl>
                                                 <Input type="number" {...field} className="h-12 font-mono font-bold rounded-xl" />
                                             </FormControl>
@@ -210,6 +214,23 @@ export default function ProductForm({ product }: ProductFormProps) {
                                 />
                                 <FormField
                                     control={form.control}
+                                    name="oldPrice"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className="text-xs font-black uppercase tracking-widest text-muted-foreground">Original Price (Strikethrough)</FormLabel>
+                                            <FormControl>
+                                                <Input type="number" {...field} className="h-12 font-mono rounded-xl opacity-60" placeholder="0" />
+                                            </FormControl>
+                                            <FormDescription className="text-[9px] uppercase font-bold">Only shown if higher than current price</FormDescription>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-6">
+                                <FormField
+                                    control={form.control}
                                     name="stockCount"
                                     render={({ field }) => (
                                         <FormItem>
@@ -217,6 +238,20 @@ export default function ProductForm({ product }: ProductFormProps) {
                                             <FormControl>
                                                 <Input type="number" {...field} className="h-12 font-mono rounded-xl" />
                                             </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="reviews"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className="text-xs font-black uppercase tracking-widest text-muted-foreground">Verified Review Count</FormLabel>
+                                            <FormControl>
+                                                <Input type="number" {...field} className="h-12 font-mono rounded-xl text-primary font-bold" />
+                                            </FormControl>
+                                            <FormDescription className="text-[9px] uppercase font-bold">Increments automatically on new user feedback</FormDescription>
                                             <FormMessage />
                                         </FormItem>
                                     )}
