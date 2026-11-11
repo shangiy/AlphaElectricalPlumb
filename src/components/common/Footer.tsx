@@ -83,7 +83,11 @@ export default function Footer() {
     { name: 'Facebook', href: 'https://www.facebook.com/Alphaelectricalsandplumbing', icon: <Facebook className="h-5 w-5 text-[#1877f2]" /> },
     { name: 'Instagram', href: 'https://www.instagram.com', icon: <Instagram className="h-5 w-5 text-[#e4405f]" /> },
     { name: 'Youtube', href: 'https://www.youtube.com', icon: <Youtube className="h-5 w-5 text-[#ff0000]" /> },
-    { name: 'TikTok', href: 'https://www.tiktok.com/@AlphaElectricalsandplumb', icon: <Image src="/tiktok-V1.png" alt="TikTok" width={20} height={20} className="grayscale brightness-0" /> },
+    { name: 'TikTok', href: 'https://www.tiktok.com/@AlphaElectricalsandplumb', icon: (
+      <svg className="h-5 w-5 fill-black" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-1.13-.32-2.43-.23-3.41.37-.71.41-1.2 1.13-1.35 1.93-.11.53-.1 1.08.01 1.61.16.59.52 1.13.98 1.51.58.45 1.3.66 2.03.63 1.15-.02 2.21-.62 2.79-1.6.21-.34.34-.73.38-1.13.11-1.36.03-2.73.05-4.09V.02Z"/>
+      </svg>
+    ) },
     { name: 'WhatsApp', href: 'https://wa.me/254117484887', icon: <Image src="/whatsapp--v1.png" alt="WhatsApp" width={20} height={20} /> },
   ];
 
