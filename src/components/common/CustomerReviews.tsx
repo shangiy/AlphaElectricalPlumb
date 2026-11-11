@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
-import { useAuth } from '@/context/AuthProvider';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, MessageSquareQuote, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -12,7 +11,7 @@ import useEmblaCarousel from 'embla-carousel-react';
 import Autoplay from 'embla-carousel-autoplay';
 import ReviewForm from '@/components/reviews/ReviewForm';
 import { Rating } from '@/components/ui/rating';
-import { getStorefrontSetting } from '@/app/actions/cms-actions';
+import { Badge } from '@/components/ui/badge';
 
 interface ReviewData {
     id: string;

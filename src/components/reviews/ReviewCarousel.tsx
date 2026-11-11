@@ -94,7 +94,11 @@ export default function ReviewCarousel({ productId }: { productId?: string }) {
                 className="min-w-[360px] max-w-[420px] bg-white p-10 rounded-[3rem] shadow-xl border border-muted-foreground/5 shrink-0 flex flex-col transition-all hover:scale-105 hover:shadow-2xl hover:border-primary/20"
             >
                 <div className="flex justify-between items-start mb-6">
-                    <Rating rating={review.rating || 5} size={20} />
+                    <div className="flex items-center gap-1 text-amber-400">
+                        {Array.from({ length: review.rating || 5 }).map((_, i) => (
+                          <span key={i} className="text-xl">★</span>
+                        ))}
+                    </div>
                     <span className="text-[10px] font-black uppercase text-muted-foreground/30 tracking-widest">
                         {formatDistanceToNow(new Date(review.created_at))} ago
                     </span>
