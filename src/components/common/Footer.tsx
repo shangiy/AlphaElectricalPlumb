@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import NewsletterForm from './NewsletterForm';
-import { Facebook, Mail, ArrowUpRight, CheckCircle } from 'lucide-react';
+import { Facebook, Instagram, Youtube, Mail, ArrowUpRight, CheckCircle, MessageCircle } from 'lucide-react';
 import { useAuth } from '@/context/AuthProvider';
 import { cn } from '@/lib/utils';
 import { useEffect, useRef, useState } from 'react';
@@ -79,47 +79,93 @@ export default function Footer() {
     }); 
   }, []);
 
+  const socialIcons = [
+    { name: 'Facebook', href: 'https://www.facebook.com/Alphaelectricalsandplumbing', icon: <Facebook className="h-5 w-5 text-[#1877f2]" /> },
+    { name: 'Instagram', href: 'https://www.instagram.com', icon: <Instagram className="h-5 w-5 text-[#e4405f]" /> },
+    { name: 'Youtube', href: 'https://www.youtube.com', icon: <Youtube className="h-5 w-5 text-[#ff0000]" /> },
+    { name: 'TikTok', href: 'https://www.tiktok.com/@AlphaElectricalsandplumb', icon: <Image src="/tiktok-V1.png" alt="TikTok" width={20} height={20} className="grayscale brightness-0" /> },
+    { name: 'WhatsApp', href: 'https://wa.me/254117484887', icon: <Image src="/whatsapp--v1.png" alt="WhatsApp" width={20} height={20} /> },
+  ];
+
+  const columnTitle = "text-lg font-black uppercase tracking-tight text-accent mb-6";
+  const linkStyle = "hover:text-primary transition-colors";
+
   return (
     <footer className="bg-secondary text-secondary-foreground border-t relative overflow-hidden">
       <InteractiveSpiderWeb color={particleColor} />
       <div className="container mx-auto px-4 pt-20 relative z-10">
         <div className="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-4">
-          <div className="space-y-6">
+          
+          {/* Column 1: Brand & Newsletter */}
+          <div className="space-y-8">
             <Link href="/" className="flex items-center gap-3 group">
               <div className="relative h-14 w-14 bg-white rounded-2xl p-2 shadow-xl border border-primary/5 transition-transform group-hover:scale-110">
                 <Image src="/logo Alpha.png" alt="Alpha" fill className="object-contain p-1.5" />
               </div>
               <div className="flex flex-col">
-                <span className="text-xl font-black font-headline text-accent tracking-tighter uppercase leading-none">ALPHA</span>
-                <span className="text-[9px] font-bold text-primary uppercase tracking-[0.2em] mt-1">Ecosystem v4.3.0</span>
+                <span className="text-2xl font-black font-headline text-primary tracking-tighter uppercase leading-none">Alpha Electricals & <br/> Plumbing Ltd</span>
               </div>
             </Link>
-            <p className="text-sm text-muted-foreground font-medium max-w-[280px]">Premium destination for industrial electrical fittings and smart plumbing infrastructure.</p>
-            <NewsletterForm />
-          </div>
-          <div className="flex flex-col gap-6">
-            <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-accent/40">Company</h3>
-            <ul className="space-y-4 text-sm font-bold text-muted-foreground">
-              <li><Link href="/about" className="hover:text-primary transition-colors">About Us</Link></li>
-              <li><Link href="/team" className="hover:text-primary transition-colors">Our Team</Link></li>
-            </ul>
-          </div>
-          <div className="flex flex-col gap-6">
-            <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-accent/40">Legal</h3>
-            <ul className="space-y-4 text-sm font-bold text-muted-foreground">
-              <li><Link href="/terms" className="hover:text-primary transition-colors">Terms of Service</Link></li>
-              <li><Link href="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link></li>
-            </ul>
-          </div>
-          <div className="flex flex-col gap-6">
-            <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-accent/40">Support</h3>
-            <div className="p-5 rounded-3xl bg-muted/30 border border-dashed border-accent/10">
-              <div className="flex items-center gap-2 mb-3"><CheckCircle size={14} className="text-primary" /><h4 className="text-[10px] font-black uppercase text-accent tracking-widest">Alpha Hub Eldoret</h4></div>
-              <p className="text-[10px] text-muted-foreground font-bold uppercase leading-relaxed opacity-80">Nandi Arcade • Office 204<br/>Mon - Sat: 08:00 - 18:00</p>
+            <p className="text-base text-muted-foreground font-medium max-w-[280px]">Your partner for electrical and plumbing supplies.</p>
+            <div className="space-y-4">
+              <h3 className="text-lg font-black text-accent uppercase tracking-tight">Subscribe to our newsletter</h3>
+              <NewsletterForm />
             </div>
+          </div>
+
+          {/* Column 2: Company & Socials */}
+          <div className="flex flex-col">
+            <h3 className={columnTitle}>Company</h3>
+            <ul className="space-y-4 text-sm font-bold text-muted-foreground mb-10">
+              <li><Link href="/about" className={linkStyle}>About Us</Link></li>
+              <li><Link href="/team" className={linkStyle}>Team</Link></li>
+            </ul>
+            
+            <h3 className={columnTitle}>Follow Us</h3>
+            <div className="flex items-center gap-3">
+              {socialIcons.map((social) => (
+                <a 
+                  key={social.name} 
+                  href={social.href} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="flex h-10 w-10 items-center justify-center rounded-full bg-white border border-muted transition-all hover:scale-110 hover:shadow-lg"
+                  aria-label={social.name}
+                >
+                  {social.icon}
+                </a>
+              ))}
+            </div>
+          </div>
+
+          {/* Column 3: Support & Hours */}
+          <div className="flex flex-col">
+            <h3 className={columnTitle}>Support</h3>
+            <ul className="space-y-4 text-sm font-bold text-muted-foreground mb-10">
+              <li><Link href="/contact" className={linkStyle}>Contact Us</Link></li>
+              <li><Link href="/faq" className={linkStyle}>FAQ</Link></li>
+              <li><Link href="/returns" className={linkStyle}>Shipping & Returns</Link></li>
+            </ul>
+            
+            <h3 className={columnTitle}>Open Hours</h3>
+            <div className="space-y-2 text-sm font-bold text-muted-foreground opacity-80">
+              <p>Open Days: Mon - Sat</p>
+              <p>Hours: 8:00 AM - 6:00 PM</p>
+            </div>
+          </div>
+
+          {/* Column 4: Legal */}
+          <div className="flex flex-col">
+            <h3 className={columnTitle}>Legal</h3>
+            <ul className="space-y-4 text-sm font-bold text-muted-foreground">
+              <li><Link href="/terms" className={linkStyle}>Terms of Service</Link></li>
+              <li><Link href="/privacy" className={linkStyle}>Privacy Policy</Link></li>
+              <li><Link href="/cookie-policy" className={linkStyle}>Cookie Policy</Link></li>
+            </ul>
           </div>
         </div>
         
+        {/* Bottom Attribution Bar */}
         <div className="mt-20 pt-10 border-t border-accent/5 text-center pb-20">
           <div className="flex flex-col sm:flex-row items-center justify-center gap-1 text-xs font-bold text-muted-foreground opacity-60">
             <span>© 2026 Alpha Electricals & Plumbing Ltd.</span>
