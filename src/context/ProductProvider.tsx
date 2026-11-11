@@ -17,10 +17,9 @@ interface ProductProviderProps {
   children: ReactNode;
 }
 
-// Allow 'reviews' to be part of the form data so admins can edit it
 export type ProductFormData = Omit<Product, 'id' | 'rating'>;
 
-/** URL-safe slug; the random suffix keeps it unique (products.slug is NOT NULL UNIQUE). */
+/** URL-safe slug; the random suffix keeps it unique. */
 const makeSlug = (name: string) =>
   `${name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 80)}-${Math.random().toString(36).slice(2, 7)}`;
 
@@ -59,7 +58,6 @@ export function ProductProvider({ children }: ProductProviderProps) {
       setProducts(data || []);
     } catch (error) {
       console.error("Fetch products failed:", error);
-      throw error;
     } finally {
       setLoading(false);
     }
@@ -75,7 +73,7 @@ export function ProductProvider({ children }: ProductProviderProps) {
       .on(
         'postgres_changes', 
         { event: '*', schema: 'public', table: 'products' }, 
-        (payload) => {
+        () => {
           refreshProducts().catch(() => {});
         }
       )
@@ -108,8 +106,9 @@ export function ProductProvider({ children }: ProductProviderProps) {
 
       if (productData.barcode) payload.barcode = productData.barcode;
 
-      // Use Server Action to bypass RLS via Service Role Key
-      await addProductAdmin(payload);
+      const result = await addProductAdmin(payload);
+      if (!result.success) throw new Error(result.error);
+      
       await refreshProducts();
     } finally {
       setSubmitting(false);
@@ -138,8 +137,9 @@ export function ProductProvider({ children }: ProductProviderProps) {
       if (productData.reviews !== undefined) payload.reviews = productData.reviews;
       payload.updated_at = new Date().toISOString();
 
-      // Use Server Action to bypass RLS via Service Role Key
-      await updateProductAdmin(productId, payload);
+      const result = await updateProductAdmin(productId, payload);
+      if (!result.success) throw new Error(result.error);
+      
       await refreshProducts();
     } finally {
       setSubmitting(false);
@@ -149,8 +149,8 @@ export function ProductProvider({ children }: ProductProviderProps) {
   const deleteProduct = useCallback(async (productId: string) => {
     setSubmitting(true);
     try {
-      // Use Server Action to bypass RLS via Service Role Key
-      await deleteProductAdmin(productId);
+      const result = await deleteProductAdmin(productId);
+      if (!result.success) throw new Error(result.error);
       await refreshProducts();
     } finally {
       setSubmitting(false);
@@ -159,7 +159,8 @@ export function ProductProvider({ children }: ProductProviderProps) {
 
   const toggleFeatured = useCallback(async (productId: string, currentStatus: boolean) => {
     try {
-      await toggleFeaturedAdmin(productId, currentStatus);
+      const result = await toggleFeaturedAdmin(productId, currentStatus);
+      if (!result.success) throw new Error(result.error);
       await refreshProducts();
     } catch (e) {
       console.error("Toggle featured failed:", e);
@@ -169,7 +170,8 @@ export function ProductProvider({ children }: ProductProviderProps) {
   const updateFeaturedOrder = useCallback(async (updates: { id: string, featured_order: number }[]) => {
     setSubmitting(true);
     try {
-      await updateFeaturedOrderAdmin(updates);
+      const result = await updateFeaturedOrderAdmin(updates);
+      if (!result.success) throw new Error(result.error);
       await refreshProducts();
     } finally {
       setSubmitting(false);
@@ -178,7 +180,8 @@ export function ProductProvider({ children }: ProductProviderProps) {
 
   const updateStock = useCallback(async (productId: string, newCount: number) => {
     try {
-      await updateStockAdmin(productId, newCount);
+      const result = await updateStockAdmin(productId, newCount);
+      if (!result.success) throw new Error(result.error);
       await refreshProducts();
     } catch (e) {
       console.error("Update stock failed:", e);

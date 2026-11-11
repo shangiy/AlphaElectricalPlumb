@@ -3,51 +3,51 @@
 /**
  * @fileOverview Server Actions for Supabase Storage Management.
  * Uses the Service Role client to bypass RLS for administrative uploads.
+ * Hardened for serializability to fix Next.js "Unexpected Response" errors.
  */
 
 import { supabaseAdmin } from '@/lib/supabase-admin';
 
 export async function uploadToStorageAdmin(formData: FormData) {
   if (!supabaseAdmin) {
-    console.error("CRITICAL: SUPABASE_SERVICE_ROLE_KEY is missing from environment variables.");
-    throw new Error("Admin configuration missing. Please add SUPABASE_SERVICE_ROLE_KEY to your Vercel environment variables.");
+    return { success: false, error: "Admin configuration missing (SUPABASE_SERVICE_ROLE_KEY)." };
   }
 
-  const file = formData.get('file') as File;
-  const path = formData.get('path') as string;
-  const bucket = (formData.get('bucket') as string) || 'product-images';
+  try {
+    const file = formData.get('file') as File;
+    const path = formData.get('path') as string;
+    const bucket = (formData.get('bucket') as string) || 'product-images';
 
-  if (!file) throw new Error("No file provided for upload.");
-  if (!path) throw new Error("No destination path provided.");
+    if (!file) return { success: false, error: "No file provided for upload." };
+    if (!path) return { success: false, error: "No destination path provided." };
 
-  // AUTO-CREATE BUCKET FALLBACK: Ensure the bucket exists before uploading
-  // This prevents "Bucket not found" errors if a bucket was accidentally deleted.
-  await supabaseAdmin.storage.createBucket(bucket, { public: true }).catch(() => {
-    // If the bucket already exists or creation fails, we just log and continue to the upload.
-    console.log(`Bucket "${bucket}" already exists or could not be verified.`);
-  });
-
-  // Upload using the Admin client to bypass RLS policies
-  const { data, error } = await supabaseAdmin.storage
-    .from(bucket)
-    .upload(path, file, {
-      cacheControl: '3600',
-      upsert: true,
-      contentType: file.type || 'application/octet-stream'
+    // AUTO-CREATE BUCKET FALLBACK: Ensure the bucket exists
+    await supabaseAdmin.storage.createBucket(bucket, { public: true }).catch(() => {
+        // Silently continue if bucket exists
     });
 
-  if (error) {
-    console.error(`Supabase Storage Upload Error (${bucket}):`, error);
-    if (error.message.includes('violates row-level security')) {
-        throw new Error(`Storage Permission Denied on bucket "${bucket}". Please ensure you are using the SERVICE_ROLE_KEY.`);
+    // Upload using the Admin client to bypass RLS policies
+    const { data, error } = await supabaseAdmin.storage
+      .from(bucket)
+      .upload(path, file, {
+        cacheControl: '3600',
+        upsert: true,
+        contentType: file.type || 'application/octet-stream'
+      });
+
+    if (error) {
+      console.error(`Supabase Storage Upload Error (${bucket}):`, error);
+      return { success: false, error: error.message };
     }
-    throw new Error(error.message);
+
+    // Generate the public URL for the newly uploaded file
+    const { data: { publicUrl } } = supabaseAdmin.storage
+      .from(bucket)
+      .getPublicUrl(data.path);
+
+    return { success: true, publicUrl, path: data.path };
+  } catch (e: any) {
+    console.error("Storage Action Exception:", e);
+    return { success: false, error: e.message || "Internal server error during file processing." };
   }
-
-  // Generate the public URL for the newly uploaded file
-  const { data: { publicUrl } } = supabaseAdmin.storage
-    .from(bucket)
-    .getPublicUrl(data.path);
-
-  return { publicUrl, path: data.path };
 }

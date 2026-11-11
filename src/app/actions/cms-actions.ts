@@ -2,7 +2,7 @@
 
 /**
  * @fileOverview Server Actions for Storefront CMS Management.
- * Handles persistence for Hero slides, Search suggestions, and Category arrangements.
+ * Refined for Next.js 15 serializability to fix Server Action Fetch errors.
  */
 
 import { supabaseAdmin } from '@/lib/supabase-admin';
@@ -24,68 +24,56 @@ export interface HeroSlide {
     subheading: string;
     ctaText: string;
     ctaLink: string;
-    imageUrl: string; // Legacy fallback
-    imageUrls?: string[]; // Multi-image support
+    imageUrl: string; 
+    imageUrls?: string[]; 
     order: number;
     active: boolean;
-    // Advanced Styling
     headlineColor?: string;
     headlineSize?: number;
-    headlineWeight?: string; // 5 levels: font-light, font-normal, font-semibold, font-bold, font-black
+    headlineWeight?: string; 
     subheadingColor?: string;
     subheadingSize?: number;
-    subheadingWeight?: string; // v4.4.1 addition
-    headlineTopMargin?: number; // in centimeters
-    subheadingTopMargin?: number; // in centimeters
-    topMargin?: number; // legacy fallback
-    // Triple Word Engine
+    subheadingWeight?: string; 
+    headlineTopMargin?: number; 
+    subheadingTopMargin?: number; 
+    topMargin?: number; 
     wordStyles?: WordStyle[];
-    // Animation Engine
     bgAnimation?: HeroAnimation;
 }
 
-/**
- * Fetches a configuration object from the storefront_settings table.
- */
 export async function getStorefrontSetting(key: string) {
     if (!supabaseAdmin) return null;
-    const { data } = await supabaseAdmin.from('storefront_settings').select('content').eq('key', key).maybeSingle();
-    return data?.content;
-}
-
-/**
- * Upserts a configuration object into the storefront_settings table.
- * Triggers a live revalidation of the public storefront.
- */
-export async function updateStorefrontSetting(key: string, content: any) {
-    if (!supabaseAdmin) throw new Error("Admin client not configured. Ensure SUPABASE_SERVICE_ROLE_KEY is set.");
-    
-    const { error } = await supabaseAdmin
-        .from('storefront_settings')
-        .upsert({ key, content, updated_at: new Date().toISOString() }, { onConflict: 'key' });
-        
-    if (error) {
-        console.error(`CMS Update Error (${key}):`, error);
-        throw new Error(error.message);
+    try {
+        const { data } = await supabaseAdmin.from('storefront_settings').select('content').eq('key', key).maybeSingle();
+        return data?.content;
+    } catch (e) {
+        return null;
     }
-    
-    // Instantly update the public storefront
-    revalidatePath('/');
-    revalidatePath('/admin/featured');
 }
 
-/**
- * Specialized fetching for category cards.
- */
+export async function updateStorefrontSetting(key: string, content: any) {
+    if (!supabaseAdmin) return { success: false, error: "Admin client not configured." };
+    
+    try {
+        const { error } = await supabaseAdmin
+            .from('storefront_settings')
+            .upsert({ key, content, updated_at: new Date().toISOString() }, { onConflict: 'key' });
+            
+        if (error) return { success: false, error: error.message };
+        
+        revalidatePath('/');
+        revalidatePath('/admin/featured');
+        return { success: true };
+    } catch (e: any) {
+        return { success: false, error: e.message || "CMS sync failed." };
+    }
+}
+
 export async function getCategoryCards() {
     return getStorefrontSetting('category_cards');
 }
 
-/**
- * Specialized saving for category cards.
- */
 export async function saveCategoryCards(cards: any[]) {
-    // Re-index order matching array index
     const indexedCards = cards.map((card, index) => ({
         ...card,
         order: index + 1
@@ -93,58 +81,51 @@ export async function saveCategoryCards(cards: any[]) {
     return updateStorefrontSetting('category_cards', indexedCards);
 }
 
-/**
- * Specialized fetching for hero slides.
- */
 export async function getHeroSlides(): Promise<HeroSlide[]> {
     const data = await getStorefrontSetting('hero_slides');
     return (data as HeroSlide[]) || [];
 }
 
-/**
- * Specialized saving for hero slides.
- */
 export async function saveHeroSlides(slides: HeroSlide[]) {
     const indexedSlides = slides.map((slide, index) => ({
         ...slide,
         order: index + 1
     }));
-    await updateStorefrontSetting('hero_slides', indexedSlides);
-    revalidatePath('/admin/cms/hero');
-    return { success: true };
+    return updateStorefrontSetting('hero_slides', indexedSlides);
 }
 
-/**
- * Convenience wrapper specifically for search phrases.
- */
 export async function updateSearchPhrases(phrases: string[]) {
     return updateStorefrontSetting('search_phrases', phrases);
 }
 
-/**
- * Toggles review visibility on the public storefront.
- */
 export async function toggleReviewVisibility(id: string, isHidden: boolean) {
-    if (!supabaseAdmin) throw new Error("Admin client not configured. Ensure SUPABASE_SERVICE_ROLE_KEY is set.");
+    if (!supabaseAdmin) return { success: false, error: "Admin client not configured." };
     
-    const { error } = await supabaseAdmin
-        .from('reviews')
-        .update({ is_hidden: isHidden })
-        .eq('id', id);
+    try {
+        const { error } = await supabaseAdmin
+            .from('reviews')
+            .update({ is_hidden: isHidden })
+            .eq('id', id);
+            
+        if (error) return { success: false, error: error.message };
         
-    if (error) {
-        console.error("Review Visibility Toggle Error:", error);
-        throw new Error(error.message);
+        revalidatePath('/');
+        return { success: true };
+    } catch (e: any) {
+        return { success: false, error: e.message || "Toggle failed." };
     }
-    
-    revalidatePath('/');
 }
 
 export async function updateReviewOrder(updates: { id: string, sort_order: number }[]) {
-    if (!supabaseAdmin) throw new Error("Admin client not configured.");
-    const promises = updates.map(u => 
-        supabaseAdmin.from('reviews').update({ sort_order: u.sort_order }).eq('id', u.id)
-    );
-    await Promise.all(promises);
-    revalidatePath('/');
+    if (!supabaseAdmin) return { success: false, error: "Admin client not configured." };
+    try {
+        const promises = updates.map(u => 
+            supabaseAdmin.from('reviews').update({ sort_order: u.sort_order }).eq('id', u.id)
+        );
+        await Promise.all(promises);
+        revalidatePath('/');
+        return { success: true };
+    } catch (e: any) {
+        return { success: false, error: e.message };
+    }
 }
