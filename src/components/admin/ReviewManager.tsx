@@ -28,8 +28,8 @@ import { Rating } from '@/components/ui/rating';
 import { cn } from '@/lib/utils';
 
 /**
- * ReviewManager v4.4.27:
- * Hardened for schema stability and features a safe Fallback state for sync resilience.
+ * ReviewManager v4.4.28:
+ * Hardened for schema stability. Now includes 'title' support for enhanced moderation.
  */
 export default function ReviewManager() {
     const { toast } = useToast();
@@ -41,21 +41,22 @@ export default function ReviewManager() {
         if (!supabase) return;
         setLoading(true);
         try {
-            // Updated query: uses base schema columns confirmed in project docs
+            // Updated query: now includes title
             const { data, error } = await supabase
                 .from('reviews')
-                .select('id, author_name, comment, rating, review_type, created_at, product_id')
+                .select('id, author_name, title, comment, rating, review_type, created_at, product_id')
                 .order('created_at', { ascending: false });
             
             if (error) throw error;
             setReviews(data || []);
         } catch (err: any) {
             console.error("Review fetch failure details:", err.message || err);
-            // FALLBACK PROTECTION: Keep the UI functional even during RLS or network blocks
+            // FALLBACK PROTECTION
             setReviews([
                 {
                     id: 'fallback-1',
                     author_name: 'Mushangi Patrick',
+                    title: 'System Performance',
                     comment: 'Vercel webapp host performance is exceptional across Alpha Plumbing ecosystem.',
                     rating: 5,
                     review_type: 'homepage',
@@ -133,7 +134,8 @@ export default function ReviewManager() {
                                 </div>
                             </TableCell>
                             <TableCell className="max-w-md">
-                                <p className="text-xs text-muted-foreground font-medium italic line-clamp-3 leading-relaxed opacity-80 py-2">"{r.comment}"</p>
+                                <p className="text-xs font-black text-accent uppercase tracking-tighter mb-1 line-clamp-1">{r.title || 'General Feedback'}</p>
+                                <p className="text-xs text-muted-foreground font-medium italic line-clamp-2 leading-relaxed opacity-80">"{r.comment}"</p>
                             </TableCell>
                             <TableCell>
                                 <Badge className={cn(
@@ -180,7 +182,7 @@ export default function ReviewManager() {
                 </div>
                 <div className="flex items-center gap-3">
                     <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 px-5 py-2 rounded-full font-black text-[10px] uppercase tracking-widest">
-                        v4.4.27 SECURE
+                        v4.4.28 SECURE
                     </Badge>
                 </div>
             </div>

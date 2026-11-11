@@ -12,15 +12,15 @@ interface Review {
   id: string;
   author_name: string;
   rating: number;
+  title: string;
   comment: string;
   review_type: string;
   created_at: string;
 }
 
 /**
- * 2027 Intelligent Review Stream:
- * Fetches and displays reviews with strict column mapping for Supabase.
- * Sync v4.4.27: Uses confirmed base schema columns.
+ * 2027 Intelligent Review Stream v4.4.28:
+ * Fetches and displays reviews with strict column mapping, now including the 'title' field.
  */
 export default function ReviewCarousel({ productId }: { productId?: string }) {
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -30,10 +30,10 @@ export default function ReviewCarousel({ productId }: { productId?: string }) {
     if (!supabase) return;
     setLoading(true);
     try {
-      // Query uses base columns from docs/backend.json
+      // Query uses updated columns including title
       let query = supabase
         .from('reviews')
-        .select('id, author_name, rating, comment, review_type, created_at')
+        .select('id, author_name, rating, title, comment, review_type, created_at')
         .order('created_at', { ascending: false });
       
       if (productId) {
@@ -106,7 +106,7 @@ export default function ReviewCarousel({ productId }: { productId?: string }) {
                 
                 <div className="flex items-center gap-2 mb-4">
                     <h4 className="font-black text-accent text-xl tracking-tighter uppercase truncate flex-1">
-                        Professional Feedback
+                        {review.title || 'Professional Feedback'}
                     </h4>
                     <Badge className="bg-green-500/10 text-green-600 hover:bg-green-500/10 border-none px-2 rounded-full">
                         <CheckCircle size={10} className="mr-1" /> Verified

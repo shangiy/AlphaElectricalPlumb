@@ -6,9 +6,11 @@ import { useAuth } from '@/context/AuthProvider';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Star, Loader2, PenTool } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { v4 as uuidv4 } from 'uuid';
 
 interface ReviewFormProps {
   productId?: string; 
@@ -16,12 +18,13 @@ interface ReviewFormProps {
 }
 
 /**
- * Modern Unified Review Form:
- * Handles both Storefront (homepage) and Product-specific submissions.
- * Sync v4.4.27: Uses confirmed base schema columns.
+ * Modern Unified Review Form v4.4.28:
+ * - Resolved: Guest user_id null constraint error using Anonymous UUIDs.
+ * - Integrated: "Heading" field to match 2027 design specs.
  */
 export default function ReviewForm({ productId, onReviewSubmitted }: ReviewFormProps) {
   const [rating, setRating] = useState(5);
+  const [title, setTitle] = useState('');
   const [comment, setComment] = useState('');
   const [loading, setLoading] = useState(false);
   
@@ -37,14 +40,17 @@ export default function ReviewForm({ productId, onReviewSubmitted }: ReviewFormP
 
       const reviewType = productId ? 'product' : 'homepage';
       const authorName = user?.name || user?.username || 'Verified Client';
+      
+      // ANONYMOUS IDENTITY HANDSHAKE: Provide a UUID for guests to satisfy DB constraints
+      const userId = authUser?.id || uuidv4();
 
-      // Updated insertion to match base table schema
       const { error } = await supabase.from('reviews').insert({
         review_type: reviewType,
         product_id: productId || null,
-        user_id: authUser?.id || null,
+        user_id: userId,
         author_name: authorName,
         rating: rating,
+        title: title,
         comment: comment,
       });
 
@@ -71,6 +77,7 @@ export default function ReviewForm({ productId, onReviewSubmitted }: ReviewFormP
         description: `Your ${reviewType} experience has been successfully synchronized.`,
       });
       
+      setTitle('');
       setComment('');
       setRating(5);
       onReviewSubmitted();
@@ -121,6 +128,18 @@ export default function ReviewForm({ productId, onReviewSubmitted }: ReviewFormP
       </div>
 
       <div className="space-y-4 relative z-10">
+        <div className="space-y-1.5">
+            <Label htmlFor="title" className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Heading</Label>
+            <Input 
+                id="title"
+                value={title} 
+                onChange={(e) => setTitle(e.target.value)} 
+                required
+                placeholder="Brief summary of your feedback"
+                className="rounded-xl border-muted-foreground/10 bg-secondary/5 focus:ring-primary focus:bg-white transition-all h-11"
+            />
+        </div>
+
         <div className="space-y-1.5">
             <Label htmlFor="comment" className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Detailed Feedback</Label>
             <Textarea 
