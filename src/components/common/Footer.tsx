@@ -71,7 +71,13 @@ function InteractiveSpiderWeb({ color = "#00808d" }: { color?: string }) {
 
 export default function Footer() {
   const [particleColor, setParticleColor] = useState("#00808d");
-  useEffect(() => { getStorefrontSetting('footer_particle_color').then(c => { if (c) setParticleColor(c); }); }, []);
+  const [isHoveredCoder, setIsHoveredCoder] = useState(false);
+  
+  useEffect(() => { 
+    getStorefrontSetting('footer_particle_color').then(c => { 
+      if (c) setParticleColor(c); 
+    }); 
+  }, []);
 
   return (
     <footer className="bg-secondary text-secondary-foreground border-t relative overflow-hidden">
@@ -113,8 +119,47 @@ export default function Footer() {
             </div>
           </div>
         </div>
+        
         <div className="mt-20 pt-10 border-t border-accent/5 text-center pb-20">
-          <p className="text-xs font-bold text-muted-foreground opacity-60">© 2026 Alpha Electricals & Plumbing Ltd. v4.3.0</p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-1 text-xs font-bold text-muted-foreground opacity-60">
+            <span>© 2026 Alpha Electricals & Plumbing Ltd.</span>
+            <div 
+              className="relative inline-block group"
+              onMouseEnter={() => setIsHoveredCoder(true)}
+              onMouseLeave={() => setIsHoveredCoder(false)}
+            >
+              <span className="mx-1">Developed by</span>
+              <a 
+                href="https://mushangi-s-vision.vercel.app/" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="font-black text-blue-600 hover:text-blue-500 transition-colors relative"
+              >
+                Coder+
+              </a>
+              
+              {/* Emerging Star Emojis Animation */}
+              {isHoveredCoder && (
+                <div className="absolute inset-0 pointer-events-none overflow-visible">
+                  {[...Array(6)].map((_, i) => (
+                    <span 
+                      key={i} 
+                      className="absolute animate-float-up-fade text-sm"
+                      style={{ 
+                        left: `${(i * 20)}%`, 
+                        animationDelay: `${i * 0.2}s`,
+                        bottom: '100%',
+                        opacity: 0
+                      }}
+                    >
+                      ⭐
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+            <span>. All rights reserved.</span>
+          </div>
         </div>
       </div>
     </footer>
