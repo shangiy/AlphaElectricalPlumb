@@ -96,9 +96,6 @@ export default function CustomerReviews() {
             <div className="container mx-auto px-4">
                 <div className="flex flex-col lg:flex-row justify-between items-end mb-10 gap-6">
                     <div className="max-w-2xl">
-                        <div className="flex items-center gap-2 text-primary font-black uppercase tracking-[0.3em] mb-2 text-xs">
-                            <Sparkles size={14} /> Verified Experience
-                        </div>
                         <h2 className="text-4xl font-black font-headline text-accent tracking-tighter leading-tight mb-4 uppercase">SYSTEM <br/>REVIEWS</h2>
                         <p className="text-lg text-muted-foreground font-medium">Discover what our community of engineers, plumbers, and developers are saying about Alpha's ecosystem.</p>
                     </div>
