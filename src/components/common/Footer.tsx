@@ -94,6 +94,9 @@ export default function Footer() {
   const columnTitle = "text-lg font-black uppercase tracking-tight text-accent mb-6";
   const linkStyle = "hover:text-primary transition-colors";
 
+  // Emojis for the rising celebration animation
+  const celebrationEmojis = ['⭐', '✅', '🎈', '⭐', '✅', '🎈'];
+
   return (
     <footer className="bg-secondary text-secondary-foreground border-t relative overflow-hidden">
       <InteractiveSpiderWeb color={particleColor} />
@@ -188,21 +191,21 @@ export default function Footer() {
                 Coder+
               </a>
               
-              {/* Emerging Star Emojis Animation */}
+              {/* Emerging Celebration Emojis Animation */}
               {isHoveredCoder && (
                 <div className="absolute inset-0 pointer-events-none overflow-visible">
-                  {[...Array(6)].map((_, i) => (
+                  {celebrationEmojis.map((emoji, i) => (
                     <span 
                       key={i} 
                       className="absolute animate-float-up-fade text-sm"
                       style={{ 
-                        left: `${(i * 20)}%`, 
-                        animationDelay: `${i * 0.2}s`,
+                        left: `${(i * 18)}%`, 
+                        animationDelay: `${i * 0.15}s`,
                         bottom: '100%',
                         opacity: 0
                       }}
                     >
-                      ⭐
+                      {emoji}
                     </span>
                   ))}
                 </div>
