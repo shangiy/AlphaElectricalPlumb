@@ -5,7 +5,7 @@ import { useProducts } from '@/context/ProductProvider';
 import { Rating } from '@/components/ui/rating';
 import ProductRecommendations from '@/components/products/ProductRecommendations';
 import BuyNowButton from '@/components/products/ContactSellerForm';
-import { ShieldCheck, Truck, Wrench, MessageCircle, Share2, Info } from 'lucide-react';
+import { Truck, Wrench, MessageCircle } from 'lucide-react';
 import AddToCartButton from '@/components/products/AddToCartButton';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
@@ -209,14 +209,6 @@ function ProductContent({ productId }: { productId: string }) {
                 </Button>
             </div>
             
-            <div className="flex items-center gap-4 p-8 rounded-[2.5rem] bg-primary text-white shadow-xl relative overflow-hidden">
-                <ShieldCheck className="h-10 w-10 text-white shrink-0 z-10"/>
-                <div className="z-10">
-                    <p className="text-[10px] font-black uppercase tracking-widest opacity-60">Alpha Verified</p>
-                    <p className="text-sm font-bold tracking-tight">12 Month Genuine Warranty & Support Included</p>
-                </div>
-                <Info className="absolute -right-4 -bottom-4 h-24 w-24 text-white opacity-10 rotate-12" />
-            </div>
           </div>
         </div>
       </div>
