@@ -27,16 +27,17 @@ import {
   ChevronUp,
   ChevronDown,
   ChevronsLeft,
-  ChevronsRight
+  ChevronsRight,
+  MessageSquareQuote
 } from 'lucide-react';
 import AuthGuard from '@/components/auth/AuthGuard';
 import { useAuth } from '@/context/AuthProvider';
 import { cn } from '@/lib/utils';
 
 /**
- * Admin Layout v4.3.0:
- * Features a high-fidelity mobile toggle interface with retracting 
- * Chevrons and automatic navigation closure. Updated to Ecosystem v4.3.0.
+ * Admin Layout v4.4.25:
+ * Features a high-fidelity mobile toggle interface.
+ * Updated to include the unified Review Management node.
  */
 function AdminSidebarWrapper({ children }: { children: React.ReactNode }) {
   const { logout } = useAuth();
@@ -51,6 +52,7 @@ function AdminSidebarWrapper({ children }: { children: React.ReactNode }) {
     { label: 'Inventory', href: '/admin/products', icon: Package },
     { label: 'Users & Roles', href: '/admin/users', icon: Users },
     { label: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
+    { label: 'Reviews', href: '/admin/reviews', icon: MessageSquareQuote },
     { label: 'Transactions', href: '/admin/transactions', icon: Receipt },
     { label: 'Homepage View', href: '/', icon: Home },
     { label: 'Visual Logs', href: '/admin/selfies', icon: Camera },
@@ -94,11 +96,6 @@ function AdminSidebarWrapper({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex h-screen w-full bg-background overflow-hidden relative">
-      {/* 
-          Mobile Toggle Interface (Retracting Edge Handle)
-          Visible only on mobile devices. Latches to the sidebar edge when open.
-          Uses Chevrons (double brackets) for the requested visual indicator.
-      */}
       {isMobile && (
         <button 
           onClick={() => setOpenMobile(!openMobile)}
@@ -122,13 +119,12 @@ function AdminSidebarWrapper({ children }: { children: React.ReactNode }) {
               <Image src="/logo Alpha.png" alt="Alpha" width={90} height={90} className="transition-transform group-hover:scale-110" />
               <div className="flex flex-col">
                 <span className="text-xl font-black text-accent uppercase tracking-tighter leading-none">Admin</span>
-                {!isMobile && <span className="text-[9px] font-bold text-primary uppercase tracking-[0.2em] mt-1">Ecosystem v4.3.0</span>}
+                {!isMobile && <span className="text-[9px] font-bold text-primary uppercase tracking-[0.2em] mt-1">Ecosystem v4.4.25</span>}
               </div>
           </Link>
         </SidebarHeader>
 
         <div className="flex-1 relative flex flex-col overflow-hidden">
-          {/* Desktop Only: Top Scroll Arrow */}
           {!isMobile && canScrollUp && (
             <div className="absolute top-0 left-0 right-0 z-20 flex justify-center py-1 bg-gradient-to-b from-background via-background/80 to-transparent transition-opacity duration-300 pointer-events-none">
               <button 
@@ -175,7 +171,6 @@ function AdminSidebarWrapper({ children }: { children: React.ReactNode }) {
             </SidebarMenu>
           </SidebarContent>
 
-          {/* Desktop Only: Bottom Scroll Arrow */}
           {!isMobile && canScrollDown && (
             <div className="absolute bottom-0 left-0 right-0 z-20 flex justify-center py-1 bg-gradient-to-t from-background via-background/80 to-transparent transition-opacity duration-300 pointer-events-none">
               <button 
