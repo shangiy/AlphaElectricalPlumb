@@ -7,9 +7,6 @@
 
 import { supabaseAdmin } from '@/lib/supabase-admin';
 
-// Increase timeout for media uploads (Next.js 15) to allow large video files
-export const maxDuration = 60; 
-
 export async function uploadToStorageAdmin(formData: FormData) {
   if (!supabaseAdmin) {
     console.error("CRITICAL: SUPABASE_SERVICE_ROLE_KEY is missing from environment variables.");
