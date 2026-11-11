@@ -281,7 +281,7 @@ export default function UiUxControlCenter() {
     
     setUploadingId(id);
     try {
-        // Use normalized bucket name without spaces
+        // Ensuring standardized lowercase bucket name for robustness
         const url = await uploadFile(file, 'connect-us-videos', 'social-assets');
         handleUpdateVideoValue(id, url);
         toast({ title: "Asset Synchronized", description: "Native video successfully hosted in Supabase Cloud." });

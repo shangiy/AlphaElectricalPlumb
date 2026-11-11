@@ -1,4 +1,3 @@
-import { v4 as uuidv4 } from 'uuid';
 import { uploadToStorageAdmin } from '@/app/actions/storage-actions';
 
 /**
@@ -17,41 +16,38 @@ export async function uploadImage(file: File | string, bucket: string = 'product
 export async function uploadFile(file: File | string, bucket: string, folder: string = 'uploads'): Promise<string> {
     try {
         let fileName: string;
+        let fileToUpload: File;
         
+        // 1. Ensure the bucket name is lowercase and hyphenated for standard compatibility
+        const targetBucket = bucket.toLowerCase().replace(/\s+/g, '-');
+
         if (file instanceof File) {
-            // Sanitize file names: Replace spaces or special characters with underscores to prevent 400 errors
-            const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-            fileName = `${uuidv4()}-${sanitizedName}`;
+            // 2. FILE NAME SANITIZATION: Strip special characters and spaces
+            // Implementation: Date.now() prefix + sanitized original name
+            const sanitizedBaseName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+            fileName = `${Date.now()}_${sanitizedBaseName}`;
+            fileToUpload = file;
         } else if (typeof file === 'string' && file.startsWith('data:')) {
             // Handle Data URIs (Base64) from camera captures
-            const extension = file.startsWith('data:image') ? 'webp' : 'mp4';
-            fileName = `${uuidv4()}.${extension}`;
+            const mimeTypeMatch = file.match(/^data:([^;]+);base64,/);
+            const mimeType = mimeTypeMatch ? mimeTypeMatch[1] : (file.startsWith('data:image') ? 'image/webp' : 'video/mp4');
+            const extension = mimeType.split('/')[1] || 'bin';
+            fileName = `${Date.now()}_capture.${extension}`;
+
+            const response = await fetch(file);
+            const blob = await response.blob();
+            fileToUpload = new File([blob], fileName, { type: mimeType });
         } else {
             throw new Error("Unsupported file format provided to storage utility.");
         }
 
         const filePath = `${folder}/${fileName}`;
-        
-        let fileToUpload: File;
-
-        // Convert Data URI to File if necessary
-        if (typeof file === 'string' && file.startsWith('data:')) {
-            const response = await fetch(file);
-            const blob = await response.blob();
-            fileToUpload = new File([blob], fileName, { type: blob.type });
-        } 
-        else if (file instanceof File) {
-            fileToUpload = file;
-        } 
-        else {
-            throw new Error("Unsupported file format provided to storage utility.");
-        }
 
         // Prepare FormData for the Server Action
         const formData = new FormData();
         formData.append('file', fileToUpload);
         formData.append('path', filePath);
-        formData.append('bucket', bucket);
+        formData.append('bucket', targetBucket);
 
         // Execute the server-side upload to bypass client-side RLS constraints
         const result = await uploadToStorageAdmin(formData);
@@ -63,6 +59,6 @@ export async function uploadFile(file: File | string, bucket: string, folder: st
         return result.publicUrl;
     } catch (error: any) {
         console.error("Storage Service Error: ", error.message);
-        throw new Error(error.message || `Failed to upload file to Supabase Storage bucket "${bucket}".`);
+        throw new Error(error.message || `Failed to upload file to Supabase Storage.`);
     }
 }
