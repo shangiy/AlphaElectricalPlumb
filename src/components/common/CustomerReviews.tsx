@@ -5,36 +5,32 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthProvider';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, MessageSquareQuote, ChevronLeft, ChevronRight, Sparkles } from 'lucide-react';
+import { Loader2, MessageSquareQuote, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 import useEmblaCarousel from 'embla-carousel-react';
 import Autoplay from 'embla-carousel-autoplay';
 import ReviewForm from '@/components/reviews/ReviewForm';
 import { Rating } from '@/components/ui/rating';
-import { formatDistanceToNow } from 'date-fns';
 import { getStorefrontSetting } from '@/app/actions/cms-actions';
 
 interface ReviewData {
     id: string;
     userName: string;
     rating: number;
-    title: string;
     comment: string;
     createdAt: string;
-    isHidden: boolean;
     type: string;
 }
 
 /**
  * 2027 Homepage Professional Review Section:
  * Features high-fidelity card mapping from Supabase database.
+ * Sync v4.4.27: Uses standard base columns only.
  */
 export default function CustomerReviews() {
-    const { user } = useAuth();
     const { toast } = useToast();
     const [reviews, setReviews] = useState<ReviewData[]>([]);
-    const [layout, setLayout] = useState({ type: 'marquee' });
     const [isLoading, setIsLoading] = useState(true);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
 
@@ -42,16 +38,11 @@ export default function CustomerReviews() {
         if (!supabase) return;
         setIsLoading(true);
         try {
-            const layoutConfig = await getStorefrontSetting('review_layout');
-            if (layoutConfig) setLayout(layoutConfig);
-
-            // Fetch reviews with explicit column mapping
+            // Updated query: uses base schema columns confirmed in docs
             const { data, error } = await supabase
                 .from('reviews')
-                .select('id, author_name, comment, rating, review_type, created_at, title, is_hidden')
+                .select('id, author_name, comment, rating, review_type, created_at')
                 .eq('review_type', 'homepage')
-                .eq('is_hidden', false)
-                .order('sort_order', { ascending: true })
                 .order('created_at', { ascending: false });
             
             if (error) throw error;
@@ -60,14 +51,12 @@ export default function CustomerReviews() {
                 id: r.id,
                 userName: r.author_name || 'Verified Client',
                 rating: r.rating || 5,
-                title: r.title || 'Exceptional Quality',
                 comment: r.comment || '',
                 createdAt: r.created_at,
-                isHidden: r.is_hidden,
                 type: r.review_type
             })));
         } catch (error: any) {
-            console.error("Fetch reviews error details:", error.message);
+            console.error("Home reviews fetch failed:", error.message || error);
         } finally {
             setIsLoading(false);
         }
@@ -86,7 +75,7 @@ export default function CustomerReviews() {
 
     const handleSuccess = () => {
         setIsDialogOpen(false);
-        toast({ title: "Feedback Pending", description: "Your experience has been sent to our moderation queue." });
+        toast({ title: "Feedback Recorded", description: "Thank you for sharing your experience with Alpha." });
         fetchCMSData();
     };
 
@@ -140,10 +129,9 @@ export default function CustomerReviews() {
                                             <div className="flex items-center justify-between mb-6">
                                                 <Rating rating={review.rating} size={16} />
                                                 <Badge className="bg-primary/10 text-primary border-none text-[9px] font-black uppercase tracking-widest px-2 py-1">
-                                                    {review.type || 'Verified'}
+                                                    Verified
                                                 </Badge>
                                             </div>
-                                            <h4 className="font-black text-accent text-lg uppercase tracking-tight mb-2">{review.title}</h4>
                                             <p className="text-muted-foreground text-sm italic mb-8 leading-relaxed">"{review.comment}"</p>
                                         </div>
                                         <div className="border-t border-muted pt-6 flex items-center justify-between">

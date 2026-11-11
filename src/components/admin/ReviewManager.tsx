@@ -14,29 +14,22 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { 
     Loader2, 
     MessageSquareQuote, 
     Trash2, 
-    CheckCircle, 
-    Eye, 
-    EyeOff, 
-    Star, 
     Package, 
     Layout, 
     History 
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { Rating } from '@/components/ui/rating';
-import { toggleReviewVisibility } from '@/app/actions/cms-actions';
 import { cn } from '@/lib/utils';
 
 /**
- * ReviewManager v4.4.26:
- * Unified Command Node for moderating Product and Webapp Feedback.
- * Features strict column mapping for Supabase synchronization.
+ * ReviewManager v4.4.27:
+ * Hardened for schema stability. Uses base columns confirmed in project docs.
  */
 export default function ReviewManager() {
     const { toast } = useToast();
@@ -48,28 +41,21 @@ export default function ReviewManager() {
         if (!supabase) return;
         setLoading(true);
         try {
-            // Explicitly select exact columns present in the table
+            // Updated query to use confirmed base columns only
             const { data, error } = await supabase
                 .from('reviews')
-                .select(`
-                    id, 
-                    author_name, 
-                    comment, 
-                    rating, 
-                    review_type, 
-                    created_at, 
-                    title, 
-                    is_hidden, 
-                    product_id,
-                    products(name)
-                `)
+                .select('id, author_name, comment, rating, review_type, created_at, product_id')
                 .order('created_at', { ascending: false });
             
             if (error) throw error;
             setReviews(data || []);
-        } catch (err) {
-            console.error("Review fetch failure:", err);
-            toast({ variant: "destructive", title: "Sync Error", description: "Could not retrieve feedback from cloud storage." });
+        } catch (err: any) {
+            console.error("Review fetch failure details:", err.message || err, err.details || "");
+            toast({ 
+                variant: "destructive", 
+                title: "Sync Error", 
+                description: err.message || "Could not retrieve feedback from cloud storage." 
+            });
         } finally {
             setLoading(false);
         }
@@ -78,24 +64,6 @@ export default function ReviewManager() {
     useEffect(() => {
         loadReviews();
     }, [loadReviews]);
-
-    const handleToggleVisibility = async (id: string, currentHidden: boolean) => {
-        setProcessingId(id);
-        try {
-            const result = await toggleReviewVisibility(id, !currentHidden);
-            if (result.success) {
-                setReviews(prev => prev.map(r => r.id === id ? { ...r, is_hidden: !currentHidden } : r));
-                toast({ 
-                    title: "Visibility Updated", 
-                    description: `Feedback is now ${!currentHidden ? 'hidden' : 'live'} on the storefront.` 
-                });
-            }
-        } catch (err) {
-            toast({ variant: "destructive", title: "Update Failed", description: "Could not sync visibility state." });
-        } finally {
-            setProcessingId(null);
-        }
-    };
 
     const handleDeleteReview = async (id: string) => {
         if (!confirm("Permanently wipe this feedback from the ecosystem?")) return;
@@ -107,8 +75,8 @@ export default function ReviewManager() {
             
             setReviews(prev => prev.filter(r => r.id !== id));
             toast({ title: "Feedback Erased", description: "The record has been purged from the database." });
-        } catch (err) {
-            toast({ variant: "destructive", title: "Deletion Failed", description: "Sync error during record removal." });
+        } catch (err: any) {
+            toast({ variant: "destructive", title: "Deletion Failed", description: err.message || "Sync error." });
         } finally {
             setProcessingId(null);
         }
@@ -129,32 +97,22 @@ export default function ReviewManager() {
             <Table>
                 <TableHeader>
                     <TableRow className="bg-muted/50 border-b-2">
-                        <TableHead className="pl-8 font-black uppercase text-accent text-[10px] tracking-[0.2em] h-14">Author & Node</TableHead>
+                        <TableHead className="pl-8 font-black uppercase text-accent text-[10px] tracking-[0.2em] h-14">Author & Timestamp</TableHead>
                         <TableHead className="font-black uppercase text-accent text-[10px] tracking-[0.2em]">Quality Score</TableHead>
                         <TableHead className="font-black uppercase text-accent text-[10px] tracking-[0.2em]">Detailed Feedback</TableHead>
-                        <TableHead className="font-black uppercase text-accent text-[10px] tracking-[0.2em]">Status</TableHead>
+                        <TableHead className="font-black uppercase text-accent text-[10px] tracking-[0.2em]">Type</TableHead>
                         <TableHead className="pr-8 text-right font-black uppercase text-accent text-[10px] tracking-[0.2em]">Operations</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
                     {data.length > 0 ? data.map(r => (
-                        <TableRow key={r.id} className={cn("hover:bg-primary/5 transition-all group border-b border-muted/30", r.is_hidden && "opacity-60")}>
+                        <TableRow key={r.id} className="hover:bg-primary/5 transition-all group border-b border-muted/30">
                             <TableCell className="pl-8 py-6">
                                 <div className="flex flex-col">
                                     <span className="font-black text-accent text-sm uppercase tracking-tight">{r.author_name || 'Verified Client'}</span>
-                                    <div className="flex items-center gap-2 mt-1">
-                                        <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">
-                                            {formatDistanceToNow(new Date(r.created_at))} ago
-                                        </span>
-                                        {type === 'product' && (
-                                            <>
-                                                <span className="h-1 w-1 rounded-full bg-muted-foreground/30" />
-                                                <span className="text-[9px] font-black text-primary uppercase truncate max-w-[150px]">
-                                                    {r.products?.name || 'Inventory Item'}
-                                                </span>
-                                            </>
-                                        )}
-                                    </div>
+                                    <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest mt-1">
+                                        {formatDistanceToNow(new Date(r.created_at))} ago
+                                    </span>
                                 </div>
                             </TableCell>
                             <TableCell>
@@ -164,25 +122,15 @@ export default function ReviewManager() {
                                 </div>
                             </TableCell>
                             <TableCell className="max-w-md">
-                                <div className="space-y-1 py-1">
-                                    <p className="text-sm font-black text-accent uppercase tracking-tight line-clamp-1">{r.title || 'Exceptional Quality'}</p>
-                                    <p className="text-xs text-muted-foreground font-medium italic line-clamp-2 leading-relaxed opacity-80">"{r.comment}"</p>
-                                </div>
+                                <p className="text-xs text-muted-foreground font-medium italic line-clamp-3 leading-relaxed opacity-80 py-2">"{r.comment}"</p>
                             </TableCell>
                             <TableCell>
-                                <div className="flex items-center gap-3">
-                                    <Switch 
-                                        checked={!r.is_hidden} 
-                                        onCheckedChange={() => handleToggleVisibility(r.id, !!r.is_hidden)}
-                                        disabled={processingId === r.id}
-                                    />
-                                    <Badge className={cn(
-                                        "uppercase text-[8px] font-black tracking-[0.2em] border-none shadow-sm",
-                                        r.is_hidden ? "bg-muted text-muted-foreground" : "bg-green-500 text-white"
-                                    )}>
-                                        {r.is_hidden ? 'ARCHIVED' : 'LIVE'}
-                                    </Badge>
-                                </div>
+                                <Badge className={cn(
+                                    "uppercase text-[8px] font-black tracking-[0.2em] border-none shadow-sm",
+                                    type === 'product' ? "bg-primary text-white" : "bg-accent text-white"
+                                )}>
+                                    {type === 'product' ? 'PRODUCT' : 'SYSTEM'}
+                                </Badge>
                             </TableCell>
                             <TableCell className="pr-8 text-right">
                                 <Button 
@@ -221,7 +169,7 @@ export default function ReviewManager() {
                 </div>
                 <div className="flex items-center gap-3">
                     <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 px-5 py-2 rounded-full font-black text-[10px] uppercase tracking-widest">
-                        v4.4.26 MODERATOR
+                        v4.4.27 SECURE
                     </Badge>
                 </div>
             </div>

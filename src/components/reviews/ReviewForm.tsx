@@ -5,7 +5,6 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthProvider';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Star, Loader2, PenTool } from 'lucide-react';
@@ -19,11 +18,10 @@ interface ReviewFormProps {
 /**
  * Modern Unified Review Form:
  * Handles both Storefront (homepage) and Product-specific submissions.
- * Features: Automated Review Count Increment for Products.
+ * Sync v4.4.27: Uses confirmed base schema columns.
  */
 export default function ReviewForm({ productId, onReviewSubmitted }: ReviewFormProps) {
   const [rating, setRating] = useState(5);
-  const [title, setTitle] = useState('');
   const [comment, setComment] = useState('');
   const [loading, setLoading] = useState(false);
   
@@ -35,29 +33,25 @@ export default function ReviewForm({ productId, onReviewSubmitted }: ReviewFormP
     
     setLoading(true);
     try {
-      // 1. Get the currently authenticated user
       const { data: { user: authUser } } = await supabase.auth.getUser();
 
-      // 2. Determine review parameters based on context
       const reviewType = productId ? 'product' : 'homepage';
       const authorName = user?.name || user?.username || 'Verified Client';
 
-      // 3. Insert into the unified reviews table
+      // Updated insertion to match base table schema
       const { error } = await supabase.from('reviews').insert({
-        review_type: reviewType,      // 'homepage' or 'product'
-        product_id: productId || null, // NULL if it's a homepage review
-        user_id: authUser?.id || null, // Linked UUID if logged in
-        author_name: authorName,       // Display name
-        rating: rating,                // Score 1-5
-        title: title,                  // Heading
-        comment: comment,              // Review text
+        review_type: reviewType,
+        product_id: productId || null,
+        user_id: authUser?.id || null,
+        author_name: authorName,
+        rating: rating,
+        comment: comment,
       });
 
       if (error) throw error;
 
-      // 4. Automated Synchronization: Increment the product's review count
+      // Increment review count on product record if applicable
       if (productId) {
-          // Fetch current review count from the product record
           const { data: productData, error: productFetchError } = await supabase
               .from('products')
               .select('reviews')
@@ -65,7 +59,6 @@ export default function ReviewForm({ productId, onReviewSubmitted }: ReviewFormP
               .single();
           
           if (!productFetchError && productData) {
-              // Atomically increment the count by 1
               await supabase
                   .from('products')
                   .update({ reviews: (productData.reviews || 0) + 1 })
@@ -78,12 +71,11 @@ export default function ReviewForm({ productId, onReviewSubmitted }: ReviewFormP
         description: `Your ${reviewType} experience has been successfully synchronized.`,
       });
       
-      setTitle('');
       setComment('');
       setRating(5);
       onReviewSubmitted();
     } catch (error: any) {
-      console.error("Submission error:", error);
+      console.error("Review submission error:", error.message || error);
       toast({
         variant: "destructive",
         title: "Submission Failed",
@@ -129,18 +121,6 @@ export default function ReviewForm({ productId, onReviewSubmitted }: ReviewFormP
       </div>
 
       <div className="space-y-4 relative z-10">
-        <div className="space-y-1.5">
-            <Label htmlFor="title" className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Heading</Label>
-            <Input 
-                id="title"
-                value={title} 
-                onChange={(e) => setTitle(e.target.value)} 
-                required
-                placeholder="Brief summary..."
-                className="h-11 rounded-xl border-muted-foreground/10 bg-secondary/5 focus:ring-primary focus:bg-white transition-all text-sm"
-            />
-        </div>
-
         <div className="space-y-1.5">
             <Label htmlFor="comment" className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Detailed Feedback</Label>
             <Textarea 
