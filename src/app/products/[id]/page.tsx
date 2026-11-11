@@ -117,13 +117,6 @@ function ProductContent({ productId }: { productId: string }) {
                         className="h-14 w-14 bg-white/10 backdrop-blur-xl border border-white/20 text-white hover:bg-white hover:text-red-500 transition-all duration-500 shadow-2xl" 
                     />
                 </div>
-
-                <div className="absolute bottom-6 left-6 right-6 flex justify-between items-center px-4 py-3 bg-black/20 backdrop-blur-md rounded-2xl border border-white/10">
-                    <p className="text-white text-xs font-bold uppercase tracking-widest">Image {activeImageIndex + 1} of {uniqueImages.length}</p>
-                    <div className="flex gap-2">
-                        <Button size="icon" variant="ghost" className="h-8 w-8 text-white"><Share2 size={16}/></Button>
-                    </div>
-                </div>
             </div>
             
             {uniqueImages.length > 1 && (
