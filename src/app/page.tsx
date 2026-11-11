@@ -29,13 +29,6 @@ const ConnectWithUs = nextDynamic(() => import('@/components/common/ConnectWithU
 function HomeContent() {
   return (
     <div className="flex flex-col w-full overflow-hidden">
-      {/* Sliding Welcome Introduction */}
-      <div className="px-6 pt-6 overflow-hidden">
-        <span className="inline-block text-[10px] font-black uppercase tracking-[0.4em] text-primary/40 animate-in fade-in slide-in-from-left-full duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)]">
-          Welcome
-        </span>
-      </div>
-
       <Hero />
       <CategoryCarousel />
       <FeaturedProducts />
