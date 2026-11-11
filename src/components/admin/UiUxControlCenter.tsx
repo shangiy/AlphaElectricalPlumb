@@ -13,7 +13,6 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { 
   Loader2, 
   Palette, 
-  LayoutGrid, 
   Trash2, 
   Save, 
   Sparkles,
@@ -31,13 +30,11 @@ import {
   Share2,
   Video,
   Upload,
-  X,
-  Smartphone
+  X
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import FeaturedProductManager from './FeaturedProductManager';
 import CategoryManager from './CategoryManager';
-import HeroSearch from '@/components/common/HeroSearch';
 import HeroManager from './HeroManager';
 import { getStorefrontSetting, updateStorefrontSetting, type HeroSlide } from '@/app/actions/cms-actions';
 import { cn } from '@/lib/utils';
@@ -250,7 +247,7 @@ export default function UiUxControlCenter() {
     setSubmitting(true);
     try {
         await updateStorefrontSetting('top_banner_config', bannerConfig);
-        toast({ title: "v4.4.0 Published", description: "Vibrant Spectrum Engine with Ordinal Mapping synchronized." });
+        toast({ title: "v4.4.0 Published", description: "Vibrant Spectrum Engine synchronized." });
     } catch (err: any) { toast({ variant: "destructive", description: err.message }); } finally { setSubmitting(false); }
   };
 
@@ -258,7 +255,7 @@ export default function UiUxControlCenter() {
     setSubmitting(true);
     try {
         await updateStorefrontSetting('connect_with_us_config', connectConfig);
-        toast({ title: "Social Hub Published", description: "Your digital presence node has been synchronized with the storefront." });
+        toast({ title: "Social Hub Published", description: "Global connectivity node synchronized." });
     } catch (err: any) { toast({ variant: "destructive", description: err.message }); } finally { setSubmitting(false); }
   };
 
@@ -267,7 +264,9 @@ export default function UiUxControlCenter() {
   };
 
   const handleRemoveVideoSlot = (id: string) => {
-    setVideoStream(videoStream.filter(v => v.id !== id));
+    if (confirm("Remove this video slot from the stream?")) {
+        setVideoStream(videoStream.filter(v => v.id !== id));
+    }
   };
 
   const handleUpdateVideoType = (id: string, type: 'tiktok' | 'supabase') => {
@@ -286,11 +285,12 @@ export default function UiUxControlCenter() {
     try {
         const url = await uploadFile(file, 'connect-us-video', 'social-assets');
         handleUpdateVideoValue(id, url);
-        toast({ title: "Asset Synchronized", description: "Native video successfully hosted in Supabase Cloud." });
+        toast({ title: "Asset Uploaded", description: "Video successfully stored in Supabase Cloud." });
     } catch (err: any) {
         toast({ variant: "destructive", title: "Upload Failed", description: err.message });
     } finally {
         setUploadingId(null);
+        e.target.value = ''; // Reset input
     }
   };
 
@@ -298,9 +298,9 @@ export default function UiUxControlCenter() {
     setSubmitting(true);
     try {
         await updateStorefrontSetting('video_stream_config', { items: videoStream });
-        toast({ title: "Stream Published", description: "Video logic synchronized with global storefront." });
+        toast({ title: "Stream Published", description: "All video assets and configurations saved permanently." });
     } catch (err: any) {
-        toast({ variant: "destructive", title: "Upload Failed", description: err.message });
+        toast({ variant: "destructive", title: "Sync Failed", description: err.message });
     } finally {
         setSubmitting(false);
     }
@@ -400,7 +400,7 @@ export default function UiUxControlCenter() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b pb-8">
         <div>
           <h1 className="text-5xl font-black font-headline text-accent tracking-tighter uppercase">Alpha CMS Suite</h1>
-          <p className="text-muted-foreground font-bold uppercase tracking-widest text-xs mt-2">Professional Storefront Governance v4.4.4</p>
+          <p className="text-muted-foreground font-bold uppercase tracking-widest text-xs mt-2">Professional Storefront Governance v4.4.12</p>
         </div>
       </div>
 
@@ -760,7 +760,7 @@ export default function UiUxControlCenter() {
                         <Video className="text-primary h-6 w-6" />
                         <CardTitle className="text-2xl font-black uppercase tracking-tight">Digital Asset Stream</CardTitle>
                     </div>
-                    <CardDescription className="text-white/60">Upload native videos to Supabase or link TikTok content for the Social Hub.</CardDescription>
+                    <CardDescription className="text-white/60">Upload native videos to Supabase or link TikTok content for the Social Hub. All slots are saved permanently.</CardDescription>
                 </CardHeader>
                 <CardContent className="p-10 space-y-12">
                     <div className="flex justify-between items-center">
@@ -776,8 +776,13 @@ export default function UiUxControlCenter() {
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                         {videoStream.map((item, idx) => (
                             <div key={item.id} className="p-8 rounded-[2.5rem] bg-secondary/10 border border-dashed border-accent/20 space-y-6 relative group/slot animate-in fade-in slide-in-from-bottom-2">
-                                <div className="absolute top-4 right-4 opacity-0 group-hover/slot:opacity-100 transition-opacity">
-                                    <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full text-red-500 hover:bg-red-50" onClick={() => handleRemoveVideoSlot(item.id)}>
+                                <div className="absolute top-4 right-4 z-20">
+                                    <Button 
+                                        variant="ghost" 
+                                        size="icon" 
+                                        className="h-10 w-10 rounded-full text-red-500 hover:bg-red-50 shadow-sm border border-red-100/50 bg-white/80 backdrop-blur-sm" 
+                                        onClick={() => handleRemoveVideoSlot(item.id)}
+                                    >
                                         <Trash2 size={18} />
                                     </Button>
                                 </div>
