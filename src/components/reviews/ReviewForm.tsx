@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -84,7 +85,7 @@ export default function ReviewForm({ productId, onReviewSubmitted }: ReviewFormP
 
       <div className="space-y-1 relative z-10">
         <h3 className="text-xl font-black font-headline text-accent tracking-tighter uppercase">
-            {productId ? 'Product Review' : 'Storefront Feedback'}
+            {productId ? 'Product Review' : 'Webapp Review'}
         </h3>
         <p className="text-muted-foreground font-medium text-xs">Help others by sharing your professional experience.</p>
       </div>
