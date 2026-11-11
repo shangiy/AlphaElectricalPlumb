@@ -31,10 +31,12 @@ import {
 import { formatDistanceToNow } from 'date-fns';
 import { Rating } from '@/components/ui/rating';
 import { toggleReviewVisibility } from '@/app/actions/cms-actions';
+import { cn } from '@/lib/utils';
 
 /**
- * ReviewManager v4.4.25:
+ * ReviewManager v4.4.26:
  * Unified Command Node for moderating Product and Webapp Feedback.
+ * Features strict column mapping for Supabase synchronization.
  */
 export default function ReviewManager() {
     const { toast } = useToast();
@@ -46,20 +48,32 @@ export default function ReviewManager() {
         if (!supabase) return;
         setLoading(true);
         try {
-            // Join with products table to show names for product reviews
+            // Explicitly select exact columns present in the table
             const { data, error } = await supabase
                 .from('reviews')
-                .select('*, products(name)')
+                .select(`
+                    id, 
+                    author_name, 
+                    comment, 
+                    rating, 
+                    review_type, 
+                    created_at, 
+                    title, 
+                    is_hidden, 
+                    product_id,
+                    products(name)
+                `)
                 .order('created_at', { ascending: false });
             
             if (error) throw error;
             setReviews(data || []);
         } catch (err) {
             console.error("Review fetch failure:", err);
+            toast({ variant: "destructive", title: "Sync Error", description: "Could not retrieve feedback from cloud storage." });
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [toast]);
 
     useEffect(() => {
         loadReviews();
@@ -127,7 +141,7 @@ export default function ReviewManager() {
                         <TableRow key={r.id} className={cn("hover:bg-primary/5 transition-all group border-b border-muted/30", r.is_hidden && "opacity-60")}>
                             <TableCell className="pl-8 py-6">
                                 <div className="flex flex-col">
-                                    <span className="font-black text-accent text-sm uppercase tracking-tight">{r.author_name}</span>
+                                    <span className="font-black text-accent text-sm uppercase tracking-tight">{r.author_name || 'Verified Client'}</span>
                                     <div className="flex items-center gap-2 mt-1">
                                         <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">
                                             {formatDistanceToNow(new Date(r.created_at))} ago
@@ -136,7 +150,7 @@ export default function ReviewManager() {
                                             <>
                                                 <span className="h-1 w-1 rounded-full bg-muted-foreground/30" />
                                                 <span className="text-[9px] font-black text-primary uppercase truncate max-w-[150px]">
-                                                    {r.products?.name || 'Linked Product'}
+                                                    {r.products?.name || 'Inventory Item'}
                                                 </span>
                                             </>
                                         )}
@@ -188,7 +202,7 @@ export default function ReviewManager() {
                                 <div className="flex flex-col items-center justify-center opacity-40">
                                     <History size={40} className="mb-4" />
                                     <p className="font-black uppercase text-[12px] tracking-[0.4em]">Review Pool Empty</p>
-                                    <p className="text-[10px] font-bold mt-1">No user feedback currently staged in this segment.</p>
+                                    <p className="text-[10px] font-bold mt-1">No active records in this segment.</p>
                                 </div>
                             </TableCell>
                         </TableRow>
@@ -207,7 +221,7 @@ export default function ReviewManager() {
                 </div>
                 <div className="flex items-center gap-3">
                     <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 px-5 py-2 rounded-full font-black text-[10px] uppercase tracking-widest">
-                        v4.4.25 MODERATOR
+                        v4.4.26 MODERATOR
                     </Badge>
                 </div>
             </div>

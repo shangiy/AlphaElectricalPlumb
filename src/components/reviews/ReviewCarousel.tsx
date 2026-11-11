@@ -6,6 +6,7 @@ import { Rating } from '@/components/ui/rating';
 import { Loader2, MessageSquareQuote, CheckCircle } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 
 interface Review {
   id: string;
@@ -19,7 +20,7 @@ interface Review {
 
 /**
  * 2027 Intelligent Review Stream:
- * Fetches and displays reviews based on review_type (homepage or product).
+ * Fetches and displays reviews with strict column mapping for Supabase.
  */
 export default function ReviewCarousel({ productId }: { productId?: string }) {
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -31,16 +32,14 @@ export default function ReviewCarousel({ productId }: { productId?: string }) {
     try {
       let query = supabase
         .from('reviews')
-        .select('*')
+        .select('id, author_name, rating, title, comment, review_type, created_at')
         .order('created_at', { ascending: false });
       
       if (productId) {
-        // Fetch strictly product-specific reviews
         query = query
           .eq('review_type', 'product')
           .eq('product_id', productId);
       } else {
-        // Fetch strictly storefront/homepage reviews
         query = query.eq('review_type', 'homepage');
       }
 
@@ -77,7 +76,6 @@ export default function ReviewCarousel({ productId }: { productId?: string }) {
     );
   }
 
-  // Triple for infinite scroll smoothness if multiple reviews exist
   const displayReviews = reviews.length > 1 ? [...reviews, ...reviews, ...reviews] : reviews;
 
   return (
@@ -95,7 +93,7 @@ export default function ReviewCarousel({ productId }: { productId?: string }) {
                 className="min-w-[360px] max-w-[420px] bg-white p-10 rounded-[3rem] shadow-xl border border-muted-foreground/5 shrink-0 flex flex-col transition-all hover:scale-105 hover:shadow-2xl hover:border-primary/20"
             >
                 <div className="flex justify-between items-start mb-6">
-                    <Rating rating={review.rating} size={20} />
+                    <Rating rating={review.rating || 5} size={20} />
                     <span className="text-[10px] font-black uppercase text-muted-foreground/30 tracking-widest">
                         {formatDistanceToNow(new Date(review.created_at))} ago
                     </span>
@@ -116,11 +114,11 @@ export default function ReviewCarousel({ productId }: { productId?: string }) {
 
                 <div className="mt-auto pt-8 flex items-center gap-4">
                     <div className="h-12 w-12 rounded-2xl bg-accent text-white flex items-center justify-center font-black text-lg shadow-lg">
-                        {review.author_name?.charAt(0).toUpperCase()}
+                        {review.author_name?.charAt(0).toUpperCase() || 'V'}
                     </div>
                     <div>
                         <span className="block text-sm font-black text-accent uppercase tracking-tighter">
-                            {review.author_name || 'Anonymous Client'}
+                            {review.author_name || 'Verified Client'}
                         </span>
                         <span className="text-[10px] font-bold text-muted-foreground uppercase opacity-40">Verified User</span>
                     </div>

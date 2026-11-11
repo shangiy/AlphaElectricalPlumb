@@ -23,12 +23,12 @@ interface ReviewData {
     comment: string;
     createdAt: string;
     isHidden: boolean;
+    type: string;
 }
 
 /**
  * 2027 Homepage Professional Review Section:
- * Now respects CMS moderation (isHidden) and dynamic layout settings.
- * Refined to be more compact (v4.4.15).
+ * Features high-fidelity card mapping from Supabase database.
  */
 export default function CustomerReviews() {
     const { user } = useAuth();
@@ -45,10 +45,10 @@ export default function CustomerReviews() {
             const layoutConfig = await getStorefrontSetting('review_layout');
             if (layoutConfig) setLayout(layoutConfig);
 
-            // Fetch reviews, excluding hidden ones for the public storefront
+            // Fetch reviews with explicit column mapping
             const { data, error } = await supabase
                 .from('reviews')
-                .select('*')
+                .select('id, author_name, comment, rating, review_type, created_at, title, is_hidden')
                 .eq('review_type', 'homepage')
                 .eq('is_hidden', false)
                 .order('sort_order', { ascending: true })
@@ -59,16 +59,15 @@ export default function CustomerReviews() {
             setReviews((data || []).map(r => ({
                 id: r.id,
                 userName: r.author_name || 'Verified Client',
-                rating: r.rating,
-                title: r.title,
-                comment: r.comment,
+                rating: r.rating || 5,
+                title: r.title || 'Exceptional Quality',
+                comment: r.comment || '',
                 createdAt: r.created_at,
-                isHidden: r.is_hidden
+                isHidden: r.is_hidden,
+                type: r.review_type
             })));
         } catch (error: any) {
-            console.error("Fetch reviews error details:", 
-                error instanceof Error ? error.message : JSON.stringify(error, Object.getOwnPropertyNames(error))
-            );
+            console.error("Fetch reviews error details:", error.message);
         } finally {
             setIsLoading(false);
         }
@@ -136,27 +135,25 @@ export default function CustomerReviews() {
                         <div className="embla__container flex gap-6">
                             {reviews.map((review) => (
                                 <div key={review.id} className="embla__slide flex-[0_0_100%] md:flex-[0_0_45%] lg:flex-[0_0_30%] min-w-0">
-                                    <div className="bg-secondary/10 p-10 rounded-[2.5rem] h-full flex flex-col transition-all hover:bg-secondary/20 group">
-                                        <div className="flex justify-between items-start mb-6">
-                                            <Rating rating={review.rating} size={18} />
-                                            <span className="text-[9px] font-black uppercase text-muted-foreground/30">
-                                                {formatDistanceToNow(new Date(review.createdAt))} ago
-                                            </span>
+                                    <div className="bg-white p-8 border border-purple-100 rounded-[2rem] shadow-sm hover:shadow-xl transition-all flex flex-col justify-between h-full group">
+                                        <div>
+                                            <div className="flex items-center justify-between mb-6">
+                                                <Rating rating={review.rating} size={16} />
+                                                <Badge className="bg-primary/10 text-primary border-none text-[9px] font-black uppercase tracking-widest px-2 py-1">
+                                                    {review.type || 'Verified'}
+                                                </Badge>
+                                            </div>
+                                            <h4 className="font-black text-accent text-lg uppercase tracking-tight mb-2">{review.title}</h4>
+                                            <p className="text-muted-foreground text-sm italic mb-8 leading-relaxed">"{review.comment}"</p>
                                         </div>
-                                        <h4 className="text-xl font-black text-accent tracking-tighter uppercase mb-3 line-clamp-1">
-                                            {review.title || 'Exceptional Quality'}
-                                        </h4>
-                                        <p className="text-base text-muted-foreground font-medium italic leading-relaxed opacity-80 mb-8 line-clamp-4">
-                                            "{review.comment}"
-                                        </p>
-                                        <div className="mt-auto flex items-center gap-3">
-                                            <div className="h-10 w-10 rounded-xl bg-accent text-white flex items-center justify-center font-black text-lg group-hover:scale-110 transition-transform">
-                                                {review.userName.charAt(0).toUpperCase()}
-                                            </div>
+                                        <div className="border-t border-muted pt-6 flex items-center justify-between">
                                             <div>
-                                                <span className="block text-xs font-black text-accent uppercase tracking-tighter">{review.userName}</span>
-                                                <span className="text-[9px] font-bold text-muted-foreground uppercase opacity-40">Verified Business User</span>
+                                                <h4 className="font-bold text-accent text-sm">{review.userName}</h4>
+                                                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Community Member</span>
                                             </div>
+                                            <span className="text-[10px] font-bold text-muted-foreground">
+                                                {new Date(review.createdAt).toLocaleDateString()}
+                                            </span>
                                         </div>
                                     </div>
                                 </div>
