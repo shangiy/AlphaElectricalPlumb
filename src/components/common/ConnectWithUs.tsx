@@ -90,18 +90,18 @@ export default function ConnectWithUs() {
                   </p>
               </div>
 
-              {/* Dynamic Video Stream Grid */}
+              {/* Dynamic Video Stream Grid - Centered and limited to top 2 assets with auto-play */}
               {videoConfig.items && videoConfig.items.length > 0 && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 w-full mb-20 animate-in fade-in slide-in-from-bottom-8 duration-1000">
-                      {videoConfig.items.map((item, idx) => (
+                  <div className="flex flex-wrap justify-center gap-12 w-full max-w-5xl mx-auto mb-20 animate-in fade-in slide-in-from-bottom-8 duration-1000">
+                      {videoConfig.items.slice(0, 2).map((item, idx) => (
                           <div 
                               key={item.id || idx} 
-                              className="bg-white/5 p-4 rounded-[3rem] border border-white/10 shadow-2xl hover:border-primary/40 transition-all duration-500 hover:-translate-y-4 group/video overflow-hidden aspect-[9/16] relative flex items-center justify-center"
+                              className="bg-white/5 p-4 rounded-[3rem] border border-white/10 shadow-2xl hover:border-primary/40 transition-all duration-500 hover:-translate-y-4 group/video overflow-hidden aspect-[9/16] relative flex items-center justify-center w-full sm:w-[320px] shadow-[0_0_50px_rgba(0,0,0,0.5)]"
                           >
                               {item.type === 'tiktok' ? (
                                   item.value ? (
                                       <iframe
-                                          src={`https://www.tiktok.com/embed/v2/${item.value}?lang=en-US&fontFamily=Poppins&fontWeight=700`}
+                                          src={`https://www.tiktok.com/embed/v2/${item.value}?lang=en-US&fontFamily=Poppins&fontWeight=700&autoplay=1`}
                                           className="w-full h-full border-none rounded-[2rem]"
                                           allowFullScreen
                                           loading="lazy"
@@ -117,11 +117,11 @@ export default function ConnectWithUs() {
                                       <video 
                                           src={item.value} 
                                           className="w-full h-full object-cover rounded-[2rem] shadow-inner" 
-                                          controls 
+                                          autoPlay
                                           playsInline
                                           loop
                                           muted
-                                          preload="metadata"
+                                          preload="auto"
                                       />
                                   ) : (
                                       <div className="flex flex-col items-center gap-4 text-white/20">
