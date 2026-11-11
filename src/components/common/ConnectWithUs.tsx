@@ -133,7 +133,7 @@ export default function ConnectWithUs() {
                               
                               <div className="absolute bottom-6 left-6 opacity-0 group-hover/video:opacity-100 transition-opacity">
                                   <Badge className="bg-primary/20 backdrop-blur-md text-primary border-primary/20 font-black uppercase text-[8px] tracking-[0.2em] px-3">
-                                      {item.type === 'tiktok' ? 'LIVE TIKTOK' : 'NATIVE ASSET'}
+                                      SOCIAL MEDIA VID
                                   </Badge>
                               </div>
                           </div>
