@@ -31,7 +31,8 @@ import {
   Share2,
   Video,
   Upload,
-  X
+  X,
+  Smartphone
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import FeaturedProductManager from './FeaturedProductManager';
@@ -857,19 +858,22 @@ export default function UiUxControlCenter() {
                                                     </Button>
                                                 </div>
                                                 {openPreviews[item.id] && (
-                                                    <div className="relative animate-in slide-in-from-top-2 duration-300">
-                                                        <video 
-                                                            src={item.value} 
-                                                            controls 
-                                                            className="w-full h-48 rounded-xl object-cover mt-3 bg-black shadow-inner"
-                                                        />
-                                                        <button 
-                                                            onClick={() => setOpenPreviews(prev => ({ ...prev, [item.id]: false }))}
-                                                            className="absolute top-5 right-2 p-1 bg-black/50 text-white rounded-full hover:bg-black/80 transition-colors"
-                                                            title="Close Preview"
-                                                        >
-                                                            <X size={12} />
-                                                        </button>
+                                                    <div className="relative animate-in slide-in-from-top-2 duration-300 flex justify-center py-4">
+                                                        <div className="w-[260px] aspect-[9/16] bg-black rounded-[2.5rem] overflow-hidden border-[6px] border-accent shadow-2xl relative">
+                                                            <div className="absolute top-4 left-1/2 -translate-x-1/2 w-16 h-1 rounded-full bg-white/20 z-20" />
+                                                            <video 
+                                                                src={item.value} 
+                                                                controls 
+                                                                className="w-full h-full object-cover"
+                                                            />
+                                                            <button 
+                                                                onClick={() => setOpenPreviews(prev => ({ ...prev, [item.id]: false }))}
+                                                                className="absolute top-4 right-4 p-1.5 bg-black/50 text-white rounded-full hover:bg-black/80 transition-colors z-30"
+                                                                title="Close Preview"
+                                                            >
+                                                                <X size={14} />
+                                                            </button>
+                                                        </div>
                                                     </div>
                                                 )}
                                             </div>
