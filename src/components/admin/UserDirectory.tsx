@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
@@ -53,7 +52,7 @@ export default function UserDirectory() {
         if (!supabase) return;
         setLoading(true);
         try {
-            // Fetch profiles with wishlist count and assume a default navigation log
+            // Fetch profiles with wishlist count
             const { data: profiles, error } = await supabase
                 .from('profiles')
                 .select('*, wishlists:wishlists(count)')
@@ -73,12 +72,14 @@ export default function UserDirectory() {
     const handleRoleChange = async (email: string, role: 'admin' | 'staff' | 'user', userId: string) => {
         setProcessingId(userId);
         try {
-            await promoteUserAdmin(email, role);
-            toast({
-                title: "Clearance Updated",
-                description: `${email} has been provisioned as ${role.toUpperCase()}.`,
-            });
-            await loadData(); // Refresh list
+            const result = await promoteUserAdmin(email, role);
+            if (result.success) {
+                toast({
+                    title: "Clearance Updated",
+                    description: `${email} has been provisioned as ${role.toUpperCase()}.`,
+                });
+                await loadData(); // Refresh list
+            }
         } catch (error: any) {
             toast({
                 variant: "destructive",
@@ -158,7 +159,7 @@ export default function UserDirectory() {
                             </TableCell>
                             <TableCell className="hidden lg:table-cell">
                                 <div className="flex flex-wrap gap-1 max-w-[250px]">
-                                    {/* Mock Navigation Chips based on common paths */}
+                                    {/* Mock Navigation Chips for 2027 UI */}
                                     {['/tanks', '/checkout', '/profile'].slice(0, Math.floor(Math.random() * 3) + 1).map((path) => (
                                         <span key={path} className="px-2 py-0.5 bg-muted rounded-md text-[8px] font-black text-muted-foreground uppercase tracking-widest">
                                             {path.replace('/', '')}
