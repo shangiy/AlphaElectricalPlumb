@@ -18,8 +18,8 @@ export async function uploadFile(file: File | string, bucket: string, folder: st
         let fileName: string;
         let fileToUpload: File;
         
-        // 1. Ensure the bucket name is lowercase and hyphenated for standard compatibility
-        const targetBucket = bucket.toLowerCase().replace(/\s+/g, '-');
+        // 1. HARDCODE / NORMALIZE BUCKET NAME: Force lowercase and hyphenated format
+        const targetBucket = (bucket || 'connect-us-video').toLowerCase().replace(/\s+/g, '-');
 
         if (file instanceof File) {
             // 2. FILE NAME SANITIZATION: Strip special characters and spaces

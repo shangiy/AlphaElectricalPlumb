@@ -20,6 +20,13 @@ export async function uploadToStorageAdmin(formData: FormData) {
   if (!file) throw new Error("No file provided for upload.");
   if (!path) throw new Error("No destination path provided.");
 
+  // AUTO-CREATE BUCKET FALLBACK: Ensure the bucket exists before uploading
+  // This prevents "Bucket not found" errors if a bucket was accidentally deleted.
+  await supabaseAdmin.storage.createBucket(bucket, { public: true }).catch(() => {
+    // If the bucket already exists or creation fails, we just log and continue to the upload.
+    console.log(`Bucket "${bucket}" already exists or could not be verified.`);
+  });
+
   // Upload using the Admin client to bypass RLS policies
   const { data, error } = await supabaseAdmin.storage
     .from(bucket)

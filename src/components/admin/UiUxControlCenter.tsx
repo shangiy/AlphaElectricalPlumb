@@ -282,7 +282,7 @@ export default function UiUxControlCenter() {
     setUploadingId(id);
     try {
         // Ensuring standardized lowercase bucket name for robustness
-        const url = await uploadFile(file, 'connect-us-videos', 'social-assets');
+        const url = await uploadFile(file, 'connect-us-video', 'social-assets');
         handleUpdateVideoValue(id, url);
         toast({ title: "Asset Synchronized", description: "Native video successfully hosted in Supabase Cloud." });
     } catch (err: any) {
@@ -764,7 +764,7 @@ export default function UiUxControlCenter() {
                     <div className="flex justify-between items-center">
                         <div>
                             <h3 className="text-sm font-black text-accent uppercase tracking-widest">Active Stream Slots</h3>
-                            <p className="text-[10px] text-muted-foreground mt-1 uppercase font-bold tracking-widest">Synchronizing with "connect-us-videos" bucket</p>
+                            <p className="text-[10px] text-muted-foreground mt-1 uppercase font-bold tracking-widest">Synchronizing with "connect-us-video" bucket</p>
                         </div>
                         <Button onClick={handleAddVideoSlot} variant="outline" className="rounded-full h-11 px-6 font-black uppercase tracking-tighter">
                             <Plus size={16} className="mr-2" /> Add Stream Slot
