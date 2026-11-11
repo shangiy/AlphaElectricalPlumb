@@ -30,7 +30,8 @@ import {
   Youtube,
   Share2,
   Video,
-  Upload
+  Upload,
+  X
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import FeaturedProductManager from './FeaturedProductManager';
@@ -205,6 +206,7 @@ export default function UiUxControlCenter() {
   const [videoStream, setVideoStream] = useState<VideoItem[]>([]);
   const [uploadingId, setUploadingId] = useState<string | null>(null);
   const [newPhrase, setNewPhrase] = useState('');
+  const [openPreviews, setOpenPreviews] = useState<Record<string, boolean>>({});
 
   const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }));
 
@@ -281,7 +283,6 @@ export default function UiUxControlCenter() {
     
     setUploadingId(id);
     try {
-        // Ensuring standardized lowercase bucket name for robustness
         const url = await uploadFile(file, 'connect-us-video', 'social-assets');
         handleUpdateVideoValue(id, url);
         toast({ title: "Asset Synchronized", description: "Native video successfully hosted in Supabase Cloud." });
@@ -298,7 +299,7 @@ export default function UiUxControlCenter() {
         await updateStorefrontSetting('video_stream_config', { items: videoStream });
         toast({ title: "Stream Published", description: "Video logic synchronized with global storefront." });
     } catch (err: any) {
-        toast({ variant: "destructive", description: err.message });
+        toast({ variant: "destructive", title: "Upload Failed", description: err.message });
     } finally {
         setSubmitting(false);
     }
@@ -842,10 +843,35 @@ export default function UiUxControlCenter() {
                                                         readOnly 
                                                         className="h-11 rounded-xl bg-white text-[10px] font-mono border-none shadow-inner truncate" 
                                                     />
-                                                    <Button variant="outline" size="sm" className="h-11 rounded-xl px-5 text-[10px] font-black uppercase tracking-widest hover:bg-primary hover:text-white transition-all shadow-sm" onClick={() => window.open(item.value, '_blank')}>
-                                                        <Eye size={14} className="mr-2" /> View
+                                                    <Button 
+                                                        variant="outline" 
+                                                        size="sm" 
+                                                        className={cn(
+                                                            "h-11 rounded-xl px-5 text-[10px] font-black uppercase tracking-widest transition-all shadow-sm",
+                                                            openPreviews[item.id] ? "bg-accent text-white border-accent" : "hover:bg-primary hover:text-white"
+                                                        )}
+                                                        onClick={() => setOpenPreviews(prev => ({ ...prev, [item.id]: !prev[item.id] }))}
+                                                    >
+                                                        {openPreviews[item.id] ? <X size={14} className="mr-2" /> : <Eye size={14} className="mr-2" />}
+                                                        {openPreviews[item.id] ? 'Collapse' : 'View'}
                                                     </Button>
                                                 </div>
+                                                {openPreviews[item.id] && (
+                                                    <div className="relative animate-in slide-in-from-top-2 duration-300">
+                                                        <video 
+                                                            src={item.value} 
+                                                            controls 
+                                                            className="w-full h-48 rounded-xl object-cover mt-3 bg-black shadow-inner"
+                                                        />
+                                                        <button 
+                                                            onClick={() => setOpenPreviews(prev => ({ ...prev, [item.id]: false }))}
+                                                            className="absolute top-5 right-2 p-1 bg-black/50 text-white rounded-full hover:bg-black/80 transition-colors"
+                                                            title="Close Preview"
+                                                        >
+                                                            <X size={12} />
+                                                        </button>
+                                                    </div>
+                                                )}
                                             </div>
                                         )}
                                     </div>
