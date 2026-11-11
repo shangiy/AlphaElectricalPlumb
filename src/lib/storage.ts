@@ -16,22 +16,30 @@ export async function uploadImage(file: File | string, bucket: string = 'product
  */
 export async function uploadFile(file: File | string, bucket: string, folder: string = 'uploads'): Promise<string> {
     try {
-        const extension = file instanceof File 
-            ? file.name.split('.').pop() 
-            : (typeof file === 'string' && file.startsWith('data:image')) ? 'webp' : 'mp4';
-            
-        const fileName = `${uuidv4()}.${extension}`;
+        let fileName: string;
+        
+        if (file instanceof File) {
+            // Sanitize file names: Replace spaces or special characters with underscores to prevent 400 errors
+            const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+            fileName = `${uuidv4()}-${sanitizedName}`;
+        } else if (typeof file === 'string' && file.startsWith('data:')) {
+            // Handle Data URIs (Base64) from camera captures
+            const extension = file.startsWith('data:image') ? 'webp' : 'mp4';
+            fileName = `${uuidv4()}.${extension}`;
+        } else {
+            throw new Error("Unsupported file format provided to storage utility.");
+        }
+
         const filePath = `${folder}/${fileName}`;
         
         let fileToUpload: File;
 
-        // Handle Data URIs (Base64) from camera captures or similar
+        // Convert Data URI to File if necessary
         if (typeof file === 'string' && file.startsWith('data:')) {
             const response = await fetch(file);
             const blob = await response.blob();
             fileToUpload = new File([blob], fileName, { type: blob.type });
         } 
-        // Handle standard File objects from input fields
         else if (file instanceof File) {
             fileToUpload = file;
         } 
