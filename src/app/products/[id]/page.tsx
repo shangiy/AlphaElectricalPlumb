@@ -12,8 +12,6 @@ import { Button } from '@/components/ui/button';
 import { useState, useEffect, useMemo } from 'react';
 import QuantitySelector from '@/components/products/QuantitySelector';
 import { cn } from '@/lib/utils';
-import ReviewForm from '@/components/reviews/ReviewForm';
-import ReviewCarousel from '@/components/reviews/ReviewCarousel';
 import WishlistButton from '@/components/products/WishlistButton';
 import { Badge } from '@/components/ui/badge';
 
@@ -30,7 +28,6 @@ function ProductContent({ productId }: { productId: string }) {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [failedUrls, setFailedUrls] = useState<Set<string>>(new Set());
-  const [reviewsKey, setReviewsKey] = useState(0);
 
   useEffect(() => {
     setActiveImageIndex(0);
@@ -86,10 +83,6 @@ function ProductContent({ productId }: { productId: string }) {
         next.add(url);
         return next;
     });
-  };
-
-  const handleReviewSubmitted = () => {
-    setReviewsKey(prev => prev + 1);
   };
 
   const technicalLabel = "text-[10px] font-black tracking-[0.3em] uppercase text-muted-foreground/60";
@@ -225,31 +218,6 @@ function ProductContent({ productId }: { productId: string }) {
                 <Info className="absolute -right-4 -bottom-4 h-24 w-24 text-white opacity-10 rotate-12" />
             </div>
           </div>
-        </div>
-      </div>
-
-      {/* Modern Review Interaction Block */}
-      <div className="bg-secondary/5 py-32 border-t border-white/10 mt-20">
-        <div className="container mx-auto px-4">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-20 items-start">
-                <div className="lg:col-span-4">
-                    <div className="sticky top-32">
-                        <ReviewForm productId={product.id} onReviewSubmitted={handleReviewSubmitted} />
-                    </div>
-                </div>
-                <div className="lg:col-span-8 space-y-12">
-                    <div className="flex justify-between items-end">
-                        <div>
-                            <h2 className="text-5xl font-black font-headline text-accent tracking-tighter">Owner Experiences</h2>
-                            <p className="text-muted-foreground text-lg mt-2">Unfiltered feedback from our community of professionals.</p>
-                        </div>
-                        <Badge variant="outline" className="px-6 py-2 rounded-full font-black uppercase tracking-widest border-accent/20">
-                            {product.reviews} Entries
-                        </Badge>
-                    </div>
-                    <ReviewCarousel key={reviewsKey} productId={product.id} />
-                </div>
-            </div>
         </div>
       </div>
 
