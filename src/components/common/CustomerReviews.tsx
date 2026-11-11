@@ -99,7 +99,7 @@ export default function CustomerReviews() {
                         <div className="flex items-center gap-2 text-primary font-black uppercase tracking-[0.3em] mb-2 text-xs">
                             <Sparkles size={14} /> Verified Experience
                         </div>
-                        <h2 className="text-4xl font-black font-headline text-accent tracking-tighter leading-tight mb-4 uppercase">Professional <br/>Feedback</h2>
+                        <h2 className="text-4xl font-black font-headline text-accent tracking-tighter leading-tight mb-4 uppercase">SYSTEM <br/>REVIEWS</h2>
                         <p className="text-lg text-muted-foreground font-medium">Discover what our community of engineers, plumbers, and developers are saying about Alpha's ecosystem.</p>
                     </div>
                     
