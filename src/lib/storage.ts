@@ -50,15 +50,22 @@ export async function uploadFile(file: File | string, bucket: string, folder: st
         formData.append('bucket', targetBucket);
 
         // Execute the server-side upload to bypass client-side RLS constraints
+        // Note: Next.js 15 server action body limits must be configured in next.config.ts for large files
         const result = await uploadToStorageAdmin(formData);
         
-        if (!result.publicUrl) {
-            throw new Error("Upload succeeded but no public URL was returned.");
+        if (!result || !result.publicUrl) {
+            throw new Error("The server completed the operation but returned an empty asset URL.");
         }
 
         return result.publicUrl;
     } catch (error: any) {
-        console.error("Storage Service Error: ", error.message);
-        throw new Error(error.message || `Failed to upload file to Supabase Storage.`);
+        console.error("Storage Service Sync Failure:", error.message || error);
+        
+        // Provide contextual guidance for common failures
+        const errorMessage = error.message === 'An unexpected response was received from the server.'
+            ? "File size exceeds server limits. Please try a smaller file or contact technical support."
+            : (error.message || `Failed to upload file to Supabase Storage bucket "${bucket}".`);
+            
+        throw new Error(errorMessage);
     }
 }

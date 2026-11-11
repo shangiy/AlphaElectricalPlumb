@@ -18,6 +18,12 @@ const nextConfig: NextConfig = {
     // your project has ESLint errors.
     ignoreDuringBuilds: true,
   },
+  // Increase payload limit for large video uploads in Server Actions
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '50mb',
+    },
+  },
   // Address the CORS warning for the dev environment
   allowedDevOrigins: [
     '6000-firebase-studio-1762697160634.cluster-cbeiita7rbe7iuwhvjs5zww2i4.cloudworkstations.dev',
