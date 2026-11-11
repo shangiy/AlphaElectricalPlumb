@@ -18,9 +18,8 @@ interface ReviewFormProps {
 }
 
 /**
- * Modern Unified Review Form v4.4.28:
- * - Resolved: Guest user_id null constraint error using Anonymous UUIDs.
- * - Integrated: "Heading" field to match 2027 design specs.
+ * Modern Unified Review Form v4.4.29:
+ * - Sync v4.4.29: Refined fallback name from "Verified Client" to "Client".
  */
 export default function ReviewForm({ productId, onReviewSubmitted }: ReviewFormProps) {
   const [rating, setRating] = useState(5);
@@ -39,9 +38,8 @@ export default function ReviewForm({ productId, onReviewSubmitted }: ReviewFormP
       const { data: { user: authUser } } = await supabase.auth.getUser();
 
       const reviewType = productId ? 'product' : 'homepage';
-      const authorName = user?.name || user?.username || 'Verified Client';
+      const authorName = user?.name || user?.username || 'Client';
       
-      // ANONYMOUS IDENTITY HANDSHAKE: Provide a UUID for guests to satisfy DB constraints
       const userId = authUser?.id || uuidv4();
 
       const { error } = await supabase.from('reviews').insert({
@@ -56,7 +54,6 @@ export default function ReviewForm({ productId, onReviewSubmitted }: ReviewFormP
 
       if (error) throw error;
 
-      // Increment review count on product record if applicable
       if (productId) {
           const { data: productData, error: productFetchError } = await supabase
               .from('products')

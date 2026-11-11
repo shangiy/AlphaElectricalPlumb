@@ -19,8 +19,8 @@ interface Review {
 }
 
 /**
- * 2027 Intelligent Review Stream v4.4.28:
- * Fetches and displays reviews with strict column mapping, now including the 'title' field.
+ * 2027 Intelligent Review Stream v4.4.29:
+ * Sync v4.4.29: Removed "Verified User" label for a cleaner, high-fidelity look.
  */
 export default function ReviewCarousel({ productId }: { productId?: string }) {
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -30,7 +30,6 @@ export default function ReviewCarousel({ productId }: { productId?: string }) {
     if (!supabase) return;
     setLoading(true);
     try {
-      // Query uses updated columns including title
       let query = supabase
         .from('reviews')
         .select('id, author_name, rating, title, comment, review_type, created_at')
@@ -123,9 +122,8 @@ export default function ReviewCarousel({ productId }: { productId?: string }) {
                     </div>
                     <div>
                         <span className="block text-sm font-black text-accent uppercase tracking-tighter">
-                            {review.author_name || 'Verified Client'}
+                            {review.author_name || 'Client'}
                         </span>
-                        <span className="text-[10px] font-bold text-muted-foreground uppercase opacity-40">Verified User</span>
                     </div>
                 </div>
             </div>

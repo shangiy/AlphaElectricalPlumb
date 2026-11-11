@@ -25,7 +25,7 @@ interface ReviewData {
 /**
  * 2027 Homepage Professional Review Section:
  * Features high-fidelity card mapping from Supabase database.
- * Sync v4.4.27: Uses standard base columns only.
+ * Sync v4.4.29: Removed "Community Member" label for a cleaner aesthetic.
  */
 export default function CustomerReviews() {
     const { toast } = useToast();
@@ -37,7 +37,6 @@ export default function CustomerReviews() {
         if (!supabase) return;
         setIsLoading(true);
         try {
-            // Updated query: uses base schema columns confirmed in docs
             const { data, error } = await supabase
                 .from('reviews')
                 .select('id, author_name, comment, rating, review_type, created_at')
@@ -48,7 +47,7 @@ export default function CustomerReviews() {
             
             setReviews((data || []).map(r => ({
                 id: r.id,
-                userName: r.author_name || 'Verified Client',
+                userName: r.author_name || 'Client',
                 rating: r.rating || 5,
                 comment: r.comment || '',
                 createdAt: r.created_at,
@@ -136,7 +135,6 @@ export default function CustomerReviews() {
                                         <div className="border-t border-muted pt-6 flex items-center justify-between">
                                             <div>
                                                 <h4 className="font-bold text-accent text-sm">{review.userName}</h4>
-                                                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Community Member</span>
                                             </div>
                                             <span className="text-[10px] font-bold text-muted-foreground">
                                                 {new Date(review.createdAt).toLocaleDateString()}
