@@ -23,8 +23,9 @@ import {
 import ReviewForm from '@/components/reviews/ReviewForm';
 
 /**
- * 2027 Premium Product Layout v4.8.0:
+ * 2027 Premium Product Layout v4.8.1:
  * Features: High-performance halved-star ratings, Popover reviews, and AI-inspired rhythmic button lighting.
+ * Symmetric Pill Logic: Ensures buttons are identical in size and flexible across viewports.
  */
 function ProductContent({ productId }: { productId: string }) {
   const { getProductById, loading, refreshProducts } = useProducts();
@@ -234,21 +235,21 @@ function ProductContent({ productId }: { productId: string }) {
             </div>
 
             <div className="flex flex-col gap-4">
-                <div className="flex flex-col gap-6 sm:flex-row h-auto min-h-20">
+                <div className="flex flex-col gap-6 sm:flex-row h-auto items-stretch">
                     {/* Add to Cart Lightning Node */}
-                    <div className="flex-1 relative group rounded-[2rem] p-[3px] overflow-hidden bg-muted/20 shadow-xl transition-all hover:scale-[1.02]">
+                    <div className="flex-1 relative group rounded-full p-[3.5px] overflow-hidden bg-muted/20 shadow-2xl transition-all hover:scale-[1.02] flex">
                         <div className="absolute top-1/2 left-1/2 w-[300%] h-[300%] bg-[conic-gradient(from_0deg,#00f2ea,#1877f2,#7000ff,#00f2ea)] animate-ai-spin opacity-60 animate-rhythmic-dim" />
-                        <div className="absolute inset-[2px] rounded-[1.9rem] bg-white z-0" />
-                        <div className="relative z-10 h-full flex w-full">
+                        <div className="absolute inset-[2.5px] rounded-full bg-white z-0" />
+                        <div className="relative z-10 flex-1 flex w-full">
                             <AddToCartButton product={product} quantity={quantity}/>
                         </div>
                     </div>
 
                     {/* Buy Now Lightning Node */}
-                    <div className="flex-1 relative group rounded-[2rem] p-[3px] overflow-hidden bg-muted/20 shadow-xl transition-all hover:scale-[1.02]">
+                    <div className="flex-1 relative group rounded-full p-[3.5px] overflow-hidden bg-muted/20 shadow-2xl transition-all hover:scale-[1.02] flex">
                         <div className="absolute top-1/2 left-1/2 w-[300%] h-[300%] bg-[conic-gradient(from_0deg,#ff0000,#ff8c00,#fffb00,#48ff00,#00ffd5,#002bff,#7a00ff,#ff00c8,#ff0000)] animate-ai-spin opacity-60 animate-rhythmic-dim" />
-                        <div className="absolute inset-[2px] rounded-[1.9rem] bg-white z-0" />
-                        <div className="relative z-10 h-full flex w-full">
+                        <div className="absolute inset-[2.5px] rounded-full bg-white z-0" />
+                        <div className="relative z-10 flex-1 flex w-full">
                             <BuyNowButton product={product} quantity={quantity} />
                         </div>
                     </div>

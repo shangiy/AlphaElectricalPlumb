@@ -23,7 +23,11 @@ export default function BuyNowButton({ product, quantity = 1 }: BuyNowButtonProp
   };
 
   return (
-    <Button size="xl" className="flex-1 shadow-lg active:scale-95 transition-transform bg-[#28235f] hover:bg-[#28235f]/90" onClick={handleBuyNow}>
+    <Button 
+      size="xl" 
+      className="flex-1 w-full h-full rounded-full shadow-none border-none active:scale-95 transition-all bg-[#28235f] hover:bg-[#28235f]/90" 
+      onClick={handleBuyNow}
+    >
       <Zap className="mr-2 h-7 w-7" /> Buy Now
     </Button>
   );
