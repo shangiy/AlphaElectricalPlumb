@@ -11,7 +11,7 @@ function MyReviewsPage() {
       <div className="max-w-4xl mx-auto space-y-10">
         <div>
           <h1 className="text-4xl font-black font-headline text-accent uppercase tracking-tighter">My Contributions</h1>
-          <p className="text-muted-foreground font-medium mt-2">A timeline of your technical feedback and storefront reviews.</p>
+          <p className="text-muted-foreground font-medium mt-2">A timeline of your Product reviews and Storefront System feedback.</p>
         </div>
 
         <Card className="rounded-[2.5rem] border-2 border-dashed bg-muted/10 py-24 text-center">
