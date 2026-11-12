@@ -51,11 +51,69 @@ const MenuLink = ({ href, label }: { href: string, label: string }) => (
 );
 
 /**
- * High-Fidelity Header v24.0 (Ecosystem v4.5.1):
- * - Account Dropdown: Implemented hover-triggered Oraimo-style account popover.
- * - Hydration Optimized: Uses isMounted check to prevent Radix ID mismatches.
- * - Mobile User Hub: Dedicated Account icon added to mobile action cluster.
- * - Role-Aware UI: Shows "Admin" link for privileged users.
+ * AccountMenuContent: Shared component for both desktop and mobile dropdowns
+ */
+const AccountMenuContent = ({ user, logout, isMounted }: { user: any, logout: () => void, isMounted: boolean }) => (
+  <div className="bg-white rounded-2xl p-5 overflow-hidden">
+    {!isMounted || !user ? (
+      <div className="space-y-4 mb-6">
+        <NextLink href="/auth/login" className="block group/auth">
+          <h3 className="text-xl font-black text-accent uppercase tracking-tighter group-hover/auth:text-primary transition-colors flex items-center justify-between">
+            Sign in
+            <ChevronRight size={20} className="text-slate-300" />
+          </h3>
+        </NextLink>
+        <NextLink href="/auth/login?tab=signup" className="block">
+          <div className="bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-xl px-4 py-3 text-[11px] font-black uppercase tracking-wider flex items-center justify-between hover:bg-emerald-100 transition-all hover:scale-[1.02]">
+            Register & Get Points 
+            <span className="text-lg">›</span>
+          </div>
+        </NextLink>
+      </div>
+    ) : (
+      <div className="mb-6 pb-4 border-b border-slate-50 flex items-center gap-3">
+        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-black uppercase text-sm">
+          {user.name?.charAt(0) || user.username?.charAt(0)}
+        </div>
+        <div className="flex flex-col min-w-0">
+          <p className="font-black text-accent uppercase tracking-tight truncate text-sm">
+            {user.name || user.username}
+          </p>
+          <p className="text-[10px] text-muted-foreground truncate font-medium">
+            {user.email}
+          </p>
+        </div>
+      </div>
+    )}
+
+    {/* Navigation Cluster */}
+    <nav className="flex flex-col">
+      <MenuLink href="/orders" label="My Order" />
+      <MenuLink href="/profile" label="Personal Information" />
+      <MenuLink href="/wishlist" label="My Wish" />
+      <MenuLink href="/points" label="My Explorer Points" />
+      <MenuLink href="/coupons" label="Coupons Center" />
+      <MenuLink href="/addresses" label="Address Management" />
+      <MenuLink href="/my-reviews" label="Product Reviews" />
+    </nav>
+
+    {isMounted && user && (
+      <button 
+        onClick={() => logout()}
+        className="w-full mt-4 pt-4 border-t border-slate-50 text-left text-[11px] font-black text-red-500 uppercase tracking-widest hover:text-red-600 transition-colors flex items-center justify-between group/out"
+      >
+        Sign Out
+        <X size={14} className="opacity-40 group-hover/out:rotate-90 transition-transform" />
+      </button>
+    )}
+  </div>
+);
+
+/**
+ * High-Fidelity Header v24.1 (Ecosystem v4.5.2):
+ * - Mobile Account Hub: Added DropdownMenu for touch-responsive account actions.
+ * - Forefront Intelligence: Boosted z-index for both mobile and desktop account menus to z-110.
+ * - Global Layering: Boosted header z-index to z-100 to ensure primacy over all page content.
  */
 export default function Header() {
   const { user, logout } = useAuth();
@@ -88,7 +146,7 @@ export default function Header() {
   return (
     <header 
       className={cn(
-        "sticky top-0 z-50 w-full transition-all duration-500 overflow-hidden border-b flex items-center h-24 lg:h-32",
+        "sticky top-0 z-[100] w-full transition-all duration-500 overflow-hidden border-b flex items-center h-24 lg:h-32",
         isScrolled ? "border-slate-200/60" : "border-transparent bg-slate-50/40"
       )}
     >
@@ -153,7 +211,7 @@ export default function Header() {
                       Categories <ChevronDown className="h-3 w-3" />
                     </button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" className="rounded-2xl p-2 w-64 bg-white border-slate-200 shadow-2xl">
+                  <DropdownMenuContent align="start" className="rounded-2xl p-2 w-64 bg-white border-slate-200 shadow-2xl z-[110]">
                     <DropdownMenuItem asChild className="cursor-pointer py-3 rounded-xl font-bold text-[#28235f] hover:text-primary hover:bg-primary/5"><NextLink href="/category/tanks">Water Tanks</NextLink></DropdownMenuItem>
                     <DropdownMenuItem asChild className="cursor-pointer py-3 rounded-xl font-bold text-[#28235f] hover:text-primary hover:bg-primary/5"><NextLink href="/category/plumbing">Plumbing Equipment</NextLink></DropdownMenuItem>
                     <DropdownMenuItem asChild className="cursor-pointer py-3 rounded-xl font-bold text-[#28235f] hover:text-primary hover:bg-primary/5"><NextLink href="/category/lighting">Lighting & Electrical</NextLink></DropdownMenuItem>
@@ -172,9 +230,9 @@ export default function Header() {
             <div className="flex items-center gap-3">
               <ShoppingCartComponent triggerClassName="h-10 w-10 transition-all border border-[#28235f]/10 text-[#28235f] hover:text-primary hover:bg-primary/5 shadow-sm hover:shadow-md" />
               
-              {/* DESKTOP ACCOUNT DROPDOWN (Hover Triggered) */}
+              {/* DESKTOP ACCOUNT HUB (Hover Triggered) */}
               <div 
-                className="relative group h-12 flex items-center"
+                className="relative group h-12 flex items-center z-[110]"
                 onMouseEnter={() => setIsAccountHovered(true)}
                 onMouseLeave={() => setIsAccountHovered(false)}
               >
@@ -192,61 +250,11 @@ export default function Header() {
 
                 {/* Dropdown Menu Node */}
                 <div className={cn(
-                  "absolute right-0 top-full pt-2 w-72 transition-all duration-300 transform origin-top-right z-50",
+                  "absolute right-0 top-full pt-2 w-72 transition-all duration-300 transform origin-top-right z-[120]",
                   isAccountHovered ? "opacity-100 scale-100 visible translate-y-0" : "opacity-0 scale-95 invisible -translate-y-2"
                 )}>
-                  <div className="bg-white rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-slate-100 p-5 overflow-hidden">
-                    {!isMounted || !user ? (
-                      <div className="space-y-4 mb-6">
-                        <NextLink href="/auth/login" className="block group/auth">
-                          <h3 className="text-xl font-black text-accent uppercase tracking-tighter group-hover/auth:text-primary transition-colors flex items-center justify-between">
-                            Sign in
-                            <ChevronRight size={20} className="text-slate-300" />
-                          </h3>
-                        </NextLink>
-                        <NextLink href="/auth/login?tab=signup" className="block">
-                          <div className="bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-xl px-4 py-3 text-[11px] font-black uppercase tracking-wider flex items-center justify-between hover:bg-emerald-100 transition-all hover:scale-[1.02]">
-                            Register & Get Points 
-                            <span className="text-lg">›</span>
-                          </div>
-                        </NextLink>
-                      </div>
-                    ) : (
-                      <div className="mb-6 pb-4 border-b border-slate-50 flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-black uppercase text-sm">
-                          {user.name?.charAt(0) || user.username?.charAt(0)}
-                        </div>
-                        <div className="flex flex-col min-w-0">
-                          <p className="font-black text-accent uppercase tracking-tight truncate text-sm">
-                            {user.name || user.username}
-                          </p>
-                          <p className="text-[10px] text-muted-foreground truncate font-medium">
-                            {user.email}
-                          </p>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Navigation Cluster */}
-                    <nav className="flex flex-col">
-                      <MenuLink href="/orders" label="My Order" />
-                      <MenuLink href="/profile" label="Personal Information" />
-                      <MenuLink href="/wishlist" label="My Wish" />
-                      <MenuLink href="/points" label="My Explorer Points" />
-                      <MenuLink href="/coupons" label="Coupons Center" />
-                      <MenuLink href="/addresses" label="Address Management" />
-                      <MenuLink href="/my-reviews" label="Product Reviews" />
-                    </nav>
-
-                    {isMounted && user && (
-                      <button 
-                        onClick={() => logout()}
-                        className="w-full mt-4 pt-4 border-t border-slate-50 text-left text-[11px] font-black text-red-500 uppercase tracking-widest hover:text-red-600 transition-colors flex items-center justify-between group/out"
-                      >
-                        Sign Out
-                        <X size={14} className="opacity-40 group-hover/out:rotate-90 transition-transform" />
-                      </button>
-                    )}
+                  <div className="bg-white rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-slate-100 shadow-xl">
+                    <AccountMenuContent user={user} logout={logout} isMounted={isMounted} />
                   </div>
                 </div>
               </div>
@@ -254,7 +262,7 @@ export default function Header() {
           </div>
         </div>
 
-        {/* MOBILE VIEW (Ecosystem v4.3.0 Standard) */}
+        {/* MOBILE VIEW (Ecosystem v4.5.2 Optimized) */}
         <div className="w-full lg:hidden flex items-center justify-between h-20 gap-3">
           <NextLink 
             href="/" 
@@ -316,12 +324,17 @@ export default function Header() {
 
             <ShoppingCartComponent triggerClassName="h-10 w-10 border border-[#28235f]/10 rounded-full text-[#28235f] flex items-center justify-center hover:text-primary shrink-0" />
             
-            {/* Mobile Account Icon */}
-            <NextLink href={user ? "/profile" : "/auth/login"}>
-              <Button variant="ghost" size="icon" className="h-10 w-10 border border-[#28235f]/10 rounded-full text-[#28235f] flex items-center justify-center hover:text-primary shrink-0">
-                <User className="h-5 w-5" />
-              </Button>
-            </NextLink>
+            {/* MOBILE ACCOUNT HUB (Click Activated) */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-10 w-10 border border-[#28235f]/10 rounded-full text-[#28235f] flex items-center justify-center hover:text-primary shrink-0">
+                  <User className="h-5 w-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-[85vw] max-w-[320px] rounded-[2rem] shadow-2xl border-slate-100 z-[120] mt-2">
+                <AccountMenuContent user={user} logout={logout} isMounted={isMounted} />
+              </DropdownMenuContent>
+            </DropdownMenu>
 
             {isMounted ? (
               <Sheet>
@@ -330,7 +343,7 @@ export default function Header() {
                     <Menu className="h-5 w-5" />
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="right" className="bg-white border-l-slate-100 text-[#28235f] rounded-l-[3rem] shadow-2xl">
+                <SheetContent side="right" className="bg-white border-l-slate-100 text-[#28235f] rounded-l-[3rem] shadow-2xl z-[130]">
                   <SheetHeader>
                     <SheetTitle className="text-[#28235f] text-left">
                       <NextLink href="/" className="flex items-center gap-4 group">
