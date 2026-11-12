@@ -13,10 +13,11 @@ import { useAuth } from '@/context/AuthProvider';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { useState, useEffect, useRef } from 'react';
-import { Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, Loader2, Gift, Check } from 'lucide-react';
 import { signIn as nextAuthSignIn } from 'next-auth/react';
 import ReCAPTCHA from 'react-google-recaptcha';
 import { verifyRecaptcha } from '@/app/actions/verify-recaptcha';
+import { cn } from '@/lib/utils';
 
 const loginSchema = z.object({
   email: z.string().email('Valid email required.'),
@@ -24,7 +25,8 @@ const loginSchema = z.object({
 });
 
 const signUpSchema = z.object({
-  name: z.string().min(2, 'Name required.'),
+  firstName: z.string().min(2, 'First name required.'),
+  lastName: z.string().min(2, 'Last name required.'),
   email: z.string().email('Valid email required.'),
   password: z.string().min(8, '8 chars min.'),
   confirmPassword: z.string(),
@@ -77,7 +79,7 @@ export default function LoginForm() {
 
     const sForm = useForm<z.infer<typeof signUpSchema>>({ 
       resolver: zodResolver(signUpSchema), 
-      defaultValues: { name: "", email: "", password: "", confirmPassword: "" } 
+      defaultValues: { firstName: "", lastName: "", email: "", password: "", confirmPassword: "" } 
     });
 
     const handleSocial = async (p: string) => {
@@ -106,15 +108,14 @@ export default function LoginForm() {
 
       setProcessing(true);
       try {
-        // Verify CAPTCHA with server action
         const verification = await verifyRecaptcha(captchaToken);
         if (!verification.success) {
             throw new Error(verification.message || "Security verification failed. Please try again.");
         }
 
         await signUp({
-          name: data.name,
-          username: data.email.split('@')[0], // Generate username from email
+          name: `${data.firstName} ${data.lastName}`,
+          username: data.email.split('@')[0],
           email: data.email,
           password: data.password
         });
@@ -131,7 +132,8 @@ export default function LoginForm() {
       }
     };
 
-    const tabLabel = "text-[10px] font-black uppercase tracking-widest text-muted-foreground";
+    const sectionLabel = "text-[13px] font-black text-accent mb-4 block border-b pb-2 border-muted";
+    const inputLabel = "text-[11px] font-bold text-slate-700 mb-1 flex items-center";
 
     return (
         <div className="container mx-auto flex min-h-[90vh] items-center justify-center px-4 py-12">
@@ -165,7 +167,7 @@ export default function LoginForm() {
                                 >
                                     <FormField control={lForm.control} name="email" render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel className={tabLabel}>Credential Email</FormLabel>
+                                            <FormLabel className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Credential Email</FormLabel>
                                             <FormControl>
                                                 <Input 
                                                     placeholder="you@email.com" 
@@ -178,7 +180,7 @@ export default function LoginForm() {
                                     )} />
                                     <FormField control={lForm.control} name="password" render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel className={tabLabel}>Secure Key</FormLabel>
+                                            <FormLabel className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Secure Key</FormLabel>
                                             <div className="relative">
                                                 <Input 
                                                     type={showPass ? "text" : "password"} 
@@ -236,80 +238,127 @@ export default function LoginForm() {
 
                 <TabsContent value="signup">
                     <Card className="rounded-[2.5rem] shadow-[0_30px_100px_-20px_rgba(0,0,0,0.15)] border-none overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-700">
-                        <CardHeader className="bg-muted/5 border-b border-muted/20 pb-8 pt-10">
-                            <CardTitle className="text-2xl font-black uppercase text-accent tracking-tighter text-center">Member Registration</CardTitle>
-                            <CardDescription className="text-center font-medium mt-1">Join the Alpha Ecosystem.</CardDescription>
+                        {/* Highlights Banner */}
+                        <div className="bg-emerald-50 py-3 text-center border-b border-emerald-100 flex items-center justify-center gap-2">
+                          <Gift className="h-4 w-4 text-emerald-600" />
+                          <p className="text-[11px] font-black uppercase tracking-wider text-emerald-700">
+                            Register & Subscribe for <span className="text-emerald-500">200 Points</span> Bonus!
+                          </p>
+                        </div>
+
+                        <CardHeader className="bg-muted/5 pb-8 pt-10 text-center">
+                            <CardTitle className="text-2xl font-black text-accent tracking-tighter uppercase">Create Your Alpha Account</CardTitle>
                         </CardHeader>
-                        <CardContent className="pt-10 space-y-6">
+                        
+                        <CardContent className="pt-2 space-y-8">
+                            {/* SOCIAL LOGIN AT TOP */}
+                            <div className="space-y-4">
+                              <div className="grid grid-cols-2 gap-4">
+                                  <Button variant="outline" type="button" onClick={() => handleSocial('google')} className="h-12 rounded-2xl font-bold border-muted-foreground/10 hover:bg-muted/20">
+                                    <GoogleIcon /><span className="ml-2">Google</span>
+                                  </Button>
+                                  <Button variant="outline" type="button" onClick={() => handleSocial('facebook')} className="h-12 rounded-2xl font-bold border-muted-foreground/10 hover:bg-muted/20">
+                                    <span className="ml-2">Facebook</span>
+                                  </Button>
+                                  <Button variant="outline" type="button" onClick={() => handleSocial('apple')} className="h-12 rounded-2xl font-bold border-muted-foreground/10 hover:bg-muted/20">
+                                    <AppleIcon /><span className="ml-2">Apple</span>
+                                  </Button>
+                                  <Button variant="outline" type="button" onClick={() => handleSocial('github')} className="h-12 rounded-2xl font-bold border-muted-foreground/10 hover:bg-muted/20">
+                                    <GithubIcon /><span className="ml-2">GitHub</span>
+                                  </Button>
+                              </div>
+
+                              <div className="relative py-4">
+                                <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-muted/40" /></div>
+                                <div className="relative flex justify-center text-[10px] uppercase font-black">
+                                  <span className="bg-white px-4 text-muted-foreground tracking-[0.2em]">Or</span>
+                                </div>
+                              </div>
+                            </div>
+
                             <Form {...sForm}>
                                 <form 
                                     autoComplete="off"
                                     onSubmit={sForm.handleSubmit(onSignUpSubmit)} 
-                                    className="space-y-5"
+                                    className="space-y-8"
                                 >
-                                    <FormField control={sForm.control} name="name" render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel className={tabLabel}>Personal Information</FormLabel>
-                                            <FormControl>
-                                                <Input 
-                                                    placeholder="FirstName, second name" 
-                                                    {...field} 
-                                                    className="h-14 rounded-2xl border-muted-foreground/10 bg-secondary/5 focus:bg-white transition-all text-base font-medium" 
-                                                />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )} />
-                                    <FormField control={sForm.control} name="email" render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel className={tabLabel}>Email Address</FormLabel>
-                                            <FormControl>
-                                                <Input 
-                                                    placeholder="you@example.com" 
-                                                    {...field} 
-                                                    className="h-14 rounded-2xl border-muted-foreground/10 bg-secondary/5 focus:bg-white transition-all text-base font-medium" 
-                                                />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )} />
-                                    <FormField control={sForm.control} name="password" render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel className={tabLabel}>Password</FormLabel>
-                                            <div className="relative">
-                                                <Input 
-                                                    type={showPass ? "text" : "password"} 
-                                                    placeholder="••••••••"
-                                                    {...field} 
-                                                    className="h-14 rounded-2xl border-muted-foreground/10 bg-secondary/5 focus:bg-white transition-all text-base font-medium pr-12" 
-                                                />
-                                                <button type="button" onClick={() => setShowPass(!showPass)} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors">
-                                                  {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
-                                                </button>
-                                            </div>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )} />
-                                    <FormField control={sForm.control} name="confirmPassword" render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel className={tabLabel}>Confirm Password</FormLabel>
-                                            <div className="relative">
-                                                <Input 
-                                                    type={showConfirmPass ? "text" : "password"} 
-                                                    placeholder="••••••••"
-                                                    {...field} 
-                                                    className="h-14 rounded-2xl border-muted-foreground/10 bg-secondary/5 focus:bg-white transition-all text-base font-medium pr-12" 
-                                                />
-                                                <button type="button" onClick={() => setShowConfirmPass(!showConfirmPass)} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors">
-                                                  {showConfirmPass ? <EyeOff size={18} /> : <Eye size={18} />}
-                                                </button>
-                                            </div>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )} />
+                                    {/* PERSONAL INFORMATION SECTION */}
+                                    <div className="space-y-5">
+                                      <span className={sectionLabel}>Personal Information</span>
+                                      
+                                      <div className="grid grid-cols-2 gap-4">
+                                        <FormField control={sForm.control} name="firstName" render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel className={inputLabel}>First Name<span className="text-red-500 ml-0.5">*</span></FormLabel>
+                                                <FormControl>
+                                                    <Input placeholder="First Name" {...field} className="h-12 rounded-xl border-slate-200 bg-slate-50/50 focus:bg-white transition-all text-sm font-medium" />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )} />
+                                        <FormField control={sForm.control} name="lastName" render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel className={inputLabel}>Last Name<span className="text-red-500 ml-0.5">*</span></FormLabel>
+                                                <FormControl>
+                                                    <Input placeholder="Last Name" {...field} className="h-12 rounded-xl border-slate-200 bg-slate-50/50 focus:bg-white transition-all text-sm font-medium" />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )} />
+                                      </div>
+
+                                      <div className="flex items-center gap-3 p-3 bg-muted/20 rounded-xl border border-dashed">
+                                        <div className="h-5 w-5 rounded border border-slate-300 flex items-center justify-center bg-white cursor-pointer">
+                                          <Check className="h-3 w-3 text-primary opacity-0 group-hover:opacity-100" />
+                                        </div>
+                                        <p className="text-[11px] font-medium text-slate-600">Subscribe now and earn <span className="text-emerald-500 font-bold">100 points</span>!</p>
+                                      </div>
+                                    </div>
+
+                                    {/* SIGN-IN INFORMATION SECTION */}
+                                    <div className="space-y-5">
+                                      <span className={sectionLabel}>Sign-in Information</span>
+                                      
+                                      <FormField control={sForm.control} name="email" render={({ field }) => (
+                                          <FormItem>
+                                              <FormLabel className={inputLabel}>Email Address<span className="text-red-500 ml-0.5">*</span></FormLabel>
+                                              <FormControl>
+                                                  <Input placeholder="you@example.com" {...field} className="h-12 rounded-xl border-slate-200 bg-slate-50/50 focus:bg-white transition-all text-sm font-medium" />
+                                              </FormControl>
+                                              <FormMessage />
+                                          </FormItem>
+                                      )} />
+                                      
+                                      <div className="grid grid-cols-1 gap-5">
+                                        <FormField control={sForm.control} name="password" render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel className={inputLabel}>Password<span className="text-red-500 ml-0.5">*</span></FormLabel>
+                                                <div className="relative">
+                                                    <Input type={showPass ? "text" : "password"} placeholder="••••••••" {...field} className="h-12 rounded-xl border-slate-200 bg-slate-50/50 focus:bg-white transition-all text-sm font-medium pr-12" />
+                                                    <button type="button" onClick={() => setShowPass(!showPass)} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors">
+                                                      {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
+                                                    </button>
+                                                </div>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )} />
+                                        <FormField control={sForm.control} name="confirmPassword" render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel className={inputLabel}>Confirm Password<span className="text-red-500 ml-0.5">*</span></FormLabel>
+                                                <div className="relative">
+                                                    <Input type={showConfirmPass ? "text" : "password"} placeholder="••••••••" {...field} className="h-12 rounded-xl border-slate-200 bg-slate-50/50 focus:bg-white transition-all text-sm font-medium pr-12" />
+                                                    <button type="button" onClick={() => setShowConfirmPass(!showConfirmPass)} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors">
+                                                      {showConfirmPass ? <EyeOff size={18} /> : <Eye size={18} />}
+                                                    </button>
+                                                </div>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )} />
+                                      </div>
+                                    </div>
 
                                     {/* reCAPTCHA Node */}
-                                    <div className="pt-2 flex justify-center scale-90 origin-center sm:scale-100">
+                                    <div className="pt-2 flex justify-center scale-90 origin-center">
                                       <div className="rounded-xl overflow-hidden border border-muted shadow-sm min-h-[78px]">
                                         <ReCAPTCHA
                                           ref={recaptchaRef}
@@ -319,31 +368,11 @@ export default function LoginForm() {
                                       </div>
                                     </div>
 
-                                    <Button type="submit" className="w-full h-14 rounded-2xl font-black uppercase tracking-widest shadow-xl bg-primary text-white hover:scale-[1.02] active:scale-95 transition-all text-sm mt-4" disabled={processing}>
-                                      {processing ? <Loader2 className="animate-spin h-5 w-5" /> : "Create Persona"}
+                                    <Button type="submit" className="w-full h-14 rounded-2xl font-black uppercase tracking-widest shadow-xl bg-primary text-white hover:scale-[1.02] active:scale-95 transition-all text-sm" disabled={processing}>
+                                      {processing ? <Loader2 className="animate-spin h-5 w-5" /> : "Create Account"}
                                     </Button>
 
-                                    <div className="relative py-6">
-                                      <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-muted/40" /></div>
-                                      <div className="relative flex justify-center text-[10px] uppercase font-black"><span className="bg-white px-4 text-muted-foreground tracking-[0.2em]">OR CONTINUE WITH</span></div>
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <Button variant="outline" type="button" onClick={() => handleSocial('google')} className="h-12 rounded-2xl font-bold border-muted-foreground/10 hover:bg-muted/20">
-                                          <GoogleIcon /><span className="ml-2">Google</span>
-                                        </Button>
-                                        <Button variant="outline" type="button" onClick={() => handleSocial('facebook')} className="h-12 rounded-2xl font-bold border-muted-foreground/10 hover:bg-muted/20">
-                                          <span className="ml-2">Facebook</span>
-                                        </Button>
-                                        <Button variant="outline" type="button" onClick={() => handleSocial('apple')} className="h-12 rounded-2xl font-bold border-muted-foreground/10 hover:bg-muted/20">
-                                          <AppleIcon /><span className="ml-2">Apple</span>
-                                        </Button>
-                                        <Button variant="outline" type="button" onClick={() => handleSocial('github')} className="h-12 rounded-2xl font-bold border-muted-foreground/10 hover:bg-muted/20">
-                                          <GithubIcon /><span className="ml-2">GitHub</span>
-                                        </Button>
-                                    </div>
-
-                                    <div className="text-center pt-6 border-t border-muted/40 mt-6">
+                                    <div className="text-center pb-6 border-t border-muted/40 pt-6">
                                       <p className="text-xs font-bold text-muted-foreground">
                                         Already have an account? {' '}
                                         <button 
