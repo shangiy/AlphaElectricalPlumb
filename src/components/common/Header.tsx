@@ -12,7 +12,8 @@ import {
   Search, 
   X,
   ShieldCheck,
-  LayoutGrid
+  LayoutGrid,
+  ChevronRight
 } from 'lucide-react';
 import { 
   DropdownMenu, 
@@ -37,19 +38,32 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthProvider';
 
 /**
- * High-Fidelity Header v23.4 (Ecosystem v4.3.0):
+ * MenuLink sub-component for the Account Dropdown
+ */
+const MenuLink = ({ href, label }: { href: string, label: string }) => (
+  <NextLink 
+    href={href} 
+    className="text-[13px] font-bold text-slate-700 hover:text-primary py-2.5 transition-colors flex items-center justify-between group/link"
+  >
+    {label}
+    <span className="text-slate-300 group-hover/link:translate-x-0.5 transition-all duration-300 font-normal">›</span>
+  </NextLink>
+);
+
+/**
+ * High-Fidelity Header v24.0 (Ecosystem v4.5.1):
+ * - Account Dropdown: Implemented hover-triggered Oraimo-style account popover.
  * - Hydration Optimized: Uses isMounted check to prevent Radix ID mismatches.
- * - Logo Resilience: Logo remains visible during search expansion.
  * - Mobile User Hub: Dedicated Account icon added to mobile action cluster.
  * - Role-Aware UI: Shows "Admin" link for privileged users.
- * - Interactive Branding: Entire text highlights teal on hover/click.
  */
 export default function Header() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isMounted, setIsMounted] = useState(false);
+  const [isAccountHovered, setIsAccountHovered] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -157,17 +171,85 @@ export default function Header() {
 
             <div className="flex items-center gap-3">
               <ShoppingCartComponent triggerClassName="h-10 w-10 transition-all border border-[#28235f]/10 text-[#28235f] hover:text-primary hover:bg-primary/5 shadow-sm hover:shadow-md" />
-              <NextLink href={user ? "/profile" : "/auth/login"}>
-                <Button 
-                  variant="ghost" 
-                  className="h-10 px-4 rounded-xl gap-2 font-black border border-[#28235f]/10 text-[#28235f] hover:text-primary hover:bg-primary/5 shadow-sm hover:shadow-md"
-                >
+              
+              {/* DESKTOP ACCOUNT DROPDOWN (Hover Triggered) */}
+              <div 
+                className="relative group h-12 flex items-center"
+                onMouseEnter={() => setIsAccountHovered(true)}
+                onMouseLeave={() => setIsAccountHovered(false)}
+              >
+                <div className={cn(
+                  "cursor-pointer flex items-center h-10 px-4 rounded-xl gap-2 font-black border transition-all duration-300",
+                  isAccountHovered || (user && isMounted)
+                    ? "border-primary/20 bg-primary/5 text-primary shadow-inner" 
+                    : "border-[#28235f]/10 text-[#28235f] bg-white shadow-sm"
+                )}>
                   <User className="h-5 w-5" />
                   <span className="hidden xl:inline uppercase text-[11px] tracking-widest">
-                    {user ? (user.username || 'Profile') : 'Log in'}
+                    {isMounted && user ? (user.username || 'Profile') : 'Log in'}
                   </span>
-                </Button>
-              </NextLink>
+                </div>
+
+                {/* Dropdown Menu Node */}
+                <div className={cn(
+                  "absolute right-0 top-full pt-2 w-72 transition-all duration-300 transform origin-top-right z-50",
+                  isAccountHovered ? "opacity-100 scale-100 visible translate-y-0" : "opacity-0 scale-95 invisible -translate-y-2"
+                )}>
+                  <div className="bg-white rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-slate-100 p-5 overflow-hidden">
+                    {!isMounted || !user ? (
+                      <div className="space-y-4 mb-6">
+                        <NextLink href="/auth/login" className="block group/auth">
+                          <h3 className="text-xl font-black text-accent uppercase tracking-tighter group-hover/auth:text-primary transition-colors flex items-center justify-between">
+                            Sign in
+                            <ChevronRight size={20} className="text-slate-300" />
+                          </h3>
+                        </NextLink>
+                        <NextLink href="/auth/login?tab=signup" className="block">
+                          <div className="bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-xl px-4 py-3 text-[11px] font-black uppercase tracking-wider flex items-center justify-between hover:bg-emerald-100 transition-all hover:scale-[1.02]">
+                            Register & Get Points 
+                            <span className="text-lg">›</span>
+                          </div>
+                        </NextLink>
+                      </div>
+                    ) : (
+                      <div className="mb-6 pb-4 border-b border-slate-50 flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-black uppercase text-sm">
+                          {user.name?.charAt(0) || user.username?.charAt(0)}
+                        </div>
+                        <div className="flex flex-col min-w-0">
+                          <p className="font-black text-accent uppercase tracking-tight truncate text-sm">
+                            {user.name || user.username}
+                          </p>
+                          <p className="text-[10px] text-muted-foreground truncate font-medium">
+                            {user.email}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Navigation Cluster */}
+                    <nav className="flex flex-col">
+                      <MenuLink href="/orders" label="My Order" />
+                      <MenuLink href="/profile" label="Personal Information" />
+                      <MenuLink href="/wishlist" label="My Wish" />
+                      <MenuLink href="/points" label="My Explorer Points" />
+                      <MenuLink href="/coupons" label="Coupons Center" />
+                      <MenuLink href="/addresses" label="Address Management" />
+                      <MenuLink href="/my-reviews" label="Product Reviews" />
+                    </nav>
+
+                    {isMounted && user && (
+                      <button 
+                        onClick={() => logout()}
+                        className="w-full mt-4 pt-4 border-t border-slate-50 text-left text-[11px] font-black text-red-500 uppercase tracking-widest hover:text-red-600 transition-colors flex items-center justify-between group/out"
+                      >
+                        Sign Out
+                        <X size={14} className="opacity-40 group-hover/out:rotate-90 transition-transform" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
