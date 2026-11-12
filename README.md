@@ -128,13 +128,14 @@ before insert or update on public.profiles
 for each row execute procedure enforce_max_admins();
 ```
 
-## 📅 Recent Milestones (v4.7.0)
+## 📅 Recent Milestones (v4.9.2)
+- **Security Hub**: Integrated Google reCAPTCHA v2 and server-side cryptographic verification for the sign-up sequence.
+- **Global OAuth Cluster**: Expanded social handshake options to include Apple and GitHub with high-fidelity iconography.
+- **Kinetic Interface**: Upgraded primary action buttons with rhythmic rotating light borders and industrial-grade symmetric pill geometry.
+- **Halved-Star Intelligence**: Implemented 0.5 increment rating precision and a Popover-based overlay for instant technical feedback.
 - **High-Fidelity Catalogue**: Upgraded search interface with professional sidebar filters (Price, Color) and advanced sorting.
 - **Interactive Account Hub**: Implemented "Oraimo-inspired" hover dropdown for instant access to orders, points, and settings.
 - **Performance Suite**: Integrated ISR Edge Caching (60s), `next/image` lazy-loading, and non-blocking native video strategies.
-- **Unified Feedback Node**: Upgraded product ratings with halved-star (0.5 increment) precision and popover interaction.
-- **Kinetic Quantity Stepper**: Overhauled the order volume interface with professional plus/minus controls.
-- **Identity System**: Enhanced profile updates with community avatar pool and admin-bypassing secure uploads.
 
 ## Technology Stack
 
