@@ -128,11 +128,13 @@ before insert or update on public.profiles
 for each row execute procedure enforce_max_admins();
 ```
 
-## 📅 Recent Milestones (v2.5.0)
-- **Supabase Integration**: Migrated Auth, Database, and Storage from Firebase.
-- **2027 Mobile UI**: Overhauled the mobile sidebar with fluid motions and glassmorphism.
-- **Identity System**: Enhanced profile updates with custom avatar uploads and global name support.
-- **Spotlight Manager**: Implemented persistent drag-and-drop sorting for featured homepage products.
+## 📅 Recent Milestones (v4.7.0)
+- **High-Fidelity Catalogue**: Upgraded search interface with professional sidebar filters (Price, Color) and advanced sorting.
+- **Interactive Account Hub**: Implemented "Oraimo-inspired" hover dropdown for instant access to orders, points, and settings.
+- **Performance Suite**: Integrated ISR Edge Caching (60s), `next/image` lazy-loading, and non-blocking native video strategies.
+- **Unified Feedback Node**: Upgraded product ratings with halved-star (0.5 increment) precision and popover interaction.
+- **Kinetic Quantity Stepper**: Overhauled the order volume interface with professional plus/minus controls.
+- **Identity System**: Enhanced profile updates with community avatar pool and admin-bypassing secure uploads.
 
 ## Technology Stack
 
