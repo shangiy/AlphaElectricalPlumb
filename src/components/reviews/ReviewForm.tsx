@@ -14,14 +14,15 @@ import { v4 as uuidv4 } from 'uuid';
 
 interface ReviewFormProps {
   productId?: string; 
+  productTitle?: string;
   onReviewSubmitted: () => void;
 }
 
 /**
- * Modern Unified Review Form v4.4.29:
- * - Sync v4.4.29: Refined fallback name from "Verified Client" to "Client".
+ * Modern Unified Review Form v4.6.0:
+ * - Sync v4.6.0: Added halved-star selection and automatic product name identification.
  */
-export default function ReviewForm({ productId, onReviewSubmitted }: ReviewFormProps) {
+export default function ReviewForm({ productId, productTitle, onReviewSubmitted }: ReviewFormProps) {
   const [rating, setRating] = useState(5);
   const [title, setTitle] = useState('');
   const [comment, setComment] = useState('');
@@ -40,6 +41,9 @@ export default function ReviewForm({ productId, onReviewSubmitted }: ReviewFormP
       const reviewType = productId ? 'product' : 'homepage';
       const authorName = user?.name || user?.username || 'Client';
       
+      // If we are on a product page, the specific name of the product is our title/heading
+      const finalTitle = productTitle || title || (productId ? 'Product Review' : 'Storefront Review');
+      
       const userId = authUser?.id || uuidv4();
 
       const { error } = await supabase.from('reviews').insert({
@@ -48,7 +52,7 @@ export default function ReviewForm({ productId, onReviewSubmitted }: ReviewFormP
         user_id: userId,
         author_name: authorName,
         rating: rating,
-        title: title,
+        title: finalTitle,
         comment: comment,
       });
 
@@ -71,7 +75,7 @@ export default function ReviewForm({ productId, onReviewSubmitted }: ReviewFormP
 
       toast({
         title: "Feedback Recorded",
-        description: `Your ${reviewType} experience has been successfully synchronized.`,
+        description: productId ? `Your rating for ${productTitle} is live!` : "Your experience has been synchronized.",
       });
       
       setTitle('');
@@ -90,6 +94,9 @@ export default function ReviewForm({ productId, onReviewSubmitted }: ReviewFormP
     }
   };
 
+  // 10-step rating scale for halves
+  const ratingSteps = [1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5];
+
   return (
     <form onSubmit={handleSubmit} className="p-7 bg-white rounded-3xl shadow-2xl border border-primary/5 space-y-5 relative overflow-hidden">
       <div className="absolute top-0 right-0 p-6 opacity-5 pointer-events-none">
@@ -98,54 +105,57 @@ export default function ReviewForm({ productId, onReviewSubmitted }: ReviewFormP
 
       <div className="space-y-1 relative z-10">
         <h3 className="text-xl font-black font-headline text-accent tracking-tighter uppercase">
-            {productId ? 'Product Review' : 'Webapp Review'}
+            {productId ? 'Technical Rating' : 'Webapp Review'}
         </h3>
-        <p className="text-muted-foreground font-medium text-xs">Help others by sharing your professional experience.</p>
+        <p className="text-muted-foreground font-medium text-[10px] uppercase tracking-widest">
+            {productId ? productTitle : 'Help others by sharing your professional experience.'}
+        </p>
       </div>
       
       <div className="space-y-3 relative z-10">
-        <Label className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Quality Score</Label>
-        <div className="flex gap-2">
-          {[1, 2, 3, 4, 5].map((star) => (
+        <Label className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Rating: {rating}</Label>
+        <div className="flex flex-wrap gap-2">
+          {ratingSteps.map((step) => (
             <button
-              key={star}
+              key={step}
               type="button"
-              onClick={() => setRating(star)}
-              className="focus:outline-none transition-all hover:scale-110 active:scale-90"
+              onClick={() => setRating(step)}
+              className={cn(
+                "h-8 px-3 rounded-lg text-[10px] font-black border transition-all active:scale-95",
+                rating === step 
+                  ? "bg-primary text-white border-primary shadow-lg" 
+                  : "bg-muted/30 text-muted-foreground border-transparent hover:bg-muted/50"
+              )}
             >
-              <Star 
-                className={cn(
-                  "h-7 w-7 transition-colors",
-                  star <= rating ? "fill-yellow-400 text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.3)]" : "text-muted/30"
-                )} 
-              />
+              {step} ★
             </button>
           ))}
         </div>
       </div>
 
       <div className="space-y-4 relative z-10">
-        <div className="space-y-1.5">
-            <Label htmlFor="title" className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Heading</Label>
-            <Input 
-                id="title"
-                value={title} 
-                onChange={(e) => setTitle(e.target.value)} 
-                required
-                placeholder="Brief summary of your feedback"
-                className="rounded-xl border-muted-foreground/10 bg-secondary/5 focus:ring-primary focus:bg-white transition-all h-11"
-            />
-        </div>
+        {!productId && (
+            <div className="space-y-1.5">
+                <Label htmlFor="title" className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Heading</Label>
+                <Input 
+                    id="title"
+                    value={title} 
+                    onChange={(e) => setTitle(e.target.value)} 
+                    required={!productId}
+                    placeholder="Brief summary of your feedback"
+                    className="rounded-xl border-muted-foreground/10 bg-secondary/5 focus:ring-primary focus:bg-white transition-all h-11"
+                />
+            </div>
+        )}
 
         <div className="space-y-1.5">
-            <Label htmlFor="comment" className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Detailed Feedback</Label>
+            <Label htmlFor="comment" className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Detailed Feedback (Optional)</Label>
             <Textarea 
                 id="comment"
                 value={comment} 
                 onChange={(e) => setComment(e.target.value)} 
-                rows={4} 
-                required
-                placeholder="What did you like or dislike?"
+                rows={3} 
+                placeholder="What did you like or dislike about this product?"
                 className="rounded-xl border-muted-foreground/10 bg-secondary/5 focus:ring-primary focus:bg-white transition-all resize-none text-sm p-3"
             />
         </div>

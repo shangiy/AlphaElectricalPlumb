@@ -6,7 +6,7 @@ import { useProducts } from '@/context/ProductProvider';
 import { Rating } from '@/components/ui/rating';
 import ProductRecommendations from '@/components/products/ProductRecommendations';
 import BuyNowButton from '@/components/products/ContactSellerForm';
-import { Truck, Wrench, MessageCircle } from 'lucide-react';
+import { Truck, Wrench, MessageCircle, MessageSquareQuote, Star } from 'lucide-react';
 import AddToCartButton from '@/components/products/AddToCartButton';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
@@ -15,13 +15,19 @@ import QuantitySelector from '@/components/products/QuantitySelector';
 import { cn } from '@/lib/utils';
 import WishlistButton from '@/components/products/WishlistButton';
 import { Badge } from '@/components/ui/badge';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import ReviewForm from '@/components/reviews/ReviewForm';
 
 /**
- * 2027 Premium Product Layout v2.6.0:
- * Performance: Migrated to Next.js Image component with priority loading for hero visuals.
+ * 2027 Premium Product Layout v2.7.0:
+ * Features: High-performance halved-star ratings and Popover review interaction.
  */
 function ProductContent({ productId }: { productId: string }) {
-  const { getProductById, loading } = useProducts();
+  const { getProductById, loading, refreshProducts } = useProducts();
   const router = useRouter();
   
   const product = getProductById(productId);
@@ -85,6 +91,11 @@ function ProductContent({ productId }: { productId: string }) {
     });
   };
 
+  const handleReviewSuccess = () => {
+    // Refresh products to get the updated review count/rating from Supabase
+    refreshProducts();
+  };
+
   const technicalLabel = "text-[10px] font-black tracking-[0.3em] uppercase text-muted-foreground/60";
 
   return (
@@ -92,7 +103,7 @@ function ProductContent({ productId }: { productId: string }) {
       <div className="container mx-auto px-4 py-8 lg:py-16">
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-12">
           
-          {/* Visual Showcase: 5 Columns */}
+          {/* Visual Showcase: 7 Columns */}
           <div className="lg:col-span-7 space-y-6">
              <div className="relative aspect-[4/5] md:aspect-square overflow-hidden rounded-[3rem] bg-secondary/10 border border-white/20 shadow-2xl group">
                 {uniqueImages.length > 0 && (
@@ -151,9 +162,28 @@ function ProductContent({ productId }: { productId: string }) {
                     <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-50">SKU: {product.barcode || 'ALPHA-PR'}</span>
                 </div>
                 <h1 className="text-5xl lg:text-6xl font-black font-headline leading-[0.9] text-accent tracking-tighter">{product.name}</h1>
-                <div className="flex items-center gap-6 p-4 bg-muted/30 rounded-3xl w-fit">
-                    <Rating rating={product.rating} size={18} />
-                    <span className="text-xs font-black uppercase tracking-tighter text-accent">{product.reviews} VERIFIED REVIEWS</span>
+                
+                {/* Unified Feedback Node */}
+                <div className="flex flex-wrap items-center gap-4">
+                    <div className="flex items-center gap-6 p-4 bg-muted/30 rounded-3xl w-fit">
+                        <Rating rating={product.rating} size={18} />
+                        <span className="text-xs font-black uppercase tracking-tighter text-accent">{product.reviews} VERIFIED REVIEWS</span>
+                    </div>
+
+                    <Popover>
+                        <PopoverTrigger asChild>
+                            <Button variant="outline" size="lg" className="rounded-3xl h-14 border-primary/20 text-primary font-black uppercase text-[10px] tracking-widest hover:bg-primary hover:text-white transition-all shadow-sm">
+                                <Star className="mr-2 h-4 w-4" /> Rate This Item
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[350px] p-0 rounded-3xl border-none shadow-2xl" side="bottom" align="end">
+                            <ReviewForm 
+                                productId={product.id} 
+                                productTitle={product.name} 
+                                onReviewSubmitted={handleReviewSuccess} 
+                            />
+                        </PopoverContent>
+                    </Popover>
                 </div>
             </div>
 

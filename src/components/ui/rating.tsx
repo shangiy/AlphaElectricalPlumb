@@ -10,21 +10,25 @@ interface RatingProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 /**
- * Updated Rating component: 
- * Matches the reference image with yellow stars and proper sizing.
+ * Updated Rating component v4.6: 
+ * Enhanced to support precise half-star visualization.
  */
 export function Rating({ rating, totalStars = 5, size = 16, className, reviewCount, showReviewCount = false, ...props }: RatingProps) {
   const safeRating = typeof rating === 'number' && !isNaN(rating) ? Math.max(0, Math.min(totalStars, rating)) : 0;
   
   const fullStars = Math.floor(safeRating);
-  const hasHalfStar = safeRating % 1 >= 0.5;
-  const emptyStars = Math.max(0, totalStars - fullStars - (hasHalfStar ? 1 : 0));
+  const hasHalfStar = (safeRating % 1) >= 0.25 && (safeRating % 1) < 0.75;
+  const roundedUp = (safeRating % 1) >= 0.75;
+  
+  const actualFullStars = roundedUp ? fullStars + 1 : fullStars;
+  const actualHalfStar = !roundedUp && hasHalfStar;
+  const emptyStars = Math.max(0, totalStars - actualFullStars - (actualHalfStar ? 1 : 0));
 
   return (
     <div className={cn('flex items-center gap-1', className)} {...props}>
       <div className="flex items-center">
         {/* Full Stars */}
-        {[...Array(fullStars)].map((_, i) => (
+        {[...Array(actualFullStars)].map((_, i) => (
           <Star 
             key={`full-${i}`} 
             className="text-yellow-400 fill-yellow-400" 
@@ -33,7 +37,7 @@ export function Rating({ rating, totalStars = 5, size = 16, className, reviewCou
         ))}
         
         {/* Half Star */}
-        {hasHalfStar && (
+        {actualHalfStar && (
           <div className="relative" style={{ width: size, height: size }}>
             <Star 
               className="text-muted/20 fill-muted/20" 
@@ -59,7 +63,7 @@ export function Rating({ rating, totalStars = 5, size = 16, className, reviewCou
       </div>
       
       {showReviewCount && (
-        <span className="text-[10px] font-bold text-muted-foreground">
+        <span className="text-[10px] font-bold text-muted-foreground ml-1">
           ({reviewCount || 0})
         </span>
       )}
