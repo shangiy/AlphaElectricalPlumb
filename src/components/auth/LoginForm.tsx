@@ -35,8 +35,16 @@ const GoogleIcon = () => (
     <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 fill-current"><path d="M12.48 10.92v3.28h7.84c-.24 1.84-.85 3.18-1.73 4.1-1.02 1.02-2.62 1.62-4.55 1.62-3.87 0-7.02-3.15-7.02-7.02s3.15-7.02 7.02-7.02c2.21 0 3.66.86 4.5 1.69l2.5-2.5C18.16 3.15 15.66 2 12.48 2 6.94 2 2.53 6.4 2.53 12s4.41 10 9.95 10c2.82 0 5.16-1 6.9-2.72 1.83-1.83 2.36-4.49 2.36-6.52 0-.6-.05-1.15-.15-1.7H12.48z"/></svg>
 );
 
+const AppleIcon = () => (
+    <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 fill-current"><path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.82-.78.897-1.454 2.337-1.273 3.713 1.337.104 2.714-.69 3.56-1.703z"/></svg>
+);
+
+const GithubIcon = () => (
+    <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 fill-current"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.082.814-.26.814-.577 0-.285-.021-1.04-.032-2.037-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.517-1.305.96-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+);
+
 export default function LoginForm() {
-    const { user, login, signUp, signInWithFacebook } = useAuth();
+    const { user, login, signUp, signInWithFacebook, signInWithApple, signInWithGithub } = useAuth();
     const router = useRouter();
     const searchParams = useSearchParams();
     const { toast } = useToast();
@@ -75,6 +83,8 @@ export default function LoginForm() {
         try { 
           if (p === 'google') await nextAuthSignIn('google'); 
           else if (p === 'facebook') await signInWithFacebook(); 
+          else if (p === 'apple') await signInWithApple();
+          else if (p === 'github') await signInWithGithub();
         }
         catch (e: any) { 
           toast({ variant: 'destructive', description: e.message }); 
@@ -189,6 +199,12 @@ export default function LoginForm() {
                                         </Button>
                                         <Button variant="outline" type="button" onClick={() => handleSocial('facebook')} className="h-12 rounded-2xl font-bold border-muted-foreground/10 hover:bg-muted/20">
                                           <span className="ml-2">Facebook</span>
+                                        </Button>
+                                        <Button variant="outline" type="button" onClick={() => handleSocial('apple')} className="h-12 rounded-2xl font-bold border-muted-foreground/10 hover:bg-muted/20">
+                                          <AppleIcon /><span className="ml-2">Apple</span>
+                                        </Button>
+                                        <Button variant="outline" type="button" onClick={() => handleSocial('github')} className="h-12 rounded-2xl font-bold border-muted-foreground/10 hover:bg-muted/20">
+                                          <GithubIcon /><span className="ml-2">GitHub</span>
                                         </Button>
                                     </div>
 
@@ -310,6 +326,12 @@ export default function LoginForm() {
                                         </Button>
                                         <Button variant="outline" type="button" onClick={() => handleSocial('facebook')} className="h-12 rounded-2xl font-bold border-muted-foreground/10 hover:bg-muted/20">
                                           <span className="ml-2">Facebook</span>
+                                        </Button>
+                                        <Button variant="outline" type="button" onClick={() => handleSocial('apple')} className="h-12 rounded-2xl font-bold border-muted-foreground/10 hover:bg-muted/20">
+                                          <AppleIcon /><span className="ml-2">Apple</span>
+                                        </Button>
+                                        <Button variant="outline" type="button" onClick={() => handleSocial('github')} className="h-12 rounded-2xl font-bold border-muted-foreground/10 hover:bg-muted/20">
+                                          <GithubIcon /><span className="ml-2">GitHub</span>
                                         </Button>
                                     </div>
 
