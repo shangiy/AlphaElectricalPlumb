@@ -147,7 +147,7 @@ export default function Header() {
   return (
     <header 
       className={cn(
-        "sticky top-0 z-[100] w-full transition-all duration-500 overflow-hidden border-b flex items-center h-24 lg:h-32",
+        "sticky top-0 z-[100] w-full transition-all duration-500 border-b flex items-center h-24 lg:h-32",
         isScrolled ? "border-slate-200/60" : "border-transparent bg-slate-50/40"
       )}
     >
@@ -256,7 +256,7 @@ export default function Header() {
                   "absolute right-0 top-full pt-2 w-72 transition-all duration-300 transform origin-top-right z-[120]",
                   isAccountHovered ? "opacity-100 scale-100 visible translate-y-0" : "opacity-0 scale-95 invisible -translate-y-2"
                 )}>
-                  <div className="bg-white rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-slate-100 shadow-xl">
+                  <div className="bg-white rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-slate-100">
                     <AccountMenuContent user={user} logout={logout} isMounted={isMounted} />
                   </div>
                 </div>
