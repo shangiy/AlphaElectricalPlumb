@@ -60,9 +60,6 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
         <meta name="format-detection" content="telephone=no" />
-        <meta name="msapplication-config" content="/icons/browserconfig.xml" />
-        <meta name="msapplication-TileColor" content="#1a3a32" />
-        <meta name="msapplication-tap-highlight" content="no" />
       </head>
       <body
         className={cn(
