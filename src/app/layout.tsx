@@ -37,7 +37,6 @@ export const metadata: Metadata = {
   verification: {
     google: 'X32RvS3QP_uktu5eR2tmD8IErRhM-vOsw-OIE_kYEF4',
   },
-  manifest: '/manifest.json',
   icons: {
     icon: [
       { url: '/logo Alpha.png' },
@@ -46,11 +45,6 @@ export const metadata: Metadata = {
     apple: [
       { url: '/logo Alpha.png' },
     ],
-  },
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: 'default',
-    title: 'AlphaElectricalPlumb',
   },
   formatDetection: {
     telephone: false,
@@ -65,12 +59,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <meta name="application-name" content="Alpha" />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="Alpha" />
         <meta name="format-detection" content="telephone=no" />
-        <meta name="mobile-web-app-capable" content="yes" />
         <meta name="msapplication-config" content="/icons/browserconfig.xml" />
         <meta name="msapplication-TileColor" content="#1a3a32" />
         <meta name="msapplication-tap-highlight" content="no" />
