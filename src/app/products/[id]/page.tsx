@@ -23,9 +23,9 @@ import {
 import ReviewForm from '@/components/reviews/ReviewForm';
 
 /**
- * 2027 Premium Product Layout v4.8.1:
+ * 2027 Premium Product Layout v4.8.2:
  * Features: High-performance halved-star ratings, Popover reviews, and AI-inspired rhythmic button lighting.
- * Symmetric Pill Logic: Ensures buttons are identical in size and flexible across viewports.
+ * Symmetric Pill Logic: Ensuring buttons are substantial (h-20), identical in size and flexible across viewports.
  */
 function ProductContent({ productId }: { productId: string }) {
   const { getProductById, loading, refreshProducts } = useProducts();
@@ -235,7 +235,7 @@ function ProductContent({ productId }: { productId: string }) {
             </div>
 
             <div className="flex flex-col gap-4">
-                <div className="flex flex-col gap-6 sm:flex-row h-auto items-stretch">
+                <div className="flex flex-col gap-6 sm:flex-row min-h-20 items-stretch">
                     {/* Add to Cart Lightning Node */}
                     <div className="flex-1 relative group rounded-full p-[3.5px] overflow-hidden bg-muted/20 shadow-2xl transition-all hover:scale-[1.02] flex">
                         <div className="absolute top-1/2 left-1/2 w-[300%] h-[300%] bg-[conic-gradient(from_0deg,#00f2ea,#1877f2,#7000ff,#00f2ea)] animate-ai-spin opacity-60 animate-rhythmic-dim" />
@@ -257,7 +257,7 @@ function ProductContent({ productId }: { productId: string }) {
                 <Button 
                     variant="outline" 
                     size="xl" 
-                    className="w-full border-green-500/50 text-green-600 hover:bg-green-600 hover:text-white rounded-[2rem] h-20 border-2"
+                    className="w-full border-green-500/50 text-green-600 hover:bg-green-600 hover:text-white rounded-full border-2"
                     onClick={handleWhatsAppInquiry}
                 >
                     <MessageCircle className="mr-3 h-8 w-8" /> 
