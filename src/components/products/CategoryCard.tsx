@@ -2,6 +2,7 @@
 
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useState, useMemo } from 'react';
 import placeholderData from '@/app/lib/placeholder-images.json';
 
@@ -125,11 +126,14 @@ export default function CategoryCard({ category }: { category: Category }) {
     <Link href={category.href || '#'} className="block group">
       <div className="relative rounded-2xl overflow-hidden shadow-sm bg-white border border-border transition-all duration-300 hover:shadow-xl hover:-translate-y-1 h-[400px]">
         <div className="absolute inset-0 bg-muted/20">
-          <img
+          <Image
             src={currentImageUrl}
             alt={category.name}
-            className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+            fill
+            className="object-cover transition-transform duration-700 group-hover:scale-110"
             onError={handleImageError}
+            sizes="(max-width: 768px) 100vw, 33vw"
+            loading="lazy"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-80" />
         </div>

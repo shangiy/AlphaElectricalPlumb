@@ -12,6 +12,7 @@ import Autoplay from 'embla-carousel-autoplay';
 import ReviewForm from '@/components/reviews/ReviewForm';
 import { Rating } from '@/components/ui/rating';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface ReviewData {
     id: string;
@@ -25,7 +26,7 @@ interface ReviewData {
 /**
  * 2027 Homepage Professional Review Section:
  * Features high-fidelity card mapping from Supabase database.
- * Sync v4.4.29: Removed "Community Member" label for a cleaner aesthetic.
+ * Performance v4.4.34: Integrated skeleton loader for immediate feedback.
  */
 export default function CustomerReviews() {
     const { toast } = useToast();
@@ -88,10 +89,10 @@ export default function CustomerReviews() {
                     
                     <div className="flex items-center gap-4">
                         <div className="flex gap-2">
-                            <Button variant="outline" size="icon" className="h-12 w-12 rounded-full border-2" onClick={scrollPrev}>
+                            <Button variant="outline" size="icon" className="h-12 w-12 rounded-full border-2" onClick={scrollPrev} disabled={isLoading}>
                                 <ChevronLeft size={20} />
                             </Button>
-                            <Button variant="outline" size="icon" className="h-12 w-12 rounded-full border-2" onClick={scrollNext}>
+                            <Button variant="outline" size="icon" className="h-12 w-12 rounded-full border-2" onClick={scrollNext} disabled={isLoading}>
                                 <ChevronRight size={20} />
                             </Button>
                         </div>
@@ -114,8 +115,26 @@ export default function CustomerReviews() {
                 </div>
 
                 {isLoading ? (
-                    <div className="flex justify-center py-20">
-                        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+                    <div className="flex gap-6 overflow-hidden">
+                        {[...Array(3)].map((_, i) => (
+                            <div key={i} className="flex-[0_0_100%] md:flex-[0_0_45%] lg:flex-[0_0_30%] min-w-0">
+                                <div className="bg-white p-8 border border-muted rounded-[2rem] h-[280px] space-y-6">
+                                    <div className="flex justify-between items-center">
+                                        <Skeleton className="h-4 w-24 rounded-full" />
+                                        <Skeleton className="h-4 w-16 rounded-full" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Skeleton className="h-3 w-full rounded-full" />
+                                        <Skeleton className="h-3 w-full rounded-full" />
+                                        <Skeleton className="h-3 w-3/4 rounded-full" />
+                                    </div>
+                                    <div className="border-t pt-6 flex items-center justify-between">
+                                        <Skeleton className="h-4 w-20 rounded-full" />
+                                        <Skeleton className="h-4 w-12 rounded-full" />
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 ) : reviews && reviews.length > 0 ? (
                     <div className="embla" ref={emblaRef}>

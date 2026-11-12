@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, ShoppingCart } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -11,8 +12,8 @@ import { useCart } from '@/context/CartProvider';
 import WishlistButton from './WishlistButton';
 
 /**
- * Premium Interactive Product Card v2.5.0:
- * Features: Live Supabase Wishlist integration, dynamic units, and hover carousel.
+ * Premium Interactive Product Card v2.6.0:
+ * Features: High-performance Next.js Image migration, Live Supabase Wishlist integration, and hover carousel.
  */
 export default function ProductCard({ product }: { product: Product }) {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -81,16 +82,23 @@ export default function ProductCard({ product }: { product: Product }) {
       <div className="relative aspect-square overflow-hidden bg-muted/30">
         <Link href={`/products/${product.id}`} className="block h-full w-full">
           {activeImages.map((url, idx) => (
-            <img
+            <div 
               key={`${url}-${idx}`}
-              src={url}
-              alt={`${product.name} - view ${idx + 1}`}
               className={cn(
-                "absolute inset-0 object-cover w-full h-full transition-all duration-500 ease-in-out",
+                "absolute inset-0 transition-all duration-500 ease-in-out",
                 idx === safeIndex ? "opacity-100 scale-100" : "opacity-0 scale-105 pointer-events-none"
               )}
-              onError={() => handleImageError(url)}
-            />
+            >
+              <Image
+                src={url}
+                alt={`${product.name} - view ${idx + 1}`}
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                onError={() => handleImageError(url)}
+                loading="lazy"
+              />
+            </div>
           ))}
         </Link>
 

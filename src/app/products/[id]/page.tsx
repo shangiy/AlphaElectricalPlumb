@@ -1,6 +1,7 @@
 'use client';
 
 import { useParams, notFound, useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { useProducts } from '@/context/ProductProvider';
 import { Rating } from '@/components/ui/rating';
 import ProductRecommendations from '@/components/products/ProductRecommendations';
@@ -16,9 +17,8 @@ import WishlistButton from '@/components/products/WishlistButton';
 import { Badge } from '@/components/ui/badge';
 
 /**
- * 2027 Premium Product Layout:
- * Features high-contrast modular sections, integrated wishlist overlay,
- * and holographic action cards.
+ * 2027 Premium Product Layout v2.6.0:
+ * Performance: Migrated to Next.js Image component with priority loading for hero visuals.
  */
 function ProductContent({ productId }: { productId: string }) {
   const { getProductById, loading } = useProducts();
@@ -95,13 +95,18 @@ function ProductContent({ productId }: { productId: string }) {
           {/* Visual Showcase: 5 Columns */}
           <div className="lg:col-span-7 space-y-6">
              <div className="relative aspect-[4/5] md:aspect-square overflow-hidden rounded-[3rem] bg-secondary/10 border border-white/20 shadow-2xl group">
-                <img
-                    key={activeImageIndex}
+                {uniqueImages.length > 0 && (
+                  <Image
+                    key={productId + activeImageIndex}
                     src={uniqueImages[activeImageIndex] || '/placeholder.jpg'}
                     alt={product.name}
-                    className="h-full w-full object-cover transition-all duration-700 group-hover:scale-105"
+                    fill
+                    className="object-cover transition-all duration-700 group-hover:scale-105"
                     onError={() => handleImageError(uniqueImages[activeImageIndex])}
-                />
+                    priority={activeImageIndex === 0}
+                    sizes="(max-width: 768px) 100vw, 60vw"
+                  />
+                )}
                 
                 {/* Wishlist Overlay */}
                 <div className="absolute top-6 right-6">
@@ -123,7 +128,13 @@ function ProductContent({ productId }: { productId: string }) {
                                 activeImageIndex === index ? "border-primary shadow-2xl scale-105 ring-4 ring-primary/10" : "border-transparent opacity-40 hover:opacity-100"
                             )}
                         >
-                            <img src={img} alt="" className="h-full w-full object-cover" />
+                            <Image 
+                              src={img} 
+                              alt={`View ${index + 1}`} 
+                              fill 
+                              className="object-cover" 
+                              sizes="96px"
+                            />
                         </button>
                     ))}
                 </div>

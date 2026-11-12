@@ -127,7 +127,8 @@ function SocialVideoNode({ item }: { item: VideoItem }) {
                         playsInline
                         loop
                         muted // Required for autoplay; hover logic handles unmuting
-                        preload="auto"
+                        preload="none" // Optimization: Do not preload until interaction or visibility
+                        poster="/connect-bg.jpg" // Use section background as placeholder
                     />
                 ) : (
                     <div className="flex flex-col items-center gap-4 text-white/20">
