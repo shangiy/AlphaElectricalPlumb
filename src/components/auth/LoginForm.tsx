@@ -275,7 +275,7 @@ export default function LoginForm() {
                                     )} />
                                     <FormField control={sForm.control} name="password" render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel className={tabLabel}>Primary Key</FormLabel>
+                                            <FormLabel className={tabLabel}>Password</FormLabel>
                                             <div className="relative">
                                                 <Input 
                                                     type={showPass ? "text" : "password"} 
@@ -292,7 +292,7 @@ export default function LoginForm() {
                                     )} />
                                     <FormField control={sForm.control} name="confirmPassword" render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel className={tabLabel}>Confirm Key</FormLabel>
+                                            <FormLabel className={tabLabel}>Confirm Password</FormLabel>
                                             <div className="relative">
                                                 <Input 
                                                     type={showConfirmPass ? "text" : "password"} 
