@@ -252,7 +252,7 @@ export default function LoginForm() {
                                             <FormLabel className={tabLabel}>Full Persona Name</FormLabel>
                                             <FormControl>
                                                 <Input 
-                                                    placeholder="e.g. Richard Kinyungu" 
+                                                    placeholder="FirstName, second name" 
                                                     {...field} 
                                                     className="h-14 rounded-2xl border-muted-foreground/10 bg-secondary/5 focus:bg-white transition-all text-base font-medium" 
                                                 />
