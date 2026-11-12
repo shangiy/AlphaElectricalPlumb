@@ -2,6 +2,7 @@
 
 /**
  * @fileOverview Server action to verify reCAPTCHA tokens with Google's API.
+ * Hardened for v5.1.0 with robust URLSearchParams encoding.
  */
 
 export async function verifyRecaptcha(token: string | null) {
@@ -20,12 +21,16 @@ export async function verifyRecaptcha(token: string | null) {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
 
+    // Standard reCAPTCHA verification endpoint expects POST with x-www-form-urlencoded
     const response = await fetch('https://www.google.com/recaptcha/api/siteverify', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
-      body: `secret=${secretKey}&response=${token}`,
+      body: new URLSearchParams({
+        secret: secretKey,
+        response: token
+      }).toString(),
       signal: controller.signal,
     });
 

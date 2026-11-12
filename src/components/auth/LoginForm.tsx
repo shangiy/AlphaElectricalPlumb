@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useForm } from 'react-hook-form';
@@ -101,16 +100,17 @@ export default function LoginForm() {
         toast({
           variant: "destructive",
           title: "Bot Protection",
-          description: "Please complete the CAPTCHA verification to proceed."
+          description: "Please complete the reCAPTCHA verification to proceed."
         });
         return;
       }
 
       setProcessing(true);
       try {
+        // Trigger server-side verification using the secure action
         const verification = await verifyRecaptcha(captchaToken);
         if (!verification.success) {
-            throw new Error(verification.message || "Security verification failed. Please try again.");
+            throw new Error(verification.message || "Security verification failed. Please check your network and try again.");
         }
 
         await signUp({
@@ -119,12 +119,18 @@ export default function LoginForm() {
           email: data.email,
           password: data.password
         });
+        
         toast({
-          title: "Account Created",
-          description: "Welcome to Alpha Electricals & Plumbing Ltd!"
+          title: "Identity Synchronized",
+          description: "Welcome to Alpha Electricals & Plumbing Ltd! Redirecting to dashboard..."
         });
       } catch (e: any) {
-        toast({ variant: 'destructive', title: "Sign Up Error", description: e.message });
+        toast({ 
+          variant: 'destructive', 
+          title: "Provisioning Error", 
+          description: e.message || "Cloud handshake failed. Please refresh and try again." 
+        });
+        // Mandatory reset of recaptcha state on any failure
         recaptchaRef.current?.reset();
         setCaptchaToken(null);
       } finally {
@@ -357,7 +363,7 @@ export default function LoginForm() {
                                       </div>
                                     </div>
 
-                                    {/* reCAPTCHA Node */}
+                                    {/* reCAPTCHA Node - Secure Handshake Area */}
                                     <div className="pt-2 flex justify-center scale-90 origin-center">
                                       <div className="rounded-xl overflow-hidden border border-muted shadow-sm min-h-[78px]">
                                         <ReCAPTCHA
