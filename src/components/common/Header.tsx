@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -10,7 +11,8 @@ import {
   Menu, 
   Search, 
   X,
-  ShieldCheck
+  ShieldCheck,
+  LayoutGrid
 } from 'lucide-react';
 import { 
   DropdownMenu, 
@@ -125,11 +127,16 @@ export default function Header() {
                   <ShieldCheck size={14} /> Admin
                 </NextLink>
               )}
+              
+              <NextLink href="/search" className="px-3 py-2 font-black transition-colors uppercase text-[12px] tracking-widest text-[#28235f] flex items-center gap-1.5 hover:text-primary">
+                <LayoutGrid size={14} /> Catalogue
+              </NextLink>
+
               {isMounted ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <button className="px-4 py-2 bg-white border border-purple-500 rounded-xl font-bold transition-all flex items-center gap-2 uppercase text-[12px] tracking-widest text-[#28235f] hover:bg-purple-50 shadow-sm">
-                      Products <ChevronDown className="h-3 w-3" />
+                      Categories <ChevronDown className="h-3 w-3" />
                     </button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="start" className="rounded-2xl p-2 w-64 bg-white border-slate-200 shadow-2xl">
@@ -141,7 +148,7 @@ export default function Header() {
                 </DropdownMenu>
               ) : (
                 <button className="px-4 py-2 bg-white border border-purple-500 rounded-xl font-bold flex items-center gap-2 uppercase text-[12px] tracking-widest text-[#28235f] opacity-50">
-                  Products <ChevronDown className="h-3 w-3" />
+                  Categories <ChevronDown className="h-3 w-3" />
                 </button>
               )}
               <NextLink href="/contact" className="px-3 py-2 font-bold transition-colors uppercase text-[12px] tracking-widest text-[#28235f] hover:text-primary">Contact Us</NextLink>
