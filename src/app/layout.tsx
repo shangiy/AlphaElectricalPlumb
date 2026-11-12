@@ -39,7 +39,7 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: '/logo Alpha.png' },
+      { url: '/favicon.ico' },
       { url: '/logo Alpha.png', sizes: '32x32', type: 'image/png' },
     ],
     apple: [
