@@ -5,7 +5,6 @@ import { Badge } from "@/components/ui/badge";
 import RevenueAreaChart from "@/components/admin/charts/RevenueAreaChart";
 import SalesBarChart from "@/components/admin/charts/SalesBarChart";
 import CategoryPieChart from "@/components/admin/charts/CategoryPieChart";
-import PlatformAnalyticsChart from "@/components/admin/charts/PlatformAnalyticsChart";
 import { 
   Users, 
   MousePointer2, 
@@ -19,9 +18,30 @@ import {
   Globe, 
   MapPin, 
   Link as LinkIcon, 
-  Eye
+  Eye,
+  CheckCircle2,
+  ExternalLink,
+  ChevronRight,
+  Maximize2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Line, LineChart, ResponsiveContainer, Area, AreaChart } from "recharts";
+
+// Mock Data for Sparklines (Observability)
+const sparklineData = [
+  { val: 10 }, { val: 15 }, { val: 8 }, { val: 20 }, { val: 40 }, { val: 12 }, { val: 25 }, { val: 50 }, { val: 35 }, { val: 60 }
+];
+
+// Mock Data for Analytics Area Chart
+const visitorData = [
+  { day: 'Mon', val: 5 },
+  { day: 'Tue', val: 15 },
+  { day: 'Wed', val: 8 },
+  { day: 'Thu', val: 12 },
+  { day: 'Fri', val: 18 },
+  { day: 'Sat', val: 22 },
+  { day: 'Sun', val: 27 },
+];
 
 export default function AnalyticsDashboard() {
     const pulseStats = [
@@ -31,30 +51,12 @@ export default function AnalyticsDashboard() {
         { title: "Abandoned Carts", value: "42", change: "-8.2%", isPositive: true, icon: <ShoppingCart className="h-4 w-4" /> },
     ];
 
-    const infraMetrics = [
-        { label: "Edge Cache Hit", value: "94.2%", icon: <Globe className="h-3.5 w-3.5 text-accent" />, sub: "Vercel Deployment" },
-        { label: "DB Latency", value: "12ms", icon: <Database className="h-3.5 w-3.5 text-primary" />, sub: "Supabase Postgres" },
-        { label: "API Response", value: "148ms", icon: <Zap className="h-3.5 w-3.5 text-yellow-500" />, sub: "Global Average" },
-        { label: "Active Threads", value: "18", icon: <Activity className="h-3.5 w-3.5 text-green-500" />, sub: "System Load" },
-    ];
-
-    const liveAudience = [
-        { label: "Live Online", value: "24", icon: <Activity className="h-3.5 w-3.5 text-green-500" />, detail: "Real-time sync" },
-        { label: "Last 24 Hours", value: "1,842", icon: <Users className="h-3.5 w-3.5 text-primary" />, detail: "Total Unique" },
-    ];
-
-    const geoDistribution = [
-        { region: "Nairobi, KE", percentage: "45%", count: "828" },
-        { region: "Eldoret, KE", percentage: "32%", count: "589" },
-        { region: "London, UK", percentage: "8%", count: "147" },
-        { region: "Delaware, US", percentage: "5%", count: "92" },
-    ];
-
-    const liveTraffic = [
-        { path: "/products/kentank-5000l", time: "Just now", status: "200 OK" },
-        { path: "/category/tanks", time: "2m ago", status: "200 OK" },
-        { path: "/search?q=pvc+pipes", time: "5m ago", status: "200 OK" },
-        { path: "/checkout", time: "8m ago", status: "304 Cache" },
+    const recommendations = [
+        { label: "Connect Git Repository", completed: true },
+        { label: "Add Custom Domain", completed: true },
+        { label: "Preview Deployment", completed: true },
+        { label: "Enable Web Analytics", completed: true },
+        { label: "Upgrade to Speed Insights Plus", completed: false },
     ];
 
     return (
@@ -89,112 +91,140 @@ export default function AnalyticsDashboard() {
                 ))}
             </div>
 
-            {/* Infrastructure & Audience Intelligence Card */}
-            <Card className="rounded-[2.5rem] border shadow-xl overflow-hidden bg-white">
-                <CardHeader className="bg-accent text-white p-8 border-b border-white/5">
-                    <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-3">
-                            <Activity className="text-primary h-6 w-6" />
-                            <CardTitle className="text-xl font-black uppercase tracking-tight">Platform Synergy</CardTitle>
+            {/* VERCEL-STYLE CORE OBSERVABILITY ROW */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                
+                {/* RECOMMENDATIONS CARD */}
+                <Card className="rounded-xl border border-slate-200 shadow-sm overflow-hidden bg-white">
+                    <CardHeader className="p-6 border-b bg-slate-50/50 flex flex-row items-center justify-between space-y-0">
+                        <div className="flex items-center gap-2">
+                            <CardTitle className="text-sm font-bold text-slate-900">Recommendations</CardTitle>
+                            <Badge className="bg-blue-100 text-blue-700 border-none font-bold text-[10px] px-2 py-0">3/5</Badge>
                         </div>
-                        <Badge className="bg-white/10 text-white border-none font-black text-[9px] uppercase tracking-[0.2em]">Edge Node Cluster</Badge>
-                    </div>
-                    <CardDescription className="text-white/60 font-medium">Correlation between frontend edge traffic, live audience, and backend synchronization.</CardDescription>
-                </CardHeader>
-                <CardContent className="p-8 space-y-12">
-                    {/* Primary Performance Row */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                        {infraMetrics.map((m, i) => (
-                            <div key={i} className="p-5 rounded-[1.5rem] bg-secondary/50 border border-muted flex flex-col gap-3 group hover:bg-white hover:shadow-lg transition-all">
-                                <div className="flex items-center gap-2">
-                                    <div className="p-2 rounded-lg bg-white shadow-sm">{m.icon}</div>
-                                    <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{m.label}</span>
-                                </div>
-                                <div>
-                                    <p className="text-2xl font-black text-accent">{m.value}</p>
-                                    <p className="text-[9px] font-bold text-muted-foreground/60 uppercase mt-0.5">{m.sub}</p>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-
-                    {/* Live Visitor row */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
-                        <div className="space-y-4">
-                            <div className="flex items-center gap-2 mb-2">
-                                <Eye className="h-4 w-4 text-primary" />
-                                <h3 className="text-xs font-black uppercase tracking-[0.2em] text-accent">Audience Pulse</h3>
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                {liveAudience.map((a, i) => (
-                                    <div key={i} className="p-6 rounded-[2rem] bg-muted/30 border border-dashed flex flex-col items-center text-center">
-                                        <div className="mb-2">{a.icon}</div>
-                                        <p className="text-3xl font-black text-accent">{a.value}</p>
-                                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">{a.label}</p>
-                                        <p className="text-[8px] font-black text-primary uppercase mt-1">{a.detail}</p>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Regional Breakdown */}
-                        <div className="space-y-4">
-                            <div className="flex items-center gap-2 mb-2">
-                                <MapPin className="h-4 w-4 text-primary" />
-                                <h3 className="text-xs font-black uppercase tracking-[0.2em] text-accent">Global Reach</h3>
-                            </div>
-                            <div className="space-y-3 bg-muted/20 p-6 rounded-[2rem]">
-                                {geoDistribution.map((g, i) => (
-                                    <div key={i} className="flex items-center justify-between">
-                                        <span className="text-xs font-bold text-muted-foreground">{g.region}</span>
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-24 h-1.5 bg-muted rounded-full overflow-hidden">
-                                                <div className="h-full bg-primary" style={{ width: g.percentage }} />
-                                            </div>
-                                            <span className="text-xs font-black text-accent w-10 text-right">{g.percentage}</span>
+                        <Maximize2 className="h-3.5 w-3.5 text-slate-400" />
+                    </CardHeader>
+                    <CardContent className="p-0">
+                        <div className="divide-y divide-slate-100">
+                            {recommendations.map((rec, i) => (
+                                <div key={i} className="flex items-center justify-between p-4 hover:bg-slate-50 transition-colors group cursor-pointer">
+                                    <div className="flex items-center gap-3">
+                                        <div className={cn(
+                                            "h-5 w-5 rounded-full border flex items-center justify-center transition-all",
+                                            rec.completed ? "bg-blue-500 border-blue-500 text-white" : "bg-white border-slate-200 group-hover:border-blue-300"
+                                        )}>
+                                            {rec.completed && <CheckCircle2 className="h-3.5 w-3.5" />}
                                         </div>
+                                        <span className={cn(
+                                            "text-xs font-semibold transition-colors",
+                                            rec.completed ? "text-blue-600" : "text-slate-600 group-hover:text-blue-500"
+                                        )}>{rec.label}</span>
                                     </div>
-                                ))}
+                                    <ChevronRight className="h-3 w-3 text-slate-300 group-hover:text-blue-400 group-hover:translate-x-0.5 transition-all" />
+                                </div>
+                            ))}
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* OBSERVABILITY CARD (6H Window) */}
+                <Card className="rounded-xl border border-slate-200 shadow-sm overflow-hidden bg-white">
+                    <CardHeader className="p-6 border-b bg-slate-50/50 flex flex-row items-center justify-between space-y-0">
+                        <div className="flex items-center gap-2">
+                            <CardTitle className="text-sm font-bold text-slate-900">Observability</CardTitle>
+                            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">6h</span>
+                        </div>
+                        <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
+                    </CardHeader>
+                    <CardContent className="p-6 space-y-8">
+                        {/* CDN Requests */}
+                        <div className="flex items-end justify-between gap-4">
+                            <div className="space-y-1">
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">CDN Requests</p>
+                                <p className="text-2xl font-black text-slate-900 tracking-tight">768</p>
+                            </div>
+                            <div className="flex-1 h-12 max-w-[140px]">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <LineChart data={sparklineData}>
+                                        <Line type="monotone" dataKey="val" stroke="#3b82f6" strokeWidth={2} dot={false} />
+                                    </LineChart>
+                                </ResponsiveContainer>
                             </div>
                         </div>
-                    </div>
 
-                    {/* Live Traffic Paths */}
-                    <div className="pt-4 space-y-4">
-                        <div className="flex items-center gap-2 mb-2">
-                            <LinkIcon className="h-4 w-4 text-primary" />
-                            <h3 className="text-xs font-black uppercase tracking-[0.2em] text-accent">Live Resource Stream</h3>
+                        {/* Function Invocations */}
+                        <div className="flex items-end justify-between gap-4">
+                            <div className="space-y-1">
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Function Invocations</p>
+                                <p className="text-2xl font-black text-slate-900 tracking-tight">174</p>
+                            </div>
+                            <div className="flex-1 h-12 max-w-[140px]">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <LineChart data={sparklineData}>
+                                        <Line type="stepAfter" dataKey="val" stroke="#3b82f6" strokeWidth={2} dot={false} />
+                                    </LineChart>
+                                </ResponsiveContainer>
+                            </div>
                         </div>
-                        <div className="overflow-hidden rounded-2xl border bg-muted/10">
-                            <table className="w-full text-left text-xs border-collapse">
-                                <thead>
-                                    <tr className="bg-muted/50">
-                                        <th className="p-4 font-black uppercase tracking-widest text-[9px] text-muted-foreground">Request Path</th>
-                                        <th className="p-4 font-black uppercase tracking-widest text-[9px] text-muted-foreground">Timestamp</th>
-                                        <th className="p-4 font-black uppercase tracking-widest text-[9px] text-muted-foreground text-right">Edge Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y border-t">
-                                    {liveTraffic.map((t, i) => (
-                                        <tr key={i} className="hover:bg-primary/5 transition-colors">
-                                            <td className="p-4 font-mono font-medium text-primary">{t.path}</td>
-                                            <td className="p-4 text-muted-foreground font-bold">{t.time}</td>
-                                            <td className="p-4 text-right">
-                                                <Badge className="bg-green-500/10 text-green-600 border-none font-black text-[9px] uppercase">{t.status}</Badge>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
 
-                    <div className="pt-8 border-t border-dashed">
-                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/40 mb-6 text-center">Telemetry Sync: Edge Requests vs. Supabase I/O vs. Audience Load</p>
-                        <PlatformAnalyticsChart />
-                    </div>
-                </CardContent>
-            </Card>
+                        {/* Error Rate */}
+                        <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Error Rate</p>
+                                <span className="text-xs font-black text-slate-900 uppercase">0%</span>
+                            </div>
+                            <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                                <div className="h-full bg-slate-300 w-1/4 rounded-full" />
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* ANALYTICS CARD (1W Window) */}
+                <Card className="rounded-xl border border-slate-200 shadow-sm overflow-hidden bg-white">
+                    <CardHeader className="p-6 border-b bg-slate-50/50 flex flex-row items-center justify-between space-y-0">
+                        <div className="flex items-center gap-2">
+                            <CardTitle className="text-sm font-bold text-slate-900">Analytics</CardTitle>
+                            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">1w</span>
+                        </div>
+                        <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
+                    </CardHeader>
+                    <CardContent className="p-6 space-y-4">
+                        <div className="flex items-center gap-3">
+                            <p className="text-2xl font-black text-slate-900 tracking-tight">27 Visitors</p>
+                            <Badge className="bg-emerald-100 text-emerald-600 border-none font-black text-[10px] uppercase px-2 py-0.5">
+                                93%
+                            </Badge>
+                        </div>
+                        <div className="flex items-center gap-2 mb-6">
+                            <div className="h-2 w-2 rounded-full bg-slate-200" />
+                            <span className="text-xs font-bold text-slate-400">0 online</span>
+                        </div>
+
+                        <div className="h-40 w-full mt-4">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <AreaChart data={visitorData}>
+                                    <defs>
+                                        <linearGradient id="colorVis" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.1}/>
+                                            <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                                        </linearGradient>
+                                    </defs>
+                                    <Area 
+                                        type="monotone" 
+                                        dataKey="val" 
+                                        stroke="#3b82f6" 
+                                        strokeWidth={2} 
+                                        fillOpacity={1} 
+                                        fill="url(#colorVis)" 
+                                        strokeDasharray="5 5"
+                                    />
+                                </AreaChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </CardContent>
+                </Card>
+
+            </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <Card className="lg:col-span-2 rounded-[2.5rem] border shadow-xl overflow-hidden">
