@@ -64,4 +64,22 @@
   .animate-float-up-fade {
     animation: float-up-fade 2s ease-in-out infinite;
   }
+
+  @keyframes ai-spin {
+    from { transform: translate(-50%, -50%) rotate(0deg); }
+    to { transform: translate(-50%, -50%) rotate(360deg); }
+  }
+
+  @keyframes rhythmic-dim {
+    0%, 100% { opacity: 0.5; filter: blur(8px); }
+    50% { opacity: 0.9; filter: blur(14px); }
+  }
+
+  .animate-ai-spin {
+    animation: ai-spin 5s linear infinite;
+  }
+
+  .animate-rhythmic-dim {
+    animation: rhythmic-dim 3s ease-in-out infinite;
+  }
 }

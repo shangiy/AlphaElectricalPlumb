@@ -6,7 +6,7 @@ import { useProducts } from '@/context/ProductProvider';
 import { Rating } from '@/components/ui/rating';
 import ProductRecommendations from '@/components/products/ProductRecommendations';
 import BuyNowButton from '@/components/products/ContactSellerForm';
-import { Truck, Wrench, MessageCircle, MessageSquareQuote, Star } from 'lucide-react';
+import { Truck, Wrench, MessageCircle, Star } from 'lucide-react';
 import AddToCartButton from '@/components/products/AddToCartButton';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
@@ -23,8 +23,8 @@ import {
 import ReviewForm from '@/components/reviews/ReviewForm';
 
 /**
- * 2027 Premium Product Layout v2.7.0:
- * Features: High-performance halved-star ratings and Popover review interaction.
+ * 2027 Premium Product Layout v4.8.0:
+ * Features: High-performance halved-star ratings, Popover reviews, and AI-inspired rhythmic button lighting.
  */
 function ProductContent({ productId }: { productId: string }) {
   const { getProductById, loading, refreshProducts } = useProducts();
@@ -92,7 +92,6 @@ function ProductContent({ productId }: { productId: string }) {
   };
 
   const handleReviewSuccess = () => {
-    // Refresh products to get the updated review count/rating from Supabase
     refreshProducts();
   };
 
@@ -214,7 +213,7 @@ function ProductContent({ productId }: { productId: string }) {
                 
                 <div className="grid grid-cols-2 gap-4">
                     <div className="flex flex-col gap-4 p-6 rounded-[2rem] bg-white border shadow-xl hover:shadow-2xl transition-all group">
-                        <div className="h-12 w-12 rounded-2xl bg-green-500/10 flex items-center justify-center transition-colors group-hover:bg-green-500/20">
+                        <div className="h-12 w-12 rounded-2xl bg-green-50/10 flex items-center justify-center transition-colors group-hover:bg-green-50/20">
                             <Truck className="h-6 w-6 text-green-600"/>
                         </div>
                         <div>
@@ -223,7 +222,7 @@ function ProductContent({ productId }: { productId: string }) {
                         </div>
                     </div>
                     <div className="flex flex-col gap-4 p-6 rounded-[2rem] bg-white border shadow-xl hover:shadow-2xl transition-all group">
-                        <div className="h-12 w-12 rounded-2xl bg-blue-500/10 flex items-center justify-center transition-colors group-hover:bg-blue-500/20">
+                        <div className="h-12 w-12 rounded-2xl bg-blue-50/10 flex items-center justify-center transition-colors group-hover:bg-blue-50/20">
                             <Wrench className="h-6 w-6 text-blue-600"/>
                         </div>
                         <div>
@@ -235,9 +234,24 @@ function ProductContent({ productId }: { productId: string }) {
             </div>
 
             <div className="flex flex-col gap-4">
-                <div className="flex flex-col gap-4 sm:flex-row h-20">
-                    <AddToCartButton product={product} quantity={quantity}/>
-                    <BuyNowButton product={product} quantity={quantity} />
+                <div className="flex flex-col gap-6 sm:flex-row h-auto min-h-20">
+                    {/* Add to Cart Lightning Node */}
+                    <div className="flex-1 relative group rounded-[2rem] p-[3px] overflow-hidden bg-muted/20 shadow-xl transition-all hover:scale-[1.02]">
+                        <div className="absolute top-1/2 left-1/2 w-[300%] h-[300%] bg-[conic-gradient(from_0deg,#00f2ea,#1877f2,#7000ff,#00f2ea)] animate-ai-spin opacity-60 animate-rhythmic-dim" />
+                        <div className="absolute inset-[2px] rounded-[1.9rem] bg-white z-0" />
+                        <div className="relative z-10 h-full flex w-full">
+                            <AddToCartButton product={product} quantity={quantity}/>
+                        </div>
+                    </div>
+
+                    {/* Buy Now Lightning Node */}
+                    <div className="flex-1 relative group rounded-[2rem] p-[3px] overflow-hidden bg-muted/20 shadow-xl transition-all hover:scale-[1.02]">
+                        <div className="absolute top-1/2 left-1/2 w-[300%] h-[300%] bg-[conic-gradient(from_0deg,#ff0000,#ff8c00,#fffb00,#48ff00,#00ffd5,#002bff,#7a00ff,#ff00c8,#ff0000)] animate-ai-spin opacity-60 animate-rhythmic-dim" />
+                        <div className="absolute inset-[2px] rounded-[1.9rem] bg-white z-0" />
+                        <div className="relative z-10 h-full flex w-full">
+                            <BuyNowButton product={product} quantity={quantity} />
+                        </div>
+                    </div>
                 </div>
                 <Button 
                     variant="outline" 
