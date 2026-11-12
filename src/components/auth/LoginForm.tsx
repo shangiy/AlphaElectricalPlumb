@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useForm } from 'react-hook-form';
@@ -15,6 +16,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { signIn as nextAuthSignIn } from 'next-auth/react';
 import ReCAPTCHA from 'react-google-recaptcha';
+import { verifyRecaptcha } from '@/app/actions/verify-recaptcha';
 
 const loginSchema = z.object({
   email: z.string().email('Valid email required.'),
@@ -104,6 +106,12 @@ export default function LoginForm() {
 
       setProcessing(true);
       try {
+        // Verify CAPTCHA with server action
+        const verification = await verifyRecaptcha(captchaToken);
+        if (!verification.success) {
+            throw new Error(verification.message || "Security verification failed. Please try again.");
+        }
+
         await signUp({
           name: data.name,
           username: data.email.split('@')[0], // Generate username from email
@@ -115,7 +123,7 @@ export default function LoginForm() {
           description: "Welcome to Alpha Electricals & Plumbing Ltd!"
         });
       } catch (e: any) {
-        toast({ variant: 'destructive', description: e.message });
+        toast({ variant: 'destructive', title: "Sign Up Error", description: e.message });
         recaptchaRef.current?.reset();
         setCaptchaToken(null);
       } finally {
@@ -302,10 +310,10 @@ export default function LoginForm() {
 
                                     {/* reCAPTCHA Node */}
                                     <div className="pt-2 flex justify-center scale-90 origin-center sm:scale-100">
-                                      <div className="rounded-xl overflow-hidden border border-muted shadow-sm">
+                                      <div className="rounded-xl overflow-hidden border border-muted shadow-sm min-h-[78px]">
                                         <ReCAPTCHA
                                           ref={recaptchaRef}
-                                          sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"} // Fallback to test key if missing
+                                          sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || ""}
                                           onChange={setCaptchaToken}
                                         />
                                       </div>
