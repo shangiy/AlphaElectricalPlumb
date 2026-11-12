@@ -19,6 +19,7 @@ import {
   DropdownMenu, 
   DropdownMenuContent, 
   DropdownMenuItem, 
+  DropdownMenuSeparator,
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
@@ -199,10 +200,6 @@ export default function Header() {
                   <ShieldCheck size={14} /> Admin
                 </NextLink>
               )}
-              
-              <NextLink href="/search" className="px-3 py-2 font-black transition-colors uppercase text-[12px] tracking-widest text-[#28235f] flex items-center gap-1.5 hover:text-primary">
-                <LayoutGrid size={14} /> Catalogue
-              </NextLink>
 
               {isMounted ? (
                 <DropdownMenu>
@@ -216,6 +213,12 @@ export default function Header() {
                     <DropdownMenuItem asChild className="cursor-pointer py-3 rounded-xl font-bold text-[#28235f] hover:text-primary hover:bg-primary/5"><NextLink href="/category/plumbing">Plumbing Equipment</NextLink></DropdownMenuItem>
                     <DropdownMenuItem asChild className="cursor-pointer py-3 rounded-xl font-bold text-[#28235f] hover:text-primary hover:bg-primary/5"><NextLink href="/category/lighting">Lighting & Electrical</NextLink></DropdownMenuItem>
                     <DropdownMenuItem asChild className="cursor-pointer py-3 rounded-xl font-bold text-[#28235f] hover:text-primary hover:bg-primary/5"><NextLink href="/category/roofing">Roofing & Construction</NextLink></DropdownMenuItem>
+                    <DropdownMenuSeparator className="my-2 bg-slate-100" />
+                    <DropdownMenuItem asChild className="cursor-pointer py-3 rounded-xl font-black text-primary hover:bg-primary/5 uppercase text-[12px] tracking-widest">
+                      <NextLink href="/search" className="flex items-center gap-2">
+                        <LayoutGrid size={14} /> Catalogue
+                      </NextLink>
+                    </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               ) : (
