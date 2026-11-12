@@ -249,7 +249,7 @@ export default function LoginForm() {
                                 >
                                     <FormField control={sForm.control} name="name" render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel className={tabLabel}>Full Persona Name</FormLabel>
+                                            <FormLabel className={tabLabel}>Personal Information</FormLabel>
                                             <FormControl>
                                                 <Input 
                                                     placeholder="FirstName, second name" 
@@ -262,7 +262,7 @@ export default function LoginForm() {
                                     )} />
                                     <FormField control={sForm.control} name="email" render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel className={tabLabel}>Communication Email</FormLabel>
+                                            <FormLabel className={tabLabel}>Email Address</FormLabel>
                                             <FormControl>
                                                 <Input 
                                                     placeholder="you@example.com" 
