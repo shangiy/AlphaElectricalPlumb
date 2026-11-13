@@ -98,8 +98,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const value = {
     user,
-    login: async (email, password) => { await supabase.auth.signInWithPassword({ email, password }); },
-    signUp: async (data) => { await supabase.auth.signUp({ email: data.email, password: data.password!, options: { data: { full_name: data.name, username: data.username } } }); },
+    login: async (email, password) => { 
+      const { error } = await supabase.auth.signInWithPassword({ email, password }); 
+      if (error) throw error;
+    },
+    signUp: async (data) => { 
+      const { error } = await supabase.auth.signUp({ 
+        email: data.email, 
+        password: data.password!, 
+        options: { 
+          data: { 
+            full_name: data.name, 
+            username: data.username,
+            avatar_url: data.avatarUrl
+          } 
+        } 
+      }); 
+      if (error) throw error;
+    },
     signInWithGoogle: async () => { await nextAuthSignIn('google'); },
     signInWithFacebook: async () => { await supabase.auth.signInWithOAuth({ provider: 'facebook', options: { redirectTo: `${window.location.origin}/auth/callback` } }); },
     signInWithApple: async () => { await supabase.auth.signInWithOAuth({ provider: 'apple', options: { redirectTo: `${window.location.origin}/auth/callback` } }); },

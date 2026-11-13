@@ -47,8 +47,9 @@ const GithubIcon = () => (
 );
 
 /**
- * Login Form v5.4.0:
- * Features Intelligent Staff Redirection to Inventory Sidebar Link.
+ * Login Form v6.1.0:
+ * Features Enhanced Error Feedback. Toasts now provide specific diagnostic 
+ * feedback on authentication failures (e.g. invalid password).
  */
 export default function LoginForm() {
     const { user, login, signUp, signInWithFacebook, signInWithApple, signInWithGithub } = useAuth();
@@ -70,13 +71,12 @@ export default function LoginForm() {
             let target = redirectParam;
 
             if (!target) {
-                // Priority Redirection logic based on role
                 if (user.role === 'staff') {
-                    target = '/admin/products'; // Funk to inventory as requested
+                    target = '/admin/products'; 
                 } else if (user.role === 'admin') {
-                    target = '/admin'; // Dashboard for admins
+                    target = '/admin'; 
                 } else {
-                    target = '/#featured-products'; // Home anchor for clients
+                    target = '/#featured-products'; 
                 }
             }
 
@@ -103,9 +103,32 @@ export default function LoginForm() {
           else if (p === 'github') await signInWithGithub();
         }
         catch (e: any) { 
-          toast({ variant: 'destructive', description: e.message }); 
+          toast({ 
+            variant: 'destructive', 
+            title: "OAuth Link Failure",
+            description: e.message || "Could not establish connection with provider." 
+          }); 
         }
         finally { setProcessing(false); }
+    };
+
+    const onLoginSubmit = async (data: z.infer<typeof loginSchema>) => {
+      setProcessing(true);
+      try {
+        await login(data.email, data.password);
+        toast({
+          title: "Access Granted",
+          description: "Syncing your professional dashboard..."
+        });
+      } catch (e: any) {
+        toast({
+          variant: 'destructive',
+          title: "Access Denied",
+          description: e.message || "Invalid credentials. Please verify your secure key."
+        });
+      } finally {
+        setProcessing(false);
+      }
     };
 
     const onSignUpSubmit = async (data: z.infer<typeof signUpSchema>) => {
@@ -120,10 +143,9 @@ export default function LoginForm() {
 
       setProcessing(true);
       try {
-        // Trigger server-side verification using the secure action
         const verification = await verifyRecaptcha(captchaToken);
         if (!verification.success) {
-            throw new Error(verification.message || "Security verification failed. Please check your network and try again.");
+            throw new Error(verification.message || "Security verification failed.");
         }
 
         await signUp({
@@ -143,7 +165,6 @@ export default function LoginForm() {
           title: "Provisioning Error", 
           description: e.message || "Cloud handshake failed. Please refresh and try again." 
         });
-        // Mandatory reset of recaptcha state on any failure
         recaptchaRef.current?.reset();
         setCaptchaToken(null);
       } finally {
@@ -172,16 +193,7 @@ export default function LoginForm() {
                             <Form {...lForm}>
                                 <form 
                                     autoComplete="off"
-                                    onSubmit={lForm.handleSubmit(async d => { 
-                                      setProcessing(true); 
-                                      try { 
-                                        await login(d.email, d.password); 
-                                      } catch(e:any) { 
-                                        toast({ variant: 'destructive', description: e.message }); 
-                                      } finally { 
-                                        setProcessing(false); 
-                                      } 
-                                    })} 
+                                    onSubmit={lForm.handleSubmit(onLoginSubmit)} 
                                     className="space-y-5"
                                 >
                                     <FormField control={lForm.control} name="email" render={({ field }) => (
@@ -257,7 +269,6 @@ export default function LoginForm() {
 
                 <TabsContent value="signup">
                     <Card className="rounded-[2.5rem] shadow-[0_30px_100px_-20px_rgba(0,0,0,0.15)] border-none overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-700">
-                        {/* Highlights Banner */}
                         <div className="bg-emerald-50 py-3 text-center border-b border-emerald-100 flex items-center justify-center gap-2">
                           <Gift className="h-4 w-4 text-emerald-600" />
                           <p className="text-[11px] font-black uppercase tracking-wider text-emerald-700">
@@ -270,7 +281,6 @@ export default function LoginForm() {
                         </CardHeader>
                         
                         <CardContent className="pt-2 space-y-8">
-                            {/* SOCIAL LOGIN AT TOP */}
                             <div className="space-y-4">
                               <div className="grid grid-cols-2 gap-4">
                                   <Button variant="outline" type="button" onClick={() => handleSocial('google')} className="h-12 rounded-2xl font-bold border-muted-foreground/10 hover:bg-muted/20">
@@ -301,7 +311,6 @@ export default function LoginForm() {
                                     onSubmit={sForm.handleSubmit(onSignUpSubmit)} 
                                     className="space-y-8"
                                 >
-                                    {/* PERSONAL INFORMATION SECTION */}
                                     <div className="space-y-5">
                                       <span className={sectionLabel}>Personal Information</span>
                                       
@@ -334,7 +343,6 @@ export default function LoginForm() {
                                       </div>
                                     </div>
 
-                                    {/* SIGN-IN INFORMATION SECTION */}
                                     <div className="space-y-5">
                                       <span className={sectionLabel}>Sign-in Information</span>
                                       
@@ -376,7 +384,6 @@ export default function LoginForm() {
                                       </div>
                                     </div>
 
-                                    {/* reCAPTCHA Node - Secure Handshake Area */}
                                     <div className="pt-2 flex justify-center scale-90 origin-center">
                                       <div className="rounded-xl overflow-hidden border border-muted shadow-sm min-h-[78px]">
                                         <ReCAPTCHA
