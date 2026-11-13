@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useAuth } from '@/context/AuthProvider';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import AvatarSelectionDialog from '@/components/auth/AvatarSelectionDialog';
+import { cn } from '@/lib/utils';
 
 /**
  * Admin Settings v5.4.0:

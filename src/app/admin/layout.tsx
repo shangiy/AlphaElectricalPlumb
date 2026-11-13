@@ -121,7 +121,7 @@ function AdminSidebarWrapper({ children }: { children: React.ReactNode }) {
         </button>
       )}
 
-      <Sidebar className="flex flex-col border-r bg-muted/20">
+      <Sidebar className="flex flex-col border-r bg-sidebar sticky top-0 transition-[width] duration-200 ease-linear h-full">
         <SidebarHeader className="p-6 shrink-0">
           <Link href="/admin" onClick={handleNavClick} className="flex items-center gap-4 group">
               <Image src="/logo Alpha.png" alt="Alpha" width={90} height={90} className="transition-transform group-hover:scale-110" />
