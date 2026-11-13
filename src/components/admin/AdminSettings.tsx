@@ -14,6 +14,10 @@ import { useAuth } from '@/context/AuthProvider';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import AvatarSelectionDialog from '@/components/auth/AvatarSelectionDialog';
 
+/**
+ * Admin Settings v5.4.0:
+ * Features Role-Aware Terminology for Staff Users.
+ */
 export default function AdminSettings() {
   const { user, updateUser } = useAuth();
   const { toast } = useToast();
@@ -108,7 +112,7 @@ export default function AdminSettings() {
     try {
       const { error } = await supabase.auth.updateUser({ password: newPassword });
       if (error) throw error;
-      toast({ title: 'Success', description: 'Your administrator password has been updated.' });
+      toast({ title: 'Success', description: 'Your secure credentials have been updated.' });
       setNewPassword('');
       setConfirmPassword('');
     } catch (err: any) {
@@ -137,6 +141,7 @@ export default function AdminSettings() {
     }
   };
 
+  const isStaff = user?.role === 'staff';
   const sectionLabel = "text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/60 mb-4 block";
 
   return (
@@ -149,7 +154,9 @@ export default function AdminSettings() {
       />
 
       <div>
-        <h2 className="text-4xl font-black font-headline text-accent tracking-tighter uppercase">Command Center Settings</h2>
+        <h2 className="text-4xl font-black font-headline text-accent tracking-tighter uppercase">
+          {isStaff ? 'Staff Account Center' : 'Command Center Settings'}
+        </h2>
         <p className="text-muted-foreground text-sm font-medium">Manage your professional persona and platform governance.</p>
       </div>
 
@@ -158,8 +165,12 @@ export default function AdminSettings() {
         <span className={sectionLabel}>Identity Portfolio</span>
         <Card className="rounded-[2.5rem] border shadow-2xl overflow-hidden bg-white">
           <CardHeader className="bg-primary/5 border-b p-8">
-            <CardTitle className="text-2xl font-black uppercase tracking-tight text-accent">Personal Profile</CardTitle>
-            <CardDescription className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Update your public-facing administrator details</CardDescription>
+            <CardTitle className="text-2xl font-black uppercase tracking-tight text-accent">
+              {isStaff ? 'Staff Identity Portfolio' : 'Administrator Portfolio'}
+            </CardTitle>
+            <CardDescription className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
+              Update your public-facing {isStaff ? 'staff' : 'administrator'} details
+            </CardDescription>
           </CardHeader>
           <CardContent className="p-8">
             <form onSubmit={handleProfileUpdate} className="space-y-8">
@@ -192,11 +203,13 @@ export default function AdminSettings() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-[10px] font-black uppercase text-muted-foreground/80 tracking-widest">Admin Username</Label>
+                    <Label className="text-[10px] font-black uppercase text-muted-foreground/80 tracking-widest">
+                      {isStaff ? 'Staff Username' : 'Admin Username'}
+                    </Label>
                     <Input 
                       value={profileUsername} 
                       onChange={(e) => setProfileUsername(e.target.value)} 
-                      placeholder="richard_admin" 
+                      placeholder="username" 
                       className="h-12 rounded-xl bg-muted/20 border-none font-bold"
                     />
                   </div>
@@ -218,7 +231,7 @@ export default function AdminSettings() {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
+      <div className={cn("grid grid-cols-1 gap-8 pt-4", !isStaff ? "md:grid-cols-2" : "md:grid-cols-1 max-w-2xl")}>
         
         {/* PASSWORD RESET CARD */}
         <div className="space-y-4">
@@ -228,7 +241,7 @@ export default function AdminSettings() {
               <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
                 <KeyRound className="text-primary h-6 w-6" />
               </div>
-              <CardTitle className="text-xl font-black uppercase tracking-tight">Change Password</CardTitle>
+              <CardTitle className="text-xl font-black uppercase tracking-tight">Security Access Update</CardTitle>
               <CardDescription className="text-xs font-bold text-muted-foreground uppercase">Rotate your secure login credentials</CardDescription>
             </CardHeader>
             <CardContent className="p-8">
@@ -264,51 +277,53 @@ export default function AdminSettings() {
           </Card>
         </div>
 
-        {/* TEAM PROMOTION CARD */}
-        <div className="space-y-4">
-          <span className={sectionLabel}>Access Management</span>
-          <Card className="rounded-[2.5rem] border shadow-xl overflow-hidden h-full">
-            <CardHeader className="bg-muted/30 border-b p-8">
-              <div className="h-12 w-12 rounded-2xl bg-blue-500/10 flex items-center justify-center mb-4">
-                <UserPlus className="text-blue-600 h-6 w-6" />
-              </div>
-              <CardTitle className="text-xl font-black uppercase tracking-tight">Promote Team Member</CardTitle>
-              <CardDescription className="text-xs font-bold text-muted-foreground uppercase">Assign roles via Supabase Handshake</CardDescription>
-            </CardHeader>
-            <CardContent className="p-8">
-              <form onSubmit={handlePromotion} className="space-y-6">
-                <div className="space-y-2">
-                  <Label className="text-xs font-black uppercase text-muted-foreground/80">User Email Address</Label>
-                  <Input 
-                    type="email" 
-                    value={targetEmail} 
-                    onChange={(e) => setTargetEmail(e.target.value)} 
-                    placeholder="colleague@alpha.com" 
-                    required 
-                    className="h-12 rounded-xl"
-                  />
+        {/* TEAM PROMOTION CARD - ONLY FOR ADMIN */}
+        {!isStaff && (
+          <div className="space-y-4">
+            <span className={sectionLabel}>Access Management</span>
+            <Card className="rounded-[2.5rem] border shadow-xl overflow-hidden h-full">
+              <CardHeader className="bg-muted/30 border-b p-8">
+                <div className="h-12 w-12 rounded-2xl bg-blue-500/10 flex items-center justify-center mb-4">
+                  <UserPlus className="text-blue-600 h-6 w-6" />
                 </div>
-                <div className="space-y-2">
-                  <Label className="text-xs font-black uppercase text-muted-foreground/80">Target Permission Level</Label>
-                  <Select value={targetRole} onValueChange={(val: any) => setTargetRole(val)}>
-                    <SelectTrigger className="h-12 rounded-xl">
-                      <SelectValue placeholder="Select role" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="admin">Administrator (Full Access)</SelectItem>
-                      <SelectItem value="staff">Staff (Limited Management)</SelectItem>
-                      <SelectItem value="user">User (Customer Level)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <Button disabled={isPromoting} type="submit" className="w-full h-14 rounded-full font-black uppercase tracking-wider shadow-lg bg-primary text-white mt-4">
-                  {isPromoting ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : <UserPlus className="h-5 w-5 mr-2" />}
-                  Provision Role
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
-        </div>
+                <CardTitle className="text-xl font-black uppercase tracking-tight">Promote Team Member</CardTitle>
+                <CardDescription className="text-xs font-bold text-muted-foreground uppercase">Assign roles via Supabase Handshake</CardDescription>
+              </CardHeader>
+              <CardContent className="p-8">
+                <form onSubmit={handlePromotion} className="space-y-6">
+                  <div className="space-y-2">
+                    <Label className="text-xs font-black uppercase text-muted-foreground/80">User Email Address</Label>
+                    <Input 
+                      type="email" 
+                      value={targetEmail} 
+                      onChange={(e) => setTargetEmail(e.target.value)} 
+                      placeholder="colleague@alpha.com" 
+                      required 
+                      className="h-12 rounded-xl"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs font-black uppercase text-muted-foreground/80">Target Permission Level</Label>
+                    <Select value={targetRole} onValueChange={(val: any) => setTargetRole(val)}>
+                      <SelectTrigger className="h-12 rounded-xl">
+                        <SelectValue placeholder="Select role" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="admin">Administrator (Full Access)</SelectItem>
+                        <SelectItem value="staff">Staff (Limited Management)</SelectItem>
+                        <SelectItem value="user">User (Customer Level)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <Button disabled={isPromoting} type="submit" className="w-full h-14 rounded-full font-black uppercase tracking-wider shadow-lg bg-primary text-white mt-4">
+                    {isPromoting ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : <UserPlus className="h-5 w-5 mr-2" />}
+                    Provision Role
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
       </div>
 

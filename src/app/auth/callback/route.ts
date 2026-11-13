@@ -2,6 +2,10 @@ import { NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 
+/**
+ * Auth Callback Route v5.4.0:
+ * Handles operational redirects based on user role (Admin -> Dashboard, Staff -> Inventory).
+ */
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get('code');
@@ -34,7 +38,7 @@ export async function GET(request: Request) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     
     if (!error) {
-      // Success! Check role for redirection
+      // Success! Check role for prioritized redirection
       const { data: { user } } = await supabase.auth.getUser();
       
       if (user) {
@@ -44,14 +48,16 @@ export async function GET(request: Request) {
           .eq('id', user.id)
           .maybeSingle();
 
-        // If admin or staff, redirect straight to the admin dashboard
-        if (profile?.role === 'admin' || profile?.role === 'staff') {
-          return NextResponse.redirect(`${origin}/admin`);
+        // ROLE-BASED NAVIGATION INTELLIGENCE
+        if (profile?.role === 'admin') {
+          return NextResponse.redirect(`${origin}/admin`); // Dashboard for full admins
+        } else if (profile?.role === 'staff') {
+          return NextResponse.redirect(`${origin}/admin/products`); // Operational funnel to Inventory for Staff
         }
       }
       
-      // Default fallback for regular users
-      return NextResponse.redirect(`${origin}/`);
+      // Default fallback for regular users (Home Anchor)
+      return NextResponse.redirect(`${origin}/#featured-products`);
     }
   }
 

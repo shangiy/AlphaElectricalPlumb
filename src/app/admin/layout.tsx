@@ -35,8 +35,8 @@ import { useAuth } from '@/context/AuthProvider';
 import { cn } from '@/lib/utils';
 
 /**
- * Admin Layout v5.3.0:
- * Features Role-Based Navigation Filtering for Staff vs Admin.
+ * Admin Layout v5.4.0:
+ * Features Role-Aware Header Badges (Admin vs Staff).
  */
 function AdminSidebarWrapper({ children }: { children: React.ReactNode }) {
   const { user, logout } = useAuth();
@@ -126,8 +126,10 @@ function AdminSidebarWrapper({ children }: { children: React.ReactNode }) {
           <Link href="/admin" onClick={handleNavClick} className="flex items-center gap-4 group">
               <Image src="/logo Alpha.png" alt="Alpha" width={90} height={90} className="transition-transform group-hover:scale-110" />
               <div className="flex flex-col">
-                <span className="text-xl font-black text-accent uppercase tracking-tighter leading-none">Admin</span>
-                {!isMobile && <span className="text-[9px] font-bold text-primary uppercase tracking-[0.2em] mt-1">Ecosystem v5.3.0</span>}
+                <span className="text-xl font-black text-accent uppercase tracking-tighter leading-none">
+                  {user?.role === 'staff' ? 'Staff' : 'Admin'}
+                </span>
+                {!isMobile && <span className="text-[9px] font-bold text-primary uppercase tracking-[0.2em] mt-1">Ecosystem v5.4.0</span>}
               </div>
           </Link>
         </SidebarHeader>
