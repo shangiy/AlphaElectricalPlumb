@@ -1,11 +1,13 @@
 /**
  * DEPRECATED ROUTE SEGMENT
  * 
- * This file has been neutralized to resolve the Next.js routing conflict:
+ * This file has been fully neutralized to resolve the Next.js routing conflict:
  * 'You cannot use different slug names for the same dynamic path (id !== slug)'
  * 
- * All product logic has been unified in: src/app/products/[slug]/page.tsx
- * We do not export a default component here to prevent the route collision.
+ * We have removed all exports (including 'dynamic') to ensure Next.js 15 
+ * does not treat this as a conflicting route segment.
+ * 
+ * All product logic is now unified in: src/app/products/[slug]/page.tsx
  */
 
-export const dynamic = 'force-static';
+// No exports allowed here to prevent route collision.
