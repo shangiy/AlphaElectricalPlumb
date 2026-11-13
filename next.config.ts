@@ -16,15 +16,14 @@ const nextConfig: NextConfig = {
   experimental: {
     serverActions: {
       bodySizeLimit: '50mb',
+      allowedOrigins: [
+        '6000-firebase-studio-1762697160634.cluster-cbeiita7rbe7iuwhvjs5zww2i4.cloudworkstations.dev',
+        '9000-firebase-studio-1762697160634.cluster-cbeiita7rbe7iuwhvjs5zww2i4.cloudworkstations.dev',
+        'studio-2955966694-9faa5.web.app',
+        'alphaelectricalsplumbingltd.com',
+        '*.cloudworkstations.dev'
+      ],
     },
-    // Address the CORS/HMR warnings for the dev environment
-    allowedDevOrigins: [
-      '6000-firebase-studio-1762697160634.cluster-cbeiita7rbe7iuwhvjs5zww2i4.cloudworkstations.dev',
-      '9000-firebase-studio-1762697160634.cluster-cbeiita7rbe7iuwhvjs5zww2i4.cloudworkstations.dev',
-      'studio-2955966694-9faa5.web.app',
-      'alphaelectricalsplumbingltd.com',
-      '*.cloudworkstations.dev'
-    ],
   },
   images: {
     remotePatterns: [
