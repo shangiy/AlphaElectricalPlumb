@@ -16,8 +16,8 @@ import AvatarSelectionDialog from '@/components/auth/AvatarSelectionDialog';
 import { cn } from '@/lib/utils';
 
 /**
- * Admin Settings v5.4.0:
- * Features Role-Aware Terminology for Staff Users.
+ * Admin Settings v5.5.0:
+ * Features Role-Strict Visibility. Staff users only see their Identity Portfolio.
  */
 export default function AdminSettings() {
   const { user, updateUser } = useAuth();
@@ -161,9 +161,9 @@ export default function AdminSettings() {
         <p className="text-muted-foreground text-sm font-medium">Manage your professional persona and platform governance.</p>
       </div>
 
-      {/* PERSONAL PROFILE SECTION */}
+      {/* PERSONAL PROFILE SECTION - Visible to All Management Roles */}
       <div className="space-y-4">
-        <span className={sectionLabel}>Identity Portfolio</span>
+        <span className={sectionLabel}>{isStaff ? 'Staff Portfolio' : 'Identity Portfolio'}</span>
         <Card className="rounded-[2.5rem] border shadow-2xl overflow-hidden bg-white">
           <CardHeader className="bg-primary/5 border-b p-8">
             <CardTitle className="text-2xl font-black uppercase tracking-tight text-accent">
@@ -232,54 +232,55 @@ export default function AdminSettings() {
         </Card>
       </div>
 
-      <div className={cn("grid grid-cols-1 gap-8 pt-4", !isStaff ? "md:grid-cols-2" : "md:grid-cols-1 max-w-2xl")}>
-        
-        {/* PASSWORD RESET CARD */}
-        <div className="space-y-4">
-          <span className={sectionLabel}>System Credential</span>
-          <Card className="rounded-[2.5rem] border shadow-xl overflow-hidden h-full">
-            <CardHeader className="bg-muted/30 border-b p-8">
-              <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
-                <KeyRound className="text-primary h-6 w-6" />
-              </div>
-              <CardTitle className="text-xl font-black uppercase tracking-tight">Security Access Update</CardTitle>
-              <CardDescription className="text-xs font-bold text-muted-foreground uppercase">Rotate your secure login credentials</CardDescription>
-            </CardHeader>
-            <CardContent className="p-8">
-              <form onSubmit={handlePasswordReset} className="space-y-6">
-                <div className="space-y-2">
-                  <Label className="text-xs font-black uppercase text-muted-foreground/80">New Password</Label>
-                  <Input 
-                    type="password" 
-                    value={newPassword} 
-                    onChange={(e) => setNewPassword(e.target.value)} 
-                    placeholder="••••••••" 
-                    required 
-                    className="h-12 rounded-xl"
-                  />
+      {/* MANAGEMENT & SECURITY GRID - ONLY VISIBLE TO ADMINS */}
+      {!isStaff && (
+        <div className="grid grid-cols-1 gap-8 pt-4 md:grid-cols-2 animate-in slide-in-from-bottom-4 duration-1000">
+          
+          {/* PASSWORD RESET CARD */}
+          <div className="space-y-4">
+            <span className={sectionLabel}>System Credential</span>
+            <Card className="rounded-[2.5rem] border shadow-xl overflow-hidden h-full">
+              <CardHeader className="bg-muted/30 border-b p-8">
+                <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
+                  <KeyRound className="text-primary h-6 w-6" />
                 </div>
-                <div className="space-y-2">
-                  <Label className="text-xs font-black uppercase text-muted-foreground/80">Confirm Password</Label>
-                  <Input 
-                    type="password" 
-                    value={confirmPassword} 
-                    onChange={(e) => setConfirmPassword(e.target.value)} 
-                    placeholder="••••••••" 
-                    required 
-                    className="h-12 rounded-xl"
-                  />
-                </div>
-                <Button disabled={isResetting} type="submit" className="w-full h-14 rounded-full font-black uppercase tracking-wider shadow-lg bg-accent text-white mt-4">
-                  {isResetting ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : <ShieldCheck className="h-5 w-5 mr-2" />}
-                  Update Key
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
-        </div>
+                <CardTitle className="text-xl font-black uppercase tracking-tight">Security Access Update</CardTitle>
+                <CardDescription className="text-xs font-bold text-muted-foreground uppercase">Rotate your secure login credentials</CardDescription>
+              </CardHeader>
+              <CardContent className="p-8">
+                <form onSubmit={handlePasswordReset} className="space-y-6">
+                  <div className="space-y-2">
+                    <Label className="text-xs font-black uppercase text-muted-foreground/80">New Password</Label>
+                    <Input 
+                      type="password" 
+                      value={newPassword} 
+                      onChange={(e) => setNewPassword(e.target.value)} 
+                      placeholder="••••••••" 
+                      required 
+                      className="h-12 rounded-xl"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs font-black uppercase text-muted-foreground/80">Confirm Password</Label>
+                    <Input 
+                      type="password" 
+                      value={confirmPassword} 
+                      onChange={(e) => setConfirmPassword(e.target.value)} 
+                      placeholder="••••••••" 
+                      required 
+                      className="h-12 rounded-xl"
+                    />
+                  </div>
+                  <Button disabled={isResetting} type="submit" className="w-full h-14 rounded-full font-black uppercase tracking-wider shadow-lg bg-accent text-white mt-4">
+                    {isResetting ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : <ShieldCheck className="h-5 w-5 mr-2" />}
+                    Update Key
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+          </div>
 
-        {/* TEAM PROMOTION CARD - ONLY FOR ADMIN */}
-        {!isStaff && (
+          {/* TEAM PROMOTION CARD */}
           <div className="space-y-4">
             <span className={sectionLabel}>Access Management</span>
             <Card className="rounded-[2.5rem] border shadow-xl overflow-hidden h-full">
@@ -324,16 +325,17 @@ export default function AdminSettings() {
               </CardContent>
             </Card>
           </div>
-        )}
 
-      </div>
+        </div>
+      )}
 
+      {/* SECURITY NOTICE - Visible to All Management Roles */}
       <div className="p-6 rounded-[2rem] bg-amber-50 border border-amber-200 flex items-start gap-4">
         <AlertCircle className="h-6 w-6 text-amber-600 shrink-0 mt-1" />
         <div>
           <p className="text-sm font-bold text-amber-900 uppercase tracking-tight">Security Governance Reminder</p>
           <p className="text-sm text-amber-700 mt-1 leading-relaxed">
-            Personal identity modifications and security credential updates are synchronized instantly across the Alpha global node cluster. Changes made in this portal bypass standard RLS constraints via the administrative service-role handshake.
+            Personal identity modifications are synchronized instantly across the Alpha global node cluster. {isStaff ? 'Management tools and access provisioning are restricted to platform administrators.' : 'Administrative tools bypass standard RLS constraints via the service-role handshake.'}
           </p>
         </div>
       </div>
