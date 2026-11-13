@@ -35,12 +35,11 @@ import { useAuth } from '@/context/AuthProvider';
 import { cn } from '@/lib/utils';
 
 /**
- * Admin Layout v4.4.25:
- * Features a high-fidelity mobile toggle interface.
- * Updated to include the unified Review Management node.
+ * Admin Layout v5.3.0:
+ * Features Role-Based Navigation Filtering for Staff vs Admin.
  */
 function AdminSidebarWrapper({ children }: { children: React.ReactNode }) {
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
   const { isMobile, setOpenMobile, openMobile } = useSidebar();
   const scrollRef = useRef<HTMLDivElement>(null);
   
@@ -59,6 +58,15 @@ function AdminSidebarWrapper({ children }: { children: React.ReactNode }) {
     { label: 'Storefront CMS', href: '/admin/featured', icon: LayoutTemplate },
     { label: 'System Settings', href: '/admin/settings', icon: Settings },
   ];
+
+  // Dynamic filtering: Staff cannot see Users, Analytics, or CMS links
+  const visibleMenuItems = menuItems.filter(item => {
+    if (user?.role === 'staff') {
+      const restricted = ['/admin/users', '/admin/analytics', '/admin/featured'];
+      return !restricted.includes(item.href);
+    }
+    return true;
+  });
 
   const handleNavClick = () => {
     if (isMobile) {
@@ -119,7 +127,7 @@ function AdminSidebarWrapper({ children }: { children: React.ReactNode }) {
               <Image src="/logo Alpha.png" alt="Alpha" width={90} height={90} className="transition-transform group-hover:scale-110" />
               <div className="flex flex-col">
                 <span className="text-xl font-black text-accent uppercase tracking-tighter leading-none">Admin</span>
-                {!isMobile && <span className="text-[9px] font-bold text-primary uppercase tracking-[0.2em] mt-1">Ecosystem v4.4.25</span>}
+                {!isMobile && <span className="text-[9px] font-bold text-primary uppercase tracking-[0.2em] mt-1">Ecosystem v5.3.0</span>}
               </div>
           </Link>
         </SidebarHeader>
@@ -141,7 +149,7 @@ function AdminSidebarWrapper({ children }: { children: React.ReactNode }) {
             className="p-3 scrollbar-hide"
           >
             <SidebarMenu className="gap-1 pb-10">
-              {menuItems.map((item) => (
+              {visibleMenuItems.map((item) => (
                 <SidebarMenuItem key={item.label}>
                   <SidebarMenuButton 
                     asChild 

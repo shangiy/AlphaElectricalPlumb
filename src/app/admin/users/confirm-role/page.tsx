@@ -8,6 +8,7 @@ import { promoteUserAdmin } from '@/app/actions/user-actions';
 import { useState, Suspense } from 'react';
 import { Loader2, ShieldCheck, Mail, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
+import AuthGuard from '@/components/auth/AuthGuard';
 
 function ConfirmRoleContent() {
     const searchParams = useSearchParams();
@@ -125,13 +126,15 @@ function ConfirmRoleContent() {
 
 export default function ConfirmRolePage() {
     return (
-        <Suspense fallback={
-            <div className="flex flex-col items-center justify-center py-40 gap-4">
-                <Loader2 className="h-12 w-12 animate-spin text-primary" />
-                <p className="font-black text-muted-foreground uppercase tracking-widest">Loading Authorization Node...</p>
-            </div>
-        }>
-            <ConfirmRoleContent />
-        </Suspense>
+        <AuthGuard allowedRoles={['admin']}>
+            <Suspense fallback={
+                <div className="flex flex-col items-center justify-center py-40 gap-4">
+                    <Loader2 className="h-12 w-12 animate-spin text-primary" />
+                    <p className="font-black text-muted-foreground uppercase tracking-widest">Loading Authorization Node...</p>
+                </div>
+            }>
+                <ConfirmRoleContent />
+            </Suspense>
+        </AuthGuard>
     );
 }
