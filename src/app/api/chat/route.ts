@@ -1,10 +1,19 @@
+
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+// Initialize with lazy-loading safety checks for serverless environments
+function getSupabase() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  
+  if (!url || !key) {
+    console.error("CRITICAL: Supabase keys are missing in the current environment.");
+    return null;
+  }
+  
+  return createClient(url, key);
+}
 
 const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENAI_API_KEY || '';
 
@@ -12,6 +21,7 @@ export async function POST(req: Request) {
   try {
     const { message } = await req.json();
     const query = (message || '').toLowerCase().trim();
+    const supabase = getSupabase();
 
     // ----------------------------------------------------
     // STEP 1: Smart Catalog Matching
@@ -26,8 +36,8 @@ export async function POST(req: Request) {
     const productKeywords = ['tank', 'pipe', 'cable', 'wire', 'light', 'heater', 'pump', 'socket', 'bell', 'plumbing', 'electrical', 'roofing'];
     const matchedKeyword = productKeywords.find(kw => query.includes(kw));
 
-    // Only search Supabase if it's explicitly a product search or shopping request
-    if (matchedKeyword && (hasShoppingIntent || (!query.includes('how do i') && !query.includes('what is') && !query.includes('+')))) {
+    // Only search Supabase if it's explicitly a product search or shopping request and client is ready
+    if (supabase && matchedKeyword && (hasShoppingIntent || (!query.includes('how do i') && !query.includes('what is') && !query.includes('+')))) {
       const { data: products, error } = await supabase
         .from('products')
         .select('name, price, stock_count, category')
