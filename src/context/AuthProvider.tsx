@@ -1,4 +1,3 @@
-
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
@@ -54,7 +53,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const fetchProfile = useCallback(async (supabaseUser: SupabaseUser) => {
     if (!supabase) return;
     try {
-      const { data: profile } = await supabase.from('profiles').select('*').eq('id', supabaseUser.id).maybeSingle();
+      const { data: profile, error: profileError } = await supabase.from('profiles').select('*').eq('id', supabaseUser.id).maybeSingle();
+      
+      if (profileError) throw profileError;
+
       if (profile) {
         setUser({
           id: supabaseUser.id,
@@ -73,15 +75,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           role: 'user',
           avatarUrl: supabaseUser.user_metadata.avatar_url,
         };
-        await supabase.from('profiles').upsert({ id: newUser.id, full_name: newUser.name, username: newUser.username, role: 'user', email: newUser.email });
+        const { error: upsertError } = await supabase.from('profiles').upsert({ id: newUser.id, full_name: newUser.name, username: newUser.username, role: 'user', email: newUser.email });
+        if (upsertError) throw upsertError;
         setUser(newUser);
       }
+    } catch (e) {
+        console.error("Auth Profile Fetch Failure:", e);
     } finally { setLoading(false); }
   }, []);
 
   useEffect(() => {
     if (nextAuthStatus === 'authenticated' && (nextAuthSession as any)?.id_token && !user && supabase) {
-      supabase.auth.signInWithIdToken({ provider: 'google', token: (nextAuthSession as any).id_token }).then(({ data }) => {
+      supabase.auth.signInWithIdToken({ provider: 'google', token: (nextAuthSession as any).id_token }).then(({ data, error }) => {
+        if (error) console.error("Google IdToken Exchange Error:", error);
         if (data.user) fetchProfile(data.user);
       });
     }

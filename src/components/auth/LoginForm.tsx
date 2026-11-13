@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useForm } from 'react-hook-form';
@@ -13,7 +12,7 @@ import { useAuth } from '@/context/AuthProvider';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { useState, useEffect, useRef } from 'react';
-import { Eye, EyeOff, Loader2, Gift, Check } from 'lucide-react';
+import { Eye, EyeOff, Loader2, Gift, Check, X } from 'lucide-react';
 import { signIn as nextAuthSignIn } from 'next-auth/react';
 import ReCAPTCHA from 'react-google-recaptcha';
 import { verifyRecaptcha } from '@/app/actions/verify-recaptcha';
@@ -221,11 +220,8 @@ export default function LoginForm() {
                                             <FormMessage />
                                         </FormItem>
                                     )} />
-                                    <Button type="submit" className="w-full h-14 rounded-2xl font-black uppercase tracking-widest shadow-xl bg-accent text-white hover:scale-[1.02] active:scale-95 transition-all text-sm mt-4" disabled={processing}>
-                                      {processing ? <Loader2 className="animate-spin h-5 w-5" /> : "Initiate Login"}
-                                    </Button>
-
-                                    <div className="text-right">
+                                    
+                                    <div className="text-right -mt-2">
                                       <button 
                                         type="button" 
                                         className="text-xs font-bold text-blue-600 hover:text-blue-500 hover:underline transition-colors"
@@ -234,6 +230,10 @@ export default function LoginForm() {
                                         Forgot password?
                                       </button>
                                     </div>
+
+                                    <Button type="submit" className="w-full h-14 rounded-2xl font-black uppercase tracking-widest shadow-xl bg-accent text-white hover:scale-[1.02] active:scale-95 transition-all text-sm mt-4" disabled={processing}>
+                                      {processing ? <Loader2 className="animate-spin h-5 w-5" /> : "Initiate Login"}
+                                    </Button>
 
                                     <div className="relative py-6">
                                       <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-muted/40" /></div>
@@ -282,8 +282,9 @@ export default function LoginForm() {
                           </p>
                         </div>
 
-                        <CardHeader className="bg-muted/5 pb-8 pt-10 text-center">
-                            <CardTitle className="text-2xl font-black text-accent tracking-tighter uppercase">Create Your Alpha Account</CardTitle>
+                        <CardHeader className="bg-muted/5 pb-6 pt-10 text-center">
+                            <CardTitle className="text-2xl font-black text-accent tracking-tighter uppercase">Create Your Account</CardTitle>
+                            <CardDescription className="text-center font-medium mt-1">Join the Alpha professional network today.</CardDescription>
                         </CardHeader>
                         
                         <CardContent className="pt-2 space-y-8">
@@ -306,7 +307,7 @@ export default function LoginForm() {
                               <div className="relative py-4">
                                 <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-muted/40" /></div>
                                 <div className="relative flex justify-center text-[10px] uppercase font-black">
-                                  <span className="bg-white px-4 text-muted-foreground tracking-[0.2em]">Or</span>
+                                  <span className="bg-white px-4 text-muted-foreground tracking-[0.2em]">Or use email</span>
                                 </div>
                               </div>
                             </div>
@@ -339,13 +340,6 @@ export default function LoginForm() {
                                                 <FormMessage />
                                             </FormItem>
                                         )} />
-                                      </div>
-
-                                      <div className="flex items-center gap-3 p-3 bg-muted/20 rounded-xl border border-dashed">
-                                        <div className="h-5 w-5 rounded border border-slate-300 flex items-center justify-center bg-white cursor-pointer">
-                                          <Check className="h-3 w-3 text-primary opacity-0 group-hover:opacity-100" />
-                                        </div>
-                                        <p className="text-[11px] font-medium text-slate-600">Subscribe now and earn <span className="text-emerald-500 font-bold">100 points</span>!</p>
                                       </div>
                                     </div>
 

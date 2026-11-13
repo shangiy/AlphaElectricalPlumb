@@ -1,10 +1,8 @@
-
 import { MetadataRoute } from 'next';
 
 /**
- * Dynamic Sitemap Generator
- * Replaces the static XML file to ensure search engines find all pages correctly
- * without triggering 404 errors in the Firebase Dashboard.
+ * Dynamic Sitemap Generator v6.3.0
+ * Authority source for search engine indexing.
  */
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = 'https://alphaelectricalsplumbingltd.com';
@@ -14,11 +12,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '',
     '/contact',
     '/about',
-    '/tanks',
-    '/decor',
-    '/plumbing',
-    '/lighting',
-    '/roofing',
+    '/category/tanks',
+    '/category/plumbing',
+    '/category/lighting',
+    '/category/roofing',
+    '/category/decor',
     '/faq',
     '/terms',
     '/privacy',
