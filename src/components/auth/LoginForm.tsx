@@ -186,8 +186,8 @@ export default function LoginForm() {
                 <TabsContent value="login">
                     <Card className="rounded-[2.5rem] shadow-[0_30px_100px_-20px_rgba(0,0,0,0.15)] border-none overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-700">
                         <CardHeader className="bg-muted/5 border-b border-muted/20 pb-8 pt-10">
-                            <CardTitle className="text-2xl font-black uppercase text-accent tracking-tighter text-center">Identity Sync</CardTitle>
-                            <CardDescription className="text-center font-medium mt-1">Access your professional dashboard.</CardDescription>
+                            <CardTitle className="text-2xl font-black uppercase text-accent tracking-tighter text-center">Welcome Back</CardTitle>
+                            <CardDescription className="text-center font-medium mt-1">Enter your credentials to access your account.</CardDescription>
                         </CardHeader>
                         <CardContent className="pt-10 space-y-6">
                             <Form {...lForm}>
