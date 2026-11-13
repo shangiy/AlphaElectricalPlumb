@@ -5,7 +5,7 @@ import { supabase } from './supabase';
  * Robust Path Resolver v6.3.1:
  * Strips redundant bucket names and common folder prefixes to ensure 
  * Supabase Storage receives a clean relative path.
- * Hardened v6.3.0+: Explicitly URL-encodes path segments to fix 400 errors.
+ * Hardened v6.3.1: Explicitly URL-encodes path segments to fix 400 errors.
  */
 function resolveStoragePath(rawPath: string): string {
   if (!rawPath) return '';

@@ -1,4 +1,3 @@
-
 # ALPHA Plumbing n Electrical Ltd 
 
 This is a professional Next.js 15 e-commerce application for Alpha Electricals & Plumbing Ltd.
@@ -20,7 +19,7 @@ The app uses role-based security. To access the admin panel (`/admin`):
 2. Go to your **Supabase SQL Editor**.
 3. Run the following command to promote yourself:
 ```sql
-UPDATE public.profiles SET role = 'admin' WHERE email = 'mwangi.dev@proton.me';
+UPDATE public.profiles SET role = 'admin' SET email = 'mwangi.dev@proton.me';
 ```
 
 ### 👤 Profile & Database Setup (CRITICAL)
@@ -75,12 +74,11 @@ ALTER TABLE public.products ADD COLUMN IF NOT EXISTS featured_order INT DEFAULT 
 NOTIFY pgrst, 'reload schema';
 ```
 
-### 📅 Recent Milestones (v6.2.3)
+### 📅 Recent Milestones (v6.3.1)
 - **Routing Resilience**: Resolved Next.js dynamic segment conflict ('id' !== 'slug') by consolidating to a unified slug-based architecture with ID fallback support.
 - **Supabase Schema Sync**: Fully integrated `old_price` (numeric) and `reviews` (JSONB) columns into the global data mapping engine.
 - **SEO Optimization**: Implemented automatic ID-to-Slug redirection to preserve link equity and provide professional, human-readable URLs.
-- **Staff Portfolio Suite**: Refined System Settings to provide a focused "Identity Portfolio" for Staff roles, hiding administrative management tools.
-- **Vercel-Fidelity Analytics**: Replaced legacy telemetry with high-fidelity Observability, Analytics, and Recommendation nodes mirroring the Vercel dashboard.
+- **Production Hardening**: Applied explicit URL encoding to Supabase assets to fix 400 errors and optimized Tailwind configuration to resolve ambiguity warnings.
 
 ## Technology Stack
 
