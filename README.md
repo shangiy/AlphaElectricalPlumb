@@ -128,14 +128,13 @@ before insert or update on public.profiles
 for each row execute procedure enforce_max_admins();
 ```
 
-## 📅 Recent Milestones (v4.9.2)
-- **Security Hub**: Integrated Google reCAPTCHA v2 and server-side cryptographic verification for the sign-up sequence.
+## 📅 Recent Milestones (v5.5.0)
+- **Staff Portfolio Suite**: Refined System Settings to provide a focused "Identity Portfolio" for Staff roles, hiding administrative management tools.
+- **Role-Prioritized Routing**: Implemented intelligent login redirection, funnelling Staff directly to the Inventory hub while maintaining Admin dashboard primacy.
+- **Vercel-Fidelity Analytics**: Replaced legacy telemetry with high-fidelity Observability, Analytics, and Recommendation nodes mirroring the Vercel dashboard.
+- **Security Shield**: Integrated Google reCAPTCHA v2 with server-side cryptographic verification for the sign-up sequence.
 - **Global OAuth Cluster**: Expanded social handshake options to include Apple and GitHub with high-fidelity iconography.
 - **Kinetic Interface**: Upgraded primary action buttons with rhythmic rotating light borders and industrial-grade symmetric pill geometry.
-- **Halved-Star Intelligence**: Implemented 0.5 increment rating precision and a Popover-based overlay for instant technical feedback.
-- **High-Fidelity Catalogue**: Upgraded search interface with professional sidebar filters (Price, Color) and advanced sorting.
-- **Interactive Account Hub**: Implemented "Oraimo-inspired" hover dropdown for instant access to orders, points, and settings.
-- **Performance Suite**: Integrated ISR Edge Caching (60s), `next/image` lazy-loading, and non-blocking native video strategies.
 
 ## Technology Stack
 
