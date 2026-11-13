@@ -38,7 +38,8 @@ const collectionFileNameMap: Record<string, string> = {
 };
 
 /**
- * Helper to construct clean Supabase Storage URLs from the 'product-images' bucket
+ * Helper to construct clean Supabase Storage URLs from the 'product-images' bucket.
+ * Hardened v6.3.0: Explicitly URL-encodes segments to prevent 400 errors.
  */
 function getStoragePublicUrl(rawPath: string): string {
   if (!rawPath) return '';
@@ -53,9 +54,12 @@ function getStoragePublicUrl(rawPath: string): string {
     cleanPath = cleanPath.substring('product-images/'.length);
   }
 
+  // High-Fidelity URL Encoding for segments
+  const encodedPath = cleanPath.split('/').map(segment => encodeURIComponent(segment)).join('/');
+
   const { data } = supabase.storage
     .from('product-images')
-    .getPublicUrl(cleanPath);
+    .getPublicUrl(encodedPath);
 
   return data?.publicUrl || '';
 }

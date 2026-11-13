@@ -1,4 +1,3 @@
-
 import type { Product, Category, MockUser, Transaction, CarouselCategory } from './types';
 import { supabase } from './supabase';
 
@@ -6,6 +5,7 @@ import { supabase } from './supabase';
  * Robust Path Resolver:
  * Strips redundant bucket names and common folder prefixes to ensure 
  * Supabase Storage receives a clean relative path.
+ * Hardened v6.3.0: Explicitly URL-encodes path segments to fix 400 errors.
  */
 function resolveStoragePath(rawPath: string): string {
   if (!rawPath) return '';
@@ -27,7 +27,9 @@ function resolveStoragePath(rawPath: string): string {
   // If we still have a path, ask Supabase for the public URL
   if (clean && supabase) {
     try {
-        const { data } = supabase.storage.from(bucketName).getPublicUrl(clean);
+        // High-Fidelity URL Encoding for path segments
+        const encodedPath = clean.split('/').map(segment => encodeURIComponent(segment)).join('/');
+        const { data } = supabase.storage.from(bucketName).getPublicUrl(encodedPath);
         return data.publicUrl;
     } catch (e) {
         console.warn("Storage resolution failed for path:", clean);

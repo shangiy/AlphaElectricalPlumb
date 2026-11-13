@@ -83,6 +83,13 @@ export default {
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)',
       },
+      transitionDuration: {
+        '2500': '2500ms',
+        '3000': '3000ms',
+      },
+      transitionTimingFunction: {
+        'expo': 'cubic-bezier(0.19, 1, 0.22, 1)',
+      },
       typography: ({ theme }: any) => ({
         DEFAULT: {
           css: {

@@ -15,6 +15,7 @@ const HeroSearch = dynamic(() => import('./HeroSearch'), {
 /**
  * Dynamic Detached Hero Section v14.0
  * Features Multi-Style Background Animations and Campaign Auto-Play.
+ * Hardened v6.3.0: Resolved arbitrary Tailwind warnings for durations.
  */
 export default function Hero() {
   const [slides, setSlides] = useState<HeroSlide[]>([]);
@@ -96,7 +97,7 @@ export default function Hero() {
                   <div 
                       key={`${url}-${idx}`}
                       className={cn(
-                          "absolute inset-0 bg-cover bg-center transition-all duration-[2500ms] ease-in-out transform",
+                          "absolute inset-0 bg-cover bg-center transition-all duration-2500 ease-in-out transform",
                           isActive ? "opacity-100" : "opacity-0",
                           animation === 'zoom' && (isActive ? "scale-110" : "scale-100"),
                           animation === 'slide' && (isActive ? "translate-x-0" : "-translate-x-full"),

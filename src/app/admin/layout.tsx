@@ -37,6 +37,7 @@ import { cn } from '@/lib/utils';
 /**
  * Admin Layout v5.4.0:
  * Features Role-Aware Header Badges (Admin vs Staff).
+ * Hardened v6.3.0: Resolved arbitrary ease warnings.
  */
 function AdminSidebarWrapper({ children }: { children: React.ReactNode }) {
   const { user, logout } = useAuth();
@@ -108,7 +109,7 @@ function AdminSidebarWrapper({ children }: { children: React.ReactNode }) {
         <button 
           onClick={() => setOpenMobile(!openMobile)}
           className={cn(
-            "fixed top-1/2 -translate-y-1/2 z-[200] h-24 w-10 bg-primary text-white shadow-[10px_0_40px_rgba(0,0,0,0.3)] flex items-center justify-center transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] rounded-r-[2rem] border-y border-r border-white/20",
+            "fixed top-1/2 -translate-y-1/2 z-[200] h-24 w-10 bg-primary text-white shadow-[10px_0_40px_rgba(0,0,0,0.3)] flex items-center justify-center transition-all duration-500 ease-in-out rounded-r-[2rem] border-y border-r border-white/20",
             openMobile ? "left-[18rem]" : "left-0"
           )}
           aria-label={openMobile ? "Close Admin Menu" : "Open Admin Menu"}

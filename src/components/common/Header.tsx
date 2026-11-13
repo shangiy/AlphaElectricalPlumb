@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -275,7 +274,7 @@ export default function Header() {
                 <Image src="/logo Alpha.png" alt="Alpha Logo" width={55} height={55} className="h-auto" />
             </div>
             <div className={cn(
-                "flex flex-col text-[#28235f] group-hover:text-primary active:text-primary transition-all duration-700 ease-[cubic-bezier(0.19,1,0.22,1)]",
+                "flex flex-col text-[#28235f] group-hover:text-primary active:text-primary transition-all duration-700 ease-expo",
                 mobileSearchOpen ? "opacity-0 w-0 overflow-hidden" : "opacity-100"
             )}>
                 <span className="font-black text-xl leading-tight uppercase tracking-tighter">Alpha</span>
@@ -288,7 +287,7 @@ export default function Header() {
             <form 
               onSubmit={handleSearchSubmit} 
               className={cn(
-                "flex items-center rounded-full transition-all duration-700 ease-[cubic-bezier(0.19,1,0.22,1)]",
+                "flex items-center rounded-full transition-all duration-700 ease-expo",
                 mobileSearchOpen 
                   ? "flex-1 min-w-[140px] max-w-[280px] bg-white border border-slate-200 px-2 shadow-xl ring-4 ring-purple-500/5" 
                   : "w-10 h-10 bg-transparent border border-[#28235f]/10 justify-center"
