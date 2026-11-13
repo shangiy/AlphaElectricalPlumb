@@ -47,7 +47,7 @@ const GithubIcon = () => (
 );
 
 /**
- * Login Form v6.1.0:
+ * Login Form v6.1.1:
  * Features Enhanced Error Feedback. Toasts now provide specific diagnostic 
  * feedback on authentication failures (e.g. invalid password).
  */
@@ -124,7 +124,7 @@ export default function LoginForm() {
         toast({
           variant: 'destructive',
           title: "Access Denied",
-          description: e.message || "Invalid credentials. Please verify your secure key."
+          description: e.message || "Invalid credentials. Please verify your password."
         });
       } finally {
         setProcessing(false);
@@ -211,7 +211,7 @@ export default function LoginForm() {
                                     )} />
                                     <FormField control={lForm.control} name="password" render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Secure Key</FormLabel>
+                                            <FormLabel className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Password</FormLabel>
                                             <div className="relative">
                                                 <Input 
                                                     type={showPass ? "text" : "password"} 
