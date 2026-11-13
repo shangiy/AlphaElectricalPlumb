@@ -78,6 +78,7 @@ const resolveProductImages = (product: any): string[] => {
 
 /**
  * Maps raw Supabase product data to the standard Product type.
+ * Robustly handles the transition of 'reviews' from number to jsonb array.
  */
 export function mapProduct(p: any): Product {
   // Generate a fallback slug if none exists in the DB
@@ -85,6 +86,11 @@ export function mapProduct(p: any): Product {
     ?.toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '') || p.id;
+
+  // Handle the 'reviews' column being either a count (legacy) or a jsonb array (v6.2.2)
+  const isReviewsArray = Array.isArray(p.reviews);
+  const reviewsList = isReviewsArray ? p.reviews : [];
+  const reviewsCount = isReviewsArray ? p.reviews.length : Number(p.reviews || 0);
 
   return {
     id: p.id,
@@ -99,7 +105,8 @@ export function mapProduct(p: any): Product {
     unit: p.unit || "item",
     stockCount: Number(p.stock_count !== undefined ? p.stock_count : (p.stockCount !== undefined ? p.stockCount : 0)),
     rating: Number(p.rating || 5),
-    reviews: Number(p.reviews || 0),
+    reviews: reviewsCount,
+    reviewsList: reviewsList,
     isFeatured: !!(p.is_featured || p.isFeatured),
     featuredOrder: Number(p.featured_order || 0),
     barcode: p.barcode || p.sku || ""

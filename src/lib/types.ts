@@ -2,10 +2,13 @@
 export interface Review {
   id: string;
   author: string;
+  author_name?: string;
   avatarUrl?: string;
   rating: number;
   comment: string;
+  title?: string;
   date: string;
+  created_at?: string;
 }
 
 export interface WholesalePrice {
@@ -29,8 +32,8 @@ export interface Product {
   image_url?: string;  // Direct fallback URL
   category: string;
   rating: number;
-  reviews: number;
-  reviewsList?: Review[];
+  reviews: number; // This will count the reviews in the JSONB array
+  reviewsList: Review[]; // Maps to the JSONB 'reviews' column
   seller?: {
     name: string;
     id: string;
