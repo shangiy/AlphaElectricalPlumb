@@ -45,12 +45,13 @@ interface BannerConfig {
     vibrantTextStyle4?: string;
     bgType?: 'white' | 'blue' | 'red' | 'dynamic' | 'vibrant';
     gradientDirection?: 'left' | 'right';
+    enabled?: boolean;
 }
 
 /**
- * High-Fidelity Independent Top Banner v4.4.0:
+ * High-Fidelity Independent Top Banner v4.5.0:
  * Features Spectrum Flow atmospheric background logic with multi-color dynamic cycling.
- * vibrant Mode: Red → Orange → Yellow → Green → Purple → Blue cycle.
+ * enabled Logic: Now supports global visibility toggle from CMS.
  */
 export default function TopBanner() {
   const [config, setConfig] = useState<BannerConfig>({
@@ -75,7 +76,8 @@ export default function TopBanner() {
     vibrantText3: '',
     vibrantText4: '',
     bgType: 'dynamic',
-    gradientDirection: 'left'
+    gradientDirection: 'left',
+    enabled: true
   });
 
   useEffect(() => {
@@ -87,6 +89,8 @@ export default function TopBanner() {
     }
     loadConfig();
   }, []);
+
+  if (config.enabled === false) return null;
 
   const renderStyledText = (text: string, styleType: string, orientation: string, textStyle: string = "normal") => {
     if (!text) return null;

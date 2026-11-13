@@ -30,7 +30,8 @@ import {
   Share2,
   Video,
   Upload,
-  X
+  X,
+  Clock
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import FeaturedProductManager from './FeaturedProductManager';
@@ -109,6 +110,7 @@ interface BannerConfig {
     vibrantTextStyle4?: string;
     bgType?: 'white' | 'blue' | 'red' | 'dynamic' | 'vibrant';
     gradientDirection?: 'left' | 'right';
+    enabled?: boolean;
 }
 
 const DEFAULT_BANNER: BannerConfig = {
@@ -145,7 +147,8 @@ const DEFAULT_BANNER: BannerConfig = {
     vibrantOrientation4: 'horizontal',
     vibrantTextStyle4: 'bold',
     bgType: 'dynamic',
-    gradientDirection: 'left'
+    gradientDirection: 'left',
+    enabled: true
 };
 
 interface SocialLink {
@@ -247,7 +250,7 @@ export default function UiUxControlCenter() {
     setSubmitting(true);
     try {
         await updateStorefrontSetting('top_banner_config', bannerConfig);
-        toast({ title: "v4.4.0 Published", description: "Vibrant Spectrum Engine synchronized." });
+        toast({ title: "v4.5.0 Published", description: "Operational Window & Visibility synchronized." });
     } catch (err: any) { toast({ variant: "destructive", description: err.message }); } finally { setSubmitting(false); }
   };
 
@@ -422,7 +425,9 @@ export default function UiUxControlCenter() {
                         <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-60">Engine Sync Active</p>
                         <h3 className="text-xl font-black uppercase">Real-time Engine Preview</h3>
                     </div>
-                    <Badge className="bg-primary text-white border-none">v4.4.0 LIVE</Badge>
+                    <Badge className={cn("border-none text-white", bannerConfig.enabled ? "bg-green-600" : "bg-red-600")}>
+                        {bannerConfig.enabled ? 'v4.5.0 LIVE' : 'v4.5.0 OFFLINE'}
+                    </Badge>
                 </div>
                 <div className={cn(
                     "py-3 flex items-center justify-center overflow-hidden transition-colors",
@@ -462,7 +467,7 @@ export default function UiUxControlCenter() {
 
             <Card className="rounded-[2.5rem] border shadow-xl overflow-hidden">
                 <CardHeader className="bg-accent text-white p-8">
-                    <CardTitle className="text-2xl font-black uppercase tracking-tight">Banner Engine v4.4.0</CardTitle>
+                    <CardTitle className="text-2xl font-black uppercase tracking-tight">Banner Engine v4.5.0</CardTitle>
                     <CardDescription className="text-white/60">Configure atmospheric controls, typography, and spectrum pace.</CardDescription>
                 </CardHeader>
                 <CardContent className="p-10 space-y-12">
@@ -562,6 +567,52 @@ export default function UiUxControlCenter() {
                                         </div>
                                     </div>
                                 )}
+                                
+                                {/* New Operational Window & Global Toggles */}
+                                <div className="border-t border-dotted border-muted-foreground/30 pt-6 mt-4 space-y-6 animate-in slide-in-from-top-2 duration-500">
+                                    <div className="flex flex-col sm:flex-row items-center justify-between gap-6 p-5 bg-white/40 rounded-3xl border border-dashed border-accent/10 shadow-inner">
+                                        <div className="flex items-center gap-4">
+                                            <div className="h-12 w-12 rounded-2xl bg-accent text-white flex items-center justify-center shadow-lg transform -rotate-3">
+                                                <Clock className="h-6 w-6" />
+                                            </div>
+                                            <div className="space-y-0.5">
+                                                <p className="text-[10px] font-black uppercase text-accent tracking-[0.2em]">Operational Window</p>
+                                                <p className="text-base font-black text-slate-800 tracking-tighter">9:00 AM — 6:00 AM</p>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex items-center gap-5">
+                                             <div className="flex flex-col items-end gap-1">
+                                                <div className="flex items-center gap-1.5 bg-accent/5 px-2 py-0.5 rounded-md border border-accent/10">
+                                                    <Youtube className="h-3 w-3 text-accent" />
+                                                    <span className="text-[8px] font-black uppercase text-accent tracking-tighter">Social Hub Sync</span>
+                                                </div>
+                                                <span className="text-[10px] font-bold text-muted-foreground/60 uppercase">Visibility Engine</span>
+                                             </div>
+                                             
+                                             <div className="flex gap-2 p-1 bg-muted/30 rounded-2xl border shadow-sm">
+                                                <button 
+                                                  onClick={() => setBannerConfig({...bannerConfig, enabled: true})}
+                                                  className={cn(
+                                                    "h-10 px-5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all",
+                                                    bannerConfig.enabled ? "bg-green-600 text-white shadow-lg scale-105" : "text-muted-foreground hover:bg-muted/50"
+                                                  )}
+                                                >
+                                                    ON
+                                                </button>
+                                                <button 
+                                                  onClick={() => setBannerConfig({...bannerConfig, enabled: false})}
+                                                  className={cn(
+                                                    "h-10 px-5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all",
+                                                    !bannerConfig.enabled ? "bg-red-600 text-white shadow-lg scale-105" : "text-muted-foreground hover:bg-muted/50"
+                                                  )}
+                                                >
+                                                    OFF
+                                                </button>
+                                             </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -627,7 +678,7 @@ export default function UiUxControlCenter() {
 
                     <Button onClick={handleSaveBanner} disabled={submitting} className="w-full h-16 rounded-full font-black text-xl uppercase bg-primary text-white shadow-2xl transition-all hover:scale-[1.02] active:scale-95">
                         {submitting ? <Loader2 className="animate-spin mr-3" /> : <Save className="mr-3" />}
-                        Sync v4.4.0 Engine
+                        Sync v4.5.0 Engine
                     </Button>
                 </CardContent>
             </Card>
