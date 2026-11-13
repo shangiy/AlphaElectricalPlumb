@@ -74,11 +74,11 @@ ALTER TABLE public.products ADD COLUMN IF NOT EXISTS featured_order INT DEFAULT 
 NOTIFY pgrst, 'reload schema';
 ```
 
-### 📅 Recent Milestones (v6.3.3)
-- **Routing Resilience**: Fixed critical Next.js 15 server crash by neutralizing duplicate dynamic route segments (`id` vs `slug`).
-- **Config Hardening**: Corrected experimental Next.js configuration keys to resolve production initialization warnings.
+### 📅 Recent Milestones (v6.3.4)
+- **Routing Resilience**: Fully neutralized the `[id]` folder to resolve the Next.js 15 sibling dynamic segment collision.
+- **Config Hardening**: Eliminated unrecognized experimental keys and optimized `serverActions.allowedOrigins` for cloud development environments.
 - **Supabase Schema Sync**: Fully integrated `old_price` (numeric) and `reviews` (JSONB) columns into the global data mapping engine.
-- **Production Hardening**: Applied explicit URL encoding to Supabase assets to fix 400 errors and optimized Tailwind configuration to resolve ambiguity warnings.
+- **Production Hardening**: Applied explicit URL encoding to Supabase assets and optimized Tailwind configuration.
 
 ## Technology Stack
 

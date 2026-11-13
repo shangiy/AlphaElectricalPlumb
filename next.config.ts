@@ -12,7 +12,7 @@ const nextConfig: NextConfig = {
     // your project has ESLint errors.
     ignoreDuringBuilds: true,
   },
-  // Increase payload limit for large video uploads in Server Actions
+  // Next.js 15 Experimental Features
   experimental: {
     serverActions: {
       bodySizeLimit: '50mb',
