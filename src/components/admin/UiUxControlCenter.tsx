@@ -520,6 +520,52 @@ export default function UiUxControlCenter() {
                                         {BOLDNESS_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
                                     </select>
                                 </div>
+
+                                {/* Moved Operational Window & Global Toggles */}
+                                <div className="border-t border-dotted border-muted-foreground/30 pt-6 mt-4 space-y-6 animate-in slide-in-from-top-2 duration-500">
+                                    <div className="flex flex-col sm:flex-row items-center justify-between gap-6 p-5 bg-white/40 rounded-3xl border border-dashed border-accent/10 shadow-inner">
+                                        <div className="flex items-center gap-4">
+                                            <div className="h-12 w-12 rounded-2xl bg-accent text-white flex items-center justify-center shadow-lg transform -rotate-3">
+                                                <Clock className="h-6 w-6" />
+                                            </div>
+                                            <div className="space-y-0.5">
+                                                <p className="text-[10px] font-black uppercase text-accent tracking-[0.2em]">Operational Window</p>
+                                                <p className="text-base font-black text-slate-800 tracking-tighter">9:00 AM — 6:00 AM</p>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex items-center gap-5">
+                                             <div className="flex flex-col items-end gap-1">
+                                                <div className="flex items-center gap-1.5 bg-accent/5 px-2 py-0.5 rounded-md border border-accent/10">
+                                                    <Youtube className="h-3 w-3 text-accent" />
+                                                    <span className="text-[8px] font-black uppercase text-accent tracking-tighter">Social Hub Sync</span>
+                                                </div>
+                                                <span className="text-[10px] font-bold text-muted-foreground/60 uppercase">Visibility Engine</span>
+                                             </div>
+                                             
+                                             <div className="flex gap-2 p-1 bg-muted/30 rounded-2xl border shadow-sm">
+                                                <button 
+                                                  onClick={() => setBannerConfig({...bannerConfig, enabled: true})}
+                                                  className={cn(
+                                                    "h-10 px-5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all",
+                                                    bannerConfig.enabled ? "bg-green-600 text-white shadow-lg scale-105" : "text-muted-foreground hover:bg-muted/50"
+                                                  )}
+                                                >
+                                                    ON
+                                                </button>
+                                                <button 
+                                                  onClick={() => setBannerConfig({...bannerConfig, enabled: false})}
+                                                  className={cn(
+                                                    "h-10 px-5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all",
+                                                    !bannerConfig.enabled ? "bg-red-600 text-white shadow-lg scale-105" : "text-muted-foreground hover:bg-muted/50"
+                                                  )}
+                                                >
+                                                    OFF
+                                                </button>
+                                             </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
                             <div className="space-y-8">
@@ -567,52 +613,6 @@ export default function UiUxControlCenter() {
                                         </div>
                                     </div>
                                 )}
-                                
-                                {/* New Operational Window & Global Toggles */}
-                                <div className="border-t border-dotted border-muted-foreground/30 pt-6 mt-4 space-y-6 animate-in slide-in-from-top-2 duration-500">
-                                    <div className="flex flex-col sm:flex-row items-center justify-between gap-6 p-5 bg-white/40 rounded-3xl border border-dashed border-accent/10 shadow-inner">
-                                        <div className="flex items-center gap-4">
-                                            <div className="h-12 w-12 rounded-2xl bg-accent text-white flex items-center justify-center shadow-lg transform -rotate-3">
-                                                <Clock className="h-6 w-6" />
-                                            </div>
-                                            <div className="space-y-0.5">
-                                                <p className="text-[10px] font-black uppercase text-accent tracking-[0.2em]">Operational Window</p>
-                                                <p className="text-base font-black text-slate-800 tracking-tighter">9:00 AM — 6:00 AM</p>
-                                            </div>
-                                        </div>
-
-                                        <div className="flex items-center gap-5">
-                                             <div className="flex flex-col items-end gap-1">
-                                                <div className="flex items-center gap-1.5 bg-accent/5 px-2 py-0.5 rounded-md border border-accent/10">
-                                                    <Youtube className="h-3 w-3 text-accent" />
-                                                    <span className="text-[8px] font-black uppercase text-accent tracking-tighter">Social Hub Sync</span>
-                                                </div>
-                                                <span className="text-[10px] font-bold text-muted-foreground/60 uppercase">Visibility Engine</span>
-                                             </div>
-                                             
-                                             <div className="flex gap-2 p-1 bg-muted/30 rounded-2xl border shadow-sm">
-                                                <button 
-                                                  onClick={() => setBannerConfig({...bannerConfig, enabled: true})}
-                                                  className={cn(
-                                                    "h-10 px-5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all",
-                                                    bannerConfig.enabled ? "bg-green-600 text-white shadow-lg scale-105" : "text-muted-foreground hover:bg-muted/50"
-                                                  )}
-                                                >
-                                                    ON
-                                                </button>
-                                                <button 
-                                                  onClick={() => setBannerConfig({...bannerConfig, enabled: false})}
-                                                  className={cn(
-                                                    "h-10 px-5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all",
-                                                    !bannerConfig.enabled ? "bg-red-600 text-white shadow-lg scale-105" : "text-muted-foreground hover:bg-muted/50"
-                                                  )}
-                                                >
-                                                    OFF
-                                                </button>
-                                             </div>
-                                        </div>
-                                    </div>
-                                </div>
                             </div>
                         </div>
                     </div>
