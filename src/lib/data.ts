@@ -1,3 +1,4 @@
+
 import type { Product, Category, MockUser, Transaction, CarouselCategory } from './types';
 import { supabase } from './supabase';
 
@@ -79,8 +80,15 @@ const resolveProductImages = (product: any): string[] => {
  * Maps raw Supabase product data to the standard Product type.
  */
 export function mapProduct(p: any): Product {
+  // Generate a fallback slug if none exists in the DB
+  const generatedSlug = p.name
+    ?.toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '') || p.id;
+
   return {
     id: p.id,
+    slug: p.slug || generatedSlug,
     name: p.name || p.title || "Unnamed Product",
     category: p.category || p.cat || p.cat_name || p.category_name || "UNCATEGORIZED",
     description: p.description || p.desc || p.short_description || "",

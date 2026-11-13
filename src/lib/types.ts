@@ -16,6 +16,7 @@ export interface WholesalePrice {
 
 export interface Product {
   id: string;
+  slug: string;
   name: string;
   description: string;
   longDescription: string;

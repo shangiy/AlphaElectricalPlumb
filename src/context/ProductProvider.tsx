@@ -1,3 +1,4 @@
+
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
@@ -17,7 +18,7 @@ interface ProductProviderProps {
   children: ReactNode;
 }
 
-export type ProductFormData = Omit<Product, 'id' | 'rating'>;
+export type ProductFormData = Omit<Product, 'id' | 'rating' | 'slug'>;
 
 /** URL-safe slug; the random suffix keeps it unique. */
 const makeSlug = (name: string) =>
@@ -34,6 +35,7 @@ interface ProductContextType {
   updateFeaturedOrder: (updates: { id: string, featured_order: number }[]) => Promise<void>;
   updateStock: (productId: string, newCount: number) => Promise<void>;
   getProductById: (productId: string) => Product | undefined;
+  getProductBySlug: (slug: string) => Product | undefined;
   refreshProducts: () => Promise<void>;
 }
 
@@ -87,9 +89,10 @@ export function ProductProvider({ children }: ProductProviderProps) {
   const addProduct = useCallback(async (productData: ProductFormData) => {
     setSubmitting(true);
     try {
+      const slug = makeSlug(productData.name);
       const payload: Record<string, any> = {
         name: productData.name,
-        slug: makeSlug(productData.name),
+        slug: slug,
         price: productData.price,
         old_price: productData.oldPrice || 0,
         category: productData.category,
@@ -119,7 +122,11 @@ export function ProductProvider({ children }: ProductProviderProps) {
     setSubmitting(true);
     try {
       const payload: Record<string, any> = {};
-      if (productData.name !== undefined) payload.name = productData.name;
+      if (productData.name !== undefined) {
+        payload.name = productData.name;
+        // Optionally update slug if name changes significantly?
+        // Usually better to keep slug stable for SEO.
+      }
       if (productData.price !== undefined) payload.price = productData.price;
       if (productData.oldPrice !== undefined) payload.old_price = productData.oldPrice;
       if (productData.category !== undefined) payload.category = productData.category;
@@ -192,6 +199,10 @@ export function ProductProvider({ children }: ProductProviderProps) {
       return products.find(p => p.id === productId);
   }, [products]);
 
+  const getProductBySlug = useCallback((slug: string): Product | undefined => {
+      return products.find(p => p.slug === slug);
+  }, [products]);
+
   const value = {
     products,
     loading,
@@ -203,6 +214,7 @@ export function ProductProvider({ children }: ProductProviderProps) {
     updateFeaturedOrder,
     updateStock,
     getProductById,
+    getProductBySlug,
     refreshProducts
   };
 

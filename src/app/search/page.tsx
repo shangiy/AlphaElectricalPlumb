@@ -206,10 +206,11 @@ function SearchPageContent() {
 // Optimized Card for Search List
 function ProductListCard({ product }: { product: Product }) {
   const formatPrice = (p: number) => `KES ${p.toLocaleString()}`;
+  const productLink = `/products/${product.slug || product.id}`;
   
   return (
     <div className="group bg-white rounded-[2rem] border overflow-hidden hover:shadow-2xl transition-all duration-500 h-full flex flex-col">
-      <Link href={`/products/${product.id}`} className="block relative aspect-square bg-muted/10">
+      <Link href={productLink} className="block relative aspect-square bg-muted/10">
         <img 
           src={product.imageUrls?.[0] || '/placeholder.jpg'} 
           alt={product.name} 
@@ -223,7 +224,7 @@ function ProductListCard({ product }: { product: Product }) {
       </Link>
       <div className="p-6 space-y-4 flex-1 flex flex-col">
         <div className="space-y-1">
-          <Link href={`/products/${product.id}`}>
+          <Link href={productLink}>
             <h3 className="font-black text-accent uppercase tracking-tight text-lg line-clamp-1 group-hover:text-primary transition-colors">{product.name}</h3>
           </Link>
           <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">{product.category}</p>
@@ -237,7 +238,7 @@ function ProductListCard({ product }: { product: Product }) {
             )}
           </div>
           <Button asChild size="sm" variant="outline" className="rounded-full font-black uppercase text-[10px] tracking-widest border-2">
-            <Link href={`/products/${product.id}`}>View Details</Link>
+            <Link href={productLink}>View Details</Link>
           </Button>
         </div>
       </div>

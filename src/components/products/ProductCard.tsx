@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
@@ -14,6 +15,7 @@ import WishlistButton from './WishlistButton';
 /**
  * Premium Interactive Product Card v2.6.0:
  * Features: High-performance Next.js Image migration, Live Supabase Wishlist integration, and hover carousel.
+ * Routing Sync: Now uses human-readable slugs for professional SEO-friendly URLs.
  */
 export default function ProductCard({ product }: { product: Product }) {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -72,6 +74,9 @@ export default function ProductCard({ product }: { product: Product }) {
     }).format(amount);
   };
 
+  // SEO-friendly link destination
+  const productLink = `/products/${product.slug || product.id}`;
+
   return (
     <div 
       className="group relative rounded-2xl border bg-white overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col h-full"
@@ -80,7 +85,7 @@ export default function ProductCard({ product }: { product: Product }) {
     >
       {/* Top Image Section */}
       <div className="relative aspect-square overflow-hidden bg-muted/30">
-        <Link href={`/products/${product.id}`} className="block h-full w-full">
+        <Link href={productLink} className="block h-full w-full">
           {activeImages.map((url, idx) => (
             <div 
               key={`${url}-${idx}`}
@@ -151,7 +156,7 @@ export default function ProductCard({ product }: { product: Product }) {
       {/* Content Section */}
       <div className="p-4 flex flex-col flex-1">
         <div className="space-y-1 mb-2">
-            <Link href={`/products/${product.id}`} className="block">
+            <Link href={productLink} className="block">
                 <h3 className="font-bold text-accent text-sm md:text-base line-clamp-1 hover:text-primary transition-colors">
                     {product.name}
                 </h3>
@@ -194,7 +199,7 @@ export default function ProductCard({ product }: { product: Product }) {
                 className="flex-1 rounded-xl text-xs font-bold border-muted-foreground/20 text-accent h-9" 
                 asChild
             >
-                <Link href={`/products/${product.id}`}>View More</Link>
+                <Link href={productLink}>View More</Link>
             </Button>
             <Button 
                 size="sm" 

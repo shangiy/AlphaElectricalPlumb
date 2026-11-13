@@ -71,7 +71,7 @@ export default function ProductRecommendations({ productId, category }: ProductR
                 <div className="p-1 h-full">
                   <Card className="h-full flex flex-col overflow-hidden transition-all duration-300 hover:shadow-lg border-none bg-transparent group">
                     <CardHeader className="p-0">
-                      <Link href={`/products/${product.id}`} className="block">
+                      <Link href={`/products/${product.slug || product.id}`} className="block">
                         <div className="aspect-square overflow-hidden rounded-[1.5rem] bg-secondary/20 flex items-center justify-center border border-white/20">
                           {product.imageUrls?.[0] ? (
                             <img
@@ -86,7 +86,7 @@ export default function ProductRecommendations({ productId, category }: ProductR
                       </Link>
                     </CardHeader>
                     <CardContent className="p-3 flex-grow text-center">
-                      <Link href={`/products/${product.id}`}>
+                      <Link href={`/products/${product.slug || product.id}`}>
                         <p className="text-sm font-bold font-headline leading-tight hover:text-primary transition-colors line-clamp-2 min-h-[2.5rem]">
                             {product.name}
                         </p>
