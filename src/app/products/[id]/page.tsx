@@ -1,23 +1,16 @@
 
-import { redirect } from 'next/navigation';
-import { getProducts } from '@/lib/data';
-
 /**
- * Legacy ID Redirector:
- * Catches historical UUID links and redirects them to the new SEO-friendly slug URLs.
- * This prevents the 500 Route Conflict error.
+ * LEGACY ROUTE DEPRECATED
+ * 
+ * This folder [id] is causing a Next.js dynamic routing conflict with [slug].
+ * Product routing has been unified in src/app/products/[slug]/page.tsx.
+ * 
+ * IMPORTANT: To fully resolve the server crash, please delete the 
+ * 'src/app/products/[id]' folder from your project filesystem manually.
  */
-export default async function LegacyProductPage({ params }: { params: Promise<{ id: string }> }) {
-  const resolvedParams = await params;
-  const id = resolvedParams.id;
-  
-  const allProducts = await getProducts();
-  const product = allProducts.find(p => p.id === id);
 
-  if (product && product.slug) {
-    redirect(`/products/${product.slug}`);
-  }
+export const dynamic = 'force-static';
 
-  // If no product found or no slug, redirect to search
-  redirect('/search');
+export default function DeprecatedRoute() {
+  return null;
 }
