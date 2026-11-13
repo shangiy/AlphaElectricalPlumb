@@ -616,6 +616,78 @@ export default function UiUxControlCenter() {
                         </div>
                     </div>
 
+                    {/* VIBRANT STICKER ENGINE (Ordinal Badge Sequence) */}
+                    <div className="p-8 rounded-[2.5rem] bg-primary/5 border border-dashed border-primary/20 space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+                        <div className="flex items-center gap-3">
+                            <Sparkles className="text-primary h-6 w-6" />
+                            <div>
+                                <h3 className="text-lg font-black text-accent uppercase tracking-widest">Vibrant Sticker Engine</h3>
+                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Configurable ordinal badges with spectrum effects.</p>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            {[1, 2, 3, 4].map((num) => {
+                                const suffix = num === 1 ? '' : num.toString();
+                                const textKey = `vibrantText${suffix}` as keyof BannerConfig;
+                                const styleKey = `vibrantStyleType${suffix}` as keyof BannerConfig;
+                                const orientKey = `vibrantOrientation${suffix}` as keyof BannerConfig;
+                                const textStyleKey = `vibrantTextStyle${suffix}` as keyof BannerConfig;
+
+                                return (
+                                    <div key={num} className="bg-white p-6 rounded-3xl border shadow-sm space-y-5 group hover:border-primary transition-all relative overflow-hidden">
+                                        <div className="absolute top-0 right-0 p-3 bg-primary/5 rounded-bl-2xl border-b border-l">
+                                            <span className="text-[9px] font-black text-primary uppercase">Badge {num}</span>
+                                        </div>
+                                        
+                                        <div className="space-y-2">
+                                            <Label className="text-[9px] font-black uppercase text-muted-foreground/60 tracking-widest">Sticker Content</Label>
+                                            <Input 
+                                                value={(bannerConfig[textKey] as string) || ''} 
+                                                onChange={(e) => setBannerConfig({ ...bannerConfig, [textKey]: e.target.value })}
+                                                placeholder="e.g., MASHUJAA"
+                                                className="h-11 rounded-xl font-black bg-muted/10 border-none focus:bg-white transition-all uppercase"
+                                            />
+                                        </div>
+
+                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                            <div className="space-y-1.5">
+                                                <Label className="text-[8px] font-black uppercase text-muted-foreground/60">Effect Style</Label>
+                                                <select 
+                                                    value={(bannerConfig[styleKey] as string) || 'kenyan-flag'}
+                                                    onChange={(e) => setBannerConfig({ ...bannerConfig, [styleKey]: e.target.value })}
+                                                    className="w-full h-9 rounded-lg border text-[10px] font-bold bg-white px-2"
+                                                >
+                                                    {STYLE_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
+                                                </select>
+                                            </div>
+                                            <div className="space-y-1.5">
+                                                <Label className="text-[8px] font-black uppercase text-muted-foreground/60">Orientation</Label>
+                                                <select 
+                                                    value={(bannerConfig[orientKey] as string) || 'vertical'}
+                                                    onChange={(e) => setBannerConfig({ ...bannerConfig, [orientKey]: e.target.value })}
+                                                    className="w-full h-9 rounded-lg border text-[10px] font-bold bg-white px-2"
+                                                >
+                                                    {ORIENTATION_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
+                                                </select>
+                                            </div>
+                                            <div className="space-y-1.5">
+                                                <Label className="text-[8px] font-black uppercase text-muted-foreground/60">Font Style</Label>
+                                                <select 
+                                                    value={(bannerConfig[textStyleKey] as string) || 'normal'}
+                                                    onChange={(e) => setBannerConfig({ ...bannerConfig, [textStyleKey]: e.target.value })}
+                                                    className="w-full h-9 rounded-lg border text-[10px] font-bold bg-white px-2"
+                                                >
+                                                    {TEXT_STYLE_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+
                     {bannerConfig.coloredItems && bannerConfig.coloredItems.length > 0 && (
                         <div className="p-8 rounded-[2.5rem] bg-secondary/10 border border-dashed border-accent/20 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
                             <div className="flex items-center gap-3 mb-2">
