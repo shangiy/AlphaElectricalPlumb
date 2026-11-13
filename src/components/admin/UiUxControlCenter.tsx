@@ -521,7 +521,6 @@ export default function UiUxControlCenter() {
                                     </select>
                                 </div>
 
-                                {/* Moved Operational Window & Global Toggles */}
                                 <div className="border-t border-dotted border-muted-foreground/30 pt-6 mt-4 space-y-6 animate-in slide-in-from-top-2 duration-500">
                                     <div className="flex flex-col sm:flex-row items-center justify-between gap-6 p-5 bg-white/40 rounded-3xl border border-dashed border-accent/10 shadow-inner">
                                         <div className="flex items-center gap-4">
@@ -589,7 +588,7 @@ export default function UiUxControlCenter() {
                                 </div>
 
                                 {(bannerConfig.bgType === 'dynamic' || bannerConfig.bgType === 'vibrant') && (
-                                    <div className="space-y-2 pt-4 border-t border-dashed animate-in slide-in-from-top-2 duration-500">
+                                    <div className="space-y-2 animate-in slide-in-from-top-2 duration-500">
                                         <Label className="text-[9px] font-black uppercase text-muted-foreground/60 flex items-center gap-1.5"><MoveHorizontal size={12}/> Cloud Flow Direction</Label>
                                         <div className="grid grid-cols-2 gap-3">
                                             <button
