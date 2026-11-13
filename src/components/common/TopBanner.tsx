@@ -43,15 +43,18 @@ interface BannerConfig {
     vibrantStyleType4?: string;
     vibrantOrientation4?: string;
     vibrantTextStyle4?: string;
+    holidayPill1?: string;
+    holidayTheme1?: string;
+    holidayPill2?: string;
+    holidayTheme2?: string;
     bgType?: 'white' | 'blue' | 'red' | 'dynamic' | 'vibrant';
     gradientDirection?: 'left' | 'right';
     enabled?: boolean;
 }
 
 /**
- * High-Fidelity Independent Top Banner v4.5.0:
- * Features Spectrum Flow atmospheric background logic with multi-color dynamic cycling.
- * enabled Logic: Now supports global visibility toggle from CMS.
+ * High-Fidelity Independent Top Banner v4.7.0:
+ * Features Seasonal Event Pills with themed logic.
  */
 export default function TopBanner() {
   const [config, setConfig] = useState<BannerConfig>({
@@ -75,6 +78,10 @@ export default function TopBanner() {
     vibrantText2: '',
     vibrantText3: '',
     vibrantText4: '',
+    holidayPill1: '',
+    holidayTheme1: 'standard',
+    holidayPill2: '',
+    holidayTheme2: 'standard',
     bgType: 'dynamic',
     gradientDirection: 'left',
     enabled: true
@@ -134,6 +141,36 @@ export default function TopBanner() {
     );
   };
 
+  const renderHolidayPill = (text: string, theme: string) => {
+    if (!text) return null;
+    
+    const themeStyles: Record<string, string> = {
+      standard: 'text-accent border-slate-200',
+      christmas: 'text-red-600 border-green-600 font-black',
+      easter: 'text-purple-600 border-yellow-400',
+      'new-year': 'text-amber-600 border-black font-black',
+      valentines: 'text-rose-500 border-pink-200',
+      eid: 'text-emerald-700 border-emerald-200',
+      madaraka: 'text-black border-red-600',
+      'black-friday': 'text-white bg-black border-white/20',
+      'flash-sale': 'text-yellow-400 border-yellow-400 animate-pulse',
+      'back-to-school': 'text-blue-600 border-orange-400',
+      'alpha-anniversary': 'text-primary border-primary font-black'
+    };
+
+    const styleClass = themeStyles[theme] || themeStyles.standard;
+
+    return (
+      <span className={cn(
+        "px-4 py-0.5 bg-white border rounded-full text-[10px] font-bold uppercase tracking-widest whitespace-nowrap inline-flex items-center gap-1.5 shadow-sm",
+        theme === 'black-friday' && 'bg-black',
+        styleClass
+      )}>
+        {text}
+      </span>
+    );
+  };
+
   const getBgClasses = () => {
       if (config.bgType === 'white') return 'bg-white text-[#28235f] border-b';
       if (config.bgType === 'blue') return 'bg-blue-600 text-white';
@@ -173,6 +210,9 @@ export default function TopBanner() {
                 {displayItems.map((item, idx) => (
                   <React.Fragment key={idx}>
                     <li className={cn("flex items-center gap-4 uppercase tracking-widest", config.fontWeight || 'font-bold')} style={{ fontSize: `${config.fontSize}px` }}>
+                        {config.holidayPill1 && <span>{renderHolidayPill(config.holidayPill1, config.holidayTheme1 || 'standard')}</span>}
+                        {config.holidayPill2 && <span>{renderHolidayPill(config.holidayPill2, config.holidayTheme2 || 'standard')}</span>}
+                        
                         {config.vibrantText && <span>{renderStyledText(config.vibrantText, config.vibrantStyleType || 'kenyan-flag', config.vibrantOrientation || 'vertical', config.vibrantTextStyle)}</span>}
                         {config.vibrantText2 && <span>{renderStyledText(config.vibrantText2, config.vibrantStyleType2 || 'gold-gradient', config.vibrantOrientation2 || 'horizontal', config.vibrantTextStyle2)}</span>}
                         {config.vibrantText3 && <span>{renderStyledText(config.vibrantText3, config.vibrantStyleType3 || 'neon-glow', config.vibrantOrientation3 || 'vertical', config.vibrantTextStyle3)}</span>}

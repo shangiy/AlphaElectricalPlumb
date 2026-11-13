@@ -31,7 +31,8 @@ import {
   Video,
   Upload,
   X,
-  Clock
+  Clock,
+  Gift
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import FeaturedProductManager from './FeaturedProductManager';
@@ -72,6 +73,21 @@ export const BOLDNESS_OPTIONS = [
     { id: 'font-black', label: 'Black' }
 ];
 
+export const HOLIDAY_THEMES = [
+    { id: 'standard', label: '⚪ Standard Professional' },
+    { id: 'christmas', label: '🎄 Christmas Spirit' },
+    { id: 'easter', label: '🥚 Easter Sunday' },
+    { id: 'new-year', label: '🎆 New Year 2027' },
+    { id: 'valentines', label: '💖 Valentine\'s Day' },
+    { id: 'eid', label: '🌙 Eid Mubarak' },
+    { id: 'madaraka', label: '🦅 Madaraka Day' },
+    { id: 'black-friday', label: '🛍️ Black Friday' },
+    { id: 'cyber-monday', label: '💻 Cyber Monday' },
+    { id: 'flash-sale', label: '⚡ Flash Sale Dynamic' },
+    { id: 'back-to-school', label: '📚 Back to School' },
+    { id: 'alpha-anniversary', label: '⭐ Alpha Anniversary' }
+];
+
 interface BannerItem {
     text: string;
     color: string;
@@ -108,6 +124,10 @@ interface BannerConfig {
     vibrantStyleType4?: string;
     vibrantOrientation4?: string;
     vibrantTextStyle4?: string;
+    holidayPill1?: string;
+    holidayTheme1?: string;
+    holidayPill2?: string;
+    holidayTheme2?: string;
     bgType?: 'white' | 'blue' | 'red' | 'dynamic' | 'vibrant';
     gradientDirection?: 'left' | 'right';
     enabled?: boolean;
@@ -146,6 +166,10 @@ const DEFAULT_BANNER: BannerConfig = {
     vibrantStyleType4: 'fire-emoji',
     vibrantOrientation4: 'horizontal',
     vibrantTextStyle4: 'bold',
+    holidayPill1: '',
+    holidayTheme1: 'standard',
+    holidayPill2: '',
+    holidayTheme2: 'standard',
     bgType: 'dynamic',
     gradientDirection: 'left',
     enabled: true
@@ -681,6 +705,55 @@ export default function UiUxControlCenter() {
                                                     {TEXT_STYLE_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
                                                 </select>
                                             </div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+
+                    {/* SEASONAL EVENT ENGINE (Pill Shape Slots) */}
+                    <div className="p-8 rounded-[2.5rem] bg-white border border-dashed border-slate-200 space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-1000 mt-8 shadow-sm">
+                        <div className="flex items-center gap-3">
+                            <div className="h-10 w-10 rounded-2xl bg-amber-500/10 flex items-center justify-center">
+                                <Gift className="text-amber-600 h-6 w-6" />
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-black text-accent uppercase tracking-widest">Seasonal Event Engine</h3>
+                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">High-visibility themed pills for holiday campaigns.</p>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            {[1, 2].map((num) => {
+                                const textKey = `holidayPill${num}` as keyof BannerConfig;
+                                const themeKey = `holidayTheme${num}` as keyof BannerConfig;
+
+                                return (
+                                    <div key={num} className="bg-slate-50/50 p-6 rounded-[2rem] border space-y-5 group hover:border-amber-400 transition-all relative overflow-hidden">
+                                        <div className="absolute top-0 right-0 p-3 bg-amber-500/5 rounded-bl-2xl border-b border-l">
+                                            <span className="text-[9px] font-black text-amber-600 uppercase">Slot {num}</span>
+                                        </div>
+                                        
+                                        <div className="space-y-2">
+                                            <Label className="text-[9px] font-black uppercase text-muted-foreground/60 tracking-widest">Event Text</Label>
+                                            <Input 
+                                                value={(bannerConfig[textKey] as string) || ''} 
+                                                onChange={(e) => setBannerConfig({ ...bannerConfig, [textKey]: e.target.value })}
+                                                placeholder="e.g., MERRY CHRISTMAS"
+                                                className="h-11 rounded-full font-black bg-white border-slate-200 focus:ring-amber-500 transition-all uppercase px-6"
+                                            />
+                                        </div>
+
+                                        <div className="space-y-1.5">
+                                            <Label className="text-[8px] font-black uppercase text-muted-foreground/60">Campaign Theme</Label>
+                                            <select 
+                                                value={(bannerConfig[themeKey] as string) || 'standard'}
+                                                onChange={(e) => setBannerConfig({ ...bannerConfig, [themeKey]: e.target.value })}
+                                                className="w-full h-10 rounded-xl border text-[10px] font-bold bg-white px-3"
+                                            >
+                                                {HOLIDAY_THEMES.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
+                                            </select>
                                         </div>
                                     </div>
                                 );
