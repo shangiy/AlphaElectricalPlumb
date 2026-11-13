@@ -110,7 +110,7 @@ const AccountMenuContent = ({ user, logout, isMounted }: { user: any, logout: ()
 );
 
 /**
- * High-Fidelity Header v24.1 (Ecosystem v4.5.2):
+ * High-Fidelity Header v6.3.1 (Ecosystem v4.5.2):
  * - Mobile Account Hub: Added DropdownMenu for touch-responsive account actions.
  * - Forefront Intelligence: Boosted z-index for both mobile and desktop account menus to z-110.
  * - Global Layering: Boosted header z-index to z-100 to ensure primacy over all page content.

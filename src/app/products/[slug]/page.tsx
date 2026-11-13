@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useParams, notFound, useRouter } from 'next/navigation';
@@ -24,7 +23,7 @@ import {
 import ReviewForm from '@/components/reviews/ReviewForm';
 
 /**
- * Unified Product Engine v6.2.3:
+ * Unified Product Engine v6.3.1:
  * Resolves Next.js routing conflicts by consolidating all product logic here.
  * Features: Dual-lookup (Slug/ID), Intelligent Redirection, and SEO normalization.
  */
