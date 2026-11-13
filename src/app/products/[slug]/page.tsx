@@ -1,13 +1,13 @@
 
 'use client';
 
-import { useParams, notFound, useRouter, redirect } from 'next/navigation';
+import { useParams, notFound, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useProducts } from '@/context/ProductProvider';
 import { Rating } from '@/components/ui/rating';
 import ProductRecommendations from '@/components/products/ProductRecommendations';
 import BuyNowButton from '@/components/products/ContactSellerForm';
-import { Truck, Wrench, MessageCircle, Star, Loader2 } from 'lucide-react';
+import { Truck, Wrench, MessageCircle, Star, Loader2, Package } from 'lucide-react';
 import AddToCartButton from '@/components/products/AddToCartButton';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
@@ -24,9 +24,9 @@ import {
 import ReviewForm from '@/components/reviews/ReviewForm';
 
 /**
- * Unified Unified Product Engine v6.2.1:
- * Resolves ID/Slug conflicts by handling both identifiers in a single dynamic segment.
- * If an ID is passed, it redirects to the Slug.
+ * Unified Product Engine v6.2.3:
+ * Resolves Next.js routing conflicts by consolidating all product logic here.
+ * Features: Dual-lookup (Slug/ID), Intelligent Redirection, and SEO normalization.
  */
 function ProductContent({ identifier }: { identifier: string }) {
   const { products, loading, refreshProducts } = useProducts();
@@ -37,9 +37,12 @@ function ProductContent({ identifier }: { identifier: string }) {
     return products.find(p => p.slug === identifier || p.id === identifier);
   }, [products, identifier]);
 
-  // 2. SEO Redirect: If we found a product by ID, but it has a Slug, redirect to the Slug URL
+  // 2. SEO Redirection Engine: 
+  // If we found a product using a legacy UUID but it has a professional Slug, 
+  // we redirect to the Slug URL to normalize the link for search engines.
   useEffect(() => {
     if (product && product.slug && product.id === identifier) {
+      console.log(`[SEO Sync] Redirecting legacy ID ${identifier} to slug ${product.slug}`);
       router.replace(`/products/${product.slug}`);
     }
   }, [product, identifier, router]);
@@ -107,8 +110,6 @@ function ProductContent({ identifier }: { identifier: string }) {
   const handleReviewSuccess = () => {
     refreshProducts();
   };
-
-  const technicalLabel = "text-[10px] font-black tracking-[0.3em] uppercase text-muted-foreground/60";
 
   return (
     <div className="bg-background min-h-screen">
@@ -192,11 +193,14 @@ function ProductContent({ identifier }: { identifier: string }) {
                     <p className="text-5xl font-black font-headline tracking-tighter">{formatPrice(product.price)}</p>
                     {product.unit && product.unit !== 'item' && <span className="text-xl font-bold opacity-40">/ {product.unit}</span>}
                 </div>
+                {product.oldPrice && product.oldPrice > product.price && (
+                  <p className="text-sm font-bold text-white/40 line-through mt-1">Was {formatPrice(product.oldPrice)}</p>
+                )}
             </div>
 
             <div className="space-y-6">
                 <div className="p-8 rounded-[3rem] bg-secondary/5 border border-dashed border-muted-foreground/20">
-                     <p className="text-lg leading-relaxed text-muted-foreground font-medium">{product.longDescription}</p>
+                     <p className="text-lg leading-relaxed text-muted-foreground font-medium">{product.longDescription || product.description}</p>
                 </div>
                 <div className="p-6 rounded-[2.5rem] bg-muted/20 border border-white/50 shadow-sm">
                     <QuantitySelector unit={product.unit || 'item'} onQuantityChange={setQuantity} />

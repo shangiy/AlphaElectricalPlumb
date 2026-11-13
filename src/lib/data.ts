@@ -81,16 +81,25 @@ const resolveProductImages = (product: any): string[] => {
  * Robustly handles the transition of 'reviews' from number to jsonb array.
  */
 export function mapProduct(p: any): Product {
+  if (!p) return {} as Product;
+
   // Generate a fallback slug if none exists in the DB
   const generatedSlug = p.name
     ?.toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '') || p.id;
 
-  // Handle the 'reviews' column being either a count (legacy) or a jsonb array (v6.2.2)
-  const isReviewsArray = Array.isArray(p.reviews);
-  const reviewsList = isReviewsArray ? p.reviews : [];
-  const reviewsCount = isReviewsArray ? p.reviews.length : Number(p.reviews || 0);
+  // Defensively handle 'reviews' column (JSONB vs Legacy Number)
+  const rawReviews = p.reviews;
+  let reviewsList = [];
+  let reviewsCount = 0;
+
+  if (Array.isArray(rawReviews)) {
+      reviewsList = rawReviews;
+      reviewsCount = rawReviews.length;
+  } else {
+      reviewsCount = Number(rawReviews || 0);
+  }
 
   return {
     id: p.id,

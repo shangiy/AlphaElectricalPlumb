@@ -75,66 +75,12 @@ ALTER TABLE public.products ADD COLUMN IF NOT EXISTS featured_order INT DEFAULT 
 NOTIFY pgrst, 'reload schema';
 ```
 
-### 🆘 Emergency RLS Reset (Fixes "Infinite Recursion")
-If you see the "infinite recursion" error, your policies are looping. Run this script to break the loop:
-```sql
--- 1. Wipe loop-causing policies
-DROP POLICY IF EXISTS "Public profiles are viewable by everyone." ON public.profiles;
-DROP POLICY IF EXISTS "Users can update own profile." ON public.profiles;
-
--- 2. Re-apply simple, non-recursive logic
-CREATE POLICY "Public profiles are viewable by everyone" ON public.profiles FOR SELECT USING (true);
-CREATE POLICY "Users can update own profile" ON public.profiles FOR UPDATE USING (auth.uid() = id) WITH CHECK (auth.uid() = id);
-
-NOTIFY pgrst, 'reload schema';
-```
-
-### 📂 Storage Setup (Bucket Separation)
-Run this to ensure independent storage for products, avatars, and search logs:
-
-```sql
--- 1. Product Images Bucket
-INSERT INTO storage.buckets (id, name, public) VALUES ('product-images', 'product-images', true) ON CONFLICT (id) DO NOTHING;
-CREATE POLICY "Public Access Products" ON storage.objects FOR SELECT USING (bucket_id = 'product-images');
-CREATE POLICY "Allow Admin Uploads Products" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'product-images');
-
--- 2. User Avatars Bucket
-INSERT INTO storage.buckets (id, name, public) VALUES ('avatars', 'avatars', true) ON CONFLICT (id) DO NOTHING;
-CREATE POLICY "Public Access Avatars" ON storage.objects FOR SELECT USING (bucket_id = 'avatars');
-CREATE POLICY "Allow Admin Uploads Avatars" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'avatars');
-
--- 3. User Selfies Bucket (Visual Search Logs)
-INSERT INTO storage.buckets (id, name, public) VALUES ('user-selfies', 'user-selfies', true) ON CONFLICT (id) DO NOTHING;
-CREATE POLICY "Public Access Selfies" ON storage.objects FOR SELECT USING (bucket_id = 'user-selfies');
-CREATE POLICY "Allow Admin Uploads Selfies" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'user-selfies');
-```
-
-### 🛡️ Admin Security (Limit to 4 Admins)
-To enforce the maximum limit of 4 administrators:
-
-```sql
-create or replace function enforce_max_admins()
-returns trigger as $$
-begin
-  if new.role = 'admin' and (select count(*) from public.profiles where role = 'admin') >= 4 then
-    raise exception 'Maximum limit of 4 admins reached.';
-  end if;
-  return new;
-end;
-$$ language plpgsql;
-
-create trigger check_admin_limit
-before insert or update on public.profiles
-for each row execute procedure enforce_max_admins();
-```
-
-## 📅 Recent Milestones (v5.5.0)
+### 📅 Recent Milestones (v6.2.3)
+- **Routing Resilience**: Resolved Next.js dynamic segment conflict ('id' !== 'slug') by consolidating to a unified slug-based architecture with ID fallback support.
+- **Supabase Schema Sync**: Fully integrated `old_price` (numeric) and `reviews` (JSONB) columns into the global data mapping engine.
+- **SEO Optimization**: Implemented automatic ID-to-Slug redirection to preserve link equity and provide professional, human-readable URLs.
 - **Staff Portfolio Suite**: Refined System Settings to provide a focused "Identity Portfolio" for Staff roles, hiding administrative management tools.
-- **Role-Prioritized Routing**: Implemented intelligent login redirection, funnelling Staff directly to the Inventory hub while maintaining Admin dashboard primacy.
 - **Vercel-Fidelity Analytics**: Replaced legacy telemetry with high-fidelity Observability, Analytics, and Recommendation nodes mirroring the Vercel dashboard.
-- **Security Shield**: Integrated Google reCAPTCHA v2 with server-side cryptographic verification for the sign-up sequence.
-- **Global OAuth Cluster**: Expanded social handshake options to include Apple and GitHub with high-fidelity iconography.
-- **Kinetic Interface**: Upgraded primary action buttons with rhythmic rotating light borders and industrial-grade symmetric pill geometry.
 
 ## Technology Stack
 
@@ -144,9 +90,3 @@ for each row execute procedure enforce_max_admins();
 - **Backend**: Supabase (Auth, Database, Storage)
 - **AI**: Firebase Genkit + Google Gemini
 - **Payments**: Paystack Integration
-
-## Local Development
-
-1. Clone the repo: `git clone https://github.com/shangiy/AlphaElectricalPlumb.git`
-2. Install dependencies: `npm install`
-3. Run the dev server: `npm run dev`

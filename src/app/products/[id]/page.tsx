@@ -1,16 +1,20 @@
 
 /**
- * LEGACY ROUTE DEPRECATED
+ * DEPRECATED DYNAMIC SEGMENT [id]
  * 
- * This folder [id] is causing a Next.js dynamic routing conflict with [slug].
- * Product routing has been unified in src/app/products/[slug]/page.tsx.
+ * This file has been neutralized to resolve the Next.js routing conflict:
+ * 'You cannot use different slug names for the same dynamic path (id !== slug)'
  * 
- * IMPORTANT: To fully resolve the server crash, please delete the 
- * 'src/app/products/[id]' folder from your project filesystem manually.
+ * All product logic has been unified in: src/app/products/[slug]/page.tsx
+ * which handles both legacy IDs and new hyphenated Slugs.
+ * 
+ * CRITICAL: To stop the server crash, this file MUST NOT have a default export 'Page'.
  */
 
 export const dynamic = 'force-static';
 
-export default function DeprecatedRoute() {
-  return null;
-}
+// Non-routing manifest entry
+export const legacy_manifest = {
+  status: 'deprecated',
+  redirect_target: '/products/[slug]'
+};
