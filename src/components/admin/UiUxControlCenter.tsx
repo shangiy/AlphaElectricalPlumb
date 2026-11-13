@@ -49,7 +49,9 @@ export const STYLE_OPTIONS = [
     { id: 'kenyan-flag', label: '🇰🇪 Kenyan Flag Colors' },
     { id: 'gold-gradient', label: '✨ Luxury Gold Gradient' },
     { id: 'neon-glow', label: '⚡ Electric Neon Blue' },
-    { id: 'fire-emoji', label: '🔥 Fire & Energy Mode' }
+    { id: 'fire-emoji', label: '🔥 Fire & Energy Mode' },
+    { id: 'black-friday-jumia', label: '🏷️ Black Friday (Jumia Style)' },
+    { id: 'black-friday-amazon', label: '📦 Black Friday (Amazon Style)' }
 ];
 
 export const ORIENTATION_OPTIONS = [
@@ -398,6 +400,8 @@ export default function UiUxControlCenter() {
             case 'gold-gradient': return 'from-yellow-600 via-amber-500 to-yellow-800';
             case 'neon-glow': return 'from-cyan-400 via-blue-500 to-indigo-600';
             case 'fire-emoji': return 'from-orange-600 via-red-600 to-yellow-500';
+            case 'black-friday-jumia': return 'from-[#f68b1e] via-[#e74c3c] to-[#c0392b]';
+            case 'black-friday-amazon': return 'from-[#232f3e] via-[#37475a] to-[#ff9900]';
             default: return 'from-primary via-primary/80 to-primary';
         }
     };
@@ -692,7 +696,7 @@ export default function UiUxControlCenter() {
                                                     onChange={(e) => setBannerConfig({ ...bannerConfig, [orientKey]: e.target.value })}
                                                     className="w-full h-9 rounded-lg border text-[10px] font-bold bg-white px-2"
                                                 >
-                                                    {ORIENTATION_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
+                                                    {ORIENTATION_OPTIONS.map(opt => <option key={opt.id} value={opt.label}>{opt.label}</option>)}
                                                 </select>
                                             </div>
                                             <div className="space-y-1.5">

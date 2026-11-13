@@ -127,6 +127,8 @@ export default function TopBanner() {
             case 'gold-gradient': return 'from-yellow-600 via-amber-500 to-yellow-800';
             case 'neon-glow': return 'from-cyan-400 via-blue-500 to-indigo-600';
             case 'fire-emoji': return 'from-orange-600 via-red-600 to-yellow-500';
+            case 'black-friday-jumia': return 'from-[#f68b1e] via-[#e74c3c] to-[#c0392b]';
+            case 'black-friday-amazon': return 'from-[#232f3e] via-[#37475a] to-[#ff9900]';
             default: return 'from-white to-white';
         }
     };
