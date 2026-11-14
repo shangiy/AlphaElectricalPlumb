@@ -21,7 +21,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { saveCategoryCards } from '@/app/actions/cms-actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { GripVertical, Trash2, Plus, Save, Loader2, RefreshCw } from 'lucide-react';
+import { GripVertical, Trash2, Plus, Save, Loader2, RefreshCw, Info, Image as ImageIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/lib/supabase';
 
@@ -57,16 +57,16 @@ function SortableCategoryItem({ card, onUpdate, onDelete }: {
                     <Input 
                         value={card.title} 
                         onChange={(e) => onUpdate({ ...card, title: e.target.value })} 
-                        placeholder="e.g., Water Tanks"
+                        placeholder="e.g. Water Tanks"
                         className="h-10 rounded-lg"
                     />
                 </div>
                 <div className="space-y-1">
-                    <label className="text-[10px] font-black uppercase text-muted-foreground/60 tracking-widest ml-1">Image URL</label>
+                    <label className="text-[10px] font-black uppercase text-muted-foreground/60 tracking-widest ml-1">Image URL (Storage Path)</label>
                     <Input 
                         value={card.image} 
                         onChange={(e) => onUpdate({ ...card, image: e.target.value })} 
-                        placeholder="Path or URL"
+                        placeholder="e.g. Collections/Tanks variety collection.webp"
                         className="h-10 rounded-lg"
                     />
                 </div>
@@ -75,7 +75,7 @@ function SortableCategoryItem({ card, onUpdate, onDelete }: {
                     <Input 
                         value={card.link} 
                         onChange={(e) => onUpdate({ ...card, link: e.target.value })} 
-                        placeholder="e.g., /category/tanks"
+                        placeholder="e.g. /category/tanks"
                         className="h-10 rounded-lg"
                     />
                 </div>
@@ -88,8 +88,8 @@ function SortableCategoryItem({ card, onUpdate, onDelete }: {
 }
 
 /**
- * Intelligent Category Manager v4.4.0:
- * Features "Discovery Mode" to ensure homepage items are always listed by default.
+ * Intelligent Category Manager v4.4.1:
+ * Features "Discovery Mode" and High-Fidelity Path Hints for administrative ease.
  */
 export default function CategoryManager({ initialCards }: { initialCards: CategoryCardData[] }) {
     const [cards, setCards] = useState<CategoryCardData[]>([]);
@@ -121,11 +121,11 @@ export default function CategoryManager({ initialCards }: { initialCards: Catego
 
             // High-Resolution Fallbacks (Matches homepage)
             return [
-                { id: 'tanks', title: 'Water Tanks', image: '', link: '/category/tanks', order: 1 },
-                { id: 'plumbing', title: 'Plumbing Equipment', image: '', link: '/category/plumbing', order: 2 },
-                { id: 'electrical', title: 'Electrical Supplies', image: '', link: '/category/lighting', order: 3 },
-                { id: 'decor', title: 'Home & Decor', image: '', link: '/category/decor', order: 4 },
-                { id: 'roofing', title: 'Roofing & Construction', image: '', link: '/category/roofing', order: 5 }
+                { id: 'tanks', title: 'Water Tanks', image: 'Collections/Tanks variety collection.webp', link: '/category/tanks', order: 1 },
+                { id: 'plumbing', title: 'Plumbing Equipment', image: 'Collections/Alpha plumbing pipe collection.webp', link: '/category/plumbing', order: 2 },
+                { id: 'electrical', title: 'Electrical Supplies', image: 'Collections/Electric Socket Collection.webp', link: '/category/lighting', order: 3 },
+                { id: 'decor', title: 'Home & Decor', image: 'Collections/Bird Art Lights fixture Collection.webp', link: '/category/decor', order: 4 },
+                { id: 'roofing', title: 'Roofing & Construction', image: 'Collections/Corrugated Roofing Sheet collection.webp', link: '/category/roofing', order: 5 }
             ];
         } catch (e) {
             console.error("Discovery failed:", e);
@@ -199,7 +199,7 @@ export default function CategoryManager({ initialCards }: { initialCards: Catego
     }
 
     return (
-        <div className="max-w-4xl mx-auto animate-in fade-in duration-700">
+        <div className="max-w-4xl mx-auto animate-in fade-in duration-700 pb-20">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-10 border-b pb-8">
                 <div>
                     <h2 className="text-3xl font-black font-headline text-accent tracking-tighter uppercase">Product Carousel CMS</h2>
@@ -217,24 +217,79 @@ export default function CategoryManager({ initialCards }: { initialCards: Catego
             </div>
 
             {cards.length > 0 ? (
-                <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                    <SortableContext items={cards.map(c => c.id)} strategy={verticalListSortingStrategy}>
-                        <div className="space-y-2">
-                            {cards.map((card) => (
-                                <SortableCategoryItem 
-                                    key={card.id} 
-                                    card={card} 
-                                    onUpdate={(updated) => setCards(cards.map(c => c.id === updated.id ? updated : c))}
-                                    onDelete={(id) => {
-                                        if (confirm("Permanently remove this collection from the storefront?")) {
-                                            setCards(cards.filter(c => c.id !== id));
-                                        }
-                                    }}
-                                />
-                            ))}
+                <div className="space-y-10">
+                    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                        <SortableContext items={cards.map(c => c.id)} strategy={verticalListSortingStrategy}>
+                            <div className="space-y-2">
+                                {cards.map((card) => (
+                                    <SortableCategoryItem 
+                                        key={card.id} 
+                                        card={card} 
+                                        onUpdate={(updated) => setCards(cards.map(c => c.id === updated.id ? updated : c))}
+                                        onDelete={(id) => {
+                                            if (confirm("Permanently remove this collection from the storefront?")) {
+                                                setCards(cards.filter(c => c.id !== id));
+                                            }
+                                        }}
+                                    />
+                                ))}
+                            </div>
+                        </SortableContext>
+                    </DndContext>
+
+                    {/* PATH REFERENCE NODE */}
+                    <div className="bg-primary/5 border border-dashed border-primary/20 rounded-[2.5rem] p-8 space-y-6">
+                        <div className="flex items-center gap-3">
+                            <Info className="text-primary h-6 w-6" />
+                            <div>
+                                <h3 className="text-lg font-black text-accent uppercase tracking-widest">Path Sync Reference</h3>
+                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Copy and paste these exact paths to sync images from Supabase storage.</p>
+                            </div>
                         </div>
-                    </SortableContext>
-                </DndContext>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="bg-white p-4 rounded-2xl border shadow-sm space-y-3">
+                                <div className="flex items-center gap-2 text-accent font-black uppercase text-[10px]">
+                                    <ImageIcon size={14} className="text-primary" /> Water Tanks Path
+                                </div>
+                                <code className="block bg-muted p-2 rounded-lg text-[11px] font-mono text-primary break-all select-all cursor-copy" title="Click to Select All">
+                                    Collections/Tanks variety collection.webp
+                                </code>
+                                <p className="text-[9px] text-muted-foreground italic">Link: /category/tanks</p>
+                            </div>
+
+                            <div className="bg-white p-4 rounded-2xl border shadow-sm space-y-3">
+                                <div className="flex items-center gap-2 text-accent font-black uppercase text-[10px]">
+                                    <ImageIcon size={14} className="text-primary" /> Plumbing Path
+                                </div>
+                                <code className="block bg-muted p-2 rounded-lg text-[11px] font-mono text-primary break-all select-all cursor-copy">
+                                    Collections/Alpha plumbing pipe collection.webp
+                                </code>
+                                <p className="text-[9px] text-muted-foreground italic">Link: /category/plumbing</p>
+                            </div>
+
+                            <div className="bg-white p-4 rounded-2xl border shadow-sm space-y-3">
+                                <div className="flex items-center gap-2 text-accent font-black uppercase text-[10px]">
+                                    <ImageIcon size={14} className="text-primary" /> Electrical Path
+                                </div>
+                                <code className="block bg-muted p-2 rounded-lg text-[11px] font-mono text-primary break-all select-all cursor-copy">
+                                    Collections/Electric Socket Collection.webp
+                                </code>
+                                <p className="text-[9px] text-muted-foreground italic">Link: /category/lighting</p>
+                            </div>
+
+                            <div className="bg-white p-4 rounded-2xl border shadow-sm space-y-3">
+                                <div className="flex items-center gap-2 text-accent font-black uppercase text-[10px]">
+                                    <ImageIcon size={14} className="text-primary" /> Home & Decor Path
+                                </div>
+                                <code className="block bg-muted p-2 rounded-lg text-[11px] font-mono text-primary break-all select-all cursor-copy">
+                                    Collections/Bird Art Lights fixture Collection.webp
+                                </code>
+                                <p className="text-[9px] text-muted-foreground italic">Link: /category/decor</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             ) : (
                 <div className="flex flex-col items-center justify-center py-20 bg-muted/20 border-2 border-dashed rounded-[2rem] text-center">
                     <RefreshCw className="h-10 w-10 text-muted-foreground/30 mb-4 animate-spin-slow" />
@@ -245,4 +300,3 @@ export default function CategoryManager({ initialCards }: { initialCards: Catego
         </div>
     );
 }
-
