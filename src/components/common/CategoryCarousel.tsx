@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -7,18 +8,17 @@ import { Skeleton } from '../ui/skeleton';
 import { supabase } from '@/lib/supabase';
 import { getStorefrontSetting } from '@/app/actions/cms-actions';
 import useEmblaCarousel from 'embla-carousel-react';
-import Autoplay from 'embla-carousel-autoplay';
+import AutoScroll from 'embla-carousel-auto-scroll';
 import { cn } from '@/lib/utils';
 
 /**
- * Interactive Category Carousel v6.0.0:
- * Features iPhone-style "Date Picker" kinetic scrolling for mobile.
- * Includes synthetic haptic sound feedback and loop capability.
+ * High-Intelligence Kinetic Carousel v6.2.0:
+ * Features linear AutoScroll motion with kinetic inertia dragging.
+ * Includes gated haptic audio triggers for manual interaction.
  */
 export default function CategoryCarousel() {
   const [categories, setCategories] = React.useState<CarouselCategory[]>([]);
   const [loading, setLoading] = React.useState(true);
-  const [scrollSpeed, setScrollSpeed] = React.useState('40');
   
   const audioContextRef = React.useRef<AudioContext | null>(null);
 
@@ -26,14 +26,14 @@ export default function CategoryCarousel() {
     { 
         loop: true, 
         align: 'start',
-        dragFree: true, // Allow free scrolling for kinetic feel
+        dragFree: true, // Kinetic momentum scrolling
         containScroll: 'trimSnaps'
     }, 
     [
-        Autoplay({ 
-            delay: 3000, 
-            stopOnInteraction: true, 
-            stopOnMouseEnter: true,
+        AutoScroll({ 
+            speed: 1, 
+            stopOnInteraction: true, // Motion stops permanently when user drags
+            stopOnMouseEnter: true,  // Motion pauses during hover
             playOnInit: true 
         })
     ]
@@ -52,7 +52,6 @@ export default function CategoryCarousel() {
         const gain = ctx.createGain();
 
         osc.type = 'sine';
-        // Low frequency "thud" for the mechanical date picker feel
         osc.frequency.setValueAtTime(150, ctx.currentTime);
         osc.frequency.exponentialRampToValueAtTime(40, ctx.currentTime + 0.03);
 
@@ -65,22 +64,29 @@ export default function CategoryCarousel() {
         osc.start();
         osc.stop(ctx.currentTime + 0.03);
     } catch (e) {
-        // Silent fail for browsers with strict audio policies
+        // Silent fail for browser restrictions
     }
   }, []);
 
-  // Track scroll for "tick" sound distribution
   const lastScrollProgress = React.useRef(0);
-  const tickThreshold = 0.02; // Precision frequency for sound triggers
+  const tickThreshold = 0.02;
 
   const onScroll = React.useCallback(() => {
     if (!emblaApi) return;
+
+    // GATED HAPTICS: Only play ticks if AutoScroll is NOT driving (i.e. manual drag or glide)
+    const autoScroll = emblaApi.plugins().autoScroll;
+    if (autoScroll && autoScroll.isPlaying()) return;
+
     const progress = emblaApi.scrollProgress();
     const diff = Math.abs(progress - lastScrollProgress.current);
     
-    // Play tick sound when moving past thresholds (Date Picker Effect)
-    if (diff > tickThreshold) {
+    // Play tick sound when moving past thresholds during manual scroll
+    if (diff > tickThreshold && diff < 0.9) {
         playTick();
+        lastScrollProgress.current = progress;
+    } else if (diff > 0.9) {
+        // Handle loop wrap-around without redundant tick
         lastScrollProgress.current = progress;
     }
   }, [emblaApi, playTick]);
@@ -99,11 +105,12 @@ export default function CategoryCarousel() {
   };
 
   const fallbackCategories: CarouselCategory[] = [
-    { id: 'Fixtures', name: 'Plumbing Fixtures', href: '/category/plumbing', image: 'collections/Hand-wash Basin and Pedestal Sink Collection.webp' },
-    { id: 'Bulbs', name: 'Lighting & Bulbs', href: '/category/lighting', image: 'collections/Bird Art Lights fixture Collection.webp' },
-    { id: 'Electrical', name: 'Electrical Supplies', href: '/category/electrical', image: 'collections/Electric Socket Collection.webp' },
-    { id: 'Tanks', name: 'Water Tanks', href: '/category/tanks', image: 'collections/Tanks variety collection.webp' },
-    { id: 'Roofing', name: 'Roofing & Construction', href: '/category/roofing', image: 'collections/Corrugated Roofing Sheet collection.webp' },
+    { id: 'cat-tanks', name: 'Tanks Category', href: '/category/tanks', image: 'collections/Tanks variety collection.webp' },
+    { id: 'cat-chandelier', name: 'Chandelier Category', href: '/category/lighting', image: 'collections/Bird Art Lights fixture Collection.webp' },
+    { id: 'cat-bulbs', name: 'Lighting & Bulbs', href: '/category/lighting', image: 'collections/Contemporary Gold Spiral Chandelier.webp' },
+    { id: 'cat-electrical', name: 'Electrical Supplies', href: '/category/electrical', image: 'collections/Electric Socket Collection.webp' },
+    { id: 'cat-roofing', name: 'Mabati and Roofing', href: '/category/roofing', image: 'collections/Corrugated Roofing Sheet collection.webp' },
+    { id: 'cat-solar', name: 'Solar panels & accessories', href: '/category/solar', image: 'product-images/Solar panels & accessories/Generic Solar Panel.webp' },
   ];
 
   React.useEffect(() => {
@@ -115,9 +122,6 @@ export default function CategoryCarousel() {
       }
 
       try {
-        const speed = await getStorefrontSetting('carousel_speed');
-        if (speed) setScrollSpeed(speed);
-
         const customCards = await getStorefrontSetting('category_cards');
         
         if (customCards && Array.isArray(customCards) && customCards.length > 0) {
@@ -172,7 +176,6 @@ export default function CategoryCarousel() {
             </div>
           </div>
           
-          {/* Visual Fades (Atmospheric) */}
           <div className="absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-secondary to-transparent z-10 pointer-events-none hidden md:block" />
           <div className="absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-secondary to-transparent z-10 pointer-events-none hidden md:block" />
         </div>
