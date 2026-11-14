@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
     DndContext, 
     closestCenter, 
@@ -21,8 +21,9 @@ import { CSS } from '@dnd-kit/utilities';
 import { saveCategoryCards } from '@/app/actions/cms-actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { GripVertical, Trash2, Plus, Save, Loader2 } from 'lucide-react';
+import { GripVertical, Trash2, Plus, Save, Loader2, RefreshCw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/lib/supabase';
 
 export interface CategoryCardData {
     id: string;
@@ -86,10 +87,66 @@ function SortableCategoryItem({ card, onUpdate, onDelete }: {
     );
 }
 
+/**
+ * Intelligent Category Manager v4.4.0:
+ * Features "Discovery Mode" to ensure homepage items are always listed by default.
+ */
 export default function CategoryManager({ initialCards }: { initialCards: CategoryCardData[] }) {
-    const [cards, setCards] = useState<CategoryCardData[]>(initialCards || []);
+    const [cards, setCards] = useState<CategoryCardData[]>([]);
     const [saving, setSaving] = useState(false);
+    const [loading, setLoading] = useState(true);
     const { toast } = useToast();
+
+    /**
+     * Discovery Engine: Fetches existing database categories or system fallbacks
+     * to populate the list if no custom CMS configuration exists.
+     */
+    const discoverExistingCategories = useCallback(async () => {
+        if (!supabase) return [];
+        try {
+            const { data, error } = await supabase
+                .from('categories')
+                .select('*')
+                .order('sort_order', { ascending: true });
+
+            if (!error && data && data.length > 0) {
+                return data.map((cat, index) => ({
+                    id: String(cat.id),
+                    title: cat.name,
+                    image: cat.image_url || '',
+                    link: `/category/${cat.slug || cat.name.toLowerCase().replace(/\s+/g, '-')}`,
+                    order: index + 1
+                }));
+            }
+
+            // High-Resolution Fallbacks (Matches homepage)
+            return [
+                { id: 'tanks', title: 'Water Tanks', image: '', link: '/category/tanks', order: 1 },
+                { id: 'plumbing', title: 'Plumbing Equipment', image: '', link: '/category/plumbing', order: 2 },
+                { id: 'electrical', title: 'Electrical Supplies', image: '', link: '/category/lighting', order: 3 },
+                { id: 'decor', title: 'Home & Decor', image: '', link: '/category/decor', order: 4 },
+                { id: 'roofing', title: 'Roofing & Construction', image: '', link: '/category/roofing', order: 5 }
+            ];
+        } catch (e) {
+            console.error("Discovery failed:", e);
+            return [];
+        }
+    }, []);
+
+    useEffect(() => {
+        async function initialize() {
+            setLoading(true);
+            if (initialCards && initialCards.length > 0) {
+                setCards(initialCards);
+            } else {
+                // Discovery mode: ensure homepage items are listed by default
+                const discovered = await discoverExistingCategories();
+                setCards(discovered);
+            }
+            setLoading(false);
+        }
+        initialize();
+    }, [initialCards, discoverExistingCategories]);
 
     const sensors = useSensors(
         useSensor(PointerSensor),
@@ -102,7 +159,9 @@ export default function CategoryManager({ initialCards }: { initialCards: Catego
             setCards((items) => {
                 const oldIndex = items.findIndex((i) => i.id === active.id);
                 const newIndex = items.findIndex((i) => i.id === over.id);
-                return arrayMove(items, oldIndex, newIndex);
+                const updated = arrayMove(items, oldIndex, newIndex);
+                // Maintain order metadata
+                return updated.map((c, i) => ({ ...c, order: i + 1 }));
             });
         }
     };
@@ -111,7 +170,7 @@ export default function CategoryManager({ initialCards }: { initialCards: Catego
         const newCard: CategoryCardData = {
             id: `cat-${Date.now()}`,
             title: 'New Collection',
-            image: '/background.jpg',
+            image: '',
             link: '/search',
             order: cards.length + 1
         };
@@ -122,7 +181,7 @@ export default function CategoryManager({ initialCards }: { initialCards: Catego
         setSaving(true);
         try {
             await saveCategoryCards(cards);
-            toast({ title: "Carousel Published", description: "Homepage categories have been synchronized." });
+            toast({ title: "Carousel Synchronized", description: "Homepage categories have been permanently updated." });
         } catch (error: any) {
             toast({ variant: "destructive", title: "Sync Failed", description: error.message });
         } finally {
@@ -130,18 +189,27 @@ export default function CategoryManager({ initialCards }: { initialCards: Catego
         }
     };
 
+    if (loading) {
+        return (
+            <div className="flex flex-col items-center justify-center py-20 gap-4">
+                <Loader2 className="animate-spin text-primary h-10 w-10" />
+                <p className="font-black uppercase tracking-[0.2em] text-muted-foreground/40">Mapping Visual Architecture...</p>
+            </div>
+        );
+    }
+
     return (
         <div className="max-w-4xl mx-auto animate-in fade-in duration-700">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-10 border-b pb-8">
                 <div>
                     <h2 className="text-3xl font-black font-headline text-accent tracking-tighter uppercase">Product Carousel CMS</h2>
-                    <p className="text-muted-foreground text-sm font-medium mt-1">Drag items to arrange storefront appearance or modify card attributes.</p>
+                    <p className="text-muted-foreground text-sm font-medium mt-1">Drag items to arrange storefront appearance. Homepage items are listed here by default.</p>
                 </div>
                 <div className="flex gap-3">
                     <Button onClick={handleAddCard} variant="outline" className="rounded-full h-12 px-6 font-bold">
                         <Plus className="w-4 h-4 mr-2" /> Add Card
                     </Button>
-                    <Button onClick={handleSave} disabled={saving} className="rounded-full h-12 px-10 font-black uppercase tracking-tighter shadow-lg bg-primary">
+                    <Button onClick={handleSave} disabled={saving} className="rounded-full h-12 px-10 font-black uppercase tracking-tighter shadow-lg bg-primary text-white">
                         {saving ? <Loader2 className="animate-spin w-4 h-4 mr-2" /> : <Save className="w-4 h-4 mr-2" />}
                         Save Arrangement
                     </Button>
@@ -157,7 +225,11 @@ export default function CategoryManager({ initialCards }: { initialCards: Catego
                                     key={card.id} 
                                     card={card} 
                                     onUpdate={(updated) => setCards(cards.map(c => c.id === updated.id ? updated : c))}
-                                    onDelete={(id) => setCards(cards.filter(c => c.id !== id))}
+                                    onDelete={(id) => {
+                                        if (confirm("Permanently remove this collection from the storefront?")) {
+                                            setCards(cards.filter(c => c.id !== id));
+                                        }
+                                    }}
                                 />
                             ))}
                         </div>
@@ -165,11 +237,12 @@ export default function CategoryManager({ initialCards }: { initialCards: Catego
                 </DndContext>
             ) : (
                 <div className="flex flex-col items-center justify-center py-20 bg-muted/20 border-2 border-dashed rounded-[2rem] text-center">
-                    <Plus className="h-10 w-10 text-muted-foreground/30 mb-4" />
-                    <p className="font-bold text-accent uppercase tracking-tighter">Carousel is Empty</p>
-                    <Button onClick={handleAddCard} variant="link" className="text-primary mt-2">Initialize Categories</Button>
+                    <RefreshCw className="h-10 w-10 text-muted-foreground/30 mb-4 animate-spin-slow" />
+                    <p className="font-bold text-accent uppercase tracking-tighter">Initializing Discovery Engine</p>
+                    <Button onClick={discoverExistingCategories} variant="link" className="text-primary mt-2">Force Sync Table</Button>
                 </div>
             )}
         </div>
     );
 }
+

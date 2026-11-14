@@ -36,7 +36,7 @@ import {
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import FeaturedProductManager from './FeaturedProductManager';
-import CategoryManager from './CategoryManager';
+import CategoryManager, { type CategoryCardData } from './CategoryManager';
 import HeroManager from './HeroManager';
 import { getStorefrontSetting, updateStorefrontSetting, type HeroSlide } from '@/app/actions/cms-actions';
 import { cn } from '@/lib/utils';
@@ -228,6 +228,7 @@ export default function UiUxControlCenter() {
   const [submitting, setSubmitting] = useState(false);
   const [bannerConfig, setBannerConfig] = useState<BannerConfig>(DEFAULT_BANNER);
   const [searchPhrases, setSearchPhrases] = useState<string[]>([]);
+  const [categoryCards, setCategoryCards] = useState<CategoryCardData[]>([]);
   const [heroSlides, setHeroSlides] = useState<HeroSlide[]>([]);
   const [connectConfig, setConnectConfig] = useState<ConnectConfig>(DEFAULT_CONNECT);
   const [videoStream, setVideoStream] = useState<VideoItem[]>([]);
@@ -240,12 +241,13 @@ export default function UiUxControlCenter() {
   const loadAllSettings = useCallback(async () => {
     setLoading(true);
     try {
-      const [search, bannerSet, slides, connect, videoConfig] = await Promise.all([
+      const [search, bannerSet, slides, connect, videoConfig, cats] = await Promise.all([
         getStorefrontSetting('search_phrases'),
         getStorefrontSetting('top_banner_config'),
         getStorefrontSetting('hero_slides'),
         getStorefrontSetting('connect_with_us_config'),
-        getStorefrontSetting('video_stream_config')
+        getStorefrontSetting('video_stream_config'),
+        getStorefrontSetting('category_cards')
       ]);
       if (search) setSearchPhrases(search);
       if (bannerSet) {
@@ -261,6 +263,7 @@ export default function UiUxControlCenter() {
       if (slides) setHeroSlides(slides);
       if (connect) setConnectConfig({ ...DEFAULT_CONNECT, ...connect });
       if (videoConfig && videoConfig.items) setVideoStream(videoConfig.items);
+      if (cats) setCategoryCards(cats);
     } catch (err) { console.error(err); } finally { setLoading(false); }
   }, []);
 
@@ -425,6 +428,15 @@ export default function UiUxControlCenter() {
     if (bannerConfig.bgType === 'vibrant') return 'bg-gradient-to-r from-red-500 via-orange-500 via-yellow-400 via-green-500 via-purple-600 to-blue-600 bg-[length:400%_400%] animate-gradient-x text-white';
     return 'bg-accent text-white';
   };
+
+  if (loading) {
+      return (
+          <div className="py-40 flex flex-col items-center justify-center gap-4">
+              <Loader2 className="animate-spin h-12 w-12 text-primary" />
+              <p className="font-black uppercase tracking-[0.3em] text-muted-foreground/40">Syncing CMS Node...</p>
+          </div>
+      );
+  }
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
@@ -878,7 +890,9 @@ export default function UiUxControlCenter() {
         </TabsContent>
 
         <TabsContent value="hero"><HeroManager initialSlides={heroSlides} /></TabsContent>
-        <TabsContent value="categories"><CategoryManager initialCards={[]} /></TabsContent>
+        <TabsContent value="categories">
+            <CategoryManager initialCards={categoryCards} />
+        </TabsContent>
         <TabsContent value="spotlight"><FeaturedProductManager /></TabsContent>
         
         <TabsContent value="social" className="space-y-8">
@@ -1110,3 +1124,4 @@ export default function UiUxControlCenter() {
     </div>
   );
 }
+
