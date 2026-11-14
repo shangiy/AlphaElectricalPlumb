@@ -18,10 +18,11 @@ import {
     useSortable 
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { saveCategoryCards } from '@/app/actions/cms-actions';
+import { saveCategoryCards, getStorefrontSetting, updateStorefrontSetting } from '@/app/actions/cms-actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { GripVertical, Trash2, Plus, Save, Loader2, RefreshCw, Info, Image as ImageIcon, LayoutGrid } from 'lucide-react';
+import { Label } from '@/components/ui/label';
+import { GripVertical, Trash2, Plus, Save, Loader2, RefreshCw, Info, Image as ImageIcon, LayoutGrid, Activity } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/lib/supabase';
 
@@ -102,11 +103,12 @@ function SortableCategoryItem({ card, onUpdate, onDelete }: {
 }
 
 /**
- * Intelligent Category Manager v4.4.2:
- * Features "Discovery Mode" and Linear Inventory Reference.
+ * Intelligent Category Manager v4.4.3:
+ * Features "Discovery Mode", Linear Inventory Reference, and Pace Regulator.
  */
 export default function CategoryManager({ initialCards }: { initialCards: CategoryCardData[] }) {
     const [cards, setCards] = useState<CategoryCardData[]>([]);
+    const [scrollSpeed, setScrollSpeed] = useState('40');
     const [saving, setSaving] = useState(false);
     const [loading, setLoading] = useState(true);
     const { toast } = useToast();
@@ -150,6 +152,11 @@ export default function CategoryManager({ initialCards }: { initialCards: Catego
     useEffect(() => {
         async function initialize() {
             setLoading(true);
+            
+            // Fetch speed setting
+            const speed = await getStorefrontSetting('carousel_speed');
+            if (speed) setScrollSpeed(speed);
+
             if (initialCards && initialCards.length > 0) {
                 setCards(initialCards);
             } else {
@@ -194,8 +201,11 @@ export default function CategoryManager({ initialCards }: { initialCards: Catego
     const handleSave = async () => {
         setSaving(true);
         try {
-            await saveCategoryCards(cards);
-            toast({ title: "Carousel Synchronized", description: "Homepage categories have been permanently updated." });
+            await Promise.all([
+                saveCategoryCards(cards),
+                updateStorefrontSetting('carousel_speed', scrollSpeed)
+            ]);
+            toast({ title: "Architecture Synchronized", description: "Homepage categories and motion pace updated successfully." });
         } catch (error: any) {
             toast({ variant: "destructive", title: "Sync Failed", description: error.message });
         } finally {
@@ -244,6 +254,31 @@ export default function CategoryManager({ initialCards }: { initialCards: Catego
                     ))}
                 </div>
                 <p className="text-[9px] text-muted-foreground italic font-medium">Note: For best results, ensure your Card Titles match or represent these inventory groups.</p>
+                
+                {/* PACE REGULATOR */}
+                <div className="flex flex-col sm:flex-row items-center gap-6 p-6 bg-white rounded-3xl border shadow-sm mt-4">
+                    <div className="flex items-center gap-3 shrink-0">
+                        <div className="h-10 w-10 rounded-2xl bg-accent text-white flex items-center justify-center shadow-lg">
+                            <Activity size={20} />
+                        </div>
+                        <div>
+                            <Label className="text-[10px] font-black uppercase tracking-widest text-accent">Pace Regulator</Label>
+                            <p className="text-[9px] font-medium text-muted-foreground uppercase">Carousel Speed (Seconds)</p>
+                        </div>
+                    </div>
+                    <div className="w-full sm:w-32">
+                        <Input 
+                            type="number" 
+                            value={scrollSpeed} 
+                            onChange={(e) => setScrollSpeed(e.target.value)} 
+                            className="h-11 rounded-xl font-black text-lg bg-muted/20 border-none text-center"
+                        />
+                    </div>
+                    <p className="text-[9px] text-muted-foreground italic font-medium leading-relaxed max-w-sm">
+                        Lower values = Faster movement. Higher values = Slower, more elegant flow. <br/>
+                        <span className="text-primary font-bold">Default: 40s</span> (Time taken for one complete loop).
+                    </p>
+                </div>
             </div>
 
             {cards.length > 0 ? (
