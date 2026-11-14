@@ -20,10 +20,11 @@ interface ReviewFormProps {
 
 /**
  * Modern Unified Review Form v4.6.0:
- * - Sync v4.6.0: Added halved-star selection and automatic product name identification.
+ * Features a high-fidelity Split-Star interaction engine for 0.5 resolution.
  */
 export default function ReviewForm({ productId, productTitle, onReviewSubmitted }: ReviewFormProps) {
   const [rating, setRating] = useState(5);
+  const [hoverRating, setHoverRating] = useState<number | null>(null);
   const [title, setTitle] = useState('');
   const [comment, setComment] = useState('');
   const [loading, setLoading] = useState(false);
@@ -34,16 +35,18 @@ export default function ReviewForm({ productId, productTitle, onReviewSubmitted 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!comment && !title) {
+        toast({ variant: "destructive", title: "Incomplete", description: "Please add a comment or heading." });
+        return;
+    }
+
     setLoading(true);
     try {
       const { data: { user: authUser } } = await supabase.auth.getUser();
 
       const reviewType = productId ? 'product' : 'homepage';
       const authorName = user?.name || user?.username || 'Client';
-      
-      // If we are on a product page, the specific name of the product is our title/heading
       const finalTitle = productTitle || title || (productId ? 'Product Review' : 'Storefront Review');
-      
       const userId = authUser?.id || uuidv4();
 
       const { error } = await supabase.from('reviews').insert({
@@ -94,8 +97,22 @@ export default function ReviewForm({ productId, productTitle, onReviewSubmitted 
     }
   };
 
-  // 10-step rating scale for halves
-  const ratingSteps = [1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5];
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>, starIndex: number) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    // Split star into two halves (0.5 and 1.0)
+    const isHalf = x < rect.width / 2;
+    setHoverRating(starIndex - (isHalf ? 0.5 : 0));
+  };
+
+  const handleClick = (e: React.MouseEvent<HTMLDivElement>, starIndex: number) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const isHalf = x < rect.width / 2;
+    setRating(starIndex - (isHalf ? 0.5 : 0));
+  };
+
+  const currentDisplayRating = hoverRating !== null ? hoverRating : rating;
 
   return (
     <form onSubmit={handleSubmit} className="p-7 bg-white rounded-3xl shadow-2xl border border-primary/5 space-y-5 relative overflow-hidden">
@@ -113,23 +130,41 @@ export default function ReviewForm({ productId, productTitle, onReviewSubmitted 
       </div>
       
       <div className="space-y-3 relative z-10">
-        <Label className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Rating: {rating}</Label>
-        <div className="flex flex-wrap gap-2">
-          {ratingSteps.map((step) => (
-            <button
-              key={step}
-              type="button"
-              onClick={() => setRating(step)}
-              className={cn(
-                "h-8 px-3 rounded-lg text-[10px] font-black border transition-all active:scale-95",
-                rating === step 
-                  ? "bg-primary text-white border-primary shadow-lg" 
-                  : "bg-muted/30 text-muted-foreground border-transparent hover:bg-muted/50"
-              )}
-            >
-              {step} ★
-            </button>
-          ))}
+        <div className="flex items-center justify-between">
+            <Label className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Quality Score</Label>
+            <span className="text-xs font-black text-primary uppercase">{currentDisplayRating} / 5.0</span>
+        </div>
+        
+        <div className="flex items-center gap-1" onMouseLeave={() => setHoverRating(null)}>
+          {[1, 2, 3, 4, 5].map((starIndex) => {
+            const isFull = starIndex <= Math.floor(currentDisplayRating);
+            const isHalf = !isFull && starIndex <= Math.ceil(currentDisplayRating) && currentDisplayRating % 1 !== 0;
+
+            return (
+              <div 
+                key={starIndex}
+                className="relative cursor-pointer transition-transform hover:scale-110 active:scale-95"
+                onMouseMove={(e) => handleMouseMove(e, starIndex)}
+                onClick={(e) => handleClick(e, starIndex)}
+                style={{ width: 32, height: 32 }}
+              >
+                {/* Background Star */}
+                <Star className="text-muted/20 fill-muted/20 w-8 h-8" />
+                
+                {/* Active Layers */}
+                {isFull && (
+                    <div className="absolute inset-0">
+                        <Star className="text-yellow-400 fill-yellow-400 w-8 h-8" />
+                    </div>
+                )}
+                {isHalf && (
+                    <div className="absolute inset-0 overflow-hidden w-1/2">
+                        <Star className="text-yellow-400 fill-yellow-400 w-8 h-8" />
+                    </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
 

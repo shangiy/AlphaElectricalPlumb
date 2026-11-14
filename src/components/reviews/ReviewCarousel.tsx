@@ -19,8 +19,8 @@ interface Review {
 }
 
 /**
- * 2027 Intelligent Review Stream v4.4.29:
- * Sync v4.4.29: Removed "Verified User" label for a cleaner, high-fidelity look.
+ * 2027 Intelligent Review Stream v4.6.0:
+ * Features precision star rendering for verified customer testimonials.
  */
 export default function ReviewCarousel({ productId }: { productId?: string }) {
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -93,11 +93,7 @@ export default function ReviewCarousel({ productId }: { productId?: string }) {
                 className="min-w-[360px] max-w-[420px] bg-white p-10 rounded-[3rem] shadow-xl border border-muted-foreground/5 shrink-0 flex flex-col transition-all hover:scale-105 hover:shadow-2xl hover:border-primary/20"
             >
                 <div className="flex justify-between items-start mb-6">
-                    <div className="flex items-center gap-1 text-amber-400">
-                        {Array.from({ length: review.rating || 5 }).map((_, i) => (
-                          <span key={i} className="text-xl">★</span>
-                        ))}
-                    </div>
+                    <Rating rating={review.rating} size={20} />
                     <span className="text-[10px] font-black uppercase text-muted-foreground/30 tracking-widest">
                         {formatDistanceToNow(new Date(review.created_at))} ago
                     </span>

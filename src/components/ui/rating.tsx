@@ -1,4 +1,4 @@
-import { Star, StarHalf } from 'lucide-react';
+import { Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface RatingProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -10,56 +10,51 @@ interface RatingProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 /**
- * Updated Rating component v4.6: 
- * Enhanced to support precise half-star visualization.
+ * High-Precision Rating Component v4.6.0: 
+ * Features a pixel-perfect layering engine for half-star visualization.
  */
 export function Rating({ rating, totalStars = 5, size = 16, className, reviewCount, showReviewCount = false, ...props }: RatingProps) {
   const safeRating = typeof rating === 'number' && !isNaN(rating) ? Math.max(0, Math.min(totalStars, rating)) : 0;
   
-  const fullStars = Math.floor(safeRating);
-  const hasHalfStar = (safeRating % 1) >= 0.25 && (safeRating % 1) < 0.75;
-  const roundedUp = (safeRating % 1) >= 0.75;
-  
-  const actualFullStars = roundedUp ? fullStars + 1 : fullStars;
-  const actualHalfStar = !roundedUp && hasHalfStar;
-  const emptyStars = Math.max(0, totalStars - actualFullStars - (actualHalfStar ? 1 : 0));
-
   return (
     <div className={cn('flex items-center gap-1', className)} {...props}>
       <div className="flex items-center">
-        {/* Full Stars */}
-        {[...Array(actualFullStars)].map((_, i) => (
-          <Star 
-            key={`full-${i}`} 
-            className="text-yellow-400 fill-yellow-400" 
-            style={{ width: size, height: size }} 
-          />
-        ))}
-        
-        {/* Half Star */}
-        {actualHalfStar && (
-          <div className="relative" style={{ width: size, height: size }}>
-            <Star 
-              className="text-muted/20 fill-muted/20" 
-              style={{ width: size, height: size }} 
-            />
-            <div className="absolute inset-0 overflow-hidden" style={{ width: '50%' }}>
+        {[...Array(totalStars)].map((_, i) => {
+          const starIndex = i + 1;
+          // Determine if this star should be full, half, or empty
+          const isFull = starIndex <= Math.floor(safeRating);
+          const isHalf = !isFull && (starIndex <= Math.ceil(safeRating)) && (safeRating % 1 !== 0);
+          
+          return (
+            <div key={i} className="relative" style={{ width: size, height: size }}>
+              {/* Base Star (Empty State) */}
               <Star 
-                className="text-yellow-400 fill-yellow-400" 
+                className="text-muted/20 fill-muted/20" 
                 style={{ width: size, height: size }} 
               />
+              
+              {/* Full Star Overlay */}
+              {isFull && (
+                <div className="absolute inset-0">
+                  <Star 
+                    className="text-yellow-400 fill-yellow-400" 
+                    style={{ width: size, height: size }} 
+                  />
+                </div>
+              )}
+              
+              {/* Half Star Overlay (Width-Clipped) */}
+              {isHalf && (
+                <div className="absolute inset-0 overflow-hidden" style={{ width: '50%' }}>
+                  <Star 
+                    className="text-yellow-400 fill-yellow-400" 
+                    style={{ width: size, height: size }} 
+                  />
+                </div>
+              )}
             </div>
-          </div>
-        )}
-        
-        {/* Empty Stars */}
-        {[...Array(emptyStars)].map((_, i) => (
-          <Star 
-            key={`empty-${i}`} 
-            className="text-muted/20 fill-muted/20" 
-            style={{ width: size, height: size }} 
-          />
-        ))}
+          );
+        })}
       </div>
       
       {showReviewCount && (
