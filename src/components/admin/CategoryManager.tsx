@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { 
     DndContext, 
     closestCenter, 
@@ -22,9 +22,10 @@ import { saveCategoryCards, getStorefrontSetting, updateStorefrontSetting } from
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { GripVertical, Trash2, Plus, Save, Loader2, RefreshCw, Info, Image as ImageIcon, LayoutGrid, Activity, Eye, Sparkles } from 'lucide-react';
+import { GripVertical, Trash2, Plus, Save, Loader2, RefreshCw, Info, Image as ImageIcon, LayoutGrid, Activity, Eye, Sparkles, Upload } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/lib/supabase';
+import { uploadFile } from '@/lib/storage';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 
@@ -81,13 +82,38 @@ function SortableCategoryItem({ card, onUpdate, onDelete }: {
 }) {
     const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: card.id });
     const style = { transform: CSS.Translate.toString(transform), transition };
+    const [uploading, setUploading] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const { toast } = useToast();
+
+    const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setUploading(true);
+        try {
+            // Uploading to the specific 'category-carousel' bucket as requested
+            const publicUrl = await uploadFile(file, 'category-carousel', 'cards');
+            onUpdate({ ...card, image: publicUrl });
+            toast({ title: "Asset Synchronized", description: "Image uploaded and linked to card." });
+        } catch (error: any) {
+            toast({ 
+                variant: "destructive", 
+                title: "Upload Failed", 
+                description: error.message || "Ensure the 'category-carousel' bucket exists." 
+            });
+        } finally {
+            setUploading(false);
+            if (fileInputRef.current) fileInputRef.current.value = '';
+        }
+    };
 
     return (
         <div ref={setNodeRef} style={style} className="flex items-center gap-4 bg-white p-4 rounded-xl border shadow-sm mb-3 group hover:border-primary transition-colors">
             <button {...attributes} {...listeners} className="cursor-grab text-muted-foreground hover:text-primary p-2">
                 <GripVertical className="w-5 h-5" />
             </button>
-            <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="flex-1 grid grid-cols-1 md:grid-cols-4 gap-3">
                 <div className="space-y-1">
                     <label className="text-[10px] font-black uppercase text-muted-foreground/60 tracking-widest ml-1">Card Title</label>
                     <Input 
@@ -105,6 +131,33 @@ function SortableCategoryItem({ card, onUpdate, onDelete }: {
                         placeholder="e.g. collections/Hand-wash Basin...webp"
                         className="h-10 rounded-lg"
                     />
+                </div>
+                <div className="space-y-1">
+                    <label className="text-[10px] font-black uppercase text-muted-foreground/60 tracking-widest ml-1">Media Provisioning</label>
+                    <div 
+                        onClick={() => fileInputRef.current?.click()}
+                        className="h-10 rounded-lg border-2 border-dashed flex items-center justify-center cursor-pointer hover:bg-primary/5 hover:border-primary transition-all group/upload relative overflow-hidden"
+                    >
+                        <input 
+                            type="file" 
+                            ref={fileInputRef}
+                            className="hidden" 
+                            accept="image/*"
+                            onChange={handleUpload}
+                            disabled={uploading}
+                        />
+                        {uploading ? (
+                            <div className="flex items-center gap-2">
+                                <Loader2 className="h-3 w-3 animate-spin text-primary" />
+                                <span className="text-[9px] font-black uppercase text-primary">Syncing...</span>
+                            </div>
+                        ) : (
+                            <div className="flex items-center gap-2 opacity-40 group-hover/upload:opacity-100">
+                                <Upload size={14} className="text-accent" />
+                                <span className="text-[9px] font-black uppercase text-accent">Upload Image</span>
+                            </div>
+                        )}
+                    </div>
                 </div>
                 <div className="space-y-1">
                     <label className="text-[10px] font-black uppercase text-muted-foreground/60 tracking-widest ml-1">Route Link</label>
@@ -209,7 +262,7 @@ export default function CategoryManager({ initialCards }: { initialCards: Catego
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-10 border-b pb-8">
                 <div>
                     <h2 className="text-3xl font-black font-headline text-accent tracking-tighter uppercase">Product Carousel CMS</h2>
-                    <p className="text-muted-foreground text-sm font-medium mt-1">Design Sync Active: Pointing to 'collections/' bucket folder.</p>
+                    <p className="text-muted-foreground text-sm font-medium mt-1">Design Sync Active: Pointing to 'collections/' and 'category-carousel/' buckets.</p>
                 </div>
                 <div className="flex gap-3">
                     <Button onClick={handleAddCard} variant="outline" className="rounded-full h-12 px-6 font-bold">
