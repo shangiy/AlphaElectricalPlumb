@@ -1,4 +1,3 @@
-
 'use client';
 
 import { supabase } from '@/lib/supabase';
@@ -18,14 +17,15 @@ interface Category {
 }
 
 /**
- * High-Resolution Collection Mapping for v2.6.0:
+ * High-Resolution Collection Mapping for v4.3.0:
  * Prioritizes curated collection assets from the Supabase Storage bucket.
- * Added 'electrical' and 'lighting' keywords to ensure 100% resolution.
+ * Synchronized with user-defined filenames and common keywords.
  */
 const collectionFileNameMap: Record<string, string> = {
   'toilets & sinks': 'Hand-wash Basin and Pedestal Sink Collection.webp',
   'toilets': 'Hand-wash Basin and Pedestal Sink Collection.webp',
   'sink': 'Hand-wash Basin and Pedestal Sink Collection.webp',
+  'water tank': 'Tanks variety collection.webp',
   'tank': 'Durable TopTank Vertical Water Tank collection.webp',
   'electric': 'Electric Socket Collection.webp',
   'electrical': 'Electric Socket Collection.webp',
@@ -40,8 +40,9 @@ const collectionFileNameMap: Record<string, string> = {
 };
 
 /**
- * Helper to construct clean Supabase Storage URLs.
- * Hardened v6.3.2: Returns raw path if it starts with '/' to support local public assets.
+ * Robust Path Resolver:
+ * Strips redundant bucket names and common folder prefixes.
+ * URL-encodes path segments to fix 400 errors for files with spaces.
  */
 function getStoragePublicUrl(rawPath: string): string {
   if (!rawPath) return '';
@@ -52,8 +53,15 @@ function getStoragePublicUrl(rawPath: string): string {
   if (!supabase) return '';
 
   let cleanPath = rawPath.replace(/\\/g, '/').replace(/^\/+/, '');
+  
+  // Remove redundant bucket prefix used in some CMS inputs
   if (cleanPath.startsWith('product-images/')) {
     cleanPath = cleanPath.substring('product-images/'.length);
+  }
+  
+  // Remove redundant folder prefix used in migration
+  if (cleanPath.startsWith('product images/')) {
+    cleanPath = cleanPath.substring('product images/'.length);
   }
 
   const encodedPath = cleanPath.split('/').map(segment => encodeURIComponent(segment)).join('/');
@@ -70,24 +78,9 @@ export default function CategoryCard({ category }: { category: Category }) {
 
   const candidateUrls = useMemo(() => {
     const urls: string[] = [];
-
-    // 1. Keyword match in collectionFileNameMap (Highest Fidelity)
     const lowerName = category.name.toLowerCase().trim();
-    
-    for (const [key, filename] of Object.entries(collectionFileNameMap)) {
-      if (lowerName.includes(key)) {
-        const collectionsUrl = getStoragePublicUrl(`Collections/${filename}`);
-        if (collectionsUrl) urls.push(collectionsUrl);
 
-        const collectionsUrlLower = getStoragePublicUrl(`collections/${filename}`);
-        if (collectionsUrlLower) urls.push(collectionsUrlLower);
-        
-        const rootUrl = getStoragePublicUrl(filename);
-        if (rootUrl) urls.push(rootUrl);
-      }
-    }
-
-    // 2. Explicit image fields (Supports /images/local.png)
+    // 1. Explicit image fields from CMS or Table (Highest Priority)
     const rawVal =
       category.image ||
       category.imageUrl ||
@@ -100,7 +93,17 @@ export default function CategoryCard({ category }: { category: Category }) {
       if (url) urls.push(url);
     }
 
-    // 3. Fallback placeholder data
+    // 2. Keyword match in collectionFileNameMap (Discovery Engine)
+    for (const [key, filename] of Object.entries(collectionFileNameMap)) {
+      if (lowerName.includes(key)) {
+        // Try multiple folder patterns for high-fidelity discovery
+        urls.push(getStoragePublicUrl(`Collections/${filename}`));
+        urls.push(getStoragePublicUrl(`collections/${filename}`));
+        urls.push(getStoragePublicUrl(filename));
+      }
+    }
+
+    // 3. Fallback placeholder data (Supabase Hosted)
     if (lowerName.includes('tank')) urls.push(placeholderData.cat_tanks.url);
     if (lowerName.includes('plumb')) urls.push(placeholderData.cat_plumbing.url);
     if (lowerName.includes('light') || lowerName.includes('chandelier') || lowerName.includes('electr')) {

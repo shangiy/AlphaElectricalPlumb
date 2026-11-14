@@ -2,10 +2,9 @@ import type { Product, Category, MockUser, Transaction, CarouselCategory } from 
 import { supabase } from './supabase';
 
 /**
- * Robust Path Resolver v6.3.1:
- * Strips redundant bucket names and common folder prefixes to ensure 
- * Supabase Storage receives a clean relative path.
- * Hardened v6.3.1: Explicitly URL-encodes path segments to fix 400 errors.
+ * Robust Path Resolver v6.3.2:
+ * Strips redundant bucket names and common folder prefixes.
+ * Explicitly URL-encodes path segments to fix 400 errors for files with spaces.
  */
 function resolveStoragePath(rawPath: string): string {
   if (!rawPath) return '';
