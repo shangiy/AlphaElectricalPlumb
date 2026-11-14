@@ -86,13 +86,30 @@ function SortableCategoryItem({ card, onUpdate, onDelete }: {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const { toast } = useToast();
 
+    // Helper to extract a readable filename from the URL or path
+    const getFileName = (url: string) => {
+        if (!url) return '';
+        try {
+            // Handle encoded characters
+            const decoded = decodeURIComponent(url);
+            const parts = decoded.split('/');
+            const lastPart = parts[parts.length - 1];
+            // Remove query parameters (for public URLs)
+            const cleanName = lastPart.split('?')[0];
+            // Remove the timestamp prefix used in our storage utility (e.g., 173..._)
+            return cleanName.replace(/^\d{13,}_/, '');
+        } catch (e) {
+            return url.split('/').pop() || '';
+        }
+    };
+
     const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
 
         setUploading(true);
         try {
-            // Uploading to the specific 'category-carousel' bucket as requested
+            // Uploading to the specific 'category-carousel' bucket
             const publicUrl = await uploadFile(file, 'category-carousel', 'cards');
             onUpdate({ ...card, image: publicUrl });
             toast({ title: "Asset Synchronized", description: "Image uploaded and linked to card." });
@@ -109,7 +126,7 @@ function SortableCategoryItem({ card, onUpdate, onDelete }: {
     };
 
     return (
-        <div ref={setNodeRef} style={style} className="flex items-center gap-4 bg-white p-4 rounded-xl border shadow-sm mb-3 group hover:border-primary transition-colors">
+        <div ref={setNodeRef} style={style} className="flex items-center gap-4 bg-white p-4 rounded-xl border shadow-sm mb-3 group hover:border-primary transition-all">
             <button {...attributes} {...listeners} className="cursor-grab text-muted-foreground hover:text-primary p-2">
                 <GripVertical className="w-5 h-5" />
             </button>
@@ -158,6 +175,12 @@ function SortableCategoryItem({ card, onUpdate, onDelete }: {
                             </div>
                         )}
                     </div>
+                    {/* Filename display as requested */}
+                    {card.image && (
+                        <p className="text-[9px] font-bold text-primary truncate px-1 mt-1 max-w-[150px]" title={getFileName(card.image)}>
+                            File: {getFileName(card.image)}
+                        </p>
+                    )}
                 </div>
                 <div className="space-y-1">
                     <label className="text-[10px] font-black uppercase text-muted-foreground/60 tracking-widest ml-1">Route Link</label>
