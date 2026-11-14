@@ -21,7 +21,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { saveCategoryCards } from '@/app/actions/cms-actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { GripVertical, Trash2, Plus, Save, Loader2, RefreshCw, Info, Image as ImageIcon } from 'lucide-react';
+import { GripVertical, Trash2, Plus, Save, Loader2, RefreshCw, Info, Image as ImageIcon, LayoutGrid } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/lib/supabase';
 
@@ -32,6 +32,20 @@ export interface CategoryCardData {
     link: string;
     order: number;
 }
+
+const INVENTORY_CATEGORIES = [
+    'Decorative Lighting and chandeliers',
+    'Electrical items',
+    'Plumbing',
+    'Sanitary Ware Toilets & Bathroom Fixtures',
+    'Shower Category',
+    'Solar panels & accessories',
+    'Tanks category',
+    'Mabati and Roofing',
+    'Construction and Fencing equip\'nts',
+    'Collections',
+    'Hardware & General Supplies'
+];
 
 // Individual Sortable Item Component
 function SortableCategoryItem({ card, onUpdate, onDelete }: { 
@@ -88,8 +102,8 @@ function SortableCategoryItem({ card, onUpdate, onDelete }: {
 }
 
 /**
- * Intelligent Category Manager v4.4.1:
- * Features "Discovery Mode" and High-Fidelity Path Hints for administrative ease.
+ * Intelligent Category Manager v4.4.2:
+ * Features "Discovery Mode" and Linear Inventory Reference.
  */
 export default function CategoryManager({ initialCards }: { initialCards: CategoryCardData[] }) {
     const [cards, setCards] = useState<CategoryCardData[]>([]);
@@ -214,6 +228,22 @@ export default function CategoryManager({ initialCards }: { initialCards: Catego
                         Save Arrangement
                     </Button>
                 </div>
+            </div>
+
+            {/* INVENTORY CATEGORY QUICK-LOOK */}
+            <div className="mb-8 space-y-4 bg-muted/20 p-6 rounded-[2rem] border border-dashed animate-in slide-in-from-top-2 duration-500">
+                <div className="flex items-center gap-2 mb-2">
+                    <LayoutGrid size={14} className="text-primary" />
+                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-accent">Active Inventory Categories (11)</span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                    {INVENTORY_CATEGORIES.map((cat, i) => (
+                        <span key={i} className="px-3 py-1 bg-white border border-muted rounded-full text-[9px] font-black text-accent uppercase tracking-tighter whitespace-nowrap shadow-sm">
+                            {cat}
+                        </span>
+                    ))}
+                </div>
+                <p className="text-[9px] text-muted-foreground italic font-medium">Note: For best results, ensure your Card Titles match or represent these inventory groups.</p>
             </div>
 
             {cards.length > 0 ? (
