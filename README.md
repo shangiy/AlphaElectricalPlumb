@@ -1,3 +1,4 @@
+
 # ALPHA Plumbing n Electrical Ltd 
 
 This is a professional Next.js 15 e-commerce application for Alpha Electricals & Plumbing Ltd.
@@ -74,7 +75,8 @@ ALTER TABLE public.products ADD COLUMN IF NOT EXISTS featured_order INT DEFAULT 
 NOTIFY pgrst, 'reload schema';
 ```
 
-### 📅 Recent Milestones (v6.3.5)
+### 📅 Recent Milestones (v6.3.6)
+- **Routing Consolidation**: Resolved Next.js 15 server crash by neutralizing duplicate dynamic routes and unifying the Product Detail engine into a "Slug-First" architecture.
 - **Seasonal Event Engine**: Integrated the v4.7.0 thematic pill hub for holiday-specific marketing (Christmas, New Year, etc.).
 - **Style Persistence**: Added iconic Black Friday style effects (Jumia and Amazon mimics) to the Vibrant Sticker Engine.
 - **Architectural Solidification**: Finalized the Next.js 15 routing consolidation, eliminating segment conflicts and hardening `next.config.ts` for cloud environments.

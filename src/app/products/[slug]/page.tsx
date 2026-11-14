@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useParams, notFound, useRouter } from 'next/navigation';
@@ -23,28 +24,28 @@ import {
 import ReviewForm from '@/components/reviews/ReviewForm';
 
 /**
- * Unified Product Engine v6.3.1:
- * Resolves Next.js routing conflicts by consolidating all product logic here.
- * Features: Dual-lookup (Slug/ID), Intelligent Redirection, and SEO normalization.
+ * Unified Product Engine v6.3.6:
+ * Slug-First Architecture for Next.js 15.
+ * Resolves routing conflicts by acting as the single authoritative route segment.
  */
-function ProductContent({ identifier }: { identifier: string }) {
+function ProductContent({ slug }: { slug: string }) {
   const { products, loading, refreshProducts } = useProducts();
   const router = useRouter();
   
-  // 1. Unified Search: Find by Slug OR ID
+  // 1. Unified Search: Find by Slug OR legacy ID (identifier was passed as slug)
   const product = useMemo(() => {
-    return products.find(p => p.slug === identifier || p.id === identifier);
-  }, [products, identifier]);
+    return products.find(p => p.slug === slug || p.id === slug);
+  }, [products, slug]);
 
   // 2. SEO Redirection Engine: 
   // If we found a product using a legacy UUID but it has a professional Slug, 
   // we redirect to the Slug URL to normalize the link for search engines.
   useEffect(() => {
-    if (product && product.slug && product.id === identifier) {
-      console.log(`[SEO Sync] Redirecting legacy ID ${identifier} to slug ${product.slug}`);
+    if (product && product.slug && product.id === slug) {
+      console.log(`[SEO Sync] Redirecting legacy ID ${slug} to slug ${product.slug}`);
       router.replace(`/products/${product.slug}`);
     }
-  }, [product, identifier, router]);
+  }, [product, slug, router]);
 
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
@@ -53,7 +54,7 @@ function ProductContent({ identifier }: { identifier: string }) {
   useEffect(() => {
     setActiveImageIndex(0);
     setFailedUrls(new Set());
-  }, [identifier]);
+  }, [slug]);
 
   const uniqueImages = useMemo(() => {
     if (!product) return [];
@@ -75,7 +76,7 @@ function ProductContent({ identifier }: { identifier: string }) {
         return (
              <div className="container mx-auto px-4 py-24 text-center">
                 <h1 className="text-4xl font-black font-headline text-accent uppercase tracking-tighter">Product Not Found</h1>
-                <p className="text-muted-foreground mt-4 text-lg">The item reference "{identifier}" does not exist in our current inventory.</p>
+                <p className="text-muted-foreground mt-4 text-lg">The item reference "{slug}" does not exist in our current inventory.</p>
                 <Button onClick={() => router.push('/')} size="lg" className="mt-8 rounded-full px-12">Return Home</Button>
             </div>
         );
@@ -245,13 +246,13 @@ function ProductContent({ identifier }: { identifier: string }) {
 
 export default function ProductDetailPage() {
   const params = useParams();
-  const identifier = (params.slug || params.id) as string;
+  const slug = params.slug as string;
 
-  if (!identifier) {
+  if (!slug) {
     return notFound();
   }
   
-  return <ProductContent identifier={identifier} />;
+  return <ProductContent slug={slug} />;
 }
 
 function ProductDetailSkeleton() {
