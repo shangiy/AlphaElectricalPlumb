@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
@@ -180,7 +179,7 @@ export default function ProductCard({ product }: { product: Product }) {
                 <p className="text-lg font-black text-foreground">
                     {formatPrice(product.price)}
                 </p>
-                {product.oldPrice && product.oldPrice > product.price && (
+                {product.oldPrice > product.price && (
                     <p className="text-xs text-muted-foreground line-through decoration-muted-foreground/50">
                         {formatPrice(product.oldPrice)}
                     </p>

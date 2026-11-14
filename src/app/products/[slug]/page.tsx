@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useParams, notFound, useRouter } from 'next/navigation';
@@ -124,7 +123,7 @@ function ProductContent({ slug }: { slug: string }) {
                     src={uniqueImages[activeImageIndex] || '/placeholder.jpg'}
                     alt={product.name}
                     fill
-                    className="object-cover transition-all duration-700 group-hover:scale-105"
+                    className="object-cover transition-all duration-700 group-hover:scale-110"
                     onError={() => handleImageError(uniqueImages[activeImageIndex])}
                     priority={activeImageIndex === 0}
                     sizes="(max-width: 768px) 100vw, 60vw"
@@ -193,7 +192,7 @@ function ProductContent({ slug }: { slug: string }) {
                     <p className="text-5xl font-black font-headline tracking-tighter">{formatPrice(product.price)}</p>
                     {product.unit && product.unit !== 'item' && <span className="text-xl font-bold opacity-40">/ {product.unit}</span>}
                 </div>
-                {product.oldPrice && product.oldPrice > product.price && (
+                {product.oldPrice > product.price && (
                   <p className="text-sm font-bold text-white/40 line-through mt-1">Was {formatPrice(product.oldPrice)}</p>
                 )}
             </div>

@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useProducts } from '@/context/ProductProvider';
@@ -237,7 +236,7 @@ function ProductListCard({ product }: { product: Product }) {
         <div className="flex items-center justify-between pt-2">
           <div className="flex flex-col">
             <span className="text-xl font-black text-accent">{formatPrice(product.price)}</span>
-            {product.oldPrice && product.oldPrice > product.price && (
+            {product.oldPrice > product.price && (
               <span className="text-xs text-muted-foreground line-through opacity-50">{formatPrice(product.oldPrice)}</span>
             )}
           </div>
