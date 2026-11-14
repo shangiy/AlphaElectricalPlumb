@@ -102,7 +102,7 @@ export default function CategoryCard({ category }: { category: Category }) {
 
   return (
     <Link href={category.href || '#'} className="block group">
-      <div className="relative rounded-2xl overflow-hidden shadow-sm bg-white border border-border transition-all duration-300 hover:shadow-xl hover:-translate-y-1 h-[400px]">
+      <div className="relative rounded-2xl overflow-hidden shadow-sm bg-white border border-border transition-all duration-300 hover:shadow-xl hover:-translate-y-1 h-[340px]">
         <div className="absolute inset-0 bg-muted/20">
           <Image
             src={currentImageUrl}
@@ -113,7 +113,7 @@ export default function CategoryCard({ category }: { category: Category }) {
             sizes="(max-width: 768px) 100vw, 33vw"
             loading="lazy"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-80" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
         </div>
         <div className="absolute inset-0 flex flex-col justify-end p-6">
           <h3 className="text-white font-bold text-lg md:text-xl font-headline leading-tight group-hover:text-primary transition-colors drop-shadow-md">

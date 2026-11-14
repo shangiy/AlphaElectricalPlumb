@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -165,7 +164,7 @@ export default function CategoryCarousel() {
               {categories.map((category) => (
                 <div 
                     key={category.id} 
-                    className="embla__slide flex-shrink-0 w-72 px-4 transition-all duration-500 hover:scale-[1.02] active:scale-[0.98] select-none touch-pan-y"
+                    className="embla__slide flex-shrink-0 w-64 px-4 transition-all duration-500 hover:scale-[1.02] active:scale-[0.98] select-none touch-pan-y"
                 >
                   <CategoryCard category={category} />
                 </div>
