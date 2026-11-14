@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { 
     DndContext, 
     closestCenter, 
@@ -22,9 +22,10 @@ import { saveCategoryCards, getStorefrontSetting, updateStorefrontSetting } from
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { GripVertical, Trash2, Plus, Save, Loader2, RefreshCw, Info, Image as ImageIcon, LayoutGrid, Activity } from 'lucide-react';
+import { GripVertical, Trash2, Plus, Save, Loader2, RefreshCw, Info, Image as ImageIcon, LayoutGrid, Activity, Eye, Sparkles } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/lib/supabase';
+import Image from 'next/image';
 
 export interface CategoryCardData {
     id: string;
@@ -47,6 +48,25 @@ const INVENTORY_CATEGORIES = [
     'Collections',
     'Hardware & General Supplies'
 ];
+
+/**
+ * Robust Path Resolver for Admin Preview:
+ */
+function getPreviewImageUrl(rawPath: string): string {
+  if (!rawPath) return '';
+  if (rawPath.startsWith('http://') || rawPath.startsWith('https://') || rawPath.startsWith('/')) {
+    return rawPath;
+  }
+  if (!supabase) return '';
+
+  let cleanPath = rawPath.replace(/\\/g, '/').replace(/^\/+/, '');
+  if (cleanPath.startsWith('product-images/')) cleanPath = cleanPath.substring('product-images/'.length);
+  if (cleanPath.startsWith('product images/')) cleanPath = cleanPath.substring('product images/'.length);
+
+  const encodedPath = cleanPath.split('/').map(segment => encodeURIComponent(segment)).join('/');
+  const { data } = supabase.storage.from('product-images').getPublicUrl(encodedPath);
+  return data?.publicUrl || '';
+}
 
 // Individual Sortable Item Component
 function SortableCategoryItem({ card, onUpdate, onDelete }: { 
@@ -103,8 +123,8 @@ function SortableCategoryItem({ card, onUpdate, onDelete }: {
 }
 
 /**
- * Intelligent Category Manager v4.4.3:
- * Features "Discovery Mode", Linear Inventory Reference, and Pace Regulator.
+ * Intelligent Category Manager v4.4.4:
+ * Features "Discovery Mode", Live Marquee Preview, and Pace Regulator.
  */
 export default function CategoryManager({ initialCards }: { initialCards: CategoryCardData[] }) {
     const [cards, setCards] = useState<CategoryCardData[]>([]);
@@ -113,10 +133,6 @@ export default function CategoryManager({ initialCards }: { initialCards: Catego
     const [loading, setLoading] = useState(true);
     const { toast } = useToast();
 
-    /**
-     * Discovery Engine: Fetches existing database categories or system fallbacks
-     * to populate the list if no custom CMS configuration exists.
-     */
     const discoverExistingCategories = useCallback(async () => {
         if (!supabase) return [];
         try {
@@ -134,8 +150,6 @@ export default function CategoryManager({ initialCards }: { initialCards: Catego
                     order: index + 1
                 }));
             }
-
-            // High-Resolution Fallbacks (Matches homepage)
             return [
                 { id: 'tanks', title: 'Water Tanks', image: 'Collections/Tanks variety collection.webp', link: '/category/tanks', order: 1 },
                 { id: 'plumbing', title: 'Plumbing Equipment', image: 'Collections/Alpha plumbing pipe collection.webp', link: '/category/plumbing', order: 2 },
@@ -152,15 +166,12 @@ export default function CategoryManager({ initialCards }: { initialCards: Catego
     useEffect(() => {
         async function initialize() {
             setLoading(true);
-            
-            // Fetch speed setting
             const speed = await getStorefrontSetting('carousel_speed');
             if (speed) setScrollSpeed(speed);
 
             if (initialCards && initialCards.length > 0) {
                 setCards(initialCards);
             } else {
-                // Discovery mode: ensure homepage items are listed by default
                 const discovered = await discoverExistingCategories();
                 setCards(discovered);
             }
@@ -181,7 +192,6 @@ export default function CategoryManager({ initialCards }: { initialCards: Catego
                 const oldIndex = items.findIndex((i) => i.id === active.id);
                 const newIndex = items.findIndex((i) => i.id === over.id);
                 const updated = arrayMove(items, oldIndex, newIndex);
-                // Maintain order metadata
                 return updated.map((c, i) => ({ ...c, order: i + 1 }));
             });
         }
@@ -213,6 +223,9 @@ export default function CategoryManager({ initialCards }: { initialCards: Catego
         }
     };
 
+    // Duplicate cards for infinite loop effect in preview
+    const duplicatedCards = useMemo(() => [...cards, ...cards, ...cards], [cards]);
+
     if (loading) {
         return (
             <div className="flex flex-col items-center justify-center py-20 gap-4">
@@ -240,7 +253,6 @@ export default function CategoryManager({ initialCards }: { initialCards: Catego
                 </div>
             </div>
 
-            {/* INVENTORY CATEGORY QUICK-LOOK */}
             <div className="mb-8 space-y-4 bg-muted/20 p-6 rounded-[2rem] border border-dashed animate-in slide-in-from-top-2 duration-500">
                 <div className="flex items-center gap-2 mb-2">
                     <LayoutGrid size={14} className="text-primary" />
@@ -253,9 +265,50 @@ export default function CategoryManager({ initialCards }: { initialCards: Catego
                         </span>
                     ))}
                 </div>
-                <p className="text-[9px] text-muted-foreground italic font-medium">Note: For best results, ensure your Card Titles match or represent these inventory groups.</p>
                 
-                {/* PACE REGULATOR */}
+                {/* LIVE CAROUSEL PREVIEW NODE */}
+                <div className="pt-8 space-y-4">
+                    <div className="flex items-center justify-between px-2">
+                         <div className="flex items-center gap-2">
+                            <Eye size={14} className="text-primary" />
+                            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-accent">Live Rendering Node</span>
+                         </div>
+                         <Badge variant="outline" className="bg-white/50 text-[8px] font-black uppercase border-dashed">Speed: {scrollSpeed}s</Badge>
+                    </div>
+                    
+                    <div className="relative w-full h-[220px] bg-[#0a0f1e] rounded-[2.5rem] border border-white/5 overflow-hidden shadow-2xl group/preview">
+                         {/* Marquee Container */}
+                         <div 
+                            className="flex w-fit items-center h-full flex-nowrap animate-marquee px-4"
+                            style={{ animationDuration: `${scrollSpeed}s` }}
+                         >
+                            {duplicatedCards.map((card, idx) => {
+                                const img = getPreviewImageUrl(card.image);
+                                return (
+                                    <div key={`${card.id}-${idx}`} className="w-[160px] h-[180px] px-2 shrink-0">
+                                        <div className="relative w-full h-full rounded-2xl overflow-hidden border border-white/10 shadow-lg bg-white/5 group-hover/preview:border-primary/20 transition-colors">
+                                            <Image 
+                                                src={img || `https://placehold.co/200x300?text=${encodeURIComponent(card.title)}`}
+                                                alt=""
+                                                fill
+                                                unoptimized
+                                                className="object-cover opacity-60 group-hover/preview:opacity-80 transition-opacity"
+                                            />
+                                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                                            <div className="absolute inset-0 p-3 flex flex-col justify-end">
+                                                <p className="text-[10px] font-black text-white uppercase leading-tight line-clamp-2">{card.title}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                         </div>
+                         {/* Vercel-style Gradients */}
+                         <div className="absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-[#0a0f1e] to-transparent z-10" />
+                         <div className="absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-[#0a0f1e] to-transparent z-10" />
+                    </div>
+                </div>
+
                 <div className="flex flex-col sm:flex-row items-center gap-6 p-6 bg-white rounded-3xl border shadow-sm mt-4">
                     <div className="flex items-center gap-3 shrink-0">
                         <div className="h-10 w-10 rounded-2xl bg-accent text-white flex items-center justify-center shadow-lg">
@@ -276,7 +329,7 @@ export default function CategoryManager({ initialCards }: { initialCards: Catego
                     </div>
                     <p className="text-[9px] text-muted-foreground italic font-medium leading-relaxed max-w-sm">
                         Lower values = Faster movement. Higher values = Slower, more elegant flow. <br/>
-                        <span className="text-primary font-bold">Default: 40s</span> (Time taken for one complete loop).
+                        <span className="text-primary font-bold">Default: 40s</span>.
                     </p>
                 </div>
             </div>
@@ -302,7 +355,6 @@ export default function CategoryManager({ initialCards }: { initialCards: Catego
                         </SortableContext>
                     </DndContext>
 
-                    {/* PATH REFERENCE NODE */}
                     <div className="bg-primary/5 border border-dashed border-primary/20 rounded-[2.5rem] p-8 space-y-6">
                         <div className="flex items-center gap-3">
                             <Info className="text-primary h-6 w-6" />
