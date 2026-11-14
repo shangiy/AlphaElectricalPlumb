@@ -467,7 +467,10 @@ export default function UiUxControlCenter() {
                 )}
                 style={{ direction: bannerConfig.gradientDirection === 'right' ? 'rtl' : 'ltr' }}
                 >
-                    <div className="flex items-center gap-12 whitespace-nowrap animate-marquee">
+                    <div 
+                        className="flex items-center gap-12 whitespace-nowrap animate-marquee"
+                        style={{ animationDuration: `${bannerConfig.speed}s` }}
+                    >
                         {[0,1].map(i => (
                             <div key={i} className="flex items-center gap-8" style={{ direction: 'ltr' }}>
                                 {bannerConfig.vibrantText && <span>{renderStyledBadgeText(bannerConfig.vibrantText, bannerConfig.vibrantStyleType || 'kenyan-flag', bannerConfig.vibrantOrientation || 'vertical', bannerConfig.vibrantTextStyle)}</span>}
