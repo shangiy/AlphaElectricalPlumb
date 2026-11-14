@@ -20,6 +20,8 @@ import {
 } from '@/components/ui/select';
 import { SlidersHorizontal, X } from 'lucide-react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { Badge } from '@/components/ui/badge';
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
@@ -223,6 +225,8 @@ function ProductListCard({ product }: { product: Product }) {
         </div>
       </Link>
       <div className="p-6 space-y-4 flex-1 flex flex-col">
+        {/* Spacer to push all content to the bottom for horizontal uniformity across cards */}
+        <div className="flex-1" />
         <div className="space-y-1">
           <Link href={productLink}>
             <h3 className="font-black text-accent uppercase tracking-tight text-lg line-clamp-1 group-hover:text-primary transition-colors">{product.name}</h3>
@@ -230,7 +234,7 @@ function ProductListCard({ product }: { product: Product }) {
           <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">{product.category}</p>
         </div>
         
-        <div className="flex items-center justify-between pt-2 mt-auto">
+        <div className="flex items-center justify-between pt-2">
           <div className="flex flex-col">
             <span className="text-xl font-black text-accent">{formatPrice(product.price)}</span>
             {product.oldPrice && product.oldPrice > product.price && (
@@ -245,9 +249,6 @@ function ProductListCard({ product }: { product: Product }) {
     </div>
   );
 }
-
-import Link from 'next/link';
-import { Badge } from '@/components/ui/badge';
 
 export default function SearchPage() {
   return (
