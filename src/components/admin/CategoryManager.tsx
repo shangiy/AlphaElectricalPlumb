@@ -26,6 +26,7 @@ import { GripVertical, Trash2, Plus, Save, Loader2, RefreshCw, Info, Image as Im
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/lib/supabase';
 import Image from 'next/image';
+import { Badge } from '@/components/ui/badge';
 
 export interface CategoryCardData {
     id: string;
@@ -60,26 +61,26 @@ function getPreviewImageUrl(rawPath: string): string {
   if (!supabase) return '';
 
   let cleanPath = rawPath.replace(/\\/g, '/').replace(/^\/+/, '');
-  if (cleanPath.startsWith('product-images/')) cleanPath = cleanPath.substring('product-images/'.length);
-  if (cleanPath.startsWith('product images/')) cleanPath = cleanPath.substring('product images/'.length);
+  
+  // Normalize folder to lowercase 'collections'
+  if (cleanPath.toLowerCase().startsWith('collections/')) {
+      cleanPath = 'collections/' + cleanPath.substring(12);
+  }
+  
+  if (cleanPath.startsWith('product-images/')) cleanPath = cleanPath.substring(15);
 
   const encodedPath = cleanPath.split('/').map(segment => encodeURIComponent(segment)).join('/');
   const { data } = supabase.storage.from('product-images').getPublicUrl(encodedPath);
   return data?.publicUrl || '';
 }
 
-// Individual Sortable Item Component
 function SortableCategoryItem({ card, onUpdate, onDelete }: { 
     card: CategoryCardData; 
     onUpdate: (updated: CategoryCardData) => void; 
     onDelete: (id: string) => void; 
 }) {
     const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: card.id });
-
-    const style = {
-        transform: CSS.Translate.toString(transform),
-        transition,
-    };
+    const style = { transform: CSS.Translate.toString(transform), transition };
 
     return (
         <div ref={setNodeRef} style={style} className="flex items-center gap-4 bg-white p-4 rounded-xl border shadow-sm mb-3 group hover:border-primary transition-colors">
@@ -92,7 +93,7 @@ function SortableCategoryItem({ card, onUpdate, onDelete }: {
                     <Input 
                         value={card.title} 
                         onChange={(e) => onUpdate({ ...card, title: e.target.value })} 
-                        placeholder="e.g. Water Tanks"
+                        placeholder="e.g. Plumbing Fixtures"
                         className="h-10 rounded-lg"
                     />
                 </div>
@@ -101,7 +102,7 @@ function SortableCategoryItem({ card, onUpdate, onDelete }: {
                     <Input 
                         value={card.image} 
                         onChange={(e) => onUpdate({ ...card, image: e.target.value })} 
-                        placeholder="e.g. Collections/Tanks variety collection.webp"
+                        placeholder="e.g. collections/Hand-wash Basin...webp"
                         className="h-10 rounded-lg"
                     />
                 </div>
@@ -110,7 +111,7 @@ function SortableCategoryItem({ card, onUpdate, onDelete }: {
                     <Input 
                         value={card.link} 
                         onChange={(e) => onUpdate({ ...card, link: e.target.value })} 
-                        placeholder="e.g. /category/tanks"
+                        placeholder="e.g. /category/plumbing"
                         className="h-10 rounded-lg"
                     />
                 </div>
@@ -122,10 +123,6 @@ function SortableCategoryItem({ card, onUpdate, onDelete }: {
     );
 }
 
-/**
- * Intelligent Category Manager v4.4.4:
- * Features "Discovery Mode", Live Marquee Preview, and Pace Regulator.
- */
 export default function CategoryManager({ initialCards }: { initialCards: CategoryCardData[] }) {
     const [cards, setCards] = useState<CategoryCardData[]>([]);
     const [scrollSpeed, setScrollSpeed] = useState('40');
@@ -134,33 +131,13 @@ export default function CategoryManager({ initialCards }: { initialCards: Catego
     const { toast } = useToast();
 
     const discoverExistingCategories = useCallback(async () => {
-        if (!supabase) return [];
-        try {
-            const { data, error } = await supabase
-                .from('categories')
-                .select('*')
-                .order('sort_order', { ascending: true });
-
-            if (!error && data && data.length > 0) {
-                return data.map((cat, index) => ({
-                    id: String(cat.id),
-                    title: cat.name,
-                    image: cat.image_url || '',
-                    link: `/category/${cat.slug || cat.name.toLowerCase().replace(/\s+/g, '-')}`,
-                    order: index + 1
-                }));
-            }
-            return [
-                { id: 'tanks', title: 'Water Tanks', image: 'Collections/Tanks variety collection.webp', link: '/category/tanks', order: 1 },
-                { id: 'plumbing', title: 'Plumbing Equipment', image: 'Collections/Alpha plumbing pipe collection.webp', link: '/category/plumbing', order: 2 },
-                { id: 'electrical', title: 'Electrical Supplies', image: 'Collections/Electric Socket Collection.webp', link: '/category/lighting', order: 3 },
-                { id: 'decor', title: 'Home & Decor', image: 'Collections/Bird Art Lights fixture Collection.webp', link: '/category/decor', order: 4 },
-                { id: 'roofing', title: 'Roofing & Construction', image: 'Collections/Corrugated Roofing Sheet collection.webp', link: '/category/roofing', order: 5 }
-            ];
-        } catch (e) {
-            console.error("Discovery failed:", e);
-            return [];
-        }
+        return [
+            { id: 'fixtures', title: 'Plumbing Fixtures', image: 'collections/Hand-wash Basin and Pedestal Sink Collection.webp', link: '/category/plumbing', order: 1 },
+            { id: 'bulbs', title: 'Lighting & Bulbs', image: 'collections/Bird Art Lights fixture Collection.webp', link: '/category/lighting', order: 2 },
+            { id: 'supplies', title: 'Electrical Supplies', image: 'collections/Electric Socket Collection.webp', link: '/category/electrical', order: 3 },
+            { id: 'tanks', title: 'Water Tanks', image: 'collections/Tanks variety collection.webp', link: '/category/tanks', order: 4 },
+            { id: 'roofing', title: 'Roofing & Construction', image: 'collections/Corrugated Roofing Sheet collection.webp', link: '/category/roofing', order: 5 }
+        ];
     }, []);
 
     useEffect(() => {
@@ -215,7 +192,7 @@ export default function CategoryManager({ initialCards }: { initialCards: Catego
                 saveCategoryCards(cards),
                 updateStorefrontSetting('carousel_speed', scrollSpeed)
             ]);
-            toast({ title: "Architecture Synchronized", description: "Homepage categories and motion pace updated successfully." });
+            toast({ title: "Architecture Synchronized", description: "Design-sync successful." });
         } catch (error: any) {
             toast({ variant: "destructive", title: "Sync Failed", description: error.message });
         } finally {
@@ -223,24 +200,16 @@ export default function CategoryManager({ initialCards }: { initialCards: Catego
         }
     };
 
-    // Duplicate cards for infinite loop effect in preview
     const duplicatedCards = useMemo(() => [...cards, ...cards, ...cards], [cards]);
 
-    if (loading) {
-        return (
-            <div className="flex flex-col items-center justify-center py-20 gap-4">
-                <Loader2 className="animate-spin text-primary h-10 w-10" />
-                <p className="font-black uppercase tracking-[0.2em] text-muted-foreground/40">Mapping Visual Architecture...</p>
-            </div>
-        );
-    }
+    if (loading) return <div className="py-20 text-center"><Loader2 className="animate-spin mx-auto h-10 w-10 text-primary" /></div>;
 
     return (
         <div className="max-w-4xl mx-auto animate-in fade-in duration-700 pb-20">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-10 border-b pb-8">
                 <div>
                     <h2 className="text-3xl font-black font-headline text-accent tracking-tighter uppercase">Product Carousel CMS</h2>
-                    <p className="text-muted-foreground text-sm font-medium mt-1">Drag items to arrange storefront appearance. Homepage items are listed here by default.</p>
+                    <p className="text-muted-foreground text-sm font-medium mt-1">Design Sync Active: Pointing to 'collections/' bucket folder.</p>
                 </div>
                 <div className="flex gap-3">
                     <Button onClick={handleAddCard} variant="outline" className="rounded-full h-12 px-6 font-bold">
@@ -253,31 +222,29 @@ export default function CategoryManager({ initialCards }: { initialCards: Catego
                 </div>
             </div>
 
-            <div className="mb-8 space-y-4 bg-muted/20 p-6 rounded-[2rem] border border-dashed animate-in slide-in-from-top-2 duration-500">
+            <div className="mb-8 space-y-4 bg-muted/20 p-6 rounded-[2rem] border border-dashed">
                 <div className="flex items-center gap-2 mb-2">
                     <LayoutGrid size={14} className="text-primary" />
-                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-accent">Active Inventory Categories (11)</span>
+                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-accent">Authoritative Categories</span>
                 </div>
                 <div className="flex flex-wrap gap-2">
                     {INVENTORY_CATEGORIES.map((cat, i) => (
-                        <span key={i} className="px-3 py-1 bg-white border border-muted rounded-full text-[9px] font-black text-accent uppercase tracking-tighter whitespace-nowrap shadow-sm">
+                        <span key={i} className="px-3 py-1 bg-white border border-muted rounded-full text-[9px] font-black text-accent uppercase tracking-tighter shadow-sm">
                             {cat}
                         </span>
                     ))}
                 </div>
                 
-                {/* LIVE CAROUSEL PREVIEW NODE */}
                 <div className="pt-8 space-y-4">
                     <div className="flex items-center justify-between px-2">
                          <div className="flex items-center gap-2">
                             <Eye size={14} className="text-primary" />
-                            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-accent">Live Rendering Node</span>
+                            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-accent">Real-time Effect Preview</span>
                          </div>
-                         <Badge variant="outline" className="bg-white/50 text-[8px] font-black uppercase border-dashed">Speed: {scrollSpeed}s</Badge>
+                         <Badge variant="outline" className="bg-white/50 text-[8px] font-black uppercase">Speed: {scrollSpeed}s</Badge>
                     </div>
                     
                     <div className="relative w-full h-[220px] bg-[#0a0f1e] rounded-[2.5rem] border border-white/5 overflow-hidden shadow-2xl group/preview">
-                         {/* Marquee Container */}
                          <div 
                             className="flex w-fit items-center h-full flex-nowrap animate-marquee px-4"
                             style={{ animationDuration: `${scrollSpeed}s` }}
@@ -286,15 +253,15 @@ export default function CategoryManager({ initialCards }: { initialCards: Catego
                                 const img = getPreviewImageUrl(card.image);
                                 return (
                                     <div key={`${card.id}-${idx}`} className="w-[160px] h-[180px] px-2 shrink-0">
-                                        <div className="relative w-full h-full rounded-2xl overflow-hidden border border-white/10 shadow-lg bg-white/5 group-hover/preview:border-primary/20 transition-colors">
+                                        <div className="relative w-full h-full rounded-2xl overflow-hidden border border-white/10 shadow-lg bg-white/5">
                                             <Image 
                                                 src={img || `https://placehold.co/200x300?text=${encodeURIComponent(card.title)}`}
                                                 alt=""
                                                 fill
                                                 unoptimized
-                                                className="object-cover opacity-60 group-hover/preview:opacity-80 transition-opacity"
+                                                className="object-cover opacity-60"
                                             />
-                                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
                                             <div className="absolute inset-0 p-3 flex flex-col justify-end">
                                                 <p className="text-[10px] font-black text-white uppercase leading-tight line-clamp-2">{card.title}</p>
                                             </div>
@@ -303,7 +270,6 @@ export default function CategoryManager({ initialCards }: { initialCards: Catego
                                 );
                             })}
                          </div>
-                         {/* Vercel-style Gradients */}
                          <div className="absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-[#0a0f1e] to-transparent z-10" />
                          <div className="absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-[#0a0f1e] to-transparent z-10" />
                     </div>
@@ -311,12 +277,12 @@ export default function CategoryManager({ initialCards }: { initialCards: Catego
 
                 <div className="flex flex-col sm:flex-row items-center gap-6 p-6 bg-white rounded-3xl border shadow-sm mt-4">
                     <div className="flex items-center gap-3 shrink-0">
-                        <div className="h-10 w-10 rounded-2xl bg-accent text-white flex items-center justify-center shadow-lg">
+                        <div className="h-10 w-10 rounded-2xl bg-accent text-white flex items-center justify-center">
                             <Activity size={20} />
                         </div>
                         <div>
                             <Label className="text-[10px] font-black uppercase tracking-widest text-accent">Pace Regulator</Label>
-                            <p className="text-[9px] font-medium text-muted-foreground uppercase">Carousel Speed (Seconds)</p>
+                            <p className="text-[9px] font-medium text-muted-foreground uppercase">Duration (Seconds)</p>
                         </div>
                     </div>
                     <div className="w-full sm:w-32">
@@ -327,93 +293,62 @@ export default function CategoryManager({ initialCards }: { initialCards: Catego
                             className="h-11 rounded-xl font-black text-lg bg-muted/20 border-none text-center"
                         />
                     </div>
-                    <p className="text-[9px] text-muted-foreground italic font-medium leading-relaxed max-w-sm">
-                        Lower values = Faster movement. Higher values = Slower, more elegant flow. <br/>
-                        <span className="text-primary font-bold">Default: 40s</span>.
-                    </p>
                 </div>
             </div>
 
-            {cards.length > 0 ? (
-                <div className="space-y-10">
-                    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                        <SortableContext items={cards.map(c => c.id)} strategy={verticalListSortingStrategy}>
-                            <div className="space-y-2">
-                                {cards.map((card) => (
-                                    <SortableCategoryItem 
-                                        key={card.id} 
-                                        card={card} 
-                                        onUpdate={(updated) => setCards(cards.map(c => c.id === updated.id ? updated : c))}
-                                        onDelete={(id) => {
-                                            if (confirm("Permanently remove this collection from the storefront?")) {
-                                                setCards(cards.filter(c => c.id !== id));
-                                            }
-                                        }}
-                                    />
-                                ))}
-                            </div>
-                        </SortableContext>
-                    </DndContext>
+            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                <SortableContext items={cards.map(c => c.id)} strategy={verticalListSortingStrategy}>
+                    <div className="space-y-2">
+                        {cards.map((card) => (
+                            <SortableCategoryItem 
+                                key={card.id} 
+                                card={card} 
+                                onUpdate={(updated) => setCards(cards.map(c => c.id === updated.id ? updated : c))}
+                                onDelete={(id) => setCards(cards.filter(c => c.id !== id))}
+                            />
+                        ))}
+                    </div>
+                </SortableContext>
+            </DndContext>
 
-                    <div className="bg-primary/5 border border-dashed border-primary/20 rounded-[2.5rem] p-8 space-y-6">
-                        <div className="flex items-center gap-3">
-                            <Info className="text-primary h-6 w-6" />
-                            <div>
-                                <h3 className="text-lg font-black text-accent uppercase tracking-widest">Path Sync Reference</h3>
-                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Copy and paste these exact paths to sync images from Supabase storage.</p>
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="bg-white p-4 rounded-2xl border shadow-sm space-y-3">
-                                <div className="flex items-center gap-2 text-accent font-black uppercase text-[10px]">
-                                    <ImageIcon size={14} className="text-primary" /> Water Tanks Path
-                                </div>
-                                <code className="block bg-muted p-2 rounded-lg text-[11px] font-mono text-primary break-all select-all cursor-copy" title="Click to Select All">
-                                    Collections/Tanks variety collection.webp
-                                </code>
-                                <p className="text-[9px] text-muted-foreground italic">Link: /category/tanks</p>
-                            </div>
-
-                            <div className="bg-white p-4 rounded-2xl border shadow-sm space-y-3">
-                                <div className="flex items-center gap-2 text-accent font-black uppercase text-[10px]">
-                                    <ImageIcon size={14} className="text-primary" /> Plumbing Path
-                                </div>
-                                <code className="block bg-muted p-2 rounded-lg text-[11px] font-mono text-primary break-all select-all cursor-copy">
-                                    Collections/Alpha plumbing pipe collection.webp
-                                </code>
-                                <p className="text-[9px] text-muted-foreground italic">Link: /category/plumbing</p>
-                            </div>
-
-                            <div className="bg-white p-4 rounded-2xl border shadow-sm space-y-3">
-                                <div className="flex items-center gap-2 text-accent font-black uppercase text-[10px]">
-                                    <ImageIcon size={14} className="text-primary" /> Electrical Path
-                                </div>
-                                <code className="block bg-muted p-2 rounded-lg text-[11px] font-mono text-primary break-all select-all cursor-copy">
-                                    Collections/Electric Socket Collection.webp
-                                </code>
-                                <p className="text-[9px] text-muted-foreground italic">Link: /category/lighting</p>
-                            </div>
-
-                            <div className="bg-white p-4 rounded-2xl border shadow-sm space-y-3">
-                                <div className="flex items-center gap-2 text-accent font-black uppercase text-[10px]">
-                                    <ImageIcon size={14} className="text-primary" /> Home & Decor Path
-                                </div>
-                                <code className="block bg-muted p-2 rounded-lg text-[11px] font-mono text-primary break-all select-all cursor-copy">
-                                    Collections/Bird Art Lights fixture Collection.webp
-                                </code>
-                                <p className="text-[9px] text-muted-foreground italic">Link: /category/decor</p>
-                            </div>
-                        </div>
+            <div className="bg-primary/5 border border-dashed border-primary/20 rounded-[2.5rem] p-8 space-y-6 mt-10">
+                <div className="flex items-center gap-3">
+                    <Info className="text-primary h-6 w-6" />
+                    <div>
+                        <h3 className="text-lg font-black text-accent uppercase tracking-widest">Design-Sync Reference</h3>
+                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Exact paths for 'collections/' bucket folder.</p>
                     </div>
                 </div>
-            ) : (
-                <div className="flex flex-col items-center justify-center py-20 bg-muted/20 border-2 border-dashed rounded-[2rem] text-center">
-                    <RefreshCw className="h-10 w-10 text-muted-foreground/30 mb-4 animate-spin-slow" />
-                    <p className="font-bold text-accent uppercase tracking-tighter">Initializing Discovery Engine</p>
-                    <Button onClick={discoverExistingCategories} variant="link" className="text-primary mt-2">Force Sync Table</Button>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="bg-white p-4 rounded-2xl border shadow-sm space-y-3">
+                        <div className="flex items-center gap-2 text-accent font-black uppercase text-[10px]">
+                            <ImageIcon size={14} className="text-primary" /> Plumbing Fixtures
+                        </div>
+                        <code className="block bg-muted p-2 rounded-lg text-[11px] font-mono text-primary select-all cursor-copy">
+                            collections/Hand-wash Basin and Pedestal Sink Collection.webp
+                        </code>
+                    </div>
+
+                    <div className="bg-white p-4 rounded-2xl border shadow-sm space-y-3">
+                        <div className="flex items-center gap-2 text-accent font-black uppercase text-[10px]">
+                            <ImageIcon size={14} className="text-primary" /> Lighting & Bulbs
+                        </div>
+                        <code className="block bg-muted p-2 rounded-lg text-[11px] font-mono text-primary select-all cursor-copy">
+                            collections/Bird Art Lights fixture Collection.webp
+                        </code>
+                    </div>
+
+                    <div className="bg-white p-4 rounded-2xl border shadow-sm space-y-3">
+                        <div className="flex items-center gap-2 text-accent font-black uppercase text-[10px]">
+                            <ImageIcon size={14} className="text-primary" /> Electrical Supplies
+                        </div>
+                        <code className="block bg-muted p-2 rounded-lg text-[11px] font-mono text-primary select-all cursor-copy">
+                            collections/Electric Socket Collection.webp
+                        </code>
+                    </div>
                 </div>
-            )}
+            </div>
         </div>
     );
 }

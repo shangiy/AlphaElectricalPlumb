@@ -2,9 +2,8 @@ import type { Product, Category, MockUser, Transaction, CarouselCategory } from 
 import { supabase } from './supabase';
 
 /**
- * Robust Path Resolver v6.3.2:
- * Strips redundant bucket names and common folder prefixes.
- * Explicitly URL-encodes path segments to fix 400 errors for files with spaces.
+ * Robust Path Resolver v6.3.3:
+ * Normalizes 'collections/' folder and URL-encodes segments.
  */
 function resolveStoragePath(rawPath: string): string {
   if (!rawPath) return '';
@@ -13,25 +12,23 @@ function resolveStoragePath(rawPath: string): string {
   const bucketName = 'product-images';
   let clean = rawPath.replace(/\\/g, '/').replace(/^\/+/, '');
   
-  // Remove redundant bucket name if present in path
+  // Remove redundant bucket prefix
   if (clean.startsWith(`${bucketName}/`)) {
     clean = clean.substring(bucketName.length + 1);
   }
   
-  // Remove redundant 'product images/' folder name if present
-  if (clean.startsWith('product images/')) {
-    clean = clean.substring('product images/'.length);
+  // Normalize 'collections' vs 'Collections'
+  if (clean.toLowerCase().startsWith('collections/')) {
+    clean = 'collections/' + clean.substring(12);
   }
 
-  // If we still have a path, ask Supabase for the public URL
   if (clean && supabase) {
     try {
-        // High-Fidelity URL Encoding for path segments to prevent upstream 400 errors
         const encodedPath = clean.split('/').map(segment => encodeURIComponent(segment)).join('/');
         const { data } = supabase.storage.from(bucketName).getPublicUrl(encodedPath);
         return data.publicUrl;
     } catch (e) {
-        console.warn("Storage resolution failed for path:", clean);
+        console.warn("Storage resolution failed:", clean);
         return rawPath;
     }
   }
@@ -39,26 +36,15 @@ function resolveStoragePath(rawPath: string): string {
   return rawPath;
 }
 
-/**
- * Robust Image URL Resolver (Single String):
- * Centralized utility for components or admin panels needing a direct string URL.
- */
 export function getProductImageUrl(product: any): string {
   const rawImage = product?.image_url || product?.image || (product?.image_urls && product.image_urls[0]) || (product?.imageUrls && product.imageUrls[0]);
-  
   if (!rawImage) return '/placeholder.jpg';
   return resolveStoragePath(rawImage);
 }
 
-/**
- * Robust Image URL Resolver (Array):
- * Centralized logic used by all product cards and detail pages.
- */
 const resolveProductImages = (product: any): string[] => {
   if (!supabase) return ["/placeholder.jpg"];
-
   const urls: string[] = [];
-
   const rawArray = product.image_urls || product.imageUrls || product.images || product.gallery;
   if (Array.isArray(rawArray) && rawArray.length > 0) {
     rawArray.forEach((val: any) => {
@@ -67,41 +53,26 @@ const resolveProductImages = (product: any): string[] => {
       }
     });
   }
-
   const singleVal = product.image_url || product.image || product.imageUrl || product.image_path || product.imagePath;
   if (singleVal && typeof singleVal === 'string') {
     urls.push(resolveStoragePath(singleVal));
   }
-
   const uniqueUrls = Array.from(new Set(urls)).filter(url => url && !url.includes('undefined'));
   return uniqueUrls.length > 0 ? uniqueUrls : ["https://placehold.co/400x400?text=No+Image"];
 };
 
-/**
- * Maps raw Supabase product data to the standard Product type.
- * Robustly handles the transition of 'reviews' from number to jsonb array.
- */
 export function mapProduct(p: any): Product {
   if (!p) return {} as Product;
-
-  // Generate a fallback slug if none exists in the DB
-  const generatedSlug = p.name
-    ?.toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '') || p.id;
-
-  // Defensively handle 'reviews' column (JSONB vs Legacy Number)
+  const generatedSlug = p.name?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || p.id;
   const rawReviews = p.reviews;
   let reviewsList = [];
   let reviewsCount = 0;
-
   if (Array.isArray(rawReviews)) {
       reviewsList = rawReviews;
       reviewsCount = rawReviews.length;
   } else {
       reviewsCount = Number(rawReviews || 0);
   }
-
   return {
     id: p.id,
     slug: p.slug || generatedSlug,
@@ -125,25 +96,12 @@ export function mapProduct(p: any): Product {
 
 export async function getProducts(): Promise<Product[]> {
   try {
-    if (!supabase) {
-        console.warn("getProducts called but Supabase is not initialized.");
-        return [];
-    }
-    
-    const { data, error } = await supabase
-      .from('products')
-      .select('*')
-      .order('name', { ascending: true });
-
+    if (!supabase) return [];
+    const { data, error } = await supabase.from('products').select('*').order('name', { ascending: true });
     if (error) throw error;
-
     return (data || []).map(mapProduct) as Product[];
-  } catch (error: any) {
-    console.error("Supabase Sync Error (getProducts):", {
-        message: error.message,
-        details: error.details,
-        hint: error.hint
-    });
+  } catch (error) {
+    console.error("getProducts failed:", error);
     return [];
   }
 }
@@ -151,37 +109,22 @@ export async function getProducts(): Promise<Product[]> {
 export async function getCategories(): Promise<Category[]> {
   try {
     if (!supabase) return defaultCategories;
-    
     const { data, error } = await supabase.from('categories').select('*').order('name');
-    
     if (error) {
         const { data: pData } = await supabase.from('products').select('category').not('category', 'is', null);
         const unique = Array.from(new Set((pData || []).map(p => p.category))).map(c => ({ id: c, name: c }));
         return unique.length > 0 ? unique : defaultCategories;
     }
-    
-    return (data || []).map(cat => ({
-        id: String(cat.id),
-        name: cat.name,
-        image_url: cat.image_url,
-        slug: cat.slug
-    }));
+    return (data || []).map(cat => ({ id: String(cat.id), name: cat.name, image_url: cat.image_url, slug: cat.slug }));
   } catch (e) {
     return defaultCategories;
   }
 }
 
 const defaultCategories: Category[] = [
-    { id: 'Tanks', name: 'Water Tanks' },
-    { id: 'Plumbing', name: 'Plumbing' },
-    { id: 'Electricals', name: 'Electricals' },
-];
-
-export const carouselCategories: CarouselCategory[] = [
-    { id: 'Tanks', name: 'Tanks', href: `/category/tanks`, image: '' },
-    { id: 'Plumbing', name: 'Plumbing', href: `/category/plumbing`, image: ''},
-    { id: 'Electricals', name: 'Electricals', href: `/category/lighting`, image: ''},
-    { id: 'Decor', name: 'Home & Decor', href: `/category/decor`, image: ''},
+    { id: 'Fixtures', name: 'Plumbing Fixtures' },
+    { id: 'Bulbs', name: 'Lighting & Bulbs' },
+    { id: 'Supplies', name: 'Electrical Supplies' },
 ];
 
 export async function getUsers(): Promise<MockUser[]> {
@@ -199,16 +142,4 @@ export const availableAvatars = [
     { url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka', alt: 'Avatar 2' },
     { url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alpha', alt: 'Avatar 3' },
     { url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Staff', alt: 'Avatar 4' },
-    { url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Toby', alt: 'Avatar 5' },
-    { url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Oscar', alt: 'Avatar 6' },
-    { url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Luna', alt: 'Avatar 7' },
-    { url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Milo', alt: 'Avatar 8' },
-    { url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Jasper', alt: 'Avatar 9' },
-    { url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Oliver', alt: 'Avatar 10' },
-    { url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sasha', alt: 'Avatar 11' },
-    { url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Kiki', alt: 'Avatar 12' },
-    { url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Nala', alt: 'Avatar 13' },
-    { url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Simba', alt: 'Avatar 14' },
-    { url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Zoe', alt: 'Avatar 15' },
-    { url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Leo', alt: 'Avatar 16' },
 ];

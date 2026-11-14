@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -6,13 +5,11 @@ import type { CarouselCategory } from '@/lib/types';
 import CategoryCard from '@/components/products/CategoryCard';
 import { Skeleton } from '../ui/skeleton';
 import { supabase } from '@/lib/supabase';
-import placeholderData from '@/app/lib/placeholder-images.json';
 import { getStorefrontSetting } from '@/app/actions/cms-actions';
 
 /**
- * Dynamic Category Carousel v4.2:
- * Restored "Electrical Supplies" and expanded fallbacks to ensure images resolve via keywords.
- * Added URL normalization for consistent routing.
+ * Dynamic Category Carousel v5.0.0:
+ * Updated default categories to match design screenshot.
  */
 export default function CategoryCarousel() {
   const [categories, setCategories] = React.useState<CarouselCategory[]>([]);
@@ -24,14 +21,13 @@ export default function CategoryCarousel() {
     return href.replace(/^\/shop\//, '/category/');
   };
 
-  // Expanded fallbacks with empty images to trigger CategoryCard's keyword-based Supabase resolution
+  // High-Fidelity Defaults from Design Screenshot
   const fallbackCategories: CarouselCategory[] = [
-    { id: 'Tanks', name: 'Water Tanks', href: '/category/tanks', image: '' },
-    { id: 'Plumbing', name: 'Plumbing Equipment', href: '/category/plumbing', image: '' },
-    { id: 'Electrical', name: 'Electrical Supplies', href: '/category/lighting', image: '' },
-    { id: 'Decor', name: 'Home & Decor', href: '/category/decor', image: '' },
-    { id: 'Roofing', name: 'Roofing & Construction', href: '/category/roofing', image: '' },
-    { id: 'Sanitary', name: 'Toilets & Sinks', href: '/category/toilets-&-sinks', image: '' },
+    { id: 'Fixtures', name: 'Plumbing Fixtures', href: '/category/plumbing', image: 'collections/Hand-wash Basin and Pedestal Sink Collection.webp' },
+    { id: 'Bulbs', name: 'Lighting & Bulbs', href: '/category/lighting', image: 'collections/Bird Art Lights fixture Collection.webp' },
+    { id: 'Electrical', name: 'Electrical Supplies', href: '/category/electrical', image: 'collections/Electric Socket Collection.webp' },
+    { id: 'Tanks', name: 'Water Tanks', href: '/category/tanks', image: 'collections/Tanks variety collection.webp' },
+    { id: 'Roofing', name: 'Roofing & Construction', href: '/category/roofing', image: 'collections/Corrugated Roofing Sheet collection.webp' },
   ];
 
   React.useEffect(() => {
@@ -52,34 +48,15 @@ export default function CategoryCarousel() {
             const formatted = customCards.map((cat: any) => ({
                 id: cat.id,
                 name: cat.title || cat.name,
-                image: cat.image || '', // Empty triggers keyword auto-resolution
+                image: cat.image || '', 
                 href: normalizeHref(cat.link || cat.href || '/search')
             }));
             setCategories(formatted);
         } else {
-            // Fallback to the categories table if the CMS setting is not configured
-            const { data, error } = await supabase
-                .from('categories')
-                .select('*')
-                .order('sort_order', { ascending: true });
-
-            if (!error && data && data.length > 0) {
-                const formatted = data.map((cat: any) => {
-                    const slug = cat.slug || (cat.name || '').toLowerCase().replace(/\s+/g, '-');
-                    return {
-                        id: String(cat.id || cat.name),
-                        name: cat.name || 'Category',
-                        image: cat.image_url || cat.image_path || '', // Empty triggers keyword auto-resolution
-                        href: `/category/${slug}`
-                    };
-                });
-                setCategories(formatted);
-            } else {
-                setCategories(fallbackCategories);
-            }
+            setCategories(fallbackCategories);
         }
       } catch (err) {
-        console.error("Carousel data fetch failed:", err);
+        console.error("Carousel fetch failed:", err);
         setCategories(fallbackCategories);
       } finally {
         setLoading(false);
@@ -89,7 +66,6 @@ export default function CategoryCarousel() {
     fetchDynamicData();
   }, []);
 
-  // Ensure unique keys by combining id and index
   const duplicatedCategories = [...categories, ...categories, ...categories];
 
   return (

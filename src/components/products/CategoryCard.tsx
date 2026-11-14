@@ -17,36 +17,24 @@ interface Category {
 }
 
 /**
- * High-Resolution Collection Mapping for v4.3.0:
- * Prioritizes curated collection assets from the Supabase Storage bucket.
- * Synchronized with user-defined filenames and common keywords.
+ * Fidelity Mapping v5.0.0:
+ * Updated keys to match new design nomenclature (Plumbing Fixtures, etc).
  */
 const collectionFileNameMap: Record<string, string> = {
-  'toilets & sinks': 'Hand-wash Basin and Pedestal Sink Collection.webp',
-  'toilets': 'Hand-wash Basin and Pedestal Sink Collection.webp',
-  'sink': 'Hand-wash Basin and Pedestal Sink Collection.webp',
-  'water tank': 'Tanks variety collection.webp',
-  'tank': 'Durable TopTank Vertical Water Tank collection.webp',
-  'electric': 'Electric Socket Collection.webp',
-  'electrical': 'Electric Socket Collection.webp',
-  'chandelier': 'Alpha chanderlier collection.webp',
-  'construction': 'granite and quartz slabs collection.webp',
-  'fencing': 'granite and quartz slabs collection.webp',
-  'plumbing': 'Alpha plumbing pipe collection.webp',
-  'lighting': 'rustic woven rope pendant lights collection.webp',
-  'decor': 'Bird Art Lights fixture Collection.webp',
-  'mabati': 'Corrugated Roofing Sheet collection.webp',
-  'solar': 'Solar items collection.webp',
+  'plumbing fixtures': 'Hand-wash Basin and Pedestal Sink Collection.webp',
+  'lighting & bulbs': 'Bird Art Lights fixture Collection.webp',
+  'electrical supplies': 'Electric Socket Collection.webp',
+  'water tanks': 'Tanks variety collection.webp',
+  'roofing & construction': 'Corrugated Roofing Sheet collection.webp',
+  'sanitary ware': 'Hand-wash Basin and Pedestal Sink Collection.webp',
 };
 
 /**
  * Robust Path Resolver:
- * Strips redundant bucket names and common folder prefixes.
- * URL-encodes path segments to fix 400 errors for files with spaces.
+ * Normalizes 'collections/' prefix and encodes URLs.
  */
 function getStoragePublicUrl(rawPath: string): string {
   if (!rawPath) return '';
-  // Support local public assets (e.g. /images/...) or full external URLs
   if (rawPath.startsWith('http://') || rawPath.startsWith('https://') || rawPath.startsWith('/')) {
     return rawPath;
   }
@@ -54,22 +42,18 @@ function getStoragePublicUrl(rawPath: string): string {
 
   let cleanPath = rawPath.replace(/\\/g, '/').replace(/^\/+/, '');
   
-  // Remove redundant bucket prefix used in some CMS inputs
-  if (cleanPath.startsWith('product-images/')) {
-    cleanPath = cleanPath.substring('product-images/'.length);
+  // Normalize folder name to lowercase 'collections'
+  if (cleanPath.toLowerCase().startsWith('collections/')) {
+    cleanPath = 'collections/' + cleanPath.substring(12);
   }
   
-  // Remove redundant folder prefix used in migration
-  if (cleanPath.startsWith('product images/')) {
-    cleanPath = cleanPath.substring('product images/'.length);
+  // Strip redundant bucket prefix if manually typed in CMS
+  if (cleanPath.startsWith('product-images/')) {
+    cleanPath = cleanPath.substring(15);
   }
 
   const encodedPath = cleanPath.split('/').map(segment => encodeURIComponent(segment)).join('/');
-
-  const { data } = supabase.storage
-    .from('product-images')
-    .getPublicUrl(encodedPath);
-
+  const { data } = supabase.storage.from('product-images').getPublicUrl(encodedPath);
   return data?.publicUrl || '';
 }
 
@@ -80,37 +64,25 @@ export default function CategoryCard({ category }: { category: Category }) {
     const urls: string[] = [];
     const lowerName = category.name.toLowerCase().trim();
 
-    // 1. Explicit image fields from CMS or Table (Highest Priority)
-    const rawVal =
-      category.image ||
-      category.imageUrl ||
-      category.image_url ||
-      category.image_path ||
-      '';
-
+    // 1. Priority: Explicit image paths from CMS
+    const rawVal = category.image || category.imageUrl || category.image_url || category.image_path || '';
     if (rawVal && rawVal.length > 2) {
-      const url = getStoragePublicUrl(rawVal);
-      if (url) urls.push(url);
+      urls.push(getStoragePublicUrl(rawVal));
     }
 
-    // 2. Keyword match in collectionFileNameMap (Discovery Engine)
+    // 2. Keyword Mapping (Fidelity Engine)
     for (const [key, filename] of Object.entries(collectionFileNameMap)) {
-      if (lowerName.includes(key)) {
-        // Try multiple folder patterns for high-fidelity discovery
-        urls.push(getStoragePublicUrl(`Collections/${filename}`));
+      if (lowerName.includes(key) || key.includes(lowerName)) {
         urls.push(getStoragePublicUrl(`collections/${filename}`));
-        urls.push(getStoragePublicUrl(filename));
       }
     }
 
-    // 3. Fallback placeholder data (Supabase Hosted)
+    // 3. System Placeholders (Supabase Hosted)
     if (lowerName.includes('tank')) urls.push(placeholderData.cat_tanks.url);
     if (lowerName.includes('plumb')) urls.push(placeholderData.cat_plumbing.url);
-    if (lowerName.includes('light') || lowerName.includes('chandelier') || lowerName.includes('electr')) {
-        urls.push(placeholderData.cat_lighting.url);
-    }
-    if (lowerName.includes('decor')) urls.push(placeholderData.cat_decor.url);
-    if (lowerName.includes('roof') || lowerName.includes('mabati')) urls.push(placeholderData.cat_roofing.url);
+    if (lowerName.includes('light') || lowerName.includes('bulb')) urls.push(placeholderData.cat_lighting.url);
+    if (lowerName.includes('electr')) urls.push(placeholderData.cat_lighting.url);
+    if (lowerName.includes('roof')) urls.push(placeholderData.cat_roofing.url);
 
     return Array.from(new Set(urls)).filter(url => url && !url.includes('undefined'));
   }, [category]);
