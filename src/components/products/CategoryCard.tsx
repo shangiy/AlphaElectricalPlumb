@@ -1,3 +1,4 @@
+
 'use client';
 
 import { supabase } from '@/lib/supabase';
@@ -17,9 +18,9 @@ interface Category {
 }
 
 /**
- * High-Resolution Collection Mapping for v2.5.1:
+ * High-Resolution Collection Mapping for v2.6.0:
  * Prioritizes curated collection assets from the Supabase Storage bucket.
- * The paths are tried in order: Collections/ -> collections/ -> root.
+ * Added 'electrical' and 'lighting' keywords to ensure 100% resolution.
  */
 const collectionFileNameMap: Record<string, string> = {
   'toilets & sinks': 'Hand-wash Basin and Pedestal Sink Collection.webp',
@@ -27,6 +28,7 @@ const collectionFileNameMap: Record<string, string> = {
   'sink': 'Hand-wash Basin and Pedestal Sink Collection.webp',
   'tank': 'Durable TopTank Vertical Water Tank collection.webp',
   'electric': 'Electric Socket Collection.webp',
+  'electrical': 'Electric Socket Collection.webp',
   'chandelier': 'Alpha chanderlier collection.webp',
   'construction': 'granite and quartz slabs collection.webp',
   'fencing': 'granite and quartz slabs collection.webp',
@@ -38,23 +40,22 @@ const collectionFileNameMap: Record<string, string> = {
 };
 
 /**
- * Helper to construct clean Supabase Storage URLs from the 'product-images' bucket.
- * Hardened v6.3.0: Explicitly URL-encodes segments to prevent 400 errors.
+ * Helper to construct clean Supabase Storage URLs.
+ * Hardened v6.3.2: Returns raw path if it starts with '/' to support local public assets.
  */
 function getStoragePublicUrl(rawPath: string): string {
   if (!rawPath) return '';
-  if (rawPath.startsWith('http://') || rawPath.startsWith('https://')) {
+  // Support local public assets (e.g. /images/...) or full external URLs
+  if (rawPath.startsWith('http://') || rawPath.startsWith('https://') || rawPath.startsWith('/')) {
     return rawPath;
   }
   if (!supabase) return '';
 
-  // Clean path: remove leading slashes and redundant prefixes
   let cleanPath = rawPath.replace(/\\/g, '/').replace(/^\/+/, '');
   if (cleanPath.startsWith('product-images/')) {
     cleanPath = cleanPath.substring('product-images/'.length);
   }
 
-  // High-Fidelity URL Encoding for segments
   const encodedPath = cleanPath.split('/').map(segment => encodeURIComponent(segment)).join('/');
 
   const { data } = supabase.storage
@@ -70,26 +71,23 @@ export default function CategoryCard({ category }: { category: Category }) {
   const candidateUrls = useMemo(() => {
     const urls: string[] = [];
 
-    // 1. Exact collection path resolution based on name (Priority)
+    // 1. Keyword match in collectionFileNameMap (Highest Fidelity)
     const lowerName = category.name.toLowerCase().trim();
     
     for (const [key, filename] of Object.entries(collectionFileNameMap)) {
       if (lowerName.includes(key)) {
-        // A. Try 'Collections/' subfolder first (Standard for high-res assets)
         const collectionsUrl = getStoragePublicUrl(`Collections/${filename}`);
         if (collectionsUrl) urls.push(collectionsUrl);
 
-        // B. Try lowercase 'collections/' subfolder
         const collectionsUrlLower = getStoragePublicUrl(`collections/${filename}`);
         if (collectionsUrlLower) urls.push(collectionsUrlLower);
         
-        // C. Try root
         const rootUrl = getStoragePublicUrl(filename);
         if (rootUrl) urls.push(rootUrl);
       }
     }
 
-    // 2. Explicit raw image fields passed in the category object (Database fallback)
+    // 2. Explicit image fields (Supports /images/local.png)
     const rawVal =
       category.image ||
       category.imageUrl ||
@@ -102,14 +100,15 @@ export default function CategoryCard({ category }: { category: Category }) {
       if (url) urls.push(url);
     }
 
-    // 3. General Fallback discovery logic for common category types
+    // 3. Fallback placeholder data
     if (lowerName.includes('tank')) urls.push(placeholderData.cat_tanks.url);
     if (lowerName.includes('plumb')) urls.push(placeholderData.cat_plumbing.url);
-    if (lowerName.includes('light') || lowerName.includes('chandelier')) urls.push(placeholderData.cat_lighting.url);
+    if (lowerName.includes('light') || lowerName.includes('chandelier') || lowerName.includes('electr')) {
+        urls.push(placeholderData.cat_lighting.url);
+    }
     if (lowerName.includes('decor')) urls.push(placeholderData.cat_decor.url);
     if (lowerName.includes('roof') || lowerName.includes('mabati')) urls.push(placeholderData.cat_roofing.url);
 
-    // Filter out duplicates and invalid strings
     return Array.from(new Set(urls)).filter(url => url && !url.includes('undefined'));
   }, [category]);
 

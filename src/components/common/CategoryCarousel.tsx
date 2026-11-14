@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -9,8 +10,9 @@ import placeholderData from '@/app/lib/placeholder-images.json';
 import { getStorefrontSetting } from '@/app/actions/cms-actions';
 
 /**
- * Dynamic Category Carousel v4.1:
- * Added URL normalization to convert legacy /shop/ paths to /category/ routes.
+ * Dynamic Category Carousel v4.2:
+ * Restored "Electrical Supplies" and expanded fallbacks to ensure images resolve via keywords.
+ * Added URL normalization for consistent routing.
  */
 export default function CategoryCarousel() {
   const [categories, setCategories] = React.useState<CarouselCategory[]>([]);
@@ -22,12 +24,14 @@ export default function CategoryCarousel() {
     return href.replace(/^\/shop\//, '/category/');
   };
 
+  // Expanded fallbacks with empty images to trigger CategoryCard's keyword-based Supabase resolution
   const fallbackCategories: CarouselCategory[] = [
-    { id: 'Tanks', name: 'Tanks', href: '/category/tanks', image: placeholderData.cat_tanks.url },
-    { id: 'Plumbing', name: 'Plumbing', href: '/category/plumbing', image: placeholderData.cat_plumbing.url },
-    { id: 'Lighting', name: 'Lighting', href: '/category/lighting', image: placeholderData.cat_lighting.url },
-    { id: 'Decor', name: 'Home & Decor', href: '/category/decor', image: placeholderData.cat_decor.url },
-    { id: 'Roofing', name: 'Roofing', href: '/category/roofing', image: placeholderData.cat_roofing.url },
+    { id: 'Tanks', name: 'Water Tanks', href: '/category/tanks', image: '' },
+    { id: 'Plumbing', name: 'Plumbing Equipment', href: '/category/plumbing', image: '' },
+    { id: 'Electrical', name: 'Electrical Supplies', href: '/category/lighting', image: '' },
+    { id: 'Decor', name: 'Home & Decor', href: '/category/decor', image: '' },
+    { id: 'Roofing', name: 'Roofing & Construction', href: '/category/roofing', image: '' },
+    { id: 'Sanitary', name: 'Toilets & Sinks', href: '/category/toilets-&-sinks', image: '' },
   ];
 
   React.useEffect(() => {
@@ -48,11 +52,12 @@ export default function CategoryCarousel() {
             const formatted = customCards.map((cat: any) => ({
                 id: cat.id,
                 name: cat.title || cat.name,
-                image: cat.image || placeholderData.cat_tanks.url,
+                image: cat.image || '', // Empty triggers keyword auto-resolution
                 href: normalizeHref(cat.link || cat.href || '/search')
             }));
             setCategories(formatted);
         } else {
+            // Fallback to the categories table if the CMS setting is not configured
             const { data, error } = await supabase
                 .from('categories')
                 .select('*')
@@ -60,12 +65,11 @@ export default function CategoryCarousel() {
 
             if (!error && data && data.length > 0) {
                 const formatted = data.map((cat: any) => {
-                    const rawImg = cat.image_url || cat.imageUrl || cat.image || cat.image_path || '';
                     const slug = cat.slug || (cat.name || '').toLowerCase().replace(/\s+/g, '-');
                     return {
                         id: String(cat.id || cat.name),
                         name: cat.name || 'Category',
-                        image: rawImg || placeholderData.cat_tanks.url,
+                        image: cat.image_url || cat.image_path || '', // Empty triggers keyword auto-resolution
                         href: `/category/${slug}`
                     };
                 });
@@ -85,6 +89,7 @@ export default function CategoryCarousel() {
     fetchDynamicData();
   }, []);
 
+  // Ensure unique keys by combining id and index
   const duplicatedCategories = [...categories, ...categories, ...categories];
 
   return (
